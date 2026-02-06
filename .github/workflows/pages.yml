@@ -21,23 +21,60 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Install Arturo (use the official release tarball for linux)
-      - name: Install Arturo
+      - name: Install Arturo (latest release)
+        shell: bash
         run: |
           set -euxo pipefail
-          ARTURO_VERSION="latest"
-          curl -sSL https://get.arturo-lang.io | sh
+
+          # Fetch latest release JSON from GitHub API
+          json="$(curl -sSL https://api.github.com/repos/arturo-lang/arturo/releases/latest)"
+
+          # Pick a Linux amd64 "full" build if present; otherwise take the first linux-amd64 asset
+          url="$(echo "$json" | jq -r '
+            .assets
+            | map(select(.name | test("linux-amd64") and test("mini") | not))
+            | (map(select(.name | test("full"))) + .)[0].browser_download_url
+          ')"
+
+          if [ "$url" = "null" ] || [ -z "$url" ]; then
+            echo "Could not find a linux-amd64 release asset."
+            echo "$json" | jq -r '.assets[].name'
+            exit 1
+          fi
+
+          echo "Downloading: $url"
+          curl -L "$url" -o arturo.zip
+          unzip -q arturo.zip
+
+          # Find the arturo executable inside the zip
+          bin_path="$(find . -maxdepth 3 -type f -name arturo -o -name arturo.exe | head -n 1 || true)"
+          if [ -z "$bin_path" ]; then
+            echo "Could not locate arturo binary after unzip."
+            find . -maxdepth 3 -type f | sed 's|^\./||'
+            exit 1
+          fi
+
+          chmod +x "$bin_path"
+          sudo mv "$bin_path" /usr/local/bin/arturo
+          arturo --version
 
       - name: Build site
+        shell: bash
         run: |
           set -euxo pipefail
           rm -rf dist
           arturo tools/build.art
 
+          # GitHub Pages: disable Jekyll processing
+          touch dist/.nojekyll
+
+          # sanity check: must have an index
+          test -f dist/index.html
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -49,6 +86,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
