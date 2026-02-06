@@ -31,7 +31,6 @@ jobs:
           set -euxo pipefail
           rm -rf dist
           arturo tools/build.art
-          touch dist/.nojekyll
           test -f dist/index.html
 
       - name: Configure Pages
