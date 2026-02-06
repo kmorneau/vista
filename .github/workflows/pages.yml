@@ -26,7 +26,7 @@ jobs:
         run: |
           set -euxo pipefail
           ARTURO_VERSION="latest"
-          curl -sSL https://get.arturo-lang.io | sh
+          curl -sSL https://get.arturo-lang.io
           chmod +x arturo
           sudo mv arturo /usr/local/bin/arturo
           arturo --version
