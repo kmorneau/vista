@@ -26,8 +26,7 @@ jobs:
         run: |
           set -euxo pipefail
           ARTURO_VERSION="latest"
-          curl -L -o arturo.tar.gz "https://github.com/arturo-lang/arturo/releases/latest/download/arturo-linux-x86_64.tar.gz"
-          tar -xzf arturo.tar.gz
+          curl -sSL https://get.arturo-lang.io | sh
           chmod +x arturo
           sudo mv arturo /usr/local/bin/arturo
           arturo --version
