@@ -1,0 +1,9 @@
+#[
+  "title": "Arturo/Vista"
+  "layout": "page"
+  "body": {
+    <h1>Arturo/Vista</h1>
+    <p>Docs for the Vista UI layer.</p>
+    <p><a href="/docs/getting-started/">Getting Started →</a></p>
+  }
+]

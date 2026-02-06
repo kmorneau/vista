@@ -1,0 +1,7 @@
+body { font-family: system-ui, sans-serif; margin: 0; }
+.container { max-width: 980px; margin: 0 auto; padding: 1rem; }
+.nav { border-bottom: 1px solid #ddd; }
+.brand { font-weight: 700; text-decoration: none; margin-right: 1rem; }
+.docs { display: grid; grid-template-columns: 240px 1fr; gap: 1rem; }
+.sidebar { border-right: 1px solid #eee; padding-right: 1rem; }
+.doc h1 { margin-top: 0; }
