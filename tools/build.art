@@ -38,6 +38,11 @@ execute "mkdir -p dist/assets"
 execute join ["cp " THEME "/resources/styles/main.css " DIST "/assets/"]
 execute join ["cp " THEME "/resources/scripts/main.js " DIST "/assets/"]
 
+; copy icons
+print "Copying icons..."
+execute "mkdir -p dist/assets/icons"
+execute join ["cp -r " THEME "/resources/icons/*.svg " DIST "/assets/icons/"]
+
 ; load components
 print "Loading components..."
 navbar: readText join [THEME "/components/navbar.html"]
