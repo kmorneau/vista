@@ -20,51 +20,58 @@ print "Copying icons..."
 execute "mkdir -p dist/assets/icons"
 execute "cp -r src/theme/resources/icons/*.svg dist/assets/icons/ 2>/dev/null || true"
 
-; load components
-print "Loading components..."
-navbar: read "src/theme/components/navbar.html"
-footer: read "src/theme/components/footer.html"
-sidebar: read "src/theme/components/sidebar.html"
-
-; load templates
-print "Loading templates..."
-baseTpl: read "src/theme/templates/base.html"
-docpageTpl: read "src/theme/templates/docpage.html"
-
 ; --- wiki index page ---
 print "Generating wiki index page..."
 
-wikiIndexBody: "<h1>Vista Documentation</h1><p>Welcome to the Vista UI framework documentation.</p>"
-
-; simple template replacement
-inner: replace docpageTpl "{{title}}" "Documentation"
-inner: replace inner "{{body}}" wikiIndexBody
-inner: replace inner "{{docnav}}" sidebar
-
-wikiIndexHtml: replace baseTpl "{{title}}" "Vista Documentation"
-wikiIndexHtml: replace wikiIndexHtml "{{content}}" inner
-wikiIndexHtml: replace wikiIndexHtml "{{navbar}}" navbar
-wikiIndexHtml: replace wikiIndexHtml "{{footer}}" footer
+wikiHtml: {<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vista Documentation</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Vista Documentation</h1>
+    <p>Welcome to the Vista UI framework documentation.</p>
+    <h2>Getting Started</h2>
+    <ul>
+      <li><a href="https://github.com/kmorneau/vista">GitHub Repository</a></li>
+      <li><a href="https://github.com/kmorneau/vista/blob/main/README.md">README</a></li>
+    </ul>
+    <h2>Examples</h2>
+    <p>See the <a href="https://github.com/kmorneau/vista/tree/main/examples">examples folder</a> for code samples.</p>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>}
 
 execute "mkdir -p dist/wiki"
-write "dist/wiki/index.html" wikiIndexHtml
+write "dist/wiki/index.html" wikiHtml
 print "Generated: dist/wiki/index.html"
 
 ; --- root index page ---
 print "Generating root index page..."
 
-rootContent: "<h1>Vista Documentation</h1><p>Welcome to Vista! <a href=\"/wiki/\">View the documentation</a>.</p>"
+rootHtml: {<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vista Documentation</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Vista Documentation</h1>
+    <p>Welcome to Vista! <a href="/wiki/">View the documentation</a>.</p>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>}
 
-rootInner: replace docpageTpl "{{title}}" "Vista Documentation"
-rootInner: replace rootInner "{{body}}" rootContent
-rootInner: replace rootInner "{{docnav}}" sidebar
-
-rootIndexHtml: replace baseTpl "{{title}}" "Vista Documentation"
-rootIndexHtml: replace rootIndexHtml "{{content}}" rootInner
-rootIndexHtml: replace rootIndexHtml "{{navbar}}" navbar
-rootIndexHtml: replace rootIndexHtml "{{footer}}" footer
-
-write "dist/index.html" rootIndexHtml
+write "dist/index.html" rootHtml
 print "Generated: dist/index.html"
 
 print "Build complete!"
