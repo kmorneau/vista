@@ -24,8 +24,8 @@ vista_themes: #[
                         size: "14px"
                 ]
                 icons: #[
-                        path: "/icons/"
-                        ext: ".png"
+                        path: "resources/icons/"
+                        ext: ".svg"
                 ]
         ]
         dark: #[
