@@ -12,15 +12,14 @@ readText: function [p][ read p ]
 renderTpl: function [tpl data][
     out: tpl
     loop keys data 'k [
-        token: join ["{{" k "}}"]
+        token: "{{" ++ k ++ "}}"
         out: replace out token (to :string data\[k])
     ]
     out
 ]
 
 ; --- paths ---
-SRC:   "src"
-THEME: join [SRC "/theme"]
+THEME: "src/theme"
 DIST:  "dist"
 
 ; --- init dist ---
@@ -31,25 +30,25 @@ execute "mkdir -p dist"
 ; copy static assets
 print "Copying assets..."
 execute "mkdir -p dist/assets"
-execute join ["cp " THEME "/resources/styles/main.css " DIST "/assets/"]
-execute join ["cp " THEME "/resources/scripts/main.js " DIST "/assets/"]
+execute "cp src/theme/resources/styles/main.css dist/assets/"
+execute "cp src/theme/resources/scripts/main.js dist/assets/"
 
 ; copy icons
 print "Copying icons..."
 execute "mkdir -p dist/assets/icons"
-execute join ["cp -r " THEME "/resources/icons/*.svg " DIST "/assets/icons/ 2>/dev/null || true"]
+execute "cp -r src/theme/resources/icons/*.svg dist/assets/icons/ 2>/dev/null || true"
 
 ; load components
 print "Loading components..."
-navbar: readText join [THEME "/components/navbar.html"]
-footer: readText join [THEME "/components/footer.html"]
-sidebar: readText join [THEME "/components/sidebar.html"]
+navbar: readText "src/theme/components/navbar.html"
+footer: readText "src/theme/components/footer.html"
+sidebar: readText "src/theme/components/sidebar.html"
 
 ; load templates
 print "Loading templates..."
-baseTpl:    readText join [THEME "/templates/base.html"]
-pageTpl:    readText join [THEME "/templates/page.html"]
-docpageTpl: readText join [THEME "/templates/docpage.html"]
+baseTpl:    readText "src/theme/templates/base.html"
+pageTpl:    readText "src/theme/templates/page.html"
+docpageTpl: readText "src/theme/templates/docpage.html"
 
 ; --- wiki index page ---
 print "Generating wiki index page..."
@@ -79,7 +78,7 @@ wikiIndexHtml: renderTpl baseTpl #[
 ]
 
 execute "mkdir -p dist/wiki"
-write join [DIST "/wiki/index.html"] wikiIndexHtml
+write "dist/wiki/index.html" wikiIndexHtml
 print "Generated: dist/wiki/index.html"
 
 ; --- root index page ---
@@ -92,7 +91,7 @@ rootIndexHtml: renderTpl baseTpl #[
     "footer": footer
 ]
 
-write join [DIST "/index.html"] rootIndexHtml
+write "dist/index.html" rootIndexHtml
 print "Generated: dist/index.html"
 
 print "Build complete!"
