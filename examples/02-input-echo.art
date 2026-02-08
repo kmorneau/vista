@@ -1,0 +1,22 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Input Echo"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+name: "Ada"
+status: "Type in the field to see live echo"
+
+view [
+    title "Input Echo"
+    label "Name:"
+    field name .on-input:[status: "Typing..."]
+    text "You typed:"
+    text name
+    return
+    text "Status:"
+    text status
+]

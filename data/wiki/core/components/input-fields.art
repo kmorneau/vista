@@ -1,0 +1,89 @@
+# [
+#   "title": "Input Fields"
+#   "layout": "docpage"
+#   "category": "Components"
+#   "tags": ["input", "field", "forms", "core"]
+#   "body": {
+#     <h1>Input Fields</h1>
+#
+#     <p>Input fields allow users to enter text and other data.</p>
+#
+#     <h2>Text Field</h2>
+#     <pre><code>
+#     field "Enter text"
+#     </code></pre>
+#
+#     <h2>Bound Field</h2>
+#     <pre><code>
+#     field .bind: 'username
+#     </code></pre>
+#
+#     <h2>Text Area</h2>
+#     <pre><code>
+#     textarea_field .bind: 'message
+#         .rows: 5
+#     </code></pre>
+#
+#     <h2>Select Dropdown</h2>
+#     <pre><code>
+#     select_field .bind: 'country
+#         ["USA" "Canada" "UK"]
+#     </code></pre>
+#
+#     <h2>Select with Labels</h2>
+#     <pre><code>
+#     select_field .bind: 'country
+#         ["US" "United States"
+#          "CA" "Canada"
+#          "UK" "United Kingdom"]
+#     </code></pre>
+#
+#     <h2>Password Field</h2>
+#     <pre><code>
+#     input_field .bind: 'password
+#         .type: "password"
+#     </code></pre>
+#
+#     <h2>Number Input</h2>
+#     <pre><code>
+#     input_field .bind: 'age
+#         .type: "number"
+#         .min: 0
+#         .max: 120
+#     </code></pre>
+#
+#     <h2>Event Handling</h2>
+#     <pre><code>
+#     field .bind: 'search
+#         .on-change [
+#             print ["Search changed to:" search]
+#         ]
+#     </code></pre>
+#
+#     <h2>Example</h2>
+#     <pre><code>
+#     view .html [
+#         form [
+#             label "Name:"
+#             field .bind: 'name
+#
+#             label "Email:"
+#             input_field .bind: 'email
+#                 .type: "email"
+#
+#             label "Message:"
+#             textarea_field .bind: 'message
+#
+#             button "Submit" [.on-click [submit-form]]
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>See Also</h2>
+#     <ul>
+#       <li><a href="/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Binding details</li>
+#       <li><a href="/wiki/core/events/input-events/">Input Events</a> - Event handling</li>
+#       <li><a href="/wiki/core/components/selection-controls/">Selection Controls</a> - Checkboxes, radio buttons</li>
+#     </ul>
+#   }
+# ]

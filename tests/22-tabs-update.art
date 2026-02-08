@@ -1,0 +1,15 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    tabs [
+        tab "A" [text "Alpha"]
+        tab "B" [text "Beta"]
+    ]
+]
+
+tabsFace: get_face_path ["tabs" 0]
+update_tab_panel tabsFace\id 1 [
+    text "Beta updated"
+]
+
+print html

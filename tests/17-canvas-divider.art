@@ -1,0 +1,9 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    text "Above"
+    divider
+    canvas .width: 120 .height: 60
+    text "Below"
+]
+print html

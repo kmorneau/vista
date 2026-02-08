@@ -1,0 +1,12 @@
+import "vista.art"!
+
+view .returnHtml [
+    panel "Info" [
+        text .id:greeting "Hello"
+        text "World"
+    ]
+]
+
+face: find_face #[id: "greeting"]
+print face_info face
+print face_tree_json

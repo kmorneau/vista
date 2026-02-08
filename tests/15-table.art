@@ -1,0 +1,15 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    table [
+        table-row [
+            table-cell "Name"
+            table-cell "Role"
+        ]
+        table-row [
+            table-cell "Ada"
+            table-cell "Engineer"
+        ]
+    ]
+]
+print html

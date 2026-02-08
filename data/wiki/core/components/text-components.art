@@ -1,0 +1,67 @@
+# [
+#   "title": "Text Components"
+#   "layout": "docpage"
+#   "category": "Components"
+#   "tags": ["text", "components", "core"]
+#   "body": {
+#     <h1>Text Components</h1>
+#
+#     <p>Text components display textual content in various styles.</p>
+#
+#     <h2>Text Face</h2>
+#     <p>Basic text display:</p>
+#     <pre><code>
+#     text "Hello, World!"
+#     </code></pre>
+#
+#     <h2>Title Face</h2>
+#     <p>Large heading text:</p>
+#     <pre><code>
+#     title "Welcome"
+#     </code></pre>
+#
+#     <h2>Subtitle Face</h2>
+#     <p>Smaller heading text:</p>
+#     <pre><code>
+#     subtitle "Chapter 1"
+#     </code></pre>
+#
+#     <h2>Label Face</h2>
+#     <p>Label for form inputs:</p>
+#     <pre><code>
+#     label "Name:"
+#     field .bind: 'name
+#     </code></pre>
+#
+#     <h2>Bound Text</h2>
+#     <p>Text that displays state values:</p>
+#     <pre><code>
+#     text ["Hello " userName]
+#     </code></pre>
+#
+#     <h2>Styling</h2>
+#     <pre><code>
+#     text "Styled text"
+#         .color: blue
+#         .style: "font-weight: bold"
+#     </code></pre>
+#
+#     <h2>Example</h2>
+#     <pre><code>
+#     view .html [
+#         panel "Text Styles" [
+#             title "Main Title"
+#             subtitle "Section Title"
+#             text "Regular text paragraph."
+#             label "Label:"
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>See Also</h2>
+#     <ul>
+#       <li><a href="/wiki/core/layout/layout-overview/">Layout Overview</a> - Positioning text</li>
+#       <li><a href="/wiki/core/data-binding/binding-overview/">Data Binding</a> - Bound text</li>
+#     </ul>
+#   }
+# ]

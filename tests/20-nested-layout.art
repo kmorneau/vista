@@ -1,0 +1,17 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    across
+    text "Left"
+    below
+    text "Inner Top"
+    return
+    text "Inner Bottom"
+    end
+    text "Right"
+    return
+    text "Next Row"
+    end
+    text raw "<strong>Raw</strong>"
+]
+print html

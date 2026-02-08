@@ -1,0 +1,31 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Face Debug"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+html: view [
+    panel "Info" [
+        text "Hello"
+        text .id:greeting "World"
+    ]
+]
+
+print html
+
+face: find_face #[id: "greeting"]
+print face_info face
+
+faces: find_faces #[type: "text"]
+print face_info (get faces 0)
+
+; Expected tree: root -> panel -> text -> text
+print face_tree
+print face_tree_json
+print face_tree_pretty
+print face_tree_by_id #[id: "greeting"]
+print face_tree_by_id_json #[id: "greeting"]
+print face_tree_by_id "greeting"

@@ -1,0 +1,10 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    split .ratio: 30 [
+        text "Left"
+    ] [
+        text "Right"
+    ]
+]
+print html

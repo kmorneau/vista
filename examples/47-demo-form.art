@@ -1,0 +1,21 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Demo Form"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    h2 "Contact"
+    panel "Details" [
+        below
+        text "Name"
+        field name
+        text "Email"
+        field email
+        return
+        button "Submit" [print name print email]
+    ]
+]

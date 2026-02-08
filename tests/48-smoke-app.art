@@ -1,0 +1,13 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Smoke App"
+    Width: 300
+    Height: 200
+]
+
+html: run_app .html [
+    text "Smoke"
+]
+
+print html

@@ -1,0 +1,11 @@
+import "vista.art"!
+
+choice: "b"
+
+html: view .returnHtml [
+    radio choice [
+        ["a" "Alpha" #[disabled: true]]
+        ["b" "Beta" #[]]
+    ]
+]
+print html

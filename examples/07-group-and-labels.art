@@ -1,0 +1,21 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Group And Labels"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+accepted: false
+
+view [
+    group .class:"panel" .style:"padding:12px; border:1px solid #ddd; border-radius:6px" [
+        text .class:"title" "Terms"
+        checkbox accepted [
+            text "Accept "
+            label .class:"muted" "terms and conditions"
+        ]
+        button .label-class:"btn-label" "Continue" [accepted: accepted]
+    ]
+]

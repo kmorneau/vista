@@ -1,0 +1,25 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Panel Grid"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    title "Panel + Grid"
+    panel "Profile" [
+        text "Name:"
+        field name
+        spacer 8
+        text "Role:"
+        field role
+    ]
+    grid 2 [
+        box [text "Card A"]
+        box [text "Card B"]
+        box [text "Card C"]
+        box [text "Card D"]
+    ]
+]

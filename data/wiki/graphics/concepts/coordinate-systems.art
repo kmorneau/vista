@@ -1,0 +1,71 @@
+# [
+#   "title": "Coordinate Systems"
+#   "layout": "docpage"
+#   "category": "Graphics"
+#   "tags": ["coordinates", "transforms", "graphics"]
+#   "body": {
+#     <h1>Coordinate Systems</h1>
+#
+#     <p>Vista Graphics supports multiple coordinate systems for different drawing needs.</p>
+#
+#     <h2>VID Coordinates (Default)</h2>
+#     <p>The default coordinate system with origin at the top-left corner:</p>
+#     <ul>
+#       <li>X increases to the right</li>
+#       <li>Y increases downward</li>
+#       <li>(0, 0) is at the top-left</li>
+#     </ul>
+#
+#     <h2>Math Coordinates</h2>
+#     <p>A mathematical coordinate system with origin at the bottom-left:</p>
+#     <pre><code>
+#     canvas [
+#         draw [
+#             coord-system math
+#             pen red
+#             line 0 0 100 100
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Center Coordinates</h2>
+#     <p>A coordinate system with origin at the canvas center:</p>
+#     <pre><code>
+#     canvas [
+#         draw [
+#             coord-system center
+#             pen blue
+#             line -50 0 50 0
+#             line 0 -50 0 50
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Coordinate Format</h2>
+#     <p>Coordinates can be specified as:</p>
+#     <ul>
+#       <li><strong>Block</strong>: <code>[x y]</code> or <code>[10 20]</code></li>
+#       <li><strong>String</strong>: <code>"10 20"</code></li>
+#       <li><strong>Two numbers</strong>: <code>10 20</code></li>
+#     </ul>
+#
+#     <h2>Point Specification</h2>
+#     <pre><code>
+#     canvas [
+#         draw [
+#             ; All equivalent
+#             line [10 20] [100 200]
+#             line "10 20" "100 200"
+#             line 10 20 100 200
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>See Also</h2>
+#     <ul>
+#       <li><a href="/wiki/graphics/transforms/translate/">Translate</a> - Move origin</li>
+#       <li><a href="/wiki/graphics/transforms/rotate/">Rotate</a> - Rotate coordinate system</li>
+#       <li><a href="/wiki/graphics/transforms/scale/">Scale</a> - Scale coordinates</li>
+#     </ul>
+#   }
+# ]

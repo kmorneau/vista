@@ -1,0 +1,13 @@
+import "vista.art"!
+
+item1: "Learn"
+item2: "Build"
+item3: "Ship"
+
+html: view .returnHtml [
+    box [
+        text "Todo"
+        text_list [item1 item2 item3]
+    ]
+]
+print html

@@ -1,0 +1,154 @@
+; Vista UI - Data Display Components
+
+text_list: function [items attrs] [
+        merged: merge_class_attr attrs "vista-text-list"
+        attrStr: attrs_to_html merged\attrs
+        html: "<ul class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        i: 0
+        items_len: size items
+        while [less? i items_len][
+                val: get items i
+                val_type: type val
+                switch equal? val_type :word [
+                        lit: to :literal val
+                        if set? lit [
+                                val: do to :string val
+                        ]
+                ][
+                        val: val
+                ]
+                html: html ++ "<li>"
+                html: html ++ html_text val
+                html: html ++ "</li>"
+                i: i + 1
+        ]
+        html: html ++ "</ul>"
+        html
+]
+
+text_list_bind: function [items bindings attrs] [
+        merged: merge_class_attr attrs "vista-text-list"
+        attrStr: attrs_to_html merged\attrs
+        html: "<ul class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        i: 0
+        items_len: size items
+        while [less? i items_len][
+                val: get items i
+                val_type: type val
+                switch equal? val_type :word [
+                        add_binding bindings val
+                        val_str: to :string val
+                        html: html ++ "<li data-bind='"
+                        html: html ++ val_str
+                        html: html ++ "'></li>"
+                ][
+                        html: html ++ "<li>"
+                        html: html ++ html_text val
+                        html: html ++ "</li>"
+                ]
+                i: i + 1
+        ]
+        html: html ++ "</ul>"
+        html
+]
+
+list_face_bind: function [items bindName multi bindings attrs] [
+        merged: merge_class_attr attrs "vista-list"
+        merged\attrs\["data-list-bind"]: bindName
+        merged\attrs\["data-multi"]: to :string multi
+        if not? key? merged\attrs "tabindex" [
+                merged\attrs\tabindex: 0
+        ]
+        attrStr: attrs_to_html merged\attrs
+        html: "<ul class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        i: 0
+        items_len: size items
+        while [less? i items_len][
+                val: get items i
+                val_type: type val
+                switch equal? val_type :word [
+                        lit: to :literal val
+                        if set? lit [
+                                val: do to :string val
+                        ]
+                ][
+                        val: val
+                ]
+                valStr: to :string val
+                valAttr: html_escape_attr valStr
+                html: html ++ "<li data-value='" ++ valAttr ++ "'>"
+                html: html ++ html_text val
+                html: html ++ "</li>"
+                i: i + 1
+        ]
+        html: html ++ "</ul>"
+        html
+]
+
+table_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table"
+        attrStr: attrs_to_html merged\attrs
+        "<table class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</table>"
+]
+
+table_row_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-row"
+        attrStr: attrs_to_html merged\attrs
+        contentStr: ""
+        if notEqual? content null [
+                contentStr: to :string content
+        ]
+        "<tr class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</tr>"
+]
+
+table_cell_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-cell"
+        attrStr: attrs_to_html merged\attrs
+        contentStr: ""
+        if notEqual? content null [
+                contentStr: to :string content
+        ]
+        "<td class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</td>"
+]
+
+table_head_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-head"
+        attrStr: attrs_to_html merged\attrs
+        "<thead class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</thead>"
+]
+
+table_body_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-body"
+        attrStr: attrs_to_html merged\attrs
+        "<tbody class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</tbody>"
+]
+
+table_foot_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-foot"
+        attrStr: attrs_to_html merged\attrs
+        "<tfoot class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</tfoot>"
+]
+
+table_header_cell_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-header"
+        attrStr: attrs_to_html merged\attrs
+        "<th class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</th>"
+]
+
+toolbar_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-toolbar"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+menubar_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-menubar"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+tool_group_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-tool-group"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]

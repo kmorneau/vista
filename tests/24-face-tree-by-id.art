@@ -1,0 +1,12 @@
+import "vista.art"!
+
+view .returnHtml [
+    panel "Info" [
+        text .id:greeting "Hello"
+        text "World"
+    ]
+]
+
+print face_tree_by_id #[id: "greeting"]
+print face_tree_by_id_json #[id: "greeting"]
+print face_tree_pretty

@@ -1,0 +1,9 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    box .edge:#[style: "bevel" size: 2 color: "#888"] [text "Bevel"]
+    box .edge:#[style: "raised" size: 2 color: "#666"] [text "Raised"]
+    box .edge:#[style: "inset" size: 2 color: "#666"] [text "Inset"]
+]
+
+print html

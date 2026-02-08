@@ -1,0 +1,60 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Vista App Scaffold"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+vista_vid_mode: true
+vista_layout_vid_mode: true
+
+
+
+status: "Ready"
+count: 0
+selected: "Alpha"
+items: ["Alpha" "Beta" "Gamma" "Delta" "Epsilon"]
+
+view [
+    toolbar [
+        button "New" [status: "New item"]
+        button "Save" [status: "Saved"]
+        button "Refresh" [count: count + 1 status: "Refreshed"]
+    ]
+    return
+    row .space:12 [
+        panel "Sidebar" .size:[220 360] [
+            text "Items"
+            list selected items
+            return
+            text "Selected:"
+            text selected
+        ]
+        panel "Content" .size:[620 360] [
+            tabs [
+                tab "Details" [
+                    text "Overview"
+                    text "This is where your main content goes."
+                    return
+                    box .pad:8 .edge:#[size: 1 color: "#ddd" style: "solid"] [
+                        text "Selected item:"
+                        text selected
+                    ]
+                ]
+                tab "Settings" [
+                    check "Enable feature"
+                    return
+                    text "Refresh count:"
+                    text count
+                ]
+            ]
+        ]
+    ]
+    return
+    box .color:"#f0f0f0" .pad:8 [
+        text "Status:"
+        text status
+    ]
+]

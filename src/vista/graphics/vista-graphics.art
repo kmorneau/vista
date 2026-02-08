@@ -1,0 +1,13 @@
+; Vista Graphics (Rebol/View Draw-style) for HTML5 Canvas
+; Main entry point for the graphics module
+
+import "src/vista/graphics/utils.art"!
+import "src/vista/graphics/colors.art"!
+import "src/vista/graphics/parsing.art"!
+; import "src/vista/graphics/drawing.art"!
+
+; Public API - Expose all functions
+; - draw: returns JS snippet that draws a block onto a canvas
+; - draw_to_canvas: builds JS that targets a specific canvas id
+; - draw_script: wraps draw_to_canvas in a DOMContentLoaded handler
+; - draw_js_token: internal helper for JS literal encoding

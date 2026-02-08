@@ -1,0 +1,13 @@
+import "vista.art"!
+
+vista_vid_mode: true
+
+html: view .returnHtml [
+    h2 "VID Mode"
+    panel "Panel" [
+        text "Hello"
+        info "Info"
+    ]
+]
+
+print html

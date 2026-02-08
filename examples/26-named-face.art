@@ -1,0 +1,17 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Named Face"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+html: view [
+    text .id:"greeting" "Hello"
+]
+
+face: get_face "greeting"
+update_face "greeting" #[text: "Hello again"]
+
+print show face

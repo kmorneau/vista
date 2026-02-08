@@ -1,0 +1,15 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Spacer"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    title "Spacer"
+    text "Top"
+    spacer 16
+    text "Bottom"
+]

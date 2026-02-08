@@ -1,0 +1,13 @@
+import "vista.art"!
+
+choice: "b"
+
+html: view .returnHtml [
+    title "Radio Labels"
+    radio choice [
+        ["a" [text "Alpha"]]
+        ["b" [text "Beta"]]
+        ["c" [text "Gamma"]]
+    ]
+]
+print html

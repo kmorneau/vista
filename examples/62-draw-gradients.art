@@ -1,0 +1,18 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Draw Gradients"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 520
+]
+
+view [
+    text "Draw gradients (linear + radial)"
+    canvas .id:"draw-gradients" .width: 360 .height: 220 [
+        linear-gradient [0 0] [360 0] [ [0 "#ff9f1c"] [1 "#2ec4b6"] ]
+        box [0 0] [360 80]
+        radial-gradient [180 150] 10 [180 150] 80 [ [0 "#ffffff"] [1 "#3a0ca3"] ]
+        circle [180 150] 70
+    ]
+]

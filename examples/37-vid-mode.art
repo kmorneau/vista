@@ -1,0 +1,18 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Vid Mode"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+vista_vid_mode: true
+
+view [
+    h1 "VID Mode"
+    panel "Panel" [
+        text "Hello"
+        info "Info"
+    ]
+]

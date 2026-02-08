@@ -1,0 +1,17 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    canvas .id:"draw-primitives" .width: 320 .height: 200 [
+        pen "#1f5cff"
+        line-width 3
+        line [20 20] [200 20]
+        fill-pen "#f0f4ff"
+        box [20 40] [200 120]
+        pen "#ff6b6b"
+        circle [260 80] 36
+        pen "#111"
+        fill-pen "#ffd166"
+        polygon [ [240 140] [320 140] [350 190] [210 190] ]
+    ]
+]
+print html

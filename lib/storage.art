@@ -1,0 +1,43 @@
+import "grafito"!
+
+db_name: "vista_tasks"
+db_file: db_name ++ ".graf"
+
+with_db: function [blk] [
+    switch not? exists? db_file [
+        initBlk: @[
+            updateMeta 'colors Grafito\nodeColors
+            updateMeta 'palette Grafito\Palette
+        ] ++ blk
+        graph .create db_name initBlk
+    ][
+        graph db_name blk
+    ]
+]
+
+create_task: function [title] [
+    with_db [
+        put 'task [title: title status: "open"]
+    ]
+]
+
+list_tasks: function [] [
+    with_db [
+        fetch 'task ø
+    ]
+]
+
+update_task_status: function [title newStatus] [
+    with_db [
+        t: fetch 'task [title: title]
+        if greater? (size t) 0 [
+            i: 0
+            while [less? i (size t)] [
+                idVal: t\[i]\id
+                unput to :integer idVal
+                i: i + 1
+            ]
+        ]
+        put 'task [title: title status: newStatus]
+    ]
+]

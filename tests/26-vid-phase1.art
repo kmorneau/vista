@@ -1,0 +1,18 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    h2 "VID Phase 1"
+    pad 10
+    box .color:"#fafafa" .edge:#[size: 1 color: "#ddd" style: "solid"] [
+        text .para:"center" "Centered"
+        info "Info"
+        tt "Mono"
+        choice selection ["One" "Two"]
+        check "Agree"
+    ]
+    return
+    guide
+    area "Text"
+]
+
+print html

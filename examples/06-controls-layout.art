@@ -1,0 +1,29 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Controls Layout"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+age: 30
+volume: 50
+accepted: false
+darkMode: false
+
+view [
+    text .class:"title" "Settings"
+    row [
+        col [
+            label "Age"
+            input .type:"number" .min:0 .max:120 age
+        ]
+        col [
+            label "Volume"
+            input .type:"range" .min:0 .max:100 .step:5 volume
+        ]
+    ]
+    checkbox accepted "Accept terms"
+    toggle darkMode "Dark Mode"
+]

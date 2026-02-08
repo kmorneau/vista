@@ -1,0 +1,9 @@
+import "vista.art"!
+
+level: 5
+
+html: view .returnHtml [
+    title "Slider Labels"
+    slider level .min:0 .max:10 .labels:["Low" "High"]
+]
+print html

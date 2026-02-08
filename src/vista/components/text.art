@@ -1,0 +1,25 @@
+; Vista UI - Text Components
+
+text: function [content] [
+        contentStr: html_text content
+        "<span>" ++ contentStr ++ "</span>"
+]
+
+title: function [content attrs] [
+        merged: merge_class_attr attrs "vista-title"
+        attrStr: attrs_to_html merged\attrs
+        contentStr: html_text content
+        "<h1 class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</h1>"
+]
+
+subtitle: function [content attrs] [
+        merged: merge_class_attr attrs "vista-subtitle"
+        attrStr: attrs_to_html merged\attrs
+        contentStr: html_text content
+        "<h2 class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</h2>"
+]
+
+label: function [content] [
+        contentStr: html_text content
+        "<label>" ++ contentStr ++ "</label>"
+]

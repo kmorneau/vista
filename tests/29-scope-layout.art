@@ -1,0 +1,14 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    pad 12
+    scope [
+        across
+        text "A"
+        text "B"
+        return
+        text "C"
+    ]
+]
+
+print html

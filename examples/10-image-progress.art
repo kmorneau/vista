@@ -1,0 +1,18 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Image Progress"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+percent: 30
+photoUrl: "https://example.com/preview.png"
+
+view [
+    title "Media + Progress"
+    image photoUrl .alt: "Preview" .style: "width:120px;height:80px;object-fit:cover;"
+    progress percent .max: 100
+    button "Add 10" [percent: percent + 10]
+]

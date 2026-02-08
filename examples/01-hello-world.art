@@ -1,0 +1,13 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Hello World"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    text "Hello, Vista!"
+    label "This is a label"
+]

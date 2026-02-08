@@ -1,0 +1,23 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Demo Tabs"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    tabs .selected:0 [
+        tab "Info" [
+            text "Welcome"
+        ]
+        tab "Settings" [
+            checkbox "Enable" enabled
+            slider volume
+        ]
+        tab "About" [
+            text "Vista"
+        ]
+    ]
+]

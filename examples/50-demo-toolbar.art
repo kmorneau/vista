@@ -1,0 +1,21 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Demo Toolbar"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    menubar [
+        text "File"
+        text "Edit"
+        text "Help"
+    ]
+    toolbar [
+        button "New" [print "new"]
+        button "Open" [print "open"]
+        button "Save" [print "save"]
+    ]
+]

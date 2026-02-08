@@ -1,0 +1,12 @@
+; Advanced controls snapshot
+
+import "vista.art"!
+
+html: view .returnHtml [
+    title "Advanced Controls"
+    slider level .min: 0 .max: 10 .value: 4
+    radio choice ["Red" "Green" "Blue"]
+    select pick ["One" "Two" "Three"]
+    textarea notes .rows: 3 .cols: 24
+]
+print html

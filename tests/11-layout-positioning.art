@@ -1,0 +1,11 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    title "Positioning"
+    box .origin:[5 5] [
+        text "Origin"
+    ]
+    text .offset:[10 0] "Offset"
+    text .at:[20 40] "At"
+]
+print html

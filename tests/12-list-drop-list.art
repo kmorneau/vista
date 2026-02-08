@@ -1,0 +1,10 @@
+import "vista.art"!
+
+choice: "Two"
+
+html: view .returnHtml [
+    title "Lists"
+    list ["One" "Two" "Three"]
+    drop-list choice ["One" "Two" "Three"]
+]
+print html

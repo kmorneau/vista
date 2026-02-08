@@ -1,0 +1,27 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Vid Phase1"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    h1 "Phase 1"
+    banner "VID-style aliases"
+    return
+    pad 12
+    box .color:"#f0f0f0" .edge:#[size: 1 color: "#ccc" style: "solid"] [
+        text .font:#[size: 16 family: "Georgia" color: "#333"] "Hello"
+        info "Info text"
+        tt "Monospace"
+        code "Code-ish"
+        return
+        choice selection ["One" "Two" "Three"]
+        check "Agree"
+    ]
+    return
+    guide
+    area "Editable text"
+]

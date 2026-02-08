@@ -1,0 +1,11 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    across
+    text "Left"
+    text "Right"
+    return
+    below
+    text "Bottom"
+]
+print html

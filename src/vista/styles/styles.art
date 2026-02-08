@@ -1,0 +1,60 @@
+; Vista UI - Styles
+
+vista_css: "*{box-sizing:border-box;}" ++
+    ":root{--arturo-primary:#f2c230;--arturo-ink:#141414;--arturo-muted:#4b4b4b;--arturo-bg:#f7f6f1;--arturo-panel:#ffffff;--arturo-border:#ded6c2;--arturo-focus:#1f1f1f;}" ++
+    "body{font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;margin:0;background:var(--arturo-bg);color:var(--arturo-ink);}" ++
+    "button,input,select,textarea{font:inherit;}" ++
+    "button{cursor:pointer;}" ++
+    "a{color:inherit;}" ++
+    ".vista-app-header{position:sticky;top:0;z-index:1000;background:var(--arturo-primary);color:var(--arturo-ink);border-bottom:2px solid var(--arturo-ink);}" ++
+    ".vista-app-header-inner{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;}" ++
+    ".vista-app-logo{height:28px;width:auto;display:block;}" ++
+    ".vista-app-mark{font-weight:800;letter-spacing:0.2em;text-transform:uppercase;}" ++
+    ".vista-app-title{font-size:18px;font-weight:700;}" ++
+    ".vista-app-body{max-width:1100px;margin:0 auto;padding:16px;}" ++
+    ".vista-row,.vista-layout-across{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}" ++
+    ".vista-col,.vista-layout-below{display:flex;flex-direction:column;gap:8px;}" ++
+    ".vista-layout-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}" ++
+    ".vista-box{border:1px solid var(--arturo-border);background:var(--arturo-panel);border-radius:10px;padding:12px;}" ++
+    ".vista-panel{border:1px solid var(--arturo-border);background:var(--arturo-panel);border-radius:12px;overflow:hidden;}" ++
+    ".vista-panel-title{padding:8px 10px;font-weight:700;background:var(--arturo-primary);border-bottom:1px solid var(--arturo-ink);}" ++
+    ".vista-panel-body{padding:12px;}" ++
+    ".vista-grid{gap:8px;}" ++
+    ".vista-spacer{min-height:8px;min-width:8px;}" ++
+    ".vista-table{width:100%;border-collapse:collapse;background:var(--arturo-panel);}" ++
+    ".vista-table th,.vista-table td{border:1px solid var(--arturo-border);padding:8px 10px;text-align:left;}" ++
+    ".vista-table tbody tr:hover{background:#fbf0c2;}" ++
+    ".vista-table tr.is-selected{background:#f7e199;}" ++
+    ".vista-toolbar,.vista-menubar{display:flex;gap:6px;align-items:center;padding:6px 8px;background:var(--arturo-primary);border:1px solid var(--arturo-ink);border-radius:10px;}" ++
+    ".vista-menubar{position:relative;}" ++
+    ".vista-menu-panel{position:absolute;top:calc(100% + 4px);min-width:160px;background:var(--arturo-panel);border:1px solid var(--arturo-border);border-radius:8px;padding:6px;box-shadow:0 8px 20px rgba(0,0,0,0.12);display:none;z-index:1000;}" ++
+    ".vista-menu-panel.is-open{display:block;}" ++
+    ".vista-menu-item{display:block;width:100%;text-align:left;}" ++
+    ".vista-tool-group{display:flex;gap:6px;align-items:center;}" ++
+    ".vista-divider{border:none;border-top:1px solid var(--arturo-border);margin:8px 0;}" ++
+    ".vista-canvas{border:1px solid var(--arturo-border);border-radius:8px;}" ++
+    ".vista-split{display:flex;gap:8px;}" ++
+    ".vista-split-pane{flex:1;}" ++
+    ".vista-text-list{padding-left:18px;margin:0;}" ++
+    ".vista-list{list-style:none;padding:0;margin:0;border:1px solid var(--arturo-border);border-radius:10px;background:var(--arturo-panel);max-height:220px;overflow:auto;}" ++
+    ".vista-list li{padding:6px 8px;border-bottom:1px solid var(--arturo-border);cursor:pointer;}" ++
+    ".vista-list li:last-child{border-bottom:none;}" ++
+    ".vista-list li.is-selected{background:#f7e199;}" ++
+    ".vista-list li.is-active{outline:2px solid var(--arturo-ink);}" ++
+    ".vista-tabs{display:flex;flex-direction:column;gap:6px;}" ++
+    ".vista-tabs-header{display:flex;gap:6px;flex-wrap:wrap;}" ++
+    ".vista-tab-btn{padding:6px 10px;border:1px solid var(--arturo-border);border-radius:8px;background:var(--arturo-panel);}" ++
+    ".vista-tab-btn.is-active{background:var(--arturo-primary);border-color:var(--arturo-ink);}" ++
+    ".vista-tab-panel{display:none;padding:10px;border:1px solid var(--arturo-border);border-radius:10px;background:var(--arturo-panel);}" ++
+    ".vista-tab-panel.is-active{display:block;}" ++
+    ".vista-key{min-width:120px;}" ++
+    ".vista-radio-group{display:flex;flex-direction:column;gap:6px;}" ++
+    ".vista-radio-item{display:flex;align-items:center;gap:6px;}"
+
+vista_vid_css: "body.vista-vid{background:#e5e5e5;}" ++
+    "body.vista-vid .vista-panel{border-radius:6px;border-color:#a9a9a9;}" ++
+    "body.vista-vid .vista-panel-title{background:#d6d6d6;}" ++
+    "body.vista-vid .vista-toolbar,body.vista-vid .vista-menubar{background:#dcdcdc;border-color:#b7b7b7;}" ++
+    "body.vista-vid .vista-box{border-radius:4px;border-color:#a9a9a9;}" ++
+    "body.vista-vid .vista-tab-btn{background:#efefef;}" ++
+    "body.vista-vid .vista-tab-btn.is-active{background:#cfe0ff;}"

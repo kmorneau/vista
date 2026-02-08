@@ -1,0 +1,9 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    sensor .on-over:[print "over"] .on-out:[print "out"] [
+        text "Hover me"
+    ]
+]
+
+print html

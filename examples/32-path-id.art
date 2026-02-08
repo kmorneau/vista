@@ -1,0 +1,15 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Path Id"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    text .id:"greeting" "Hello"
+]
+
+face: get_face_path [".id:greeting"]
+print show face

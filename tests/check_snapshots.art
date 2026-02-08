@@ -1,0 +1,174 @@
+; Vista snapshot checker
+; Compares current HTML output against snapshots
+; Use: arturo tests/check_snapshots.art --update
+
+files: [
+    "tests/01-layout-flow.art"
+    "tests/02-bindings.art"
+    "tests/03-controls.art"
+    "tests/04-form-submit.art"
+    "tests/05-lists-boxes.art"
+    "tests/06-advanced-controls.art"
+    "tests/07-media-progress.art"
+    "tests/08-tabs.art"
+    "tests/09-radio-block-labels.art"
+    "tests/10-events-layout.art"
+    "tests/11-layout-positioning.art"
+    "tests/12-list-drop-list.art"
+    "tests/13-slider-labels.art"
+    "tests/14-panel-grid-spacer.art"
+    "tests/15-table.art"
+    "tests/16-toolbar-menubar.art"
+    "tests/17-canvas-divider.art"
+    "tests/18-split.art"
+    "tests/19-radio-attrs.art"
+    "tests/20-nested-layout.art"
+    "tests/21-style.art"
+    "tests/22-tabs-update.art"
+    "tests/23-face-tree.art"
+    "tests/24-face-tree-by-id.art"
+    "tests/25-face-overlay.art"
+    "tests/26-vid-phase1.art"
+    "tests/27-layout-container-attrs.art"
+    "tests/28-vid-mode.art"
+    "tests/29-scope-layout.art"
+    "tests/30-vid-helper.art"
+    "tests/31-key-capture.art"
+    "tests/32-list-selection.art"
+    "tests/33-key-onchange.art"
+    "tests/34-key-options.art"
+    "tests/35-vid-widgets.art"
+    "tests/36-overlay-inspector.art"
+    "tests/37-layout-vid-mode.art"
+    "tests/38-tabs-selected.art"
+    "tests/39-edge-facets.art"
+    "tests/40-events-over-out.art"
+    "tests/41-mouse-events.art"
+    "tests/41-demo-form.art"
+    "tests/42-demo-tabs.art"
+    "tests/43-demo-lists.art"
+    "tests/44-demo-toolbar.art"
+    "tests/45-demo-table.art"
+    "tests/46-demo-split.art"
+    "tests/47-app-header.art"
+    "tests/48-smoke-app.art"
+    "tests/49-draw-primitives.art"
+    "tests/50-draw-gradients.art"
+    "tests/51-draw-text-image.art"
+    "tests/52-draw-transforms.art"
+    "tests/52-face-inspector.art"
+    "tests/53-canvas-styles.art"
+]
+
+snap_dir: "tests/snapshots/snapshots"
+manifest_path: "tests/snapshots/manifest.json"
+
+argsList: args\values
+update: false
+args_len: size argsList
+if greater? args_len 0 [
+    i: 0
+    while [less? i args_len][
+        if equal? (get argsList i) "--update" [
+            update: true
+        ]
+        i: i + 1
+    ]
+]
+
+read_snapshot: function [path][
+    if exists? path [
+        return read path
+    ]
+    return null
+]
+
+diff_preview: function [a b maxLines][
+    aLines: split a "\n"
+    bLines: split b "\n"
+    aLen: size aLines
+    bLen: size bLines
+    maxLen: aLen
+    if greater? bLen maxLen [
+        maxLen: bLen
+    ]
+    i: 0
+    shown: 0
+    out: ""
+    while [less? i maxLen][
+        aLine: ""
+        bLine: ""
+        if less? i aLen [ aLine: get aLines i ]
+        if less? i bLen [ bLine: get bLines i ]
+        if notEqual? aLine bLine [
+            out: out ++ "- " ++ aLine ++ "\n"
+            out: out ++ "+ " ++ bLine ++ "\n"
+            shown: shown + 1
+            if greaterOrEqual? shown maxLines [
+                break
+            ]
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+compare_one: function [file][
+    current: execute ("VISTA_NO_WEBVIEW=1 arturo " ++ file)
+    name: replace file "tests/" ""
+    name: replace name ".art" ".html"
+    snap_path: snap_dir ++ "/" ++ name
+    expected: read_snapshot snap_path
+    if equal? expected null [
+        print ["MISSING" snap_path]
+        if update [
+            write current snap_path
+            print ["Wrote" snap_path]
+        ]
+        return false
+    ]
+    if notEqual? expected current [
+        print ["DIFF" file]
+        if update [
+            write current snap_path
+            print ["Updated" snap_path]
+        ][
+            preview: diff_preview expected current 3
+            if notEqual? preview "" [
+                print preview
+            ]
+        ]
+        return false
+    ]
+    print ["OK" file]
+    true
+]
+
+all_ok: true
+loop files 'f [
+    ok: compare_one f
+    if not? ok [
+        all_ok: false
+    ]
+]
+
+if update [
+    ; refresh manifest when updating
+    manifest: []
+    loop files 'f [
+        name: replace f "tests/" ""
+        name: replace name ".art" ".html"
+        snap_path: snap_dir ++ "/" ++ name
+        if exists? snap_path [
+            html: read snap_path
+            manifest: manifest ++ @[#[name: name size: size html]]
+        ]
+    ]
+    write.json manifest manifest_path
+]
+
+if all_ok [
+    print "All snapshots match."
+] [
+    print "Snapshot differences found."
+]

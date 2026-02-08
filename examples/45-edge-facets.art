@@ -1,0 +1,14 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Edge Facets"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    box .edge:#[style: "bevel" size: 2 color: "#888"] [text "Bevel"]
+    box .edge:#[style: "raised" size: 2 color: "#666"] [text "Raised"]
+    box .edge:#[style: "inset" size: 2 color: "#666"] [text "Inset"]
+]

@@ -1,0 +1,8 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    text "Debug overlay"
+    face_tree_overlay
+]
+
+print html

@@ -1,0 +1,13 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    info statusText
+    rotary volume
+    icon "icon.png"
+    anim "spinner.gif"
+    sensor .on-click:[print "tap"] [
+        text "Sensor area"
+    ]
+]
+
+print html

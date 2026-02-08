@@ -1,0 +1,14 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    menubar [
+        text "File"
+        text "Edit"
+        text "View"
+    ]
+    toolbar [
+        button "New" [created: true]
+        button "Save" [saved: true]
+    ]
+]
+print html

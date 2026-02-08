@@ -1,0 +1,1410 @@
+; Vista UI Framework for Arturo - Modeling Rebol View
+; Generates HTML5 UI from declarative blocks, rendered via WebView/HTML5
+
+import "vista-graphics.art"!
+import "src/vista/utils/helpers.art"!
+import "src/vista/styles/styles.art"!
+import "src/vista/components/buttons.art"!
+import "src/vista/components/text.art"!
+import "src/vista/components/containers.art"!
+import "src/vista/components/forms.art"!
+import "src/vista/components/data-display.art"!
+import "src/vista/components/misc.art"!
+import "src/vista/core/state.art"!
+import "src/vista/core/parsing.art"!
+import "src/vista/core/compilation.art"!
+import "src/vista/core/render-scripts.art"!
+import "src/vista/core/layout.art"!
+import "src/vista/core/view.art"!
+
+; Webview configuration
+webview_title: "ARTURO/VISTA"
+webview_width: 900
+webview_height: 600
+webview_debug: false
+webview_enabled: true
+webview_auto_reload: false
+webview_reload_ms: 1000
+webview_sync_updates: false
+webview_sync_state_updates: false
+webview_state_sync_ms: 0
+webview_state_sync_from_ui: false
+webview_state_push_ms: 150
+vista_app_header: #[]
+vista_app_logo_path: "arturo-vista.png"
+vista_styles: #[]
+vista_vid_mode: false
+vista_layout_vid_mode: false
+
+; Style definitions
+style: function [name block] [
+        nameStr: to :string name
+        vista_styles\[nameStr]: block
+]
+
+; Rebol/View style aliases (core set)
+style "h1" [title .class:"vista-h1" arg0]
+style "h2" [title .class:"vista-h2" arg0]
+style "h3" [title .class:"vista-h3" arg0]
+style "h4" [title .class:"vista-h4" arg0]
+style "h5" [title .class:"vista-h5" arg0]
+style "vh1" [title .class:"vista-vh1" arg0]
+style "vh2" [title .class:"vista-vh2" arg0]
+style "vh3" [title .class:"vista-vh3" arg0]
+style "banner" [title .class:"vista-banner" arg0]
+style "info" [text .class:"vista-info" arg0]
+style "tt" [text .class:"vista-tt" arg0]
+style "code" [text .class:"vista-code" arg0]
+style "vtext" [text .class:"vista-vtext" arg0]
+style "area" [textarea .class:"vista-area" arg0]
+style "choice" [select .class:"vista-choice" arg0 arg1]
+style "check" [checkbox .class:"vista-check" arg0]
+style "icon" [image .class:"vista-icon" arg0]
+style "anim" [image .class:"vista-anim" arg0]
+style "arrow" [button .class:"vista-arrow" arg0]
+style "rotary" [slider .class:"vista-rotary" arg0]
+style "led" [text .class:"vista-led" arg0]
+style "sensor" [box .class:"vista-sensor" arg0]
+style "backdrop" [box .class:"vista-backdrop" arg0]
+style "backtile" [box .class:"vista-backtile" arg0]
+
+apply_style_args: function [blk args attrs] [
+        out: []
+        blen: size blk
+        i: 0
+        while [less? i blen][
+                item: get blk i
+                item_type: type item
+                switch equal? item_type :block [
+                        out: out ++ @[apply_style_args item args attrs]
+                ][
+                        switch equal? item_type :word [
+                                name: to :string item
+                                switch equal? name "args" [
+                                        out: out ++ @[args]
+                                ][
+                                        switch equal? name "attrs" [
+                                                out: out ++ @[attrs]
+                                        ][
+                                                replaced: false
+                                                j: 0
+                                                alen: size args
+                                                while [less? j alen][
+                                                        if equal? name ("arg" ++ to :string j) [
+                                                                out: out ++ @[get args j]
+                                                                replaced: true
+                                                                break
+                                                        ]
+                                                        j: j + 1
+                                                ]
+                                                if not? replaced [
+                                                        out: out ++ @[item]
+                                                ]
+                                        ]
+                                ]
+                        ][
+                                out: out ++ @[item]
+                        ]
+                ]
+                i: i + 1
+        ]
+        out
+]
+
+is_keyword: function [item block] [
+        item_type: type item
+        switch equal? item_type :word [
+                name: to :string item
+                if key? vista_styles name [
+                        if set? name [
+                                return false
+                        ]
+                        return true
+                ]
+                in? name ["across" "below" "return" "end" "pad" "space" "align" "valign" "size" "origin" "offset" "indent" "guide" "do" "scope" "raw" "text" "title" "subtitle" "field" "info" "button" "key" "label" "box" "panel" "text-list" "text_list" "list" "row" "col" "grid" "spacer" "group" "form" "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select" "drop-list" "drop_list" "radio" "radio-group" "radio_group" "tabs" "tab" "image" "icon" "anim" "progress" "table" "table-row" "table_row" "table-cell" "table_cell" "table-header" "table_header" "table-head" "table_head" "table-body" "table_body" "table-foot" "table_foot" "toolbar" "menubar" "tool-group" "tool_group" "canvas" "divider" "split" "sensor" "pen" "fill-pen" "line-width" "line-cap" "line-join" "line" "box" "circle" "ellipse" "polygon" "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew" "smooth" "coord-system" "text-baseline" "text-align" "linear-gradient" "radial-gradient"]
+        ][
+                switch equal? item_type :symbol [
+                        if not? block [
+                                return false
+                        ]
+                        name: to :string item
+                        if not? equal? name "-" [
+                                return false
+                        ]
+                        blen: size block
+                        found_idx: -1
+                        j: 0
+                        while [less? j blen] [
+                                if equal? (get block j) item [
+                                        found_idx: j
+                                        break
+                                ]
+                                j: j + 1
+                        ]
+                        if equal? found_idx -1 [
+                                return false
+                        ]
+                        if less? (found_idx + 2) blen [
+                                tail: get block (found_idx + 2)
+                                tail_type: type tail
+                                if any? @[equal? tail_type :word equal? tail_type :label] [
+                                        tailName: to :string tail
+                                        compoundSuf: "-" ++ tailName
+                                        suffixes: ["-width" "-pen" "-cap" "-join" "-system" "-baseline" "-align" "-gradient"]
+                                        in? compoundSuf suffixes
+                                ] [
+                                        false
+                                ]
+                        ] [
+                                false
+                        ]
+                ][
+                        false
+                ]
+        ]
+]
+
+merge_bindings: function [dest src] [
+        keysList: keys src
+        i: 0
+        keys_len: size keysList
+        while [less? i keys_len][
+                k: get keysList i
+                dest\[k]: src\[k]
+                i: i + 1
+        ]
+]
+
+apply_font_attrs: function [style fontVal] [
+        t: type fontVal
+        switch equal? t :dictionary [
+                if key? fontVal "family" [
+                        style: append_style style ("font-family: " ++ to :string fontVal\family ++ ";")
+                ]
+                if key? fontVal "size" [
+                        fontSize: style_value fontVal\size
+                        style: append_style style ("font-size: " ++ fontSize ++ ";")
+                ]
+                if key? fontVal "color" [
+                        style: append_style style ("color: " ++ to :string fontVal\color ++ ";")
+                ]
+                if key? fontVal "weight" [
+                        style: append_style style ("font-weight: " ++ to :string fontVal\weight ++ ";")
+                ]
+                if key? fontVal "style" [
+                        style: append_style style ("font-style: " ++ to :string fontVal\style ++ ";")
+                ]
+                if key? fontVal "bold" [
+                        if fontVal\bold [
+                                style: append_style style "font-weight: 700;"
+                        ]
+                ]
+                if key? fontVal "italic" [
+                        if fontVal\italic [
+                                style: append_style style "font-style: italic;"
+                        ]
+                ]
+                style
+        ][
+                style: append_style style ("font-family: " ++ to :string fontVal ++ ";")
+        ]
+]
+
+apply_para_attrs: function [style paraVal] [
+        t: type paraVal
+        switch equal? t :dictionary [
+                if key? paraVal "align" [
+                        style: append_style style ("text-align: " ++ to :string paraVal\align ++ ";")
+                ]
+                if key? paraVal "wrap" [
+                        if not? paraVal\wrap [
+                                style: append_style style "white-space: nowrap;"
+                        ]
+                ]
+                if key? paraVal "spacing" [
+                        spacingVal: style_value paraVal\spacing
+                        style: append_style style ("letter-spacing: " ++ spacingVal ++ ";")
+                ]
+                if key? paraVal "leading" [
+                        leadingVal: style_value paraVal\leading
+                        style: append_style style ("line-height: " ++ leadingVal ++ ";")
+                ]
+                style
+        ][
+                style: append_style style ("text-align: " ++ to :string paraVal ++ ";")
+        ]
+]
+
+apply_edge_attrs: function [baseStyle edgeVal] [
+        out: ""
+        if notEqual? baseStyle null [
+                out: to :string baseStyle
+        ]
+        t: type edgeVal
+        switch equal? t :dictionary [
+                sizeVal: 1
+                colorVal: "#888"
+                styleVal: "solid"
+                if key? edgeVal "size" [ sizeVal: edgeVal\size ]
+                if key? edgeVal "color" [ colorVal: edgeVal\color ]
+                if key? edgeVal "style" [ styleVal: edgeVal\style ]
+                sizeStr: style_value sizeVal
+                switch any? @[equal? styleVal "bevel" equal? styleVal "raised" equal? styleVal "inset"] [
+                        out: append_style out ("border: " ++ sizeStr ++ " solid " ++ to :string colorVal ++ ";")
+                        if equal? styleVal "bevel" [
+                                out: append_style out "box-shadow: inset 1px 1px 0 rgba(255,255,255,0.7), inset -1px -1px 0 rgba(0,0,0,0.3);"
+                        ]
+                        if equal? styleVal "raised" [
+                                out: append_style out "box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.25);"
+                        ]
+                        if equal? styleVal "inset" [
+                                out: append_style out "box-shadow: inset 0 1px 3px rgba(0,0,0,0.35);"
+                        ]
+                ][
+                        out: append_style out ("border: " ++ sizeStr ++ " " ++ to :string styleVal ++ " " ++ to :string colorVal ++ ";")
+                ]
+                if key? edgeVal "radius" [
+                        radiusStr: style_value edgeVal\radius
+                        out: append_style out ("border-radius: " ++ radiusStr ++ ";")
+                ]
+        ][
+                out: append_style out ("border: 1px solid " ++ to :string edgeVal ++ ";")
+        ]
+        out
+]
+
+apply_effect_attrs: function [style effectVal] [
+        t: type effectVal
+        switch equal? t :dictionary [
+                if key? effectVal "shadow" [
+                        return append_style style ("box-shadow: " ++ to :string effectVal\shadow ++ ";")
+                ]
+                if key? effectVal "filter" [
+                        return append_style style ("filter: " ++ to :string effectVal\filter ++ ";")
+                ]
+                if key? effectVal "type" [
+                        effectVal: effectVal\type
+                ]
+        ][
+                effectVal: effectVal
+        ]
+        valStr: to :string effectVal
+        switch equal? valStr "shadow" [
+                append_style style "box-shadow: 0 2px 8px rgba(0,0,0,0.18);"
+        ][
+                switch equal? valStr "inset" [
+                        append_style style "box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);"
+                ][
+                        switch equal? valStr "raised" [
+                                append_style style "box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 2px 4px rgba(0,0,0,0.25);"
+                        ][
+                                switch equal? valStr "emboss" [
+                                        append_style style "box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.3);"
+                                ][
+                                        switch equal? valStr "bevel" [
+                                                append_style style "box-shadow: inset 1px 1px 0 rgba(255,255,255,0.7), inset -1px -1px 0 rgba(0,0,0,0.3);"
+                                        ][
+                                                append_style style ("filter: " ++ valStr ++ ";")
+                                        ]
+                                ]
+                        ]
+                ]
+        ]
+]
+
+apply_facet_attrs: function [attrs] [
+        style: ""
+        if key? attrs "style" [
+                style: to :string attrs\style
+                attrs: attrs_without attrs "style"
+        ]
+        if key? attrs "color" [
+                style: append_style style ("background-color: " ++ to :string attrs\color ++ ";")
+                attrs: attrs_without attrs "color"
+        ]
+        if key? attrs "font" [
+                style: apply_font_attrs style attrs\font
+                attrs: attrs_without attrs "font"
+        ]
+        if key? attrs "para" [
+                style: apply_para_attrs style attrs\para
+                attrs: attrs_without attrs "para"
+        ]
+        if key? attrs "valign" [
+                style: append_style style ("justify-content: " ++ to :string attrs\valign ++ ";")
+                style: append_style style ("vertical-align: " ++ to :string attrs\valign ++ ";")
+                attrs: attrs_without attrs "valign"
+        ]
+        if key? attrs "edge" [
+                style: apply_edge_attrs style attrs\edge
+                attrs: attrs_without attrs "edge"
+        ]
+        if key? attrs "effect" [
+                style: apply_effect_attrs style attrs\effect
+                attrs: attrs_without attrs "effect"
+        ]
+        if notEqual? style "" [
+                attrs\style: style
+        ]
+        attrs
+]
+
+apply_layout_attrs: function [attrs] [
+        style: ""
+        if key? attrs "style" [
+                style: to :string attrs\style
+                attrs: attrs_without attrs "style"
+        ]
+        if key? attrs "pad" [
+                padVal: style_value attrs\pad
+                style: append_style style ("padding: " ++ padVal ++ ";")
+                attrs: attrs_without attrs "pad"
+        ]
+        if key? attrs "space" [
+                spaceVal: style_value attrs\space
+                style: append_style style ("gap: " ++ spaceVal ++ ";")
+                attrs: attrs_without attrs "space"
+        ]
+        if key? attrs "align" [
+                style: append_style style ("align-items: " ++ to :string attrs\align ++ ";")
+                attrs: attrs_without attrs "align"
+        ]
+        if key? attrs "indent" [
+                indentVal: style_value attrs\indent
+                style: append_style style ("margin-left: " ++ indentVal ++ ";")
+                attrs: attrs_without attrs "indent"
+        ]
+        if key? attrs "size" [
+                sizeVal: attrs\size
+                sizeType: type sizeVal
+                switch equal? sizeType :block [
+                        if equal? (size sizeVal) 2 [
+                                w: get sizeVal 0
+                                h: get sizeVal 1
+                                widthVal: style_value w
+                                heightVal: style_value h
+                                style: append_style style ("width: " ++ widthVal ++ ";")
+                                style: append_style style ("height: " ++ heightVal ++ ";")
+                        ]
+                ][
+                        sizeStr: to :string sizeVal
+                        parts: split sizeStr "x"
+                        switch equal? (size parts) 2 [
+                                widthVal: style_value (get parts 0)
+                                heightVal: style_value (get parts 1)
+                                style: append_style style ("width: " ++ widthVal ++ ";")
+                                style: append_style style ("height: " ++ heightVal ++ ";")
+                        ][
+                                widthVal: style_value sizeStr
+                                style: append_style style ("width: " ++ widthVal ++ ";")
+                        ]
+                ]
+                attrs: attrs_without attrs "size"
+        ]
+        if key? attrs "origin" [
+                pos: attrs\origin
+                if equal? (type pos) :block [
+                        if equal? (size pos) 2 [
+                                leftVal: style_value (get pos 0)
+                                topVal: style_value (get pos 1)
+                                style: append_style style ("padding-left: " ++ leftVal ++ ";")
+                                style: append_style style ("padding-top: " ++ topVal ++ ";")
+                        ]
+                ]
+                attrs: attrs_without attrs "origin"
+        ]
+        if key? attrs "offset" [
+                pos: attrs\offset
+                if equal? (type pos) :block [
+                        if equal? (size pos) 2 [
+                                style: append_style style "position: relative;"
+                                leftVal: style_value (get pos 0)
+                                topVal: style_value (get pos 1)
+                                style: append_style style ("left: " ++ leftVal ++ ";")
+                                style: append_style style ("top: " ++ topVal ++ ";")
+                        ]
+                ]
+                attrs: attrs_without attrs "offset"
+        ]
+        if key? attrs "at" [
+                pos: attrs\at
+                if equal? (type pos) :block [
+                        if equal? (size pos) 2 [
+                                style: append_style style "position: absolute;"
+                                leftVal: style_value (get pos 0)
+                                topVal: style_value (get pos 1)
+                                style: append_style style ("left: " ++ leftVal ++ ";")
+                                style: append_style style ("top: " ++ topVal ++ ";")
+                        ]
+                ]
+                attrs: attrs_without attrs "at"
+        ]
+        if notEqual? style "" [
+                attrs\style: style
+        ]
+        attrs
+]
+
+apply_event_attrs: function [attrs bindings] [
+        res: attrs
+        if key? res "on-click" [
+                val: res\["on-click"]
+                res: attrs_without res "on-click"
+                vType: type val
+                switch any? @[equal? vType :block equal? vType :dictionary] [
+                        if equal? vType :dictionary [
+                                val: dict_to_block val
+                        ]
+                        res\onclick: compile_action val bindings
+                ][
+                        res\onclick: to :string val
+                ]
+        ]
+        if key? res "on-over" [
+                val: res\["on-over"]
+                res: attrs_without res "on-over"
+                vType: type val
+                switch any? @[equal? vType :block equal? vType :dictionary] [
+                        if equal? vType :dictionary [
+                                val: dict_to_block val
+                        ]
+                        res\onmouseover: compile_action val bindings
+                ][
+                        res\onmouseover: to :string val
+                ]
+        ]
+        if key? res "on-out" [
+                val: res\["on-out"]
+                res: attrs_without res "on-out"
+                vType: type val
+                switch any? @[equal? vType :block equal? vType :dictionary] [
+                        if equal? vType :dictionary [
+                                val: dict_to_block val
+                        ]
+                        res\onmouseout: compile_action val bindings
+                ][
+                        res\onmouseout: to :string val
+                ]
+        ]
+        if key? res "on-down" [
+                val: res\["on-down"]
+                res: attrs_without res "on-down"
+                vType: type val
+                switch any? @[equal? vType :block equal? vType :dictionary] [
+                        if equal? vType :dictionary [
+                                val: dict_to_block val
+                        ]
+                        res\onmousedown: compile_action val bindings
+                ][
+                        res\onmousedown: to :string val
+                ]
+        ]
+        if key? res "on-up" [
+                val: res\["on-up"]
+                res: attrs_without res "on-up"
+                vType: type val
+                switch any? @[equal? vType :block equal? vType :dictionary] [
+                        if equal? vType :dictionary [
+                                val: dict_to_block val
+                        ]
+                        res\onmouseup: compile_action val bindings
+                ][
+                        res\onmouseup: to :string val
+                ]
+        ]
+        if key? res "on-change" [
+                val: res\["on-change"]
+                res: attrs_without res "on-change"
+                vType: type val
+                switch any? @[equal? vType :block equal? vType :dictionary] [
+                        if equal? vType :dictionary [
+                                val: dict_to_block val
+                        ]
+                        res\onchange: compile_action val bindings
+                ][
+                        res\onchange: to :string val
+                ]
+        ]
+        if key? res "on-key" [
+                val: res\["on-key"]
+                res: attrs_without res "on-key"
+                vType: type val
+                switch any? @[equal? vType :block equal? vType :dictionary] [
+                        if equal? vType :dictionary [
+                                val: dict_to_block val
+                        ]
+                        res\onkeydown: compile_action val bindings
+                ][
+                        res\onkeydown: to :string val
+                ]
+        ]
+        if key? res "on-focus" [
+                val: res\["on-focus"]
+                res: attrs_without res "on-focus"
+                vType: type val
+                switch any? @[equal? vType :block equal? vType :dictionary] [
+                        if equal? vType :dictionary [
+                                val: dict_to_block val
+                        ]
+                        res\onfocus: compile_action val bindings
+                ][
+                        res\onfocus: to :string val
+                ]
+        ]
+        if key? res "on-blur" [
+                val: res\["on-blur"]
+                res: attrs_without res "on-blur"
+                vType: type val
+                switch any? @[equal? vType :block equal? vType :dictionary] [
+                        if equal? vType :dictionary [
+                                val: dict_to_block val
+                        ]
+                        res\onblur: compile_action val bindings
+                ][
+                        res\onblur: to :string val
+                ]
+        ]
+        if key? res "on-input" [
+                val: res\["on-input"]
+                res: attrs_without res "on-input"
+                vType: type val
+                switch any? @[equal? vType :block equal? vType :dictionary] [
+                        if equal? vType :dictionary [
+                                val: dict_to_block val
+                        ]
+                        res\oninput: compile_action val bindings
+                ][
+                        res\oninput: to :string val
+                ]
+        ]
+        res
+]
+
+prepare_attrs: function [attrs bindings] [
+        attrs: merge_layout_scopes attrs
+        attrs: apply_layout_attrs attrs
+        attrs: apply_facet_attrs attrs
+        attrs: apply_event_attrs attrs bindings
+        if greater? (size keys vista_state\layout_pending_attrs) 0 [
+                attrs: merge_pending_attrs attrs vista_state\layout_pending_attrs
+                vista_state\layout_pending_attrs: #[]
+        ]
+        attrs
+]
+
+; Face tree operations
+get_face_path: function [path] [
+        if equal? (type path) :string [
+                return get_face path
+        ]
+        if equal? (type path) :word [
+                return get_face path
+        ]
+        if notEqual? (type path) :block [
+                return null
+        ]
+        if equal? (size path) 0 [
+                return null
+        ]
+        idx: 0
+        current: null
+        first: get path 0
+        first_type: type first
+        switch any? @[equal? first_type :string equal? first_type :word] [
+                current: get_face first
+                switch equal? current null [
+                        current: get_face vista_state\last_root
+                        idx: 0
+                ][
+                        idx: 1
+                ]
+        ][
+                current: get_face vista_state\last_root
+                idx: 0
+        ]
+        while [all? @[notEqual? current null less? idx (size path)]] [
+                tok: get path idx
+                tok_type: type tok
+                if any? @[equal? tok_type :string equal? tok_type :word] [
+                        tname: to :string tok
+                        if all? @[equal? (slice tname 0 4) ".id:" greater? (size tname) 4] [
+                                nameStr: slice tname 4 (size tname)
+                                if key? vista_state\face_names nameStr [
+                                        current: get_face nameStr
+                                        idx: idx + 1
+                                        continue
+                                ]
+                        ]
+                        index: 0
+                        if less? idx + 1 (size path) [
+                                nextTok: get path (idx + 1)
+                                if equal? (type nextTok) :integer [
+                                        index: nextTok
+                                        idx: idx + 1
+                                ]
+                        ]
+                        children: current\children
+                        found: null
+                        count: 0
+                        clen: size children
+                        c: 0
+                        while [less? c clen][
+                                cid: get children c
+                                child: vista_state\last_faces\[cid]
+                                if equal? child\type tname [
+                                        if equal? count index [
+                                                found: child
+                                                break
+                                        ]
+                                        count: count + 1
+                                ]
+                                c: c + 1
+                        ]
+                        current: found
+                ]
+                idx: idx + 1
+        ]
+        current
+]
+
+face_children_html: function [face] [
+        if not? key? face "children" [
+                return ""
+        ]
+        kids: face\children
+        out: ""
+        klen: size kids
+        i: 0
+        while [less? i klen][
+                cid: get kids i
+                if key? vista_state\last_faces cid [
+                        out: out ++ vista_state\last_faces\[cid]\html
+                ]
+                i: i + 1
+        ]
+        out
+]
+
+face_child_html: function [face index] [
+        if not? key? face "children" [
+                return ""
+        ]
+        kids: face\children
+        if less? index (size kids) [
+                cid: get kids index
+                if key? vista_state\last_faces cid [
+                        return vista_state\last_faces\[cid]\html
+                ]
+        ]
+        ""
+]
+
+update_panel_body: function [panelId newBlock] [
+        panelFace: get_face panelId
+        if equal? panelFace null [
+                return null
+        ]
+        inner: layout_state newBlock
+        merge_faces vista_state\last_faces inner\faces
+        append_children_from_root vista_state\last_faces panelFace\id inner\root
+        titleHtml: ""
+        if key? panelFace "meta" [
+                if key? panelFace\meta "titleHtml" [
+                        titleHtml: panelFace\meta\titleHtml
+                ]
+        ]
+        faceHtml: panel_face titleHtml inner\html panelFace\attrs
+        update_face panelFace\id #[html: faceHtml]
+]
+
+update_split_pane: function [splitId paneIndex newBlock] [
+        splitFace: get_face splitId
+        if equal? splitFace null [
+                return null
+        ]
+        inner: layout_state newBlock
+        merge_faces vista_state\last_faces inner\faces
+        paneId: face_child_id splitFace paneIndex
+        if equal? paneId null [
+                return null
+        ]
+        append_children_from_root vista_state\last_faces paneId inner\root
+        update_face splitFace\id #[html: render_face splitFace]
+]
+
+update_table_body: function [tableId newBlock] [
+        tableFace: get_face tableId
+        if equal? tableFace null [
+                return null
+        ]
+        inner: layout_state newBlock
+        merge_faces vista_state\last_faces inner\faces
+        append_children_from_root vista_state\last_faces tableFace\id inner\root
+        update_face tableFace\id #[html: render_face tableFace]
+]
+
+face_child_id: function [face index] [
+        if not? key? face "children" [
+                return null
+        ]
+        kids: face\children
+        if less? index (size kids) [
+                return get kids index
+        ]
+        null
+]
+
+tab_panel_id: function [tabsFace index] [
+        if not? key? tabsFace "children" [
+                return null
+        ]
+        kids: tabsFace\children
+        count: 0
+        i: 0
+        klen: size kids
+        while [less? i klen][
+                cid: get kids i
+                child: vista_state\last_faces\[cid]
+                if equal? child\type "tab-panel" [
+                        if equal? count index [
+                                return cid
+                        ]
+                        count: count + 1
+                ]
+                i: i + 1
+        ]
+        null
+]
+
+update_face_path: function [path updates] [
+        face: get_face_path path
+        if equal? face null [
+                return null
+        ]
+        update_face face\id updates
+]
+
+update_tab_panel: function [tabsId index newBlock] [
+        tabsFace: get_face tabsId
+        if equal? tabsFace null [
+                return null
+        ]
+        panelId: tab_panel_id tabsFace index
+        if equal? panelId null [
+                return null
+        ]
+        inner: layout_state newBlock
+        merge_faces vista_state\last_faces inner\faces
+        append_children_from_root vista_state\last_faces panelId inner\root
+        indexStr: to :string index
+        panelAttrs: vista_state\last_faces\[panelId]\attrs
+        attrStr: attrs_to_html panelAttrs
+        panelHtml: "<div class='vista-tab-panel' data-tab='panel-" ++ indexStr ++ "'" ++ attrStr ++ ">" ++ inner\html ++ "</div>"
+        update_face panelId #[html: panelHtml]
+]
+
+show_path: function [path] [
+        face: get_face_path path
+        if equal? face null [
+                return null
+        ]
+        show face
+]
+
+set_state: function [key value] [
+        keyStr: to :string key
+        vista_state\last_bindings\[keyStr]: value
+        if webview_sync_state_updates [
+                valueStr: js_literal value
+                js: "state['" ++ keyStr ++ "']=" ++ valueStr ++ "; render();"
+                if webview_enabled [
+                        env_vars: env
+                        if not? any? @[key? env_vars "VISTA_NO_WEBVIEW" key? env_vars "NO_WEBVIEW"] [
+                                webview .inject: js ""
+                        ]
+                ]
+        ]
+]
+
+apply_state_from_ui: function [data] [
+        if equal? (type data) :dictionary [
+                keysList: keys data
+                i: 0
+                klen: size keysList
+                while [less? i klen][
+                        k: get keysList i
+                        v: data\[k]
+                        vista_state\last_bindings\[k]: v
+                        lit: to :literal k
+                        if set? lit [
+                                set lit v
+                        ]
+                        i: i + 1
+                ]
+        ]
+]
+
+sync_state: function [] [
+        keysList: keys vista_state\last_bindings
+        i: 0
+        keys_len: size keysList
+        while [less? i keys_len][
+                k: get keysList i
+                lit: to :literal k
+                if set? lit [
+                        val: do k
+                        if notEqual? val vista_state\last_bindings\[k] [
+                                set_state k val
+                        ]
+                ]
+                i: i + 1
+        ]
+]
+
+print_face_tree: function [] [
+        root: get_face vista_state\last_root
+        if equal? root null [
+                print "No face tree"
+                return
+        ]
+        walk_face_tree root 0
+]
+
+walk_face_tree: function [face depth] [
+        indent: ""
+        i: 0
+        while [less? i depth][
+                indent: indent ++ "  "
+                i: i + 1
+        ]
+        nameStr: ""
+        if key? face\attrs "id" [
+                nameStr: " #" ++ to :string face\attrs\id
+        ]
+        print (indent ++ face\id ++ " (" ++ face\type ++ ")" ++ nameStr)
+        if key? face "children" [
+                kids: face\children
+                klen: size kids
+                j: 0
+                while [less? j klen][
+                        cid: get kids j
+                        if key? vista_state\last_faces cid [
+                                walk_face_tree vista_state\last_faces\[cid] (depth + 1)
+                        ]
+                        j: j + 1
+                ]
+        ]
+]
+
+find_faces: function [criteria] [
+        if notEqual? (type criteria) :dictionary [
+                return []
+        ]
+        results: []
+        keysList: keys vista_state\last_faces
+        klen: size keysList
+        i: 0
+        while [less? i klen][
+                fid: get keysList i
+                face: vista_state\last_faces\[fid]
+                match: true
+                if key? criteria "type" [
+                        if notEqual? face\type criteria\type [
+                                match: false
+                        ]
+                ]
+                if key? criteria "id" [
+                        idVal: criteria\["id"]
+                        hasId: key? face\attrs "id"
+                        if not? hasId [
+                                match: false
+                        ]
+                        if hasId [
+                                if notEqual? face\attrs\["id"] idVal [
+                                        match: false
+                                ]
+                        ]
+                ]
+                if key? criteria "attr" [
+                        attrName: criteria\attr
+                        if not? key? face\attrs attrName [
+                                match: false
+                        ]
+                ]
+                if match [
+                        results: results ++ @[face]
+                ]
+                i: i + 1
+        ]
+        results
+]
+
+find_face: function [criteria] [
+        results: find_faces criteria
+        if greater? (size results) 0 [
+                return get results 0
+        ]
+        null
+]
+
+face_info: function [face] [
+        if equal? face null [
+                return "null"
+        ]
+        nameStr: ""
+        if key? face\attrs "id" [
+                nameStr: " #" ++ to :string face\attrs\id
+        ]
+        face\id ++ " (" ++ face\type ++ ")" ++ nameStr
+]
+
+face_tree: function [] [
+        root: get_face vista_state\last_root
+        if equal? root null [
+                return []
+        ]
+        build_face_json root
+]
+
+face_tree_json: function [] [
+        json_encode face_tree
+]
+
+face_tree_pretty: function [] [
+        json_pretty face_tree_json
+]
+
+face_tree_by_id: function [criteria] [
+        crit: criteria
+        if equal? (type criteria) :string [
+                crit: #[id: criteria]
+        ]
+        face: find_face crit
+        if equal? face null [
+                return []
+        ]
+        build_face_json face
+]
+
+face_tree_by_id_json: function [criteria] [
+        json_encode (face_tree_by_id criteria)
+]
+
+face_tree_overlay: function [] [
+        json: face_tree_json
+        raw (
+                "<div id='vista-face-overlay' style='position:fixed;right:8px;bottom:8px;max-width:42%;max-height:55%;overflow:auto;background:#111;color:#e6e6e6;border:1px solid #333;padding:8px 10px;font:12px/1.4 monospace;z-index:99999;'>" ++
+                "<div style='font-weight:bold;margin-bottom:6px;'>Vista Inspector</div>" ++
+                "<input id='vista-face-search' placeholder='Search faces...' style='width:100%;box-sizing:border-box;margin-bottom:6px;background:#1a1a1a;color:#e6e6e6;border:1px solid #333;padding:4px 6px;'>" ++
+                "<div id='vista-face-results' style='max-height:180px;overflow:auto;border:1px solid #333;padding:4px;'></div>" ++
+                "<div style='margin-top:6px;display:flex;gap:6px;align-items:center;'>" ++
+                "<button id='vista-face-refresh' style='background:#222;color:#e6e6e6;border:1px solid #333;padding:2px 6px;cursor:pointer;'>Refresh</button>" ++
+                "<span style='opacity:0.7;'>Click a face to highlight</span>" ++
+                "</div>" ++
+                "<div style='margin-top:6px;opacity:0.7;'>State</div>" ++
+                "<pre id='vista-state-pre' style='margin:4px 0 0 0;white-space:pre-wrap;max-height:140px;overflow:auto;background:#0f0f0f;border:1px solid #333;padding:4px;'></pre>" ++
+                "</div>" ++
+                "<script>" ++
+                "const vistaFaceTree=" ++ json ++ ";" ++
+                "const flatten=(node,arr)=>[if(!node)[return;]arr.push(node);(node.children||[]).forEach(c=>flatten(c,arr));];" ++
+                "const list=[];flatten(vistaFaceTree,list);" ++
+                "const renderList=(q)=>[const wrap=document.getElementById('vista-face-results');if(!wrap)[return;]const term=(q||'').toLowerCase();const items=list.filter(n=>[const name=(n.name||'');return (n.id||'').toLowerCase().includes(term)||name.toLowerCase().includes(term)||(n.type||'').toLowerCase().includes(term);]);wrap.innerHTML=items.map(n=>`<div style='padding:2px 0;'><button data-id='$[n.id]' style='background:#1b1b1b;color:#e6e6e6;border:1px solid #333;padding:1px 4px;cursor:pointer;'>$[n.id]</buttongreater? <span style='opacity:0.7'>($[n.type]$[n.name?(' #' + n.name):''])</span></div>`).join('');wrap.querySelectorAll('button[data-id]').forEach(btn=>[btn.addEventListener('click',()=>highlight(btn.dataset.id));]);];" ++
+                "const highlight=(id)=>[document.querySelectorAll('[data-vista-highlight]').forEach(el=>[el.style.outline='';el.removeAttribute('data-vista-highlight');]);const el=document.querySelector(`[data-face-id=\"$[id]\"]`);if(!el)[return;]el.setAttribute('data-vista-highlight','true');el.style.outline='2px solid #ffb347';el.scrollIntoView([block:'center',behavior:'smooth']);];" ++
+                "const renderState=()=>[const pre=document.getElementById('vista-state-pre');if(!pre)[return;]if(window.state)[pre.textContent=JSON.stringify(window.state,null,2);]else[pre.textContent='(state not ready)';]];" ++
+                "document.addEventListener('DOMContentLoaded',()=>[const input=document.getElementById('vista-face-search');if(input)[input.addEventListener('input',e=>renderList(e.target.value));]const refresh=document.getElementById('vista-face-refresh');if(refresh)[refresh.addEventListener('click',()=>renderState());]renderList('');setTimeout(renderState,50);]);" ++
+                "</script>"
+        )
+]
+
+build_face_json: function [face] [
+        obj: #[
+                id: face\id
+                type: face\type
+        ]
+        if key? face\attrs "id" [
+                obj\name: to :string face\attrs\id
+        ]
+        kids: []
+        if key? face "children" [
+                clen: size face\children
+                i: 0
+                while [less? i clen][
+                        cid: get face\children i
+                        if key? vista_state\last_faces cid [
+                                kids: kids ++ @[build_face_json vista_state\last_faces\[cid]]
+                        ]
+                        i: i + 1
+                ]
+        ]
+        obj\children: kids
+        obj
+]
+
+path_first: function [path] [
+        if equal? (type path) :block [
+                return get_face_path (path ++ [0])
+        ]
+        null
+]
+
+path_last: function [path] [
+        face: get_face_path path
+        if equal? face null [
+                return null
+        ]
+        if not? key? face "children" [
+                return null
+        ]
+        count: size face\children
+        if equal? count 0 [
+                return null
+        ]
+        get_face_path (path ++ [count - 1])
+]
+
+path_nth: function [path index] [
+        if equal? (type path) :block [
+                return get_face_path (path ++ [index])
+        ]
+        null
+]
+
+get_face: function [id] [
+        idType: type id
+        idStr: ""
+        switch equal? idType :word [
+                idStr: to :string id
+        ][
+                switch equal? idType :string [
+                        idStr: id
+                ][
+                        switch equal? idType :dictionary [
+                                if key? id "id" [
+                                        idStr: id\id
+                                ]
+                        ][
+                                idStr: ""
+                        ]
+                ]
+        ]
+        if notEqual? idStr "" [
+                if key? vista_state\face_names idStr [
+                        idStr: vista_state\face_names\[idStr]
+                ]
+                if key? vista_state\last_faces idStr [
+                        return vista_state\last_faces\[idStr]
+                ]
+        ]
+        null
+]
+
+render_face_text: function [face] [
+        textVal: html_text face\text
+        attrs: face\attrs
+        attrs: maybe_autosize_text_attrs attrs
+        attrStr: attrs_to_html attrs
+        do case face\type [
+                "text" -> ["<span" ++ attrStr ++ ">" ++ textVal ++ "</span>"]
+                "label" -> ["<label" ++ attrStr ++ ">" ++ textVal ++ "</label>"]
+                "title" -> [
+                        merged: merge_class_attr attrs "vista-title"
+                        attrStr: attrs_to_html merged\attrs
+                        "<h1 class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ textVal ++ "</h1>"
+                ]
+                "subtitle" -> [
+                        merged: merge_class_attr attrs "vista-subtitle"
+                        attrStr: attrs_to_html merged\attrs
+                        "<h2 class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ textVal ++ "</h2>"
+                ]
+                any -> [face\html]
+        ]
+]
+
+render_face: function [face] [
+        meta: #[]
+        if key? face "meta" [
+                meta: face\meta
+        ]
+        do case face\type [
+                "text" -> [render_face_text face]
+                "label" -> [render_face_text face]
+                "title" -> [render_face_text face]
+                "subtitle" -> [render_face_text face]
+                "field" -> [
+                        inputType: "text"
+                        if key? face\attrs "type" [
+                                inputType: to :string face\attrs\type
+                        ]
+                        attrStr: attrs_to_html (attrs_without face\attrs "type")
+                        valueStr: ""
+                        if key? meta "value" [
+                                valueStr: " value='" ++ html_escape_attr (to :string meta\value) ++ "'"
+                        ]
+                        "<input type='" ++ inputType ++ "'" ++ valueStr ++ attrStr ++ ">"
+                ]
+                "info" -> [
+                        attrStr: attrs_to_html face\attrs
+                        valueStr: ""
+                        if key? meta "value" [
+                                valueStr: " value='" ++ html_escape_attr (to :string meta\value) ++ "'"
+                        ]
+                        "<input type='text' readonly" ++ valueStr ++ attrStr ++ ">"
+                ]
+                "input" -> [
+                        inputType: "text"
+                        if key? face\attrs "type" [
+                                inputType: to :string face\attrs\type
+                        ]
+                        attrStr: attrs_to_html (attrs_without face\attrs "type")
+                        valueStr: ""
+                        if key? meta "value" [
+                                valueStr: " value='" ++ html_escape_attr (to :string meta\value) ++ "'"
+                        ]
+                        "<input type='" ++ inputType ++ "'" ++ valueStr ++ attrStr ++ ">"
+                ]
+                "textarea" -> [
+                        attrStr: attrs_to_html face\attrs
+                        switch key? meta "value" [
+                                "<textarea" ++ attrStr ++ ">" ++ html_escape_attr (to :string meta\value) ++ "</textarea>"
+                        ][
+                                "<textarea" ++ attrStr ++ "></textarea>"
+                        ]
+                ]
+                "image" -> [
+                        attrStr: attrs_to_html face\attrs
+                        "<img" ++ attrStr ++ ">"
+                ]
+                "icon" -> [
+                        attrStr: attrs_to_html face\attrs
+                        "<img" ++ attrStr ++ ">"
+                ]
+                "anim" -> [
+                        attrStr: attrs_to_html face\attrs
+                        "<img" ++ attrStr ++ ">"
+                ]
+                "progress" -> [
+                        attrStr: attrs_to_html face\attrs
+                        "<progress" ++ attrStr ++ "></progress>"
+                ]
+                "button" -> [
+                        labelHtml: ""
+                        action: ""
+                        if key? meta "labelHtml" [
+                                labelHtml: meta\labelHtml
+                        ]
+                        if key? meta "action" [
+                                action: meta\action
+                        ]
+                        attrs: maybe_autosize_text_attrs face\attrs
+                        button labelHtml action attrs
+                ]
+                "key" -> [
+                        labelHtml: ""
+                        bindName: ""
+                        if key? meta "labelHtml" [ labelHtml: meta\labelHtml ]
+                        if key? meta "bindName" [ bindName: meta\bindName ]
+                        key_button labelHtml bindName face\attrs
+                ]
+                "checkbox" -> [
+                        labelHtml: ""
+                        bindName: ""
+                        if key? meta "labelHtml" [ labelHtml: meta\labelHtml ]
+                        if key? meta "bindName" [ bindName: meta\bindName ]
+                        checkbox labelHtml bindName face\attrs
+                ]
+                "toggle" -> [
+                        labelHtml: ""
+                        bindName: ""
+                        if key? meta "labelHtml" [ labelHtml: meta\labelHtml ]
+                        if key? meta "bindName" [ bindName: meta\bindName ]
+                        toggle labelHtml bindName face\attrs
+                ]
+                "select" -> [
+                        bindName: "value"
+                        if key? meta "bindName" [ bindName: meta\bindName ]
+                        opts: []
+                        if key? meta "options" [ opts: meta\options ]
+                        select_field bindName face\attrs opts
+                ]
+                "drop-list" -> [
+                        bindName: "value"
+                        if key? meta "bindName" [ bindName: meta\bindName ]
+                        opts: []
+                        if key? meta "options" [ opts: meta\options ]
+                        select_field bindName face\attrs opts
+                ]
+                "radio" -> [
+                        bindName: "value"
+                        if key? meta "bindName" [ bindName: meta\bindName ]
+                        opts: []
+                        if key? meta "options" [ opts: meta\options ]
+                        radio_group bindName face\attrs opts #[]
+                ]
+                "radio-group" -> [
+                        bindName: "value"
+                        if key? meta "bindName" [ bindName: meta\bindName ]
+                        opts: []
+                        if key? meta "options" [ opts: meta\options ]
+                        radio_group bindName face\attrs opts #[]
+                ]
+                "list" -> [
+                        bindName: "value"
+                        opts: []
+                        multi: false
+                        if key? meta "bindName" [ bindName: meta\bindName ]
+                        if key? meta "options" [ opts: meta\options ]
+                        if key? meta "multi" [ multi: meta\multi ]
+                        list_face_bind opts bindName multi #[ ] face\attrs
+                ]
+                "slider" -> [
+                        bindName: "value"
+                        if key? meta "bindName" [ bindName: meta\bindName ]
+                        labelMin: null
+                        labelMax: null
+                        if key? meta "labelMin" [ labelMin: meta\labelMin ]
+                        if key? meta "labelMax" [ labelMax: meta\labelMax ]
+                        sliderHtml: slider_field bindName face\attrs
+                        switch any? @[notEqual? labelMin null notEqual? labelMax null] [
+                                wrapHtml: "<div class='vista-slider-wrap'>"
+                                if notEqual? labelMin null [
+                                        wrapHtml: wrapHtml ++ "<span class='vista-slider-label'>" ++ html_text labelMin ++ "</span>"
+                                ]
+                                wrapHtml: wrapHtml ++ sliderHtml
+                                if notEqual? labelMax null [
+                                        wrapHtml: wrapHtml ++ "<span class='vista-slider-label'>" ++ html_text labelMax ++ "</span>"
+                                ]
+                                wrapHtml ++ "</div>"
+                        ][
+                                sliderHtml
+                        ]
+                ]
+                "rotary" -> [
+                        bindName: "value"
+                        if key? meta "bindName" [ bindName: meta\bindName ]
+                        rotary_field bindName face\attrs
+                ]
+                "box" -> [box (face_children_html face) face\attrs]
+                "panel" -> [
+                        titleHtml: ""
+                        if key? meta "titleHtml" [ titleHtml: meta\titleHtml ]
+                        panel_face titleHtml (face_children_html face) face\attrs
+                ]
+                "grid" -> [
+                        cols: 2
+                        if key? meta "cols" [ cols: meta\cols ]
+                        grid_face (face_children_html face) face\attrs cols
+                ]
+                "row" -> [row (face_children_html face) face\attrs]
+                "col" -> [col (face_children_html face) face\attrs]
+                "group" -> [group (face_children_html face) face\attrs]
+                "sensor" -> [sensor_face (face_children_html face) face\attrs]
+                "table" -> [table_face (face_children_html face) face\attrs]
+                "table-row" -> [table_row_face (face_children_html face) face\attrs]
+                "table-cell" -> [table_cell_face (face_children_html face) face\attrs]
+                "table-head" -> [table_head_face (face_children_html face) face\attrs]
+                "table-body" -> [table_body_face (face_children_html face) face\attrs]
+                "table-foot" -> [table_foot_face (face_children_html face) face\attrs]
+                "table-header" -> [table_header_cell_face (face_children_html face) face\attrs]
+                "toolbar" -> [toolbar_face (face_children_html face) face\attrs]
+                "menubar" -> [menubar_face (face_children_html face) face\attrs]
+                "tool-group" -> [tool_group_face (face_children_html face) face\attrs]
+                "split" -> [
+                        ratio: null
+                        if key? meta "ratio" [ ratio: meta\ratio ]
+                        leftHtml: face_child_html face 0
+                        rightHtml: face_child_html face 1
+                        split_face leftHtml rightHtml face\attrs ratio
+                ]
+                "canvas" -> [canvas_face face\attrs]
+                "divider" -> [divider_face face\attrs]
+                any -> [face\html]
+        ]
+]
+
+update_face: function [id updates] [
+        face: get_face id
+        if equal? face null [
+                return null
+        ]
+        if key? updates "attrs" [
+                face\attrs: updates\attrs
+                if not? key? face\attrs "data-face-id" [
+                        face\attrs\["data-face-id"]: face\id
+                ]
+                if key? face\attrs "id" [
+                        nameStr: to :string face\attrs\id
+                        vista_state\face_names\[nameStr]: face\id
+                ]
+        ]
+        if key? updates "text" [
+                face\text: updates\text
+                if any? @[equal? face\type "button" equal? face\type "checkbox" equal? face\type "toggle"] [
+                        if not? key? face "meta" [
+                                face\meta: #[]
+                        ]
+                        face\meta\labelHtml: html_text updates\text
+                ]
+                face\html: render_face face
+        ]
+        if key? updates "html" [
+                face\html: updates\html
+        ]
+        if key? updates "attrs" [
+                face\html: render_face face
+        ]
+        vista_state\last_faces\[face\id]: face
+        if webview_sync_updates [
+                js: "window.vistaShow('" ++ face\id ++ "','" ++ js_escape_single face\html ++ "');"
+                if webview_enabled [
+                        env_vars: env
+                        if not? any? @[key? env_vars "VISTA_NO_WEBVIEW" key? env_vars "NO_WEBVIEW"] [
+                                webview .inject: js ""
+                        ]
+                ]
+        ]
+        face
+]
+
+show: function [face] [
+        ftype: type face
+        switch equal? ftype :dictionary [
+                if key? face "html" [
+                        if webview_sync_updates [
+                                js: "window.vistaShow('" ++ face\id ++ "','" ++ js_escape_single face\html ++ "');"
+                                webview .inject: js ""
+                        ]
+                        return face\html
+                ]
+        ][
+                switch equal? ftype :word [
+                        name: to :string face
+                        f: get_face name
+                        if notEqual? f null [
+                                if webview_sync_updates [
+                                        js: "window.vistaShow('" ++ f\id ++ "','" ++ js_escape_single f\html ++ "');"
+                                        webview .inject: js ""
+                                ]
+                                return f\html
+                        ]
+                ][
+                        switch equal? ftype :string [
+                                f: get_face face
+                                if notEqual? f null [
+                                        if webview_sync_updates [
+                                                js: "window.vistaShow('" ++ f\id ++ "','" ++ js_escape_single f\html ++ "');"
+                                                webview .inject: js ""
+                                        ]
+                                        return f\html
+                                ]
+                        ][
+                                null
+                        ]
+                ]
+        ]
+        null
+]
+
+layout: function [block] [
+        result: layout_state block
+        result\html
+]

@@ -1,0 +1,19 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Layout Container Attrs"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    pad 12
+    across
+    text "A"
+    text "B"
+    return
+    space 16
+    text "C"
+    text "D"
+]

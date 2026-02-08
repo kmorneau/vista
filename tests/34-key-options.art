@@ -1,0 +1,7 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    key lastKey .mode:"keyup" .modifiers:true .filter:["Shift" "Ctrl"] "Press"
+]
+
+print html

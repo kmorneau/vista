@@ -1,0 +1,13 @@
+import "vista.art"!
+
+name: "Ada"
+count: 3
+
+html: view .returnHtml [
+    text "Name:"
+    text name
+    field name
+    text "Count:"
+    text count
+]
+print html

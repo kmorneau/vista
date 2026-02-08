@@ -1,0 +1,16 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Vid Helper"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+vid .html [
+    h1 "VID helper"
+    panel "Panel" [
+        text "Hello"
+        key "OK"
+    ]
+]

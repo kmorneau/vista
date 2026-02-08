@@ -1,0 +1,5 @@
+entry: "vista"
+requires: [>= 0.9.83]
+depends: [
+  ; [somePackage >= 0.0.2]
+]

@@ -1,0 +1,13 @@
+import "vista.art"!
+
+style card [
+    box [
+        title arg0
+        text arg1
+    ]
+]
+
+html: view .returnHtml [
+    card "Styled" "Body"
+]
+print html

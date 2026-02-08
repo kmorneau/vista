@@ -1,0 +1,22 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Checklist Actions"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+item1: "Learn Arturo"
+item2: "Build UI"
+item3: "Ship Demo"
+
+view .file: "ui.html" [
+    text "Todo:"
+    text_list [item1 item2 item3]
+    button "Add exclamation" [
+        item1: item1 + "!"
+        item2: item2 + "!"
+        item3: item3 + "!"
+    ]
+]

@@ -1,0 +1,18 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Events Over Out"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+status: "Out"
+
+view [
+    sensor .on-over:[status: "Over"] .on-out:[status: "Out"] [
+        text "Hover me"
+    ]
+    text "Status:"
+    text status
+]

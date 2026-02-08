@@ -1,0 +1,23 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Path Helpers"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    panel "Title" [
+        text "One"
+        text "Two"
+    ]
+]
+
+firstFace: path_first ["panel" 0]
+lastFace: path_last ["panel" 0]
+secondFace: path_nth ["panel" 0] 1
+
+print show firstFace
+print show lastFace
+print show secondFace

@@ -1,0 +1,18 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    tabs .selected:0 [
+        tab "Info" [
+            text "Welcome"
+        ]
+        tab "Settings" [
+            checkbox "Enable" enabled
+            slider volume
+        ]
+        tab "About" [
+            text "Vista"
+        ]
+    ]
+]
+
+print html

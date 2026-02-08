@@ -1,0 +1,20 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Sync State"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+webview_sync_updates: true
+webview_sync_state_updates: true
+
+counter: 0
+
+view .file: "ui.html" [
+    text counter
+]
+
+counter: counter + 1
+sync_state

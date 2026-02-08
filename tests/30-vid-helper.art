@@ -1,0 +1,11 @@
+import "vista.art"!
+
+html: vid .html [
+    h2 "VID helper"
+    panel "Panel" [
+        text "Hello"
+        key "OK"
+    ]
+]
+
+print html

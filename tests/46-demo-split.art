@@ -1,0 +1,10 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    split .ratio:40 [
+        panel "Left" [text "Left pane"]
+        panel "Right" [text "Right pane"]
+    ]
+]
+
+print html

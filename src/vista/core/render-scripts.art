@@ -1,0 +1,67 @@
+; Vista UI - Render Script Generation
+
+render_script: function [bindings] [
+        keysList: keys bindings
+        keys_len: size keysList
+        if equal? keys_len 0 [
+                return ""
+        ]
+        statePairs: ""
+        i: 0
+        while [less? i keys_len][
+                k: get keysList i
+                v: bindings\[k]
+                vStr: js_literal v
+                pair: to :string k ++ ": " ++ vStr
+                switch equal? statePairs "" [
+                        statePairs: pair
+                ][
+                        statePairs: statePairs ++ ", " ++ pair
+                ]
+                i: i + 1
+        ]
+        script: "<script>"
+        script: script ++ "const state = {" ++ statePairs ++ "};"
+        script: script ++ "function _vistaParsePx(v){const n=parseFloat(v);return isNaN(n)?0:n;}"
+        script: script ++ "function _vistaMeasureText(text,font){const c=_vistaMeasureText._c||(_vistaMeasureText._c=document.createElement('canvas'));const ctx=c.getContext('2d');ctx.font=font||'16px sans-serif';const lines=String(text||'').split('\\n');let maxW=0;lines.forEach(line=>{const w=ctx.measureText(line).width;if(w>maxW){maxW=w;}});let lineHeight=0;const m=ctx.measureText('M');if((m.actualBoundingBoxAscent||0)+(m.actualBoundingBoxDescent||0)>0){lineHeight=m.actualBoundingBoxAscent+m.actualBoundingBoxDescent;}if(!lineHeight){const fontSize=_vistaParsePx((font||'').match(/\\d+px/)?(font.match(/\\d+px/)[0]):'16px');lineHeight=fontSize*1.2;}let height=lineHeight*lines.length;return {width:maxW,height:height};}"
+        script: script ++ "function autoSize(){document.querySelectorAll('[data-auto-size]').forEach(el=>{const hasInlineWidth=!!el.style.width;const hasInlineHeight=!!el.style.height;const managed=el.dataset.autoSizeManaged==='1';if((hasInlineWidth||hasInlineHeight) && !managed){return;}const style=getComputedStyle(el);const text=el.textContent||'';const m=_vistaMeasureText(text,style.font);const padX=_vistaParsePx(style.paddingLeft)+_vistaParsePx(style.paddingRight);const padY=_vistaParsePx(style.paddingTop)+_vistaParsePx(style.paddingBottom);const borderX=_vistaParsePx(style.borderLeftWidth)+_vistaParsePx(style.borderRightWidth);const borderY=_vistaParsePx(style.borderTopWidth)+_vistaParsePx(style.borderBottomWidth);const lineHeight=(style.lineHeight&&style.lineHeight!=='normal')?_vistaParsePx(style.lineHeight):0;const lines=Math.max(1,String(text||'').split('\\n').length);if(lineHeight>0){m.height=Math.max(m.height,lineHeight*lines);}const w=Math.ceil(m.width+padX+borderX);const h=Math.ceil(m.height+padY+borderY);if(w>0){el.style.width=w+'px';}if(h>0){el.style.height=h+'px';}el.dataset.autoSizeManaged='1';});}"
+        script: script ++ "function bindInputs(){document.querySelectorAll('[data-bind]').forEach(el=>{if(el.dataset.vistaBound==='1'){return;}el.dataset.vistaBound='1';const key=el.getAttribute('data-bind');if(el.tagName==='INPUT'){if(el.type==='checkbox'){el.addEventListener('change',()=>{state[key]=el.checked;render();if(window.vistaPushState){vistaPushState();}});}else if(el.type==='radio'){el.addEventListener('change',()=>{if(el.checked){state[key]=el.value;}render();if(window.vistaPushState){vistaPushState();}});}else{el.addEventListener('input',()=>{state[key]=el.value;render();if(window.vistaPushState){vistaPushState();}});}}else if(el.tagName==='TEXTAREA'){el.addEventListener('input',()=>{state[key]=el.value;render();if(window.vistaPushState){vistaPushState();}});}else if(el.tagName==='SELECT'){el.addEventListener('change',()=>{state[key]=el.value;render();if(window.vistaPushState){vistaPushState();}});}});}"
+        script: script ++ "function render(){document.querySelectorAll('[data-bind]').forEach(el=>{const key=el.getAttribute('data-bind');if(el.tagName==='INPUT'){if(el.type==='checkbox'){el.checked=!!state[key];}else if(el.type==='radio'){el.checked=(state[key]==null?'':state[key])==el.value;}else{el.value=(state[key]==null?'':state[key]);}}else if(el.tagName==='TEXTAREA'){el.value=(state[key]==null?'':state[key]);}else if(el.tagName==='SELECT'){el.value=(state[key]==null?'':state[key]);}else if(el.tagName==='PROGRESS'){el.value=(state[key]==null?0:state[key]);}else if(el.tagName==='IMG'){if(state[key]!=null){el.src=state[key];}}else{el.textContent=(state[key]==null?'':state[key]);}});document.querySelectorAll('[data-show-bind]').forEach(el=>{const key=el.dataset.showBind;const expected=el.dataset.showValue;const cur=state[key];let show=false;if(expected==null||expected===''){show=!!cur;}else{show=String(cur)===expected;}el.style.display=show?'':'none';});document.querySelectorAll('ul[data-list-bind]').forEach(ul=>{const key=ul.dataset.listBind;const multi=ul.dataset.multi==='true';const items=[...ul.querySelectorAll('li[data-value]')];const setActive=(idx)=>{if(idx<0||idx>=items.length){return;}ul.dataset.activeIndex=String(idx);items.forEach((li,i)=>{li.classList.toggle('is-active',i===idx);});};const applyRange=(a,b,additive)=>{let start=Math.min(a,b);let end=Math.max(a,b);let values=items.slice(start,end+1).map(li=>li.dataset.value);let cur=state[key];if(!Array.isArray(cur)){cur=[];}if(!additive){cur=[];}values.forEach(v=>{if(!cur.includes(v)){cur.push(v);}});state[key]=cur;};const toggleValue=(v)=>{let cur=state[key];if(!Array.isArray(cur)){cur=[];}if(cur.includes(v)){cur=cur.filter(x=>x!==v);}else{cur=[...cur,v];}state[key]=cur;};const selectIndex=(idx,evt)=>{if(idx<0||idx>=items.length){return;}setActive(idx);const v=items[idx].dataset.value;if(!multi){state[key]=v;render();if(window.vistaPushState){vistaPushState();}return;}const shift=evt&&evt.shiftKey;const additive=evt&&(evt.ctrlKey||evt.metaKey);if(shift){const anchor=parseInt(ul.dataset.anchorIndex||String(idx),10);applyRange(anchor,idx,additive);}else if(additive){toggleValue(v);}else{state[key]=[v];}if(!shift){ul.dataset.anchorIndex=String(idx);}render();if(window.vistaPushState){vistaPushState();}};items.forEach((li,idx)=>{li.addEventListener('click',e=>{selectIndex(idx,e);});});ul.addEventListener('keydown',e=>{if(!items.length){return;}const selectedIndex=items.findIndex(li=>li.classList.contains('is-selected'));let idx=selectedIndex>=0?selectedIndex:0;if(e.key==='ArrowDown'){e.preventDefault();idx=Math.min(items.length-1,idx+1);if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(idx);return;}selectIndex(idx,e);}else if(e.key==='ArrowUp'){e.preventDefault();idx=Math.max(0,idx-1);if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(idx);return;}selectIndex(idx,e);}else if(e.key==='Home'){e.preventDefault();if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(0);return;}selectIndex(0,e);}else if(e.key==='End'){e.preventDefault();if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(items.length-1);return;}selectIndex(items.length-1,e);}else if(e.key===' '||e.key==='Enter'){e.preventDefault();selectIndex(idx,e);}else if(e.key.length===1 && !e.ctrlKey && !e.metaKey){const ch=e.key.toLowerCase();const buf=(ul._vistaTypeBuf||'')+ch;ul._vistaTypeBuf=buf;clearTimeout(ul._vistaTypeTimer);ul._vistaTypeTimer=setTimeout(()=>{ul._vistaTypeBuf='';},500);const found=items.findIndex(li=>li.textContent.trim().toLowerCase().startsWith(buf));if(found>=0){selectIndex(found,e);}} });});const handleKey=(el,e)=>{const bind=el.dataset.keyBind;const mode=el.dataset.keyMode||'keydown';if((mode==='keyup'&&e.type!=='keyup')||(mode!=='keyup'&&e.type!=='keydown')){return;}let value='';const modifiersOnly=el.dataset.keyModifiers==='true';if(modifiersOnly){const mods=[];if(e.shiftKey){mods.push('Shift');}if(e.ctrlKey){mods.push('Ctrl');}if(e.altKey){mods.push('Alt');}if(e.metaKey){mods.push('Meta');}value=mods.join('+');}else{value=e.key;}const filter=(el.dataset.keyFilter||'').split(',').map(s=>s.trim()).filter(Boolean);if(filter.length>0 && value!=='' && !filter.includes(value)){return;}state[bind]=value;render();if(el.dataset.keyAction){try{eval(el.dataset.keyAction);}catch(e){}}if(window.vistaPushState){vistaPushState();}};document.querySelectorAll('[data-key-bind]').forEach(el=>{el.addEventListener('keydown',e=>handleKey(el,e));el.addEventListener('keyup',e=>handleKey(el,e));});autoSize();}"
+        script: script ++ "setTimeout(()=>{render();bindInputs();},0);"
+        script: script ++ "window.vistaShow=function(id,html){const el=document.querySelector('[data-face-id=\"'+id+'\"]');if(!el){return false;}el.outerHTML=html;render();bindInputs();return true;};"
+        switch webview_state_sync_from_ui [
+                script: script ++ "window.vistaPushState=function(){if(window.__vistaPushTimer){clearTimeout(window.__vistaPushTimer);}window.__vistaPushTimer=setTimeout(()=>{fetch('/vista-state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)}).catch(()=>{});},"
+                script: script ++ to :string webview_state_push_ms
+                script: script ++ ");};"
+        ][
+                ""
+        ]
+        switch greater? webview_state_sync_ms 0 [
+                script: script ++ "document.addEventListener('DOMContentLoaded', ()=>{render();bindInputs();setInterval(()=>{fetch('/vista-sync').then(r=>r.json()).then(data=>{Object.keys(data||{}).forEach(k=>{state[k]=data[k];});render();});},"
+                script: script ++ to :string webview_state_sync_ms
+                script: script ++ ");});"
+        ][
+                script: script ++ "document.addEventListener('DOMContentLoaded', ()=>{render();bindInputs();});"
+        ]
+        script: script ++ "</script>"
+        script
+]
+
+tabs_script: function [] [
+        "<script>document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('[data-tabs]').forEach(container=>{const buttons=[...container.querySelectorAll('.vista-tab-btn')];const panels=[...container.querySelectorAll('.vista-tab-panel')];const activate=id=>{buttons.forEach(btn=>{btn.classList.toggle('is-active',btn.dataset.tab===id);});panels.forEach(panel=>{panel.classList.toggle('is-active',panel.dataset.tab===id);});};let selectedIndex=parseInt(container.dataset.tabsSelected||'0',10);if(isNaN(selectedIndex)){selectedIndex=0;}if(buttons.length>0){const idx=Math.max(0,Math.min(selectedIndex,buttons.length-1));activate(buttons[idx].dataset.tab);}buttons.forEach((btn,idx)=>{btn.addEventListener('click',()=>activate(btn.dataset.tab));btn.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();const next=(idx+1)%buttons.length;buttons[next].click();buttons[next].focus();}else if(e.key==='ArrowLeft'){e.preventDefault();const prev=(idx-1+buttons.length)%buttons.length;buttons[prev].click();buttons[prev].focus();}else if(e.key==='Home'){e.preventDefault();buttons[0].click();buttons[0].focus();}else if(e.key==='End'){e.preventDefault();buttons[buttons.length-1].click();buttons[buttons.length-1].focus();}});});});});</script>"
+]
+
+menubar_script: function [] [
+        "<script>document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('.vista-menubar').forEach(bar=>{const buttons=[...bar.querySelectorAll('[data-menu]')];const panels=[...bar.querySelectorAll('[data-menu-panel]')];let openKey=null;const closeAll=()=>{panels.forEach(p=>p.classList.remove('is-open'));buttons.forEach(b=>b.classList.remove('is-active'));openKey=null;};const openMenu=(key,btn)=>{const panel=panels.find(p=>p.dataset.menuPanel===key);if(!panel){return;}panels.forEach(p=>p.classList.toggle('is-open',p===panel));buttons.forEach(b=>b.classList.toggle('is-active',b===btn));const barRect=bar.getBoundingClientRect();const btnRect=btn.getBoundingClientRect();panel.style.left=(btnRect.left-barRect.left)+'px';panel.style.top=(barRect.height+4)+'px';openKey=key;};buttons.forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();const key=btn.dataset.menu;if(openKey===key){closeAll();}else{openMenu(key,btn);}});btn.addEventListener('mouseenter',()=>{if(openKey){openMenu(btn.dataset.menu,btn);}});});document.addEventListener('click',()=>{if(openKey){closeAll();}});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();}});panels.forEach(panel=>{panel.addEventListener('click',e=>e.stopPropagation());});});});</script>"
+]
+
+table_script: function [] [
+        "<script>document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('table[data-row-select]').forEach(table=>{table.querySelectorAll('tbody tr').forEach(row=>{row.addEventListener('click',()=>{table.querySelectorAll('tbody tr').forEach(r=>r.classList.remove('is-selected'));row.classList.add('is-selected');table.dataset.selectedText=row.textContent.trim();});});});});</script>"
+]
+
+auto_reload_script: function [] [
+        if webview_auto_reload [
+                return "<script>setInterval(()=>{location.reload();}," ++ to :string webview_reload_ms ++ ");</script>"
+        ]
+        ""
+]

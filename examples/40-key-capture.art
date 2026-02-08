@@ -1,0 +1,14 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Key Capture"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    key lastKey "Press a key"
+    text "Last key:"
+    text lastKey
+]

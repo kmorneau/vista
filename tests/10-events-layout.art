@@ -1,0 +1,11 @@
+import "vista.art"!
+
+name: "Ada"
+
+html: view .returnHtml [
+    title "Events"
+    input name .on-focus:[focused: true] .on-blur:[focused: false] .on-input:[name: name + "!"]
+    field name .on-change:[changed: true]
+    button "Save" .on-click:[saved: true]
+]
+print html

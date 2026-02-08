@@ -1,0 +1,16 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Counter"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+counter: 0
+
+view [
+    text "Count:"
+    text counter
+    button "Increment" [counter: counter + 1]
+]

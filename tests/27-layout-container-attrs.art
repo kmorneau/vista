@@ -1,0 +1,14 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    pad 12
+    across
+    text "A"
+    text "B"
+    return
+    space 16
+    text "C"
+    text "D"
+]
+
+print html

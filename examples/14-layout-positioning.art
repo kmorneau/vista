@@ -1,0 +1,24 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Layout Positioning"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    title "Positioning"
+    row [
+        box .size:[180 80] .origin:[12 12] .style:"background:#fffbe6;border:1px dashed #e0c862;" [
+            text "Origin box"
+        ]
+        box .size:[180 80] .offset:[12 12] .style:"background:#eef7ff;border:1px dashed #78a6d8;" [
+            text "Offset box"
+        ]
+    ]
+    group .size:[380 140] .style:"position: relative; border:1px dashed #bbb; background:#fafafa;" [
+        text .at:[20 20] "Absolute (20,20)"
+        text .at:[140 80] "Absolute (140,80)"
+    ]
+]

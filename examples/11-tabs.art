@@ -1,0 +1,35 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Tabs"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+status: "Pick a tab"
+details: ""
+enabled: false
+
+view [
+    title "Tabs Demo"
+    text "Status:"
+    text status
+    return
+    tabs [
+        tab "Overview" [
+            text "Welcome to the overview"
+            button "Select Overview" [status: "Overview tab active"]
+        ]
+        tab "Details" [
+            text "Details go here"
+            field details .on-input:[status: "Editing details"]
+            text "Current:"
+            text details
+        ]
+        tab "Settings" [
+            checkbox enabled "Enable feature"
+            button "Apply" [status: "Settings applied"]
+        ]
+    ]
+]

@@ -1,0 +1,14 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Demo Lists"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    list choice ["Red" "Green" "Blue"]
+    return
+    list picks .multi:true ["One" "Two" "Three" "Four"]
+]

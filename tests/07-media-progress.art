@@ -1,0 +1,10 @@
+; Media and progress snapshot
+
+import "vista.art"!
+
+html: view .returnHtml [
+    title "Media"
+    image "https://example.com/preview.png" .alt: "Preview"
+    progress 40 .max: 100
+]
+print html

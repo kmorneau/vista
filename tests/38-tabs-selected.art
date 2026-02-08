@@ -1,0 +1,10 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    tabs .selected:1 [
+        tab "One" [text "First"]
+        tab "Two" [text "Second"]
+    ]
+]
+
+print html

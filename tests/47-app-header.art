@@ -1,0 +1,16 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Digital Clock"
+    Version: 1.3.3
+    Author: "Carl Sassenrath"
+    Purpose: "Display a simple digital clock on screen."
+    Width: 480
+    Height: 320
+]
+
+html: view .returnHtml [
+    text "Hello"
+]
+
+print html

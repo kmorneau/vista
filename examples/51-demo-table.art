@@ -1,0 +1,29 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Demo Table"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    table [
+        table-head [
+            table-row [
+                table-header "Name"
+                table-header "Value"
+            ]
+        ]
+        table-body [
+            table-row [
+                table-cell "Alpha"
+                table-cell "1"
+            ]
+            table-row [
+                table-cell "Beta"
+                table-cell "2"
+            ]
+        ]
+    ]
+]

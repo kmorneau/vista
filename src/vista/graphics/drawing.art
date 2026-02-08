@@ -1,0 +1,3 @@
+test_draw_works: function [] [
+    print "drawing module test"
+]

@@ -1,0 +1,16 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Face Overlay"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    panel "Info" [
+        text "Overlay demo"
+        text .id:greeting "Hello"
+    ]
+    face_tree_overlay
+]

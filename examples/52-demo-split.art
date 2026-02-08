@@ -1,0 +1,15 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Demo Split"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    split .ratio:40 [
+        panel "Left" [text "Left pane"]
+        panel "Right" [text "Right pane"]
+    ]
+]

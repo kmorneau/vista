@@ -1,0 +1,104 @@
+# [
+#   "title": "Layout System"
+#   "layout": "docpage"
+#   "category": "Concepts"
+#   "tags": ["layout", "system", "core"]
+#   "body": {
+#     <h1>Layout System</h1>
+#
+#     <p>Vista's layout system provides a declarative way to arrange UI elements using a simple, intuitive syntax.</p>
+#
+#     <h2>Layout Philosophy</h2>
+#     <p>Vista uses a flow-based layout system where elements are positioned sequentially. Key layout keywords include:</p>
+#     <ul>
+#       <li><code>across</code>: Arrange items in a horizontal row</li>
+#       <li><code>below</code>: Arrange items in a vertical column</li>
+#       <li><code>return</code>: Break to next line in current layout</li>
+#       <li><code>end</code>: Close current layout context</li>
+#     </ul>
+#
+#     <h2>Across Layout</h2>
+#     <pre><code>
+#     view .html [
+#         across [
+#             button "Yes" []
+#             button "No" []
+#             button "Maybe" []
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Below Layout</h2>
+#     <pre><code>
+#     view .html [
+#         below [
+#             text "First item"
+#             text "Second item"
+#             text "Third item"
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Nested Layouts</h2>
+#     <p>Layouts can be nested for complex arrangements:</p>
+#     <pre><code>
+#     view .html [
+#         panel "Form" [
+#             across [
+#                 text "Name:"
+#                 field "John Doe"
+#             ]
+#             return
+#             across [
+#                 text "Email:"
+#                 field "john@example.com"
+#             ]
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Layout Keywords</h2>
+#     <ul>
+#       <li><code>pad</code>: Add padding around elements</li>
+#       <li><code>space</code>: Set gap between elements</li>
+#       <li><code>align</code>: Align items horizontally</li>
+#       <li><code>valign</code>: Align items vertically</li>
+#       <li><code>origin</code>: Set origin position</li>
+#       <li><code>offset</code>: Offset element position</li>
+#       <li><code>indent</code>: Add indentation</li>
+#     </ul>
+#
+#     <h2>Grid Layout</h2>
+#     <p>The <code>grid</code> face creates a grid layout:</p>
+#     <pre><code>
+#     view .html [
+#         grid 2 [
+#             text "A1" text "A2"
+#             text "B1" text "B2"
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Row and Column Faces</h2>
+#     <p>Use row and col faces for explicit container layouts:</p>
+#     <pre><code>
+#     view .html [
+#         row [
+#             button "Left"
+#             button "Right"
+#         ]
+#         col [
+#             text "Top"
+#             text "Bottom"
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>See Also</h2>
+#     <ul>
+#       <li><a href="/wiki/core/layout/across-below/">Across and Below</a> - Basic layout commands</li>
+#       <li><a href="/wiki/core/layout/grid-system/">Grid System</a> - Grid layout</li>
+#       <li><a href="/wiki/core/layout/spacing-pad/">Spacing and Padding</a> - Space and pad keywords</li>
+#     </ul>
+#   }
+# ]

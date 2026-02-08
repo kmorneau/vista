@@ -1,0 +1,13 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Overlay Inspector"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    text "Debug overlay"
+    face_tree_overlay
+]

@@ -1,0 +1,11 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    canvas .id:"draw-gradients" .width: 320 .height: 200 [
+        linear-gradient [0 0] [320 0] [ [0 "#ff9f1c"] [1 "#2ec4b6"] ]
+        box [0 0] [320 70]
+        radial-gradient [160 140] 10 [160 140] 70 [ [0 "#ffffff"] [1 "#3a0ca3"] ]
+        circle [160 140] 60
+    ]
+]
+print html

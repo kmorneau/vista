@@ -1,0 +1,24 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Draw Text + Image"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 520
+]
+
+view [
+    text "Draw text and image"
+    canvas .id:"draw-text-image" .width: 360 .height: 220 [
+        fill-pen "#f8f9ff"
+        box [0 0] [360 220]
+        pen "#1b1b1b"
+        font "16px 'IBM Plex Sans'"
+        text [20 40] "Hello Draw"
+        image [20 60] "arturo-vista.png" [96 96]
+        pen "#2f5cff"
+        line-width 2
+        box [140 60] [320 180]
+        text [150 90] "Image frame"
+    ]
+]

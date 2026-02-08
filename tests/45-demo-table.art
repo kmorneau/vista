@@ -1,0 +1,24 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    table [
+        table-head [
+            table-row [
+                table-header "Name"
+                table-header "Value"
+            ]
+        ]
+        table-body [
+            table-row [
+                table-cell "Alpha"
+                table-cell "1"
+            ]
+            table-row [
+                table-cell "Beta"
+                table-cell "2"
+            ]
+        ]
+    ]
+]
+
+print html

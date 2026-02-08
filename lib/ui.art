@@ -1,0 +1,44 @@
+build_ui_html: function [] [
+    view .html [
+        box .pad:14 .space:14 [
+            title "Task Tracker"
+            row .space:10 .align:"center" [
+                field newTask .id:"new-task" .size:"320x32"
+                button "Add" "vistaApiAddTask()"
+                button "Refresh" "vistaApiRefresh()"
+            ]
+            divider
+            text "Tasks:"
+            list selected .id:"task-list" .size:"100%x260" []
+            row .space:8 .align:"center" [
+                button "Complete" "vistaApiCompleteTask()"
+            ]
+            divider
+            row .space:12 .align:"center" [
+                text "Selected:"
+                text selected
+            ]
+            row .space:16 .align:"center" [
+                text "Status:"
+                text status
+                text "Total:"
+                text taskCount
+            ]
+        ]
+        raw "<script>\nfunction vistaEscape(s){return String(s||'').replace(/[&<>\"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\\'':'&#39;' }[c]));}\nconst baseUrl=(window.location.origin&&window.location.origin!=='null')?window.location.origin:'http://127.0.0.1:18969';\nasync function vistaFetchTasks(){const res=await fetch(baseUrl+'/tasks');if(!res.ok){throw new Error('fetch failed');}return await res.json();}\nfunction ensureListClick(){const ul=document.getElementById('task-list');if(!ul||ul.dataset.vistaBound==='1'){return;}ul.dataset.vistaBound='1';ul.addEventListener('click',e=>{const li=e.target.closest('li[data-value]');if(!li){return;}state.selected=li.dataset.value||'';render();});}\nfunction renderTaskList(tasks){const ul=document.getElementById('task-list');if(!ul){return;}ul.innerHTML=tasks.map(t=>`<li data-value=\"${vistaEscape(t.title)}\">${vistaEscape(t.title)} (${vistaEscape(t.status)})</li>`).join('');ensureListClick();}\nwindow.vistaApiRefresh=async()=>{state.status='Loading...'; render(); try{const tasks=await vistaFetchTasks();state.taskCount=tasks.length;renderTaskList(tasks);render();state.status='Ready'; render();}catch(e){const msg=(e&&e.message)?e.message:String(e);state.status='Error loading tasks: '+msg; render();setTimeout(()=>{vistaApiRefresh();},1000);}};\nwindow.vistaApiAddTask=async()=>{const input=document.getElementById('new-task');const title=((input&&input.value)||state.newTask||'').trim();if(!title){state.status='Enter a task'; render();return;}state.status='Saving...'; render();const res=await fetch(baseUrl+'/tasks/add/'+encodeURIComponent(title));if(!res.ok){state.status='Error saving task: '+res.status; render();return;}state.newTask=''; if(input){input.value='';} render();await vistaApiRefresh();};\nwindow.vistaApiCompleteTask=async()=>{const title=(state.selected||'').trim();if(!title){state.status='Select a task'; render();return;}state.status='Completing...'; render();const res=await fetch(baseUrl+'/tasks/complete/'+encodeURIComponent(title));if(!res.ok){state.status='Error completing task: '+res.status; render();return;}await vistaApiRefresh();};\nwindow.addEventListener('DOMContentLoaded',()=>{ensureListClick();vistaApiRefresh();});\n</script>"
+    ]
+]
+
+build_ui: function [] [
+    html: build_ui_html
+    env_vars: env
+    noWebview: false
+    if key? env_vars "VISTA_NO_WEBVIEW" [ noWebview: true ]
+    if key? env_vars "NO_WEBVIEW" [ noWebview: true ]
+    if webview_enabled [
+        if not? noWebview [
+            webview html
+        ]
+    ]
+    html
+]

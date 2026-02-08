@@ -1,0 +1,72 @@
+; Vista UI - Container Components
+
+box: function [content attrs] [
+        merged: merge_class_attr attrs "vista-box"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+panel_face: function [titleHtml bodyHtml attrs] [
+        merged: merge_class_attr attrs "vista-panel"
+        attrStr: attrs_to_html merged\attrs
+        html: "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        if titleHtml notEqual? "" [
+                html: html ++ "<div class='vista-panel-title'>" ++ titleHtml ++ "</div>"
+        ]
+        html: html ++ "<div class='vista-panel-body'>" ++ bodyHtml ++ "</div></div>"
+        html
+]
+
+grid_face: function [content attrs cols] [
+        merged: merge_class_attr attrs "vista-grid"
+        attrStr: attrs_to_html merged\attrs
+        html: "<div class='" ++ merged\class ++ "'" ++ attrStr ++ " style='display: grid; grid-template-columns: repeat("
+        html: html ++ to :string cols
+        html: html ++ ", 1fr);'>"
+        html: html ++ content ++ "</div>"
+        html
+]
+
+spacer_face: function [attrs] [
+        attrStr: attrs_to_html attrs
+        "<div class='vista-spacer'" ++ attrStr ++ "></div>"
+]
+
+row: function [content attrs] [
+        merged: merge_class_attr attrs "vista-row"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+col: function [content attrs] [
+        merged: merge_class_attr attrs "vista-col"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+group: function [content attrs] [
+        attrStr: attrs_to_html attrs
+        "<div" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+sensor_face: function [content attrs] [
+        if key? attrs "onclick" [
+                if not? key? attrs "tabindex" [
+                        attrs\tabindex: 0
+                ]
+                if not? key? attrs "role" [
+                        attrs\role: "button"
+                ]
+                if not? key? attrs "onkeydown" [
+                        attrs\onkeydown: "if(event.key==='Enter'||event.key===' '){event.preventDefault();" ++ to :string attrs\onclick ++ ";}"
+                ]
+                switch key? attrs "class" [
+                        attrs\class: to :string attrs\class ++ " vista-clickable"
+                ][
+                        attrs\class: "vista-clickable"
+                ]
+        ]
+        merged: merge_class_attr attrs "vista-sensor"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]

@@ -1,0 +1,29 @@
+; Test for canvas graphics transforms: push, pop, translate, rotate, scale, skew
+; Verifies state save/restore and coordinate transformations on canvas
+
+html: view .returnHtml [
+    title "Canvas Transforms Test"
+    canvas .id:"draw-transforms" .width: 400 .height: 300 [
+        pen "red"
+        line-width 2
+        ; Test push/pop with translate and rotate
+        push
+        translate 50 50
+        rotate 45
+        box [0 0] [100 100]
+        pop
+        ; Test push/pop with scale
+        push
+        scale 2 2
+        pen "blue"
+        line [0 0] [50 0]
+        pop
+        ; Test skew
+        push
+        skew 10 0
+        pen "green"
+        line [200 200] [300 200]
+        pop
+    ]
+]
+print html

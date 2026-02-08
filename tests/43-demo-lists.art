@@ -1,0 +1,9 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    list choice ["Red" "Green" "Blue"]
+    return
+    list picks .multi:true ["One" "Two" "Three" "Four"]
+]
+
+print html

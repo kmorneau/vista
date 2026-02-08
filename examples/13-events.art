@@ -1,0 +1,23 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Events"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+name: "Ada"
+focused: false
+status: "Idle"
+
+view [
+    title "Event Handlers"
+    input name .on-focus:[focused: true status: "Focused"] .on-blur:[focused: false status: "Blurred"] .on-input:[status: "Typing"]
+    text "Name:"
+    text name
+    text "Focused:"
+    text focused
+    text "Status:"
+    text status
+]

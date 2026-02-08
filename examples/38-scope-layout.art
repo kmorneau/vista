@@ -1,0 +1,19 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Scope Layout"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    pad 12
+    scope [
+        across
+        text "A"
+        text "B"
+        return
+        text "C"
+    ]
+]

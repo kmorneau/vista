@@ -1,0 +1,16 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Canvas Divider"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    text "Above"
+    divider
+    canvas .id:"demo-canvas" .width: 160 .height: 80
+    raw "<script>\nconst c=document.getElementById('demo-canvas');\nif(c){const ctx=c.getContext('2d');ctx.fillStyle='#f0f4ff';ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle='#2f5cff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(10,10);ctx.lineTo(150,70);ctx.stroke();ctx.fillStyle='#1b1b1b';ctx.font='12px sans-serif';ctx.fillText('Canvas OK',10,24);}\n</script>"
+    text "Below"
+]

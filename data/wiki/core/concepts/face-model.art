@@ -1,0 +1,75 @@
+# [
+#   "title": "Face Model"
+#   "layout": "docpage"
+#   "category": "Concepts"
+#   "tags": ["face", "model", "architecture", "core"]
+#   "body": {
+#     <h1>Face Model</h1>
+#
+#     <p>The Face Model is the fundamental architecture of Vista's UI system. Faces are the building blocks of user interfaces, representing UI nodes with facets (visual properties) and state (data).</p>
+#
+#     <h2>Anatomy of a Face</h2>
+#     <p>A face consists of three main parts:</p>
+#     <ul>
+#       <li><strong>Type</strong>: The kind of face (button, text, panel, etc.)</li>
+#       <li><strong>Attributes</strong>: Visual properties like color, size, position</li>
+#       <li><strong>Children</strong>: Nested faces for compound components</li>
+#     </ul>
+#
+#     <h2>Face Types</h2>
+#     <p>Vista provides various face types organized by purpose:</p>
+#     <ul>
+#       <li><strong>Text Faces</strong>: text, title, subtitle, label</li>
+#       <li><strong>Input Faces</strong>: field, input, textarea, select</li>
+#       <li><strong>Action Faces</strong>: button, checkbox, toggle, slider</li>
+#       <li><strong>Container Faces</strong>: box, panel, group, row, col, grid</li>
+#       <li><strong>Navigation Faces</strong>: tabs, toolbar, menubar</li>
+#       <li><strong>Data Display Faces</strong>: text-list, list, table</li>
+#     </ul>
+#
+#     <h2>Face Attributes</h2>
+#     <p>Attributes control the appearance and behavior of faces. They are specified using attribute labels:</p>
+#     <pre><code>
+#     view .html [
+#         button "Click Me"
+#             .color: red
+#             .size: 120
+#             on-click [print "clicked"]
+#     ]
+#     </code></pre>
+#
+#     <h2>Common Attributes</h2>
+#     <ul>
+#       <li><code>id</code>: Unique identifier for the face</li>
+#       <li><code>class</code>: CSS class names</li>
+#       <li><code>style</code>: Inline CSS styles</li>
+#       <li><code>data-bind</code>: State variable binding</li>
+#     </ul>
+#
+#     <h2>Face Tree</h2>
+#     <p>Faces form a tree structure with parent-child relationships. The root face contains all other faces.</p>
+#     <pre><code>
+#     view .html [
+#         panel "Title" [
+#             row [
+#                 button "Yes" []
+#                 button "No" []
+#             ]
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Accessing Faces</h2>
+#     <p>Faces can be accessed by their ID using <code>get-face</code>:</p>
+#     <pre><code>
+#     myButton: get-face "my-button-id"
+#     </code></pre>
+#
+#     <h2>See Also</h2>
+#     <ul>
+#       <li><a href="/wiki/core/concepts/vid-overview/">VID Overview</a> - The VID dialect</li>
+#       <li><a href="/wiki/core/components/text-components/">Text Components</a> - Text face types</li>
+#       <li><a href="/wiki/core/components/containers/">Container Components</a> - Panel, box, group</li>
+#     </ul>
+#   }
+# ]

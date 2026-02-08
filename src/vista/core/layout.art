@@ -1,0 +1,2098 @@
+; Vista UI - Layout State Management
+
+layout_state: function [block] [
+        block: normalize_block block
+        prev_pending: vista_state\layout_pending_attrs
+        vista_state\layout_pending_attrs: #[]
+        prev_scope_stack: vista_state\layout_scope_stack
+        vista_state\layout_scope_stack: prev_scope_stack
+        bindings: #[]
+        faces: #[]
+        root_id: next_face_id
+        faces\[root_id]: #[
+                id: root_id
+                type: "root"
+                attrs: #[]
+                html: ""
+                children: []
+        ]
+        html: "<div>" ; root container
+        open_divs: 0
+        face_stack: @[root_id]
+        block_len: size block
+        i: 0
+        while [less? i block_len][
+                item: get block i
+                item_type: type item
+                switch equal? item_type :word [
+                        item_name: to :string item
+                        isStyle: key? vista_styles item_name
+                        if isStyle [
+                                info: parse_args_from block (i + 1)
+                                i: info\next
+                                styleBlock: vista_styles\[item_name]
+                                styledBlock: apply_style_args styleBlock info\args info\attrs
+                                inner: layout_state styledBlock
+                                merge_bindings bindings inner\bindings
+                                merge_faces faces inner\faces
+                                parentId: current_parent_id face_stack
+                                append_children_from_root faces parentId inner\root
+                                html: html ++ inner\html
+                        ]
+                        if not? isStyle [
+                                do case item_name [
+                                "pad" -> [
+                                        switch less? (i + 1) block_len [
+                                                v: get block (i + 1)
+                                                vista_state\layout_pending_attrs\pad: v
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
+                                "space" -> [
+                                        switch less? (i + 1) block_len [
+                                                v: get block (i + 1)
+                                                vista_state\layout_pending_attrs\space: v
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
+                                "align" -> [
+                                        switch less? (i + 1) block_len [
+                                                v: get block (i + 1)
+                                                vista_state\layout_pending_attrs\align: v
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
+                                "valign" -> [
+                                        switch less? (i + 1) block_len [
+                                                v: get block (i + 1)
+                                                vista_state\layout_pending_attrs\valign: v
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
+                                "size" -> [
+                                        switch less? (i + 1) block_len [
+                                                v: get block (i + 1)
+                                                vista_state\layout_pending_attrs\size: v
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
+                                "origin" -> [
+                                        switch less? (i + 1) block_len [
+                                                v: get block (i + 1)
+                                                vista_state\layout_pending_attrs\origin: v
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
+                                "offset" -> [
+                                        switch less? (i + 1) block_len [
+                                                v: get block (i + 1)
+                                                vista_state\layout_pending_attrs\offset: v
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
+                                "indent" -> [
+                                        switch less? (i + 1) block_len [
+                                                v: get block (i + 1)
+                                                vista_state\layout_pending_attrs\indent: v
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
+                                "guide" -> [
+                                        switch key? vista_state\layout_pending_attrs "class" [
+                                                vista_state\layout_pending_attrs\class: to :string vista_state\layout_pending_attrs\class ++ " vista-guide"
+                                        ][
+                                                vista_state\layout_pending_attrs\class: "vista-guide"
+                                        ]
+                                        i: i + 1
+                                ]
+                                "do" -> [
+                                        switch less? (i + 1) block_len [
+                                                val: get block (i + 1)
+                                                do val
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
+                                "raw" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        if greater? (size info\args) 0 [
+                                                rawVal: get info\args 0
+                                                switch is_raw_html rawVal [
+                                                        html: html ++ rawVal\value
+                                                ][
+                                                        html: html ++ to :string rawVal
+                                                ]
+                                        ]
+                                ]
+                                "scope" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        scopeAttrs: vista_state\layout_pending_attrs
+                                        if greater? (size keys info\attrs) 0 [
+                                                scopeAttrs: merge_pending_attrs info\attrs scopeAttrs
+                                        ]
+                                        vista_state\layout_pending_attrs: #[]
+                                        bodyVal: null
+                                        if greater? (size info\args) 0 [
+                                                bodyVal: get info\args 0
+                                        ]
+                                        if [equal? (type bodyVal) :block [
+                                                prevStack: vista_state\layout_scope_stack
+                                                vista_state\layout_scope_stack: vista_state\layout_scope_stack ++ @[scopeAttrs]
+                                                inner: layout_state bodyVal
+                                                vista_state\layout_scope_stack: prevStack
+                                                merge_bindings bindings inner\bindings
+                                                merge_faces faces inner\faces
+                                                parentId: current_parent_id face_stack
+                                                append_children_from_root faces parentId inner\root
+                                                html: html ++ inner\html
+                                        ]
+                                ]
+                                "across" -> [
+                                        attrs: #[]
+                                        if greater? (size keys vista_state\layout_pending_attrs) 0 [
+                                                attrs: prepare_attrs #[] bindings
+                                        ]
+                                        switch vista_layout_vid_mode [
+                                                merged: merge_class_attr attrs "vista-layout-across"
+                                                htmlStr: to :string html
+                                                attrStr: attrs_to_html merged\attrs
+                                                openHtml: "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+                                                html: htmlStr ++ openHtml
+                                        ][
+                                                baseStyle: "display: flex;"
+                                                if key? attrs "style" [
+                                                        baseStyle: append_style baseStyle (to :string attrs\style)
+                                                        attrs: attrs_without attrs "style"
+                                                ]
+                                                attrs\style: baseStyle
+                                                htmlStr: to :string html
+                                                attrStr: attrs_to_html attrs
+                                                html: htmlStr ++ "<div" ++ attrStr ++ ">"
+                                        ]
+                                        open_divs: open_divs + 1
+                                        i: i + 1
+                                ]
+                                "below" -> [
+                                        attrs: #[]
+                                        if greater? (size keys vista_state\layout_pending_attrs) 0 [
+                                                attrs: prepare_attrs #[] bindings
+                                        ]
+                                        switch vista_layout_vid_mode [
+                                                merged: merge_class_attr attrs "vista-layout-below"
+                                                htmlStr: to :string html
+                                                attrStr: attrs_to_html merged\attrs
+                                                openHtml: "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+                                                html: htmlStr ++ openHtml
+                                        ][
+                                                htmlStr: to :string html
+                                                attrStr: attrs_to_html attrs
+                                                html: htmlStr ++ "<div" ++ attrStr ++ ">"
+                                        ]
+                                        open_divs: open_divs + 1
+                                        i: i + 1
+                                ]
+                                "return" -> [
+                                        switch greater? open_divs 0 [
+                                                htmlStr: to :string html
+                                                html: htmlStr ++ "</div>"
+                                        ][
+                                                open_divs: open_divs + 1
+                                        ]
+                                        attrs: #[]
+                                        if greater? (size keys vista_state\layout_pending_attrs) 0 [
+                                                attrs: prepare_attrs #[] bindings
+                                        ]
+                                        switch vista_layout_vid_mode [
+                                                merged: merge_class_attr attrs "vista-layout-row"
+                                                htmlStr: to :string html
+                                                attrStr: attrs_to_html merged\attrs
+                                                openHtml: "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+                                                html: htmlStr ++ openHtml
+                                        ][
+                                                htmlStr: to :string html
+                                                attrStr: attrs_to_html attrs
+                                                html: htmlStr ++ "<div" ++ attrStr ++ ">"
+                                        ]
+                                        i: i + 1
+                                ]
+                                "end" -> [
+                                        if greater? open_divs 0 [
+                                                html: html ++ "</div>"
+                                                open_divs: open_divs - 1
+                                        ]
+                                        i: i + 1
+                                ]
+                                "text" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "text" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                attrStr: attrs_to_html attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        faceHtml: "<span data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></span>"
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        textVal: html_text arg0
+                                                        faceHtml: "<span" ++ attrStr ++ ">" ++ textVal ++ "</span>"
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ]
+                                ]
+                                "title" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "title" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        merged: merge_class_attr attrs "vista-title"
+                                                        attrStr: attrs_to_html merged\attrs
+                                                        faceHtml: "<h1 class='" ++ merged\class ++ "' data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></h1>"
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        faceHtml: title arg0 attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ]
+                                ]
+                                "subtitle" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "subtitle" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        merged: merge_class_attr attrs "vista-subtitle"
+                                                        attrStr: attrs_to_html merged\attrs
+                                                        faceHtml: "<h2 class='" ++ merged\class ++ "' data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></h2>"
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        faceHtml: subtitle arg0 attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ]
+                                ]
+                                "field" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if equal? args_len 0 [
+                                                args: args ++ [""]
+                                        ]
+                                        arg0: get args 0
+                                        arg0_type: type arg0
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "field" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        switch equal? arg0_type :word [
+                                                add_binding bindings arg0
+                                                arg0_str: to :string arg0
+                                                set_face_meta faces faceId #[bindName: arg0_str]
+                                                faceHtml: input_field arg0_str attrs
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ][
+                                                inputType: "text"
+                                                if key? attrs "type" [
+                                                        inputType: to :string attrs\type
+                                                ]
+                                                set_face_meta faces faceId #[value: arg0]
+                                                attrStr: attrs_to_html (attrs_without attrs "type")
+                                                faceHtml: "<input type='" ++ inputType ++ "' value='" ++ html_escape_attr (to :string arg0) ++ "'" ++ attrStr ++ ">"
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ]
+                                ]
+                                "info" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        switch key? attrs "class" [
+                                                attrs\class: "vista-info " ++ to :string attrs\class
+                                        ][
+                                                attrs\class: "vista-info"
+                                        ]
+                                        attrs\readonly: true
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "info" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        set_face_meta faces faceId #[bindName: arg0_str]
+                                                        faceHtml: input_field arg0_str attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        set_face_meta faces faceId #[value: arg0]
+                                                        attrStr: attrs_to_html (attrs_without attrs "type")
+                                                        faceHtml: "<input type='text' value='" ++ html_escape_attr (to :string arg0) ++ "'" ++ attrStr ++ ">"
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ]
+                                ]
+                                "button" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if equal? args_len 1 [
+                                                args: args ++ [""]
+                                        ]
+                                        labelHtml: ""
+                                        labelClass: ""
+                                        if key? attrs "label-class" [
+                                                labelClass: to :string attrs["label-class"]
+                                                attrs: attrs_without attrs "label-class"
+                                        ]
+                                        arg0: get args 0
+                                        arg0_type: type arg0
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "button" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        switch equal? arg0_type :word [
+                                                add_binding bindings arg0
+                                                arg0_str: to :string arg0
+                                                labelHtml: "<span data-bind='" ++ arg0_str
+                                                switch notEqual? labelClass "" [
+                                                        labelHtml: labelHtml ++ "' class='" ++ labelClass ++ "'></span>"
+                                                ][
+                                                        labelHtml: labelHtml ++ "'></span>"
+                                                ]
+                                        ][
+                                                labelHtml: html_text arg0
+                                        ]
+                                        jsAction: ""
+                                        arg1: get args 1
+                                        arg1_type: type arg1
+                                        switch equal? arg1_type :block [
+                                                jsAction: compile_action arg1 bindings
+                                        ][
+                                                jsAction: to :string arg1
+                                        ]
+                                        set_face_meta faces faceId #[
+                                                labelHtml: labelHtml
+                                                action: jsAction
+                                        ]
+                                        faceHtml: button labelHtml jsAction attrs
+                                        html: html ++ faceHtml
+                                        set_face_html faces faceId faceHtml
+                                ]
+                                "key" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        jsAction: ""
+                                        if key? attrs "onchange" [
+                                                jsAction: attrs\onchange
+                                                attrs: attrs_without attrs "onchange"
+                                        ]
+                                        modeVal: "keydown"
+                                        if key? attrs "mode" [
+                                                modeVal: to :string attrs\mode
+                                                attrs: attrs_without attrs "mode"
+                                        ]
+                                        modifiersOnly: false
+                                        if key? attrs "modifiers" [
+                                                modifiersOnly: attrs\modifiers
+                                                attrs: attrs_without attrs "modifiers"
+                                        ]
+                                        filterStr: ""
+                                        if key? attrs "filter" [
+                                                fval: attrs\filter
+                                                ftype: type fval
+                                                switch equal? ftype :block [
+                                                        flen: size fval
+                                                        fi: 0
+                                                        while [less? fi flen][
+                                                                frag: to :string (get fval fi)
+                                                                switch equal? filterStr "" [
+                                                                        filterStr: frag
+                                                                ][
+                                                                        filterStr: filterStr ++ "," ++ frag
+                                                                ]
+                                                                fi: fi + 1
+                                                        ]
+                                                ][
+                                                        filterStr: to :string fval
+                                                ]
+                                                attrs: attrs_without attrs "filter"
+                                        ]
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                bindName: ""
+                                                labelVal: ""
+                                                switch equal? (type (get args 0)) :word [
+                                                        bindName: to :string (get args 0)
+                                                        add_binding bindings (get args 0)
+                                                        if greater? args_len 1 [
+                                                                labelVal: get args 1
+                                                        ]
+                                                ][
+                                                        labelVal: get args 0
+                                                ]
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "key" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                attrs\["data-key-mode"]: modeVal
+                                                attrs\["data-key-modifiers"]: to :string modifiersOnly
+                                                if notEqual? filterStr "" [
+                                                        attrs\["data-key-filter"]: filterStr
+                                                ]
+                                                if notEqual? jsAction "" [
+                                                        attrs\["data-key-action"]: jsAction
+                                                ]
+                                                set_face_attrs_and_name faces faceId attrs
+                                                labelHtml: html_text labelVal
+                                                set_face_meta faces faceId #[
+                                                        labelHtml: labelHtml
+                                                        bindName: bindName
+                                                ]
+                                                faceHtml: key_button labelHtml bindName attrs
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ]
+                                ]
+                                "label" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "label" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                attrStr: attrs_to_html attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        faceHtml: "<label data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></label>"
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        labelVal: html_text arg0
+                                                        faceHtml: "<label" ++ attrStr ++ ">" ++ labelVal ++ "</label>"
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ]
+                                ]
+                                "box" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "box" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_or_string (get args 0) bindings faces faceId
+                                                faceHtml: box bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        ]
+                                ]
+                                "panel" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                titleHtml: ""
+                                                bodyVal: null
+                                                if greater? args_len 1 [
+                                                        bodyVal: get args 1
+                                                ]
+                                                switch equal? arg0_type :block [
+                                                        bodyVal: arg0
+                                                ][
+                                                        switch equal? arg0_type :word [
+                                                                add_binding bindings arg0
+                                                                titleHtml: "<span data-bind='" ++ to :string arg0 ++ "'></span>"
+                                                        ][
+                                                                titleHtml: html_text arg0
+                                                        ]
+                                                ]
+                                                bodyHtml: ""
+                                                inner_root: null
+                                                switch equal? (type bodyVal) :block [
+                                                        inner: layout_state bodyVal
+                                                        merge_bindings bindings inner\bindings
+                                                        merge_faces faces inner\faces
+                                                        bodyHtml: inner\html
+                                                        inner_root: inner\root
+                                                ][
+                                                        bodyHtml: html_text bodyVal
+                                                ]
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "panel" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                append_children_from_root faces faceId inner_root
+                                                set_face_meta faces faceId #[titleHtml: titleHtml]
+                                                faceHtml: panel_face titleHtml bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        ]
+                                ]
+                                "grid" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        cols: 2
+                                        bodyVal: null
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                switch equal? (type arg0) :integer [
+                                                        cols: arg0
+                                                        if greater? args_len 1 [
+                                                                bodyVal: get args 1
+                                                        ]
+                                                ][
+                                                        bodyVal: arg0
+                                                ]
+                                        ]
+                                        if key? attrs "cols" [
+                                                cols: attrs\cols
+                                                attrs: attrs_without attrs "cols"
+                                        ]
+                                        if equal? bodyVal null [
+                                                bodyVal: []
+                                        ]
+                                        bodyHtml: ""
+                                        inner_root: null
+                                        switch equal? (type bodyVal) :block [
+                                                inner: layout_state bodyVal
+                                                merge_bindings bindings inner\bindings
+                                                merge_faces faces inner\faces
+                                                bodyHtml: inner\html
+                                                inner_root: inner\root
+                                        ][
+                                                bodyHtml: html_text bodyVal
+                                        ]
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "grid" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        append_children_from_root faces faceId inner_root
+                                        set_face_meta faces faceId #[cols: cols]
+                                        faceHtml: grid_face bodyHtml attrs cols
+                                        set_face_html faces faceId faceHtml
+                                        html: html ++ faceHtml
+                                ]
+                                "spacer" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                sizeVal: get args 0
+                                                sizeType: type sizeVal
+                                                switch equal? sizeType :block [
+                                                        if [equal? (size sizeVal) 2 [
+                                                                widthVal: style_value (get sizeVal 0)
+                                                                heightVal: style_value (get sizeVal 1)
+                                                                attrs\style: "width: " ++ widthVal ++ "; height: " ++ heightVal ++ ";"
+                                                        ]
+                                                ][
+                                                        heightVal: style_value sizeVal
+                                                        attrs\style: "height: " ++ heightVal ++ ";"
+                                                ]
+                                        ]
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "spacer" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        faceHtml: spacer_face attrs
+                                        html: html ++ faceHtml
+                                        set_face_html faces faceId faceHtml
+                                ]
+                                "row" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "row" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_or_string (get args 0) bindings faces faceId
+                                                faceHtml: row bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        ]
+                                ]
+                                "col" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "col" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_or_string (get args 0) bindings faces faceId
+                                                faceHtml: col bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        ]
+                                ]
+                                "group" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "group" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_or_string (get args 0) bindings faces faceId
+                                                faceHtml: group bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        ]
+                                ]
+                                "sensor" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "sensor" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        bodyHtml: ""
+                                        if greater? (size args) 0 [
+                                                bodyHtml: render_block_or_string (get args 0) bindings faces faceId
+                                        ]
+                                        faceHtml: sensor_face bodyHtml attrs
+                                        set_face_html faces faceId faceHtml
+                                        html: html ++ faceHtml
+                                ]
+                                "form" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: info\attrs
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                bodyBlock: get args 0
+                                                bodyType: type bodyBlock
+                                                action: ""
+                                                if key? attrs "on-submit" [
+                                                        onVal: attrs["on-submit"]
+                                                        attrs: attrs_without attrs "on-submit"
+                                                        onType: type onVal
+                                                        switch equal? onType :block [
+                                                                action: compile_action onVal bindings
+                                                        ][
+                                                                action: to :string onVal
+                                                        ]
+                                                ][
+                                                        if greater? args_len 1 [
+                                                                maybeAct: get args 1
+                                                                maybeType: type maybeAct
+                                                                if equal? maybeType :block [
+                                                                        action: compile_action maybeAct bindings
+                                                                ]
+                                                        ]
+                                                ]
+                                                attrs: prepare_attrs attrs bindings
+                                                parentId: current_parent_id face_stack
+                                                switch equal? bodyType :block [
+                                                        inner: layout_state bodyBlock
+                                                        merge_bindings bindings inner\bindings
+                                                        merge_faces faces inner\faces
+                                                        faceId: register_face faces parentId "form" attrs ""
+                                                        attrs: with_face_id attrs faceId
+                                                        set_face_attrs_and_name faces faceId attrs
+                                                        append_children_from_root faces faceId inner\root
+                                                        faceHtml: form inner\html attrs action
+                                                        set_face_html faces faceId faceHtml
+                                                        html: html ++ faceHtml
+                                                ][
+                                                        faceId: register_face faces parentId "form" attrs ""
+                                                        attrs: with_face_id attrs faceId
+                                                        set_face_attrs_and_name faces faceId attrs
+                                                        faceHtml: form (html_text bodyBlock) attrs action
+                                                        set_face_html faces faceId faceHtml
+                                                        html: html ++ faceHtml
+                                                ]
+                                        ]
+                                ]
+                                "checkbox" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        bindName: to :string arg0
+                                                        labelHtml: ""
+                                                        labelClass: ""
+                                                        parentId: current_parent_id face_stack
+                                                        faceId: register_face faces parentId "checkbox" attrs ""
+                                                        attrs: with_face_id attrs faceId
+                                                        set_face_attrs_and_name faces faceId attrs
+                                                        if key? attrs "label-class" [
+                                                                labelClass: to :string attrs["label-class"]
+                                                                attrs: attrs_without attrs "label-class"
+                                                        ]
+                                                        if greater? args_len 1 [
+                                                                arg1: get args 1
+                                                                arg1_type: type arg1
+                                                                switch equal? arg1_type :word [
+                                                                        add_binding bindings arg1
+                                                                        arg1_str: to :string arg1
+                                                                        labelHtml: "<span data-bind='" ++ arg1_str
+                                                                        switch notEqual? labelClass "" [
+                                                                                labelHtml: labelHtml ++ "' class='" ++ labelClass ++ "'></span>"
+                                                                        ][
+                                                                                labelHtml: labelHtml ++ "'></span>"
+                                                                        ]
+                                                                ][
+                                                                        switch equal? arg1_type :block [
+                                                                                inner: layout_state arg1
+                                                                                merge_bindings bindings inner\bindings
+                                                                                merge_faces faces inner\faces
+                                                                                append_children_from_root faces faceId inner\root
+                                                                                labelHtml: inner\html
+                                                                        ][
+                                                                                labelHtml: html_text arg1
+                                                                        ]
+                                                                ]
+                                                        ]
+                                                        set_face_meta faces faceId #[
+                                                                labelHtml: labelHtml
+                                                                bindName: bindName
+                                                        ]
+                                                        faceHtml: checkbox labelHtml bindName attrs
+                                                        set_face_html faces faceId faceHtml
+                                                        html: html ++ faceHtml
+                                                ][
+                                                        i: i + 1
+                                                ]
+                                        ]
+                                ]
+                                "toggle" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        bindName: to :string arg0
+                                                        labelHtml: ""
+                                                        labelClass: ""
+                                                        parentId: current_parent_id face_stack
+                                                        faceId: register_face faces parentId "toggle" attrs ""
+                                                        attrs: with_face_id attrs faceId
+                                                        set_face_attrs_and_name faces faceId attrs
+                                                        if key? attrs "label-class" [
+                                                                labelClass: to :string attrs["label-class"]
+                                                                attrs: attrs_without attrs "label-class"
+                                                        ]
+                                                        if greater? args_len 1 [
+                                                                arg1: get args 1
+                                                                arg1_type: type arg1
+                                                                switch equal? arg1_type :word [
+                                                                        add_binding bindings arg1
+                                                                        arg1_str: to :string arg1
+                                                                        labelHtml: "<span data-bind='" ++ arg1_str
+                                                                        switch notEqual? labelClass "" [
+                                                                                labelHtml: labelHtml ++ "' class='" ++ labelClass ++ "'></span>"
+                                                                        ][
+                                                                                labelHtml: labelHtml ++ "'></span>"
+                                                                        ]
+                                                                ][
+                                                                        switch equal? arg1_type :block [
+                                                                                inner: layout_state arg1
+                                                                                merge_bindings bindings inner\bindings
+                                                                                merge_faces faces inner\faces
+                                                                                append_children_from_root faces faceId inner\root
+                                                                                labelHtml: inner\html
+                                                                        ][
+                                                                                labelHtml: html_text arg1
+                                                                        ]
+                                                                ]
+                                                        ]
+                                                        set_face_meta faces faceId #[
+                                                                labelHtml: labelHtml
+                                                                bindName: bindName
+                                                        ]
+                                                        faceHtml: toggle labelHtml bindName attrs
+                                                        set_face_html faces faceId faceHtml
+                                                        html: html ++ faceHtml
+                                                ][
+                                                        i: i + 1
+                                                ]
+                                        ]
+                                ]
+                                "input" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if equal? args_len 0 [
+                                                args: args ++ [""]
+                                        ]
+                                        arg0: get args 0
+                                        arg0_type: type arg0
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "input" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        switch equal? arg0_type :word [
+                                                add_binding bindings arg0
+                                                arg0_str: to :string arg0
+                                                set_face_meta faces faceId #[bindName: arg0_str]
+                                                faceHtml: input_field arg0_str attrs
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ][
+                                                inputType: "text"
+                                                if key? attrs "type" [
+                                                        inputType: to :string attrs\type
+                                                ]
+                                                set_face_meta faces faceId #[value: arg0]
+                                                attrStr: attrs_to_html (attrs_without attrs "type")
+                                                faceHtml: "<input type='" ++ inputType ++ "' value='" ++ html_escape_attr (to :string arg0) ++ "'" ++ attrStr ++ ">"
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ]
+                                ]
+                                "slider" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if equal? args_len 0 [
+                                                args: args ++ [0]
+                                        ]
+                                        arg0: get args 0
+                                        arg0_type: type arg0
+                                        labelMin: null
+                                        labelMax: null
+                                        if key? attrs "labels" [
+                                                labelsVal: attrs\labels
+                                                if [equal? (type labelsVal) :block [
+                                                        if [equal? (size labelsVal) 2 [
+                                                                labelMin: get labelsVal 0
+                                                                labelMax: get labelsVal 1
+                                                        ]
+                                                ]
+                                                attrs: attrs_without attrs "labels"
+                                        ]
+                                        if key? attrs "label-min" [
+                                                labelMin: attrs["label-min"]
+                                                attrs: attrs_without attrs "label-min"
+                                        ]
+                                        if key? attrs "label-max" [
+                                                labelMax: attrs["label-max"]
+                                                attrs: attrs_without attrs "label-max"
+                                        ]
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "slider" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        bindName: "value"
+                                        switch equal? arg0_type :word [
+                                                bindName: to :string arg0
+                                        ][
+                                                bindName: "value"
+                                        ]
+                                        set_face_meta faces faceId #[
+                                                bindName: bindName
+                                                labelMin: labelMin
+                                                labelMax: labelMax
+                                        ]
+                                        switch equal? arg0_type :word [
+                                                add_binding bindings arg0
+                                                arg0_str: to :string arg0
+                                                sliderHtml: slider_field arg0_str attrs
+                                                switch any? @[notEqual? labelMin null notEqual? labelMax null] [
+                                                        wrapHtml: "<div class='vista-slider-wrap'>"
+                                                        if notEqual? labelMin null [
+                                                                labelMinStr: html_text labelMin
+                                                                wrapHtml: wrapHtml ++ "<span class='vista-slider-label'>" ++ labelMinStr ++ "</span>"
+                                                        ]
+                                                        wrapHtml: wrapHtml ++ sliderHtml
+                                                        if notEqual? labelMax null [
+                                                                labelMaxStr: html_text labelMax
+                                                                wrapHtml: wrapHtml ++ "<span class='vista-slider-label'>" ++ labelMaxStr ++ "</span>"
+                                                        ]
+                                                        wrapHtml: wrapHtml ++ "</div>"
+                                                        html: html ++ wrapHtml
+                                                        set_face_html faces faceId wrapHtml
+                                                ][
+                                                        html: html ++ sliderHtml
+                                                        set_face_html faces faceId sliderHtml
+                                                ]
+                                        ][
+                                                inputType: "range"
+                                                if key? attrs "type" [
+                                                        inputType: to :string attrs\type
+                                                ]
+                                                attrStr: attrs_to_html (attrs_without attrs "type")
+                                                sliderHtml: "<input type='" ++ inputType ++ "' value='" ++ html_escape_attr (to :string arg0) ++ "'" ++ attrStr ++ ">"
+                                                switch any? @[notEqual? labelMin null notEqual? labelMax null] [
+                                                        wrapHtml: "<div class='vista-slider-wrap'>"
+                                                        if notEqual? labelMin null [
+                                                                labelMinStr: html_text labelMin
+                                                                wrapHtml: wrapHtml ++ "<span class='vista-slider-label'>" ++ labelMinStr ++ "</span>"
+                                                        ]
+                                                        wrapHtml: wrapHtml ++ sliderHtml
+                                                        if notEqual? labelMax null [
+                                                                labelMaxStr: html_text labelMax
+                                                                wrapHtml: wrapHtml ++ "<span class='vista-slider-label'>" ++ labelMaxStr ++ "</span>"
+                                                        ]
+                                                        wrapHtml: wrapHtml ++ "</div>"
+                                                        html: html ++ wrapHtml
+                                                        set_face_html faces faceId wrapHtml
+                                                ][
+                                                        html: html ++ sliderHtml
+                                                        set_face_html faces faceId sliderHtml
+                                                ]
+                                        ]
+                                ]
+                                "rotary" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "rotary" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        set_face_meta faces faceId #[bindName: arg0_str]
+                                                        faceHtml: rotary_field arg0_str attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        set_face_meta faces faceId #[value: arg0]
+                                                        faceHtml: rotary_field "value" attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ]
+                                ]
+                                "radio" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                opts: []
+                                                if greater? args_len 1 [
+                                                        arg1: get args 1
+                                                        switch equal? (type arg1) :block [
+                                                                opts: arg1
+                                                        ][
+                                                                opts: [arg1]
+                                                        ]
+                                                ]
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "radio" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        set_face_meta faces faceId #[
+                                                                bindName: arg0_str
+                                                                options: opts
+                                                        ]
+                                                        faceHtml: radio_group arg0_str attrs opts bindings
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        switch equal? arg0_type :block [
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: arg0
+                                                                ]
+                                                                faceHtml: radio_group "value" attrs arg0 bindings
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ][
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: [arg0]
+                                                                ]
+                                                                faceHtml: radio_group "value" attrs [arg0] bindings
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                                "radio-group" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                opts: []
+                                                if greater? args_len 1 [
+                                                        arg1: get args 1
+                                                        switch equal? (type arg1) :block [
+                                                                opts: arg1
+                                                        ][
+                                                                opts: [arg1]
+                                                        ]
+                                                ]
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "radio-group" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        set_face_meta faces faceId #[
+                                                                bindName: arg0_str
+                                                                options: opts
+                                                        ]
+                                                        faceHtml: radio_group arg0_str attrs opts bindings
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        switch equal? arg0_type :block [
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: arg0
+                                                                ]
+                                                                faceHtml: radio_group "value" attrs arg0 bindings
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ][
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: [arg0]
+                                                                ]
+                                                                faceHtml: radio_group "value" attrs [arg0] bindings
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                                "radio_group" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                opts: []
+                                                if greater? args_len 1 [
+                                                        arg1: get args 1
+                                                        switch equal? (type arg1) :block [
+                                                                opts: arg1
+                                                        ][
+                                                                opts: [arg1]
+                                                        ]
+                                                ]
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "radio-group" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        set_face_meta faces faceId #[
+                                                                bindName: arg0_str
+                                                                options: opts
+                                                        ]
+                                                        faceHtml: radio_group arg0_str attrs opts bindings
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        switch equal? arg0_type :block [
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: arg0
+                                                                ]
+                                                                faceHtml: radio_group "value" attrs arg0 bindings
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ][
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: [arg0]
+                                                                ]
+                                                                faceHtml: radio_group "value" attrs [arg0] bindings
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                                "textarea" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if equal? args_len 0 [
+                                                args: args ++ [""]
+                                        ]
+                                        arg0: get args 0
+                                        arg0_type: type arg0
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "textarea" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        switch equal? arg0_type :word [
+                                                add_binding bindings arg0
+                                                arg0_str: to :string arg0
+                                                set_face_meta faces faceId #[bindName: arg0_str]
+                                                faceHtml: textarea_field arg0_str attrs null
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ][
+                                                set_face_meta faces faceId #[value: arg0]
+                                                faceHtml: textarea_field "value" attrs arg0
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ]
+                                ]
+                                "select" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                opts: []
+                                                if greater? args_len 1 [
+                                                        arg1: get args 1
+                                                        if [equal? (type arg1) :block [
+                                                                opts: arg1
+                                                        ]
+                                                ]
+                                                ]
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "select" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        set_face_meta faces faceId #[
+                                                                bindName: arg0_str
+                                                                options: opts
+                                                        ]
+                                                        faceHtml: select_field arg0_str attrs opts
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        switch equal? arg0_type :block [
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: arg0
+                                                                ]
+                                                                faceHtml: select_field "value" attrs arg0
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ][
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: [arg0]
+                                                                ]
+                                                                faceHtml: select_field "value" attrs [arg0]
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                                "drop-list" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                opts: []
+                                                if greater? args_len 1 [
+                                                        arg1: get args 1
+                                                        if [equal? (type arg1) :block [
+                                                                opts: arg1
+                                                        ]
+                                                ]
+                                                ]
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "drop-list" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        set_face_meta faces faceId #[
+                                                                bindName: arg0_str
+                                                                options: opts
+                                                        ]
+                                                        faceHtml: select_field arg0_str attrs opts
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        switch equal? arg0_type :block [
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: arg0
+                                                                ]
+                                                                faceHtml: select_field "value" attrs arg0
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ][
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: [arg0]
+                                                                ]
+                                                                faceHtml: select_field "value" attrs [arg0]
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                                "drop_list" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                opts: []
+                                                if greater? args_len 1 [
+                                                        arg1: get args 1
+                                                        if [equal? (type arg1) :block [
+                                                                opts: arg1
+                                                        ]
+                                                ]
+                                                ]
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "drop-list" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        set_face_meta faces faceId #[
+                                                                bindName: arg0_str
+                                                                options: opts
+                                                        ]
+                                                        faceHtml: select_field arg0_str attrs opts
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        switch equal? arg0_type :block [
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: arg0
+                                                                ]
+                                                                faceHtml: select_field "value" attrs arg0
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ][
+                                                                set_face_meta faces faceId #[
+                                                                        bindName: "value"
+                                                                        options: [arg0]
+                                                                ]
+                                                                faceHtml: select_field "value" attrs [arg0]
+                                                                html: html ++ faceHtml
+                                                                set_face_html faces faceId faceHtml
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                                "image" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "image" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        attrStr: attrs_to_html attrs
+                                                        faceHtml: "<img data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ ">"
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        faceHtml: image_face arg0 attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ]
+                                ]
+                                "icon" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "icon" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                switch key? attrs "class" [
+                                                        attrs\class: "vista-icon " ++ to :string attrs\class
+                                                ][
+                                                        attrs\class: "vista-icon"
+                                                ]
+                                                set_face_attrs_and_name faces faceId attrs
+                                                faceHtml: image_face arg0 attrs
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ]
+                                ]
+                                "anim" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "anim" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                switch key? attrs "class" [
+                                                        attrs\class: "vista-anim " ++ to :string attrs\class
+                                                ][
+                                                        attrs\class: "vista-anim"
+                                                ]
+                                                set_face_attrs_and_name faces faceId attrs
+                                                faceHtml: image_face arg0 attrs
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ]
+                                ]
+                                "progress" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "progress" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        attrStr: attrs_to_html attrs
+                                                        faceHtml: "<progress data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></progress>"
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        faceHtml: progress_face arg0 attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ]
+                                ]
+                                "tabs" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        selectedIndex: 0
+                                        if key? attrs "selected" {
+                                                selectedIndex: attrs\selected
+                                                attrs: attrs_without attrs "selected"
+                                        }
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                tabsBlock: get args 0
+                                                if [equal? (type tabsBlock) :block [
+                                                        vista_state\tabs_id_counter: vista_state\tabs_id_counter + 1
+                                                        tabIdBase: "tabs-" ++ to :string vista_state\tabs_id_counter
+                                                        merged: merge_class_attr attrs "vista-tabs"
+                                                        attrStr: attrs_to_html merged\attrs
+                                                        selectedStr: to :string selectedIndex
+                                                        htmlTabs: "<div class='" ++ merged\class ++ "' data-tabs='" ++ tabIdBase ++ "' data-tabs-selected='" ++ selectedStr ++ "'" ++ attrStr ++ ">"
+                                                        htmlTabs: htmlTabs ++ "<div class='vista-tabs-bar'>"
+                                                        htmlPanels: "<div class='vista-tabs-panels'>"
+                                                        tlen: size tabsBlock
+                                                        t: 0
+                                                        tabIndex: 0
+                                                        parentId: current_parent_id face_stack
+                                                        faceId: register_face faces parentId "tabs" attrs ""
+                                                        attrs: with_face_id attrs faceId
+                                                        set_face_attrs_and_name faces faceId attrs
+                                                        merged: merge_class_attr attrs "vista-tabs"
+                                                        attrStr: attrs_to_html merged\attrs
+                                                        selectedStr: to :string selectedIndex
+                                                        htmlTabs: "<div class='" ++ merged\class ++ "' data-tabs='" ++ tabIdBase ++ "' data-tabs-selected='" ++ selectedStr ++ "'" ++ attrStr ++ ">"
+                                                        while [less? t tlen][
+                                                                tok: get tabsBlock t
+                                                                if [equal? (type tok) :word [
+                                                                        if [equal? (to :string tok) "tab" [
+                                                                                t: t + 1
+                                                                                if less? t tlen {
+                                                                                        titleVal: get tabsBlock t
+                                                                                        t: t + 1
+                                                                                        bodyVal: null
+                                                                                        if less? t tlen {
+                                                                                                bodyVal: get tabsBlock t
+                                                                                                t: t + 1
+                                                                                        }
+                                                                                        tabKey: tabIdBase ++ "-" ++ to :string tabIndex
+                                                                                        tabIndex: tabIndex + 1
+                                                                                        titleHtml: ""
+                                                                                        titleType: type titleVal
+                                                                                        switch equal? titleType :word [
+                                                                                                add_binding bindings titleVal
+                                                                                                titleHtml: "<span data-bind='" ++ to :string titleVal ++ "'></span>"
+                                                                                        ][
+                                                                                                titleHtml: html_text titleVal
+                                                                                        ]
+                                                                                        btnFaceId: register_face faces faceId "tab-button" #[ ] ""
+                                                                                        btnAttrs: with_face_id #[] btnFaceId
+                                                                                        set_face_attrs_and_name faces btnFaceId btnAttrs
+                                                                                        btnAttrStr: attrs_to_html btnAttrs
+                                                                                        btnHtml: "<button class='vista-tab-btn' data-tab='" ++ tabKey ++ "'" ++ btnAttrStr ++ ">" ++ titleHtml ++ "</button>"
+                                                                                        set_face_html faces btnFaceId btnHtml
+                                                                                        htmlTabs: htmlTabs ++ btnHtml
+                                                                                        panelHtml: ""
+                                                                                        switch equal? (type bodyVal) :block [
+                                                                                                inner: layout_state bodyVal
+                                                                                                merge_bindings bindings inner\bindings
+                                                                                                merge_faces faces inner\faces
+                                                                                                append_children_from_root faces faceId inner\root
+                                                                                                panelHtml: inner\html
+                                                                                        ][
+                                                                                                panelHtml: html_text bodyVal
+                                                                                        ]
+                                                                                        panelFaceId: register_face faces faceId "tab-panel" #[] ""
+                                                                                        panelAttrs: with_face_id #[] panelFaceId
+                                                                                        set_face_attrs_and_name faces panelFaceId panelAttrs
+                                                                                        panelAttrStr: attrs_to_html panelAttrs
+                                                                                        panelHtmlOut: "<div class='vista-tab-panel' data-tab='" ++ tabKey ++ "'" ++ panelAttrStr ++ ">" ++ panelHtml ++ "</div>"
+                                                                                        set_face_html faces panelFaceId panelHtmlOut
+                                                                                        htmlPanels: htmlPanels ++ panelHtmlOut
+                                                                                ]
+                                                                        ][
+                                                                                t: t + 1
+                                                                        ]
+                                                                ][
+                                                                        t: t + 1
+                                                                ]
+                                                        ]
+                                                        htmlTabs: htmlTabs ++ "</div>" ++ htmlPanels ++ "</div></div>"
+                                                        set_face_html faces faceId htmlTabs
+                                                        html: html ++ htmlTabs
+                                                ]
+                                        ]
+                                ]
+                                "text-list" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "text-list" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :block [
+                                                        faceHtml: text_list_bind arg0 bindings attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        faceHtml: text_list_bind [arg0] bindings attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ]
+                                ]
+                                "text_list" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "text-list" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                switch equal? arg0_type :block [
+                                                        faceHtml: text_list_bind arg0 bindings attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        faceHtml: text_list_bind [arg0] bindings attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ]
+                                ]
+                                "list" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                bindName: "value"
+                                                items: []
+                                                switch equal? (type (get args 0)) :word [
+                                                        bindName: to :string (get args 0)
+                                                        add_binding bindings (get args 0)
+                                                        if greater? args_len 1 {
+                                                                if [equal? (type (get args 1)) :block [
+                                                                        items: get args 1
+                                                                ]
+                                                        ]
+                                                ][
+                                                        switch equal? (type (get args 0)) :block [
+                                                                items: get args 0
+                                                        ][
+                                                                items: [get args 0]
+                                                        ]
+                                                ]
+                                                multi: false
+                                                if key? attrs "multi" {
+                                                        multi: attrs\multi
+                                                        attrs: attrs_without attrs "multi"
+                                                }
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "list" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                set_face_meta faces faceId #[
+                                                        bindName: bindName
+                                                        options: items
+                                                        multi: multi
+                                                ]
+                                                faceHtml: list_face_bind items bindName multi bindings attrs
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ]
+                                ]
+                                "table" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table-row" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-row" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_row_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table_row" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-row" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_row_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table-header" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-header" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_header_cell_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table_header" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-header" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_header_cell_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table-cell" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-cell" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_cell_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table_cell" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-cell" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_cell_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table-head" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-head" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_head_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table_head" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-head" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_head_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table-body" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-body" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_body_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table_body" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-body" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_body_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table-foot" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-foot" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_foot_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "table_foot" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "table-foot" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_inner (get args 0) bindings faces faceId
+                                                faceHtml: table_foot_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "toolbar" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "toolbar" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_or_string (get args 0) bindings faces faceId
+                                                faceHtml: toolbar_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "menubar" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "menubar" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_or_string (get args 0) bindings faces faceId
+                                                faceHtml: menubar_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "tool-group" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "tool-group" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_or_string (get args 0) bindings faces faceId
+                                                faceHtml: tool_group_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "tool_group" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 {
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "tool-group" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_or_string (get args 0) bindings faces faceId
+                                                faceHtml: tool_group_face bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        }
+                                ]
+                                "canvas" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        drawBlock: null
+                                        if greater? (size args) 0 {
+                                                if [equal? (type (get args 0)) :block [
+                                                        drawBlock: normalize_block (get args 0)
+                                                ]
+                                        }
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "canvas" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        if notEqual? drawBlock null {
+                                                set_face_meta faces faceId #[draw: drawBlock]
+                                        }
+                                        faceHtml: canvas_face attrs
+                                        html: html ++ faceHtml
+                                        set_face_html faces faceId faceHtml
+                                ]
+                                "divider" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "divider" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        faceHtml: divider_face attrs
+                                        html: html ++ faceHtml
+                                        set_face_html faces faceId faceHtml
+                                ]
+                                "split" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        ratio: null
+                                        orientation: "horizontal"
+                                        if key? attrs "ratio" {
+                                                ratio: attrs\ratio
+                                                attrs: attrs_without attrs "ratio"
+                                        }
+                                        if key? attrs "orientation" {
+                                                orientation: to :string attrs\orientation
+                                                attrs: attrs_without attrs "orientation"
+                                        }
+                                        leftHtml: ""
+                                        rightHtml: ""
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "split" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        if greater? args_len 0 {
+                                                leftVal: get args 0
+                                                leftHtml: render_block_or_string leftVal bindings faces faceId
+                                        }
+                                        if greater? args_len 1 {
+                                                rightVal: get args 1
+                                                rightHtml: render_block_or_string rightVal bindings faces faceId
+                                        }
+                                        set_face_meta faces faceId #[
+                                                ratio: ratio
+                                                orientation: orientation
+                                        ]
+                                        if equal? orientation "vertical" {
+                                                switch key? attrs "class" [
+                                                        attrs\class: "vista-split-vertical " ++ to :string attrs\class
+                                                ][
+                                                        attrs\class: "vista-split-vertical"
+                                                ]
+                                        }
+                                        faceHtml: split_face leftHtml rightHtml attrs ratio
+                                        set_face_html faces faceId faceHtml
+                                        html: html ++ faceHtml
+                                ]
+                                any -> [
+                                        i: i + 1
+                                ]
+                        ]
+                ]
+                ][
+                        i: i + 1
+                ]
+        ]
+        while [greater? open_divs 0][
+                html: html ++ "</div>"
+                open_divs: open_divs - 1
+        ]
+        html: html ++ "</div>" ; close root
+        set_face_html faces root_id html
+        vista_state\layout_pending_attrs: prev_pending
+        vista_state\layout_scope_stack: prev_scope_stack
+        #[
+                html: html
+                bindings: bindings
+                faces: faces
+                root: root_id
+        ]
+]

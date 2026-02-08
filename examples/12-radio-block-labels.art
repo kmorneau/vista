@@ -1,0 +1,21 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Radio Block Labels"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+choice: "b"
+
+view [
+    title "Radio Block Labels"
+    radio choice [
+        ["a" [text "Alpha option"]]
+        ["b" [text "Beta option"]]
+        ["c" [text "Gamma option"]]
+    ]
+    text "Selected:"
+    text choice
+]

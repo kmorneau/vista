@@ -1,0 +1,11 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    panel "Info" [
+        text "Overlay demo"
+        text .id:greeting "Hello"
+    ]
+    face_tree_overlay
+]
+
+print html

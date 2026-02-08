@@ -1,0 +1,8 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    key lastKey "Press"
+    text lastKey
+]
+
+print html

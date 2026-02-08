@@ -1,0 +1,135 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Draw Limitations Fixes"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 700
+]
+
+view [
+    title "Draw Dialect Limitation Fixes Demo"
+    
+    text "1. Named Colors (CSS color names)"
+    canvas .id:"named-colors" .width: 360 .height: 80 [
+        pen red
+        line-width 3
+        circle [40 40] 25
+        
+        pen cornflowerblue
+        circle [100 40] 25
+        
+        pen forestgreen
+        circle [160 40] 25
+        
+        pen darkorange
+        circle [220 40] 25
+        
+        pen crimson
+        circle [280 40] 25
+        
+        fill-pen gold
+        pen transparent
+        circle [340 40] 25
+    ]
+    
+    text "2. Text Alignment (text-baseline, text-align)"
+    canvas .id:"text-align" .width: 360 .height: 100 [
+        font "16px sans-serif"
+        
+        ; Default baseline (alphabetic)
+        fill-pen "#333"
+        pen "#333"
+        text [10 30] "Alphabetic (default)"
+        
+        ; Top baseline
+        text-baseline "top"
+        text [10 50] "Top baseline"
+        
+        ; Middle baseline
+        text-baseline "middle"
+        text [10 70] "Middle baseline"
+        
+        ; Center aligned
+        text-baseline "alphabetic"
+        text-align "center"
+        text [280 50] "Centered"
+    ]
+    
+    text "3. Coordinate Systems (vid, math, center)"
+    canvas .id:"coord-system" .width: 360 .height: 120 [
+        ; VID style (default) - origin top-left, Y down
+        push
+        pen blue
+        line-width 2
+        line [10 10] [40 10]
+        line [10 10] [10 40]
+        text [50 15] "VID (top-left)"
+        pop
+        
+        ; Math style - origin bottom-left, Y up
+        push
+        coord-system "math"
+        pen green
+        line-width 2
+        line [10 10] [40 10]
+        line [10 10] [10 40]
+        font "12px sans-serif"
+        text [50 15] "Math (bottom-left, Y up)"
+        pop
+        
+        ; Center style - origin at center
+        push
+        coord-system "center"
+        pen red
+        line-width 2
+        line [-80 0] [80 0]
+        line [0 -40] [0 40]
+        font "12px sans-serif"
+        text-align "center"
+        text [0 50] "Center origin"
+        pop
+    ]
+    
+    text "4. Image Smoothing (smooth on/off)"
+    row [
+        canvas .id:"smooth-on" .width: 170 .height: 100 [
+            smooth on
+            fill-pen "#f0f0f0"
+            box [10 10] [160 90]
+            font "12px sans-serif"
+            text-align "center"
+            text [85 50] "Smooth ON (default)"
+        ]
+        canvas .id:"smooth-off" .width: 170 .height: 100 [
+            smooth off
+            fill-pen "#f0f0f0"
+            box [10 10] [160 90]
+            font "12px sans-serif"
+            text-align "center"
+            text [85 50] "Smooth OFF (pixel-art)"
+        ]
+    ]
+    
+    text "5. Transparent Color"
+    canvas .id:"transparent" .width: 360 .height: 80 [
+        ; Background circle
+        fill-pen gold
+        pen transparent
+        circle [80 40] 40
+        
+        ; Semi-transparent overlay using RGBA block
+        fill-pen [255 0 0 0.5]
+        circle [120 40] 40
+        
+        ; Transparent pen (no stroke)
+        fill-pen steelblue
+        pen transparent
+        circle [180 40] 30
+        
+        ; Using transparent keyword
+        fill-pen transparent
+        pen "#333"
+        circle [260 40] 25
+    ]
+]

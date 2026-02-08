@@ -1,0 +1,26 @@
+; Test for canvas line styles: line-cap, line-join, smooth, coord-system
+; Verifies line styling attributes on canvas
+
+html: view .returnHtml [
+    title "Canvas Line Styles"
+    canvas .id:"canvas-styles" .width: 400 .height: 300 [
+        pen "blue"
+        line-width 6
+        ; Test line-cap styles
+        line-cap "butt"
+        line [20 30] [120 30]
+        line-cap "round"
+        line [20 60] [120 60]
+        line-cap "square"
+        line [20 90] [120 90]
+        ; Test line-join styles
+        line-join "miter"
+        polygon [ [150 50] [200 100] [250 50] ]
+        line-join "round"
+        line-width 8
+        polygon [ [150 120] [200 170] [250 120] ]
+        line-join "bevel"
+        polygon [ [150 190] [200 240] [250 190] ]
+    ]
+]
+print html

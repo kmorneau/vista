@@ -1,0 +1,18 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Vid Widgets"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+view [
+    info statusText
+    rotary volume
+    icon "icon.png"
+    anim "spinner.gif"
+    sensor .on-click:[print "tap"] [
+        text "Sensor area"
+    ]
+]

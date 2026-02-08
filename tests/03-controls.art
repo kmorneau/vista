@@ -1,0 +1,12 @@
+import "vista.art"!
+
+accepted: false
+mode: true
+age: 30
+
+html: view .returnHtml [
+    checkbox accepted "Accept terms"
+    toggle mode "Dark Mode"
+    input .type:"number" .min:0 .max:120 age
+]
+print html

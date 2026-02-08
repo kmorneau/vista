@@ -1,0 +1,85 @@
+; Vista snapshot generator
+; Generates HTML snapshots from all tests/*.art
+
+files: [
+    "tests/01-layout-flow.art"
+    "tests/02-bindings.art"
+    "tests/03-controls.art"
+    "tests/04-form-submit.art"
+    "tests/05-lists-boxes.art"
+    "tests/06-advanced-controls.art"
+    "tests/07-media-progress.art"
+    "tests/08-tabs.art"
+    "tests/09-radio-block-labels.art"
+    "tests/10-events-layout.art"
+    "tests/11-layout-positioning.art"
+    "tests/12-list-drop-list.art"
+    "tests/13-slider-labels.art"
+    "tests/14-panel-grid-spacer.art"
+    "tests/15-table.art"
+    "tests/16-toolbar-menubar.art"
+    "tests/17-canvas-divider.art"
+    "tests/18-split.art"
+    "tests/19-radio-attrs.art"
+    "tests/20-nested-layout.art"
+    "tests/21-style.art"
+    "tests/22-tabs-update.art"
+    "tests/23-face-tree.art"
+    "tests/24-face-tree-by-id.art"
+    "tests/25-face-overlay.art"
+    "tests/26-vid-phase1.art"
+    "tests/27-layout-container-attrs.art"
+    "tests/28-vid-mode.art"
+    "tests/29-scope-layout.art"
+    "tests/30-vid-helper.art"
+    "tests/31-key-capture.art"
+    "tests/32-list-selection.art"
+    "tests/33-key-onchange.art"
+    "tests/34-key-options.art"
+    "tests/35-vid-widgets.art"
+    "tests/36-overlay-inspector.art"
+    "tests/37-layout-vid-mode.art"
+    "tests/38-tabs-selected.art"
+    "tests/39-edge-facets.art"
+    "tests/40-events-over-out.art"
+    "tests/41-mouse-events.art"
+    "tests/41-demo-form.art"
+    "tests/42-demo-tabs.art"
+    "tests/43-demo-lists.art"
+    "tests/44-demo-toolbar.art"
+    "tests/45-demo-table.art"
+    "tests/46-demo-split.art"
+    "tests/47-app-header.art"
+    "tests/48-smoke-app.art"
+    "tests/49-draw-primitives.art"
+    "tests/50-draw-gradients.art"
+    "tests/51-draw-text-image.art"
+    "tests/52-draw-transforms.art"
+    "tests/52-face-inspector.art"
+    "tests/53-canvas-styles.art"
+]
+
+out_dir: "tests/snapshots/snapshots"
+manifest_path: "tests/snapshots/manifest.json"
+
+run_one: function [file][
+    html: execute ("VISTA_NO_WEBVIEW=1 arturo " ++ file)
+    name: replace file "tests/" ""
+    name: replace name ".art" ".html"
+    out: out_dir ++ "/" ++ name
+    write html out
+    print ["Wrote" out]
+    # [name: name size: size html]
+]
+
+manifest: []
+
+loop files 'f [
+    print ["Running" f]
+    meta: run_one f
+    manifest: manifest ++ @[meta]
+]
+
+write.json manifest manifest_path
+print ["Wrote" manifest_path]
+print "Done"

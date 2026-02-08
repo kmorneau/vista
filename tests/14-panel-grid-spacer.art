@@ -1,0 +1,16 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    panel "Panel Title" [
+        text "Inside panel"
+        spacer 8
+        text "After spacer"
+    ]
+    grid 3 [
+        text "A"
+        text "B"
+        text "C"
+        text "D"
+    ]
+]
+print html

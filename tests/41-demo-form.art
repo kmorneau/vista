@@ -1,0 +1,16 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    h2 "Contact"
+    panel "Details" [
+        below
+        text "Name"
+        field name
+        text "Email"
+        field email
+        return
+        button "Submit" [print name print email]
+    ]
+]
+
+print html

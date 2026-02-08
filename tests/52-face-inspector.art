@@ -1,0 +1,17 @@
+; Test for face inspector functions: find_face, print_face_tree, face_info
+; Verifies face tree inspection and debugging capabilities
+
+html: view .returnHtml [
+    title "Face Inspector Test"
+    box #testBox [
+        across
+        button "Button 1" []
+        button "Button 2" []
+    ]
+    panel "Test Panel" [
+        text "Panel content"
+    ]
+]
+
+print_face_tree
+print ["Found face:" face_info find_face #[id: "testBox"]]

@@ -1,0 +1,30 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Panel Split Table Update"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+webview_sync_updates: true
+
+view .file: "ui.html" [
+    panel "Info" [
+        text "Old"
+    ]
+    split [text "Left"] [text "Right"]
+    table [
+        table-row [table-cell "A" table-cell "B"]
+    ]
+]
+
+panelFace: get_face_path ["panel" 0]
+splitFace: get_face_path ["split" 0]
+tableFace: get_face_path ["table" 0]
+
+update_panel_body panelFace\id [text "New"]
+update_split_pane splitFace\id 1 [text "Right updated"]
+update_table_body tableFace\id [
+    table-row [table-cell "C" table-cell "D"]
+]

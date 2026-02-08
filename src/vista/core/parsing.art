@@ -1,0 +1,134 @@
+; Vista UI - Parsing and Compilation
+
+parse_attrs: function [args] [
+        attrs: #[]
+        rest: []
+        i: 0
+        args_len: size args
+        while [less? i args_len][
+                tok: get args i
+                tok_type: type tok
+                switch equal? tok_type :attributeLabel [
+                        name: to :string tok
+                        advance: 1
+                        if less? i + 2 args_len [
+                                mid: get args (i + 1)
+                                tail: get args (i + 2)
+                                if all? @[equal? (type mid) :symbol equal? (to :string mid) "-" equal? (type tail) :word] [
+                                        name: name ++ "-" ++ to :string tail
+                                        advance: 3
+                                ]
+                        ]
+                        switch less? i + advance args_len [
+                                val: get args (i + advance)
+                                handled: false
+                                if [equal? (type val) :symbol [
+                                        if [equal? (to :string val) "#" [
+                                                if less? (i + advance + 1) args_len [
+                                                        nextVal: get args (i + advance + 1)
+                                                        if [equal? (type nextVal) :block [
+                                                                attrs\[name]: header_from_block nextVal
+                                                                i: i + advance + 2
+                                                                handled: true
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                                if not? handled [
+                                        attrs\[name]: val
+                                        i: i + advance + 1
+                                ]
+                        ][
+                                i: i + 1
+                        ]
+                ][
+                        switch equal? tok_type :attribute [
+                                name: to :string tok
+                                if less? i + 2 args_len [
+                                        mid: get args (i + 1)
+                                        tail: get args (i + 2)
+                                        if all? @[equal? (type mid) :symbol equal? (to :string mid) "-" equal? (type tail) :word] [
+                                                name: name ++ "-" ++ to :string tail
+                                                i: i + 3
+                                                attrs\[name]: true
+                                                continue
+                                        ]
+                                ]
+                                attrs\[name]: true
+                                i: i + 1
+                        ][
+                                rest: append_value rest tok
+                                i: i + 1
+                        ]
+                ]
+        ]
+        #[
+                attrs: attrs
+                args: rest
+        ]
+]
+
+collect_args: function [block start] [
+        args: []
+        block_len: size block
+        i: start
+        while [less? i block_len][
+                tok: get block i
+                tok_type: type tok
+                if equal? tok_type :word [
+                        if less? (i + 2) block_len [
+                                mid: get block (i + 1)
+                                tail: get block (i + 2)
+                                if all? @[equal? (type mid) :symbol equal? (to :string mid) "-" equal? (type tail) :word] [
+                                        compound: to :string tok ++ "-" ++ to :string tail
+                                        if is_keyword compound block [
+                                                break
+                                        ]
+                                ]
+                        ]
+                ]
+                if is_keyword tok block [
+                        break
+                ]
+                args: append_value args tok
+                i: i + 1
+        ]
+        #[
+                args: args
+                next: i
+        ]
+]
+
+parse_args_from: function [block start] [
+        info: collect_args block start
+        parsed: parse_attrs info\args
+        #[
+                args: parsed\args
+                attrs: parsed\attrs
+                next: info\next
+        ]
+]
+
+render_block_or_string: function [value bindings faces parentId] [
+        switch equal? (type value) :block [
+                inner: layout_state value
+                merge_bindings bindings inner\bindings
+                merge_faces faces inner\faces
+                append_children_from_root faces parentId inner\root
+                inner\html
+        ][
+                html_text value
+        ]
+]
+
+render_block_inner: function [value bindings faces parentId] [
+        switch equal? (type value) :block [
+                inner: layout_state value
+                merge_bindings bindings inner\bindings
+                merge_faces faces inner\faces
+                append_children_from_root faces parentId inner\root
+                strip_root_div inner\html
+        ][
+                html_text value
+        ]
+]

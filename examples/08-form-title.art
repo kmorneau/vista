@@ -1,0 +1,29 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Form Title"
+    Logo: "arturo-vista.png"
+    Width: 900
+    Height: 560
+]
+
+name: ""
+email: ""
+submitted: false
+
+view [
+    title "Profile"
+    subtitle "Edit your details"
+    form .on-submit:[submitted: true] [
+        label "Name"
+        input .type:"text" .placeholder:"Full name" name
+        label "Email"
+        input .type:"email" .placeholder:"you@example.com" email
+        row [
+            button .label-class:"primary" "Save" [submitted: true]
+            checkbox submitted "Mark as submitted"
+        ]
+    ]
+    text "Submitted:"
+    text submitted
+]

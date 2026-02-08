@@ -1,0 +1,16 @@
+; Test for mouse events: on-down, on-up
+; Verifies mouse button press/release event handlers
+
+html: view .returnHtml [
+    title "Mouse Events Test"
+    box [
+        text "Test mouse down/up events:"
+        button "Click Me" [
+            on-click [clicked: true]
+            on-down [down: true]
+            on-up [down: false]
+        ]
+        field down .label:"Mouse Down:"
+    ]
+]
+print html

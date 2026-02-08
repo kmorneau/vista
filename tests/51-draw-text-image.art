@@ -1,0 +1,17 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    canvas .id:"draw-text-image" .width: 320 .height: 200 [
+        fill-pen "#f8f9ff"
+        box [0 0] [320 200]
+        pen "#1b1b1b"
+        font "16px 'IBM Plex Sans'"
+        text [20 40] "Hello Draw"
+        image [20 60] "arturo-vista.png" [80 80]
+        pen "#2f5cff"
+        line-width 2
+        box [130 60] [300 170]
+        text [140 90] "Image frame"
+    ]
+]
+print html
