@@ -79,7 +79,7 @@ wikiIndexHtml: renderTpl baseTpl #[
 ]
 
 execute "mkdir -p dist/wiki"
-write wikiIndexHtml join [DIST "/wiki/index.html"]
+write join [DIST "/wiki/index.html"] wikiIndexHtml
 print "Generated: dist/wiki/index.html"
 
 ; --- root index page ---
@@ -92,7 +92,7 @@ rootIndexHtml: renderTpl baseTpl #[
     "footer": footer
 ]
 
-write rootIndexHtml join [DIST "/index.html"]
+write join [DIST "/index.html"] rootIndexHtml
 print "Generated: dist/index.html"
 
 print "Build complete!"
