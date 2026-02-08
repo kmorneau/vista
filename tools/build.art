@@ -205,6 +205,19 @@ wikiIndexHtml: renderTpl baseTpl #[
 execute "mkdir -p dist/wiki"
 write wikiIndexHtml join [DIST "/wiki/index.html"]
 
+; --- root index page (redirect to wiki) ---
+print "Generating root index page..."
+
+rootIndexHtml: renderTpl baseTpl #[
+    "title": "Vista Documentation"
+    "content": {<h1>Vista Documentation</h1><p>Welcome to Vista! <a href="/wiki/">View the documentation wiki</a>.</p>}
+    "navbar": navbar
+    "footer": footer
+]
+
+write rootIndexHtml join [DIST "/index.html"]
+print "Generated: dist/index.html"
+
 print "Build complete!"
 print ["Generated" size wikiIndexItems "wiki pages"]
 print ""
