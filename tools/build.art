@@ -1,8 +1,6 @@
 ; ------------------------------------------------------------
-; Static site generator with wiki support
-; Uses Arturo's block comment format for wiki pages
-; Input:  data/wiki/*.art
-; Theme:  src/theme/templates + components + resources
+; Static site generator for Vista documentation
+; Input:  src/theme/templates + components + resources
 ; Output: dist/
 ; ------------------------------------------------------------
 
@@ -23,8 +21,6 @@ renderTpl: function [tpl data][
 ; --- paths ---
 SRC:   "src"
 THEME: join [SRC "/theme"]
-DATA:  "data"
-WIKI:  join [DATA "/wiki"]
 DIST:  "dist"
 
 ; --- init dist ---
@@ -41,7 +37,7 @@ execute join ["cp " THEME "/resources/scripts/main.js " DIST "/assets/"]
 ; copy icons
 print "Copying icons..."
 execute "mkdir -p dist/assets/icons"
-execute join ["cp -r " THEME "/resources/icons/*.svg " DIST "/assets/icons/"]
+execute join ["cp -r " THEME "/resources/icons/*.svg " DIST "/assets/icons/ 2>/dev/null || true"]
 
 ; load components
 print "Loading components..."
@@ -55,153 +51,28 @@ baseTpl:    readText join [THEME "/templates/base.html"]
 pageTpl:    readText join [THEME "/templates/page.html"]
 docpageTpl: readText join [THEME "/templates/docpage.html"]
 
-; --- WIP wiki: scan and build wiki index ---
-print "Scanning wiki files..."
-wikiFiles: select (list.recursive WIKI) 'p -> suffix? p ".art"
-print ["Found" size wikiFiles "wiki files"]
-
-wikiIndexItems: []
-
-if not? empty? wikiFiles [
-    loop wikiFiles 'wf [
-        ; read the Arturo file content
-        content: readText wf
-        
-        ; extract metadata from block comment
-        title: ""
-        layout: "docpage"
-        category: ""
-        html: ""
-        
-        ; extract title from metadata
-        titleMatch: match content {/"title":\s*"([^"]+)"/}
-        if not? empty? titleMatch [
-            title: first titleMatch
-        ]
-        
-        ; extract layout from metadata
-        layoutMatch: match content {/"layout":\s*"([^"]+)"/}
-        if not? empty? layoutMatch [
-            layout: first layoutMatch
-        ]
-        
-        ; extract category from metadata
-        categoryMatch: match content {/"category":\s*"([^"]+)"/}
-        if not? empty? categoryMatch [
-            category: first categoryMatch
-        ]
-        
-        ; if no title, use slug
-        if empty? title [
-            title: extract.filename wf
-            title: replace title ".art" ""
-        ]
-        
-        ; extract body - handle balanced braces
-        bodyMarker: "\"body\": {"
-        bodyStart: index content bodyMarker
-        if not? null? bodyStart [
-            ; Find the opening brace position
-            bracePos: bodyStart + size bodyMarker
-            
-            ; Find matching closing brace (balanced braces)
-            depth: 1
-            i: bracePos
-            contentLen: size content
-            bodyEnd: null
-            while [i < contentLen] [
-                ch: get content i
-                if (to :string ch) = "{" [
-                    depth: depth + 1
-                ]
-                if (to :string ch) = "}" [
-                    depth: depth - 1
-                    if depth = 0 [
-                        bodyEnd: i
-                        break
-                    ]
-                ]
-                i: i + 1
-            ]
-            
-            if not? null? bodyEnd [
-                ; Extract content between braces
-                bodyContent: slice content bracePos bodyEnd
-                html: bodyContent
-            ]
-        ]
-        
-        ; slug: file name without path and extension
-        slug: extract.filename wf
-        slug: replace slug ".art" ""
-        
-        print ["  Processing:" slug]
-        
-        'wikiIndexItems ++ #[
-            slug: slug
-            title: title
-            category: category
-        ]
-        
-        ; generate HTML for this wiki page
-        inner: renderTpl docpageTpl #[
-            "title": title
-            "body": html
-            "docnav": sidebar
-        ]
-        
-        fullHtml: renderTpl baseTpl #[
-            "title": title
-            "content": inner
-            "navbar": navbar
-            "footer": footer
-        ]
-        
-        ; write to dist/wiki/<slug>/index.html
-        wikiOutDir: DIST ++ "/wiki/" ++ slug
-        execute "mkdir -p " ++ wikiOutDir
-        wikiOutPath: wikiOutDir ++ "/index.html"
-        write fullHtml wikiOutPath
-        print ["    Generated:" wikiOutPath]
-    ]
-]
-
-; build sidebar with wiki links
-wikiLinksHtml: ""
-if not? empty? wikiIndexItems [
-    wikiLinksHtml: join (map wikiIndexItems 'item -> join [
-        {<a href="/wiki/} item\slug {">} item\title {</a>}
-    ]) ""
-]
-
-print ["Generated" size wikiIndexItems "wiki page links"]
-
 ; --- wiki index page ---
 print "Generating wiki index page..."
 
-wikiIndexBody: ""
-if empty? wikiIndexItems [
-    wikiIndexBody: {<h1>Wiki</h1><p>No pages yet.</p>}
-]
-if not? empty? wikiIndexItems [
-    links: map wikiIndexItems 'item -> join [
-        {<li><a href="/wiki/} item\slug {">} item\title {</a></li>}
-    ]
-    wikiIndexBody: join [
-        {<h1>Wiki</h1><ul>}
-        join links ""
-        {</ul>}
-    ]
-]
+wikiIndexBody: {<h1>Vista Documentation</h1>
+<p>Welcome to the Vista UI framework documentation.</p>
+<h2>Getting Started</h2>
+<ul>
+<li><a href="https://github.com/kmorneau/vista">GitHub Repository</a></li>
+<li><a href="https://github.com/kmorneau/vista/blob/main/README.md">README</a></li>
+</ul>
+<h2>Examples</h2>
+<p>See the <a href="https://github.com/kmorneau/vista/tree/main/examples">examples folder</a> for code samples.</p>
+}
 
 inner: renderTpl docpageTpl #[
-    "title": "Wiki"
+    "title": "Documentation"
     "body": wikiIndexBody
     "docnav": sidebar
 ]
 
 wikiIndexHtml: renderTpl baseTpl #[
-    "title": "Wiki"
+    "title": "Vista Documentation"
     "content": inner
     "navbar": navbar
     "footer": footer
@@ -209,13 +80,14 @@ wikiIndexHtml: renderTpl baseTpl #[
 
 execute "mkdir -p dist/wiki"
 write wikiIndexHtml join [DIST "/wiki/index.html"]
+print "Generated: dist/wiki/index.html"
 
-; --- root index page (redirect to wiki) ---
+; --- root index page ---
 print "Generating root index page..."
 
 rootIndexHtml: renderTpl baseTpl #[
     "title": "Vista Documentation"
-    "content": {<h1>Vista Documentation</h1><p>Welcome to Vista! <a href="/wiki/">View the documentation wiki</a>.</p>}
+    "content": {<h1>Vista Documentation</h1><p>Welcome to Vista! <a href="/wiki/">View the documentation</a>.</p>}
     "navbar": navbar
     "footer": footer
 ]
@@ -224,6 +96,5 @@ write rootIndexHtml join [DIST "/index.html"]
 print "Generated: dist/index.html"
 
 print "Build complete!"
-print ["Generated" size wikiIndexItems "wiki pages"]
 print ""
-print "Wiki output in: dist/wiki/"
+print "Output in: dist/"
