@@ -9,7 +9,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  
+
 concurrency:
   group: "pages"
   cancel-in-progress: true
@@ -20,17 +20,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Arturo
-        uses: arturo-lang/setup-arturo@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          mode: full
-
       - name: Build site
         run: |
           set -euxo pipefail
-          rm -rf dist
-          arturo tools/build.art
+          chmod +x tools/build.sh
+          bash tools/build.sh
           test -f dist/index.html
 
       - name: Configure Pages
