@@ -1,0 +1,162 @@
+# [
+#   "title": "Click Events"
+#   "layout": "docpage"
+#   "category": "Core > Events"
+#   "tags": ["click", "events", "button", "core"]
+#   "body": {
+#     <h1>Click Events</h1>
+#
+#     <p>Click events handle user interactions with buttons and clickable elements. In Vista, the action block attached to a button serves as its click handler.</p>
+#
+#     <h2>Basic Click Handling</h2>
+#
+#     <p>The simplest form of click handling is the button action:</p>
+#     <pre><code>
+#     import 'vista!
+#
+#     counter: 0
+#
+#     view [
+#         text ["Count: " counter]
+#
+#         button "Increment" [
+#             counter: counter + 1
+#         ]
+#
+#         button "Reset" [
+#             counter: 0
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Click on Any Element</h2>
+#
+#     <p>Use <code>on-click</code> to make any element clickable:</p>
+#     <pre><code>
+#     view [
+#         box "Click me"
+#             .on-click:[print "Box clicked!"]
+#
+#         text "Clickable text"
+#             .on-click:[status: "Text clicked"]
+#     ]
+#     </code></pre>
+#
+#     <h2>Click with State Change</h2>
+#
+#     <p>Click handlers can update multiple state variables:</p>
+#     <pre><code>
+#     view [
+#         button "Toggle Mode" [
+#             darkMode: not darkMode
+#             status: "Mode changed"
+#         ]
+#
+#         checkbox enabled "Enable feature"
+#
+#         button "Apply" [
+#             if enabled [
+#                 applySettings
+#                 status: "Settings applied"
+#             ]
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Click with Confirmation</h2>
+#
+#     <p>Conditional actions based on click:</p>
+#     <pre><code>
+#     button "Delete" [
+#         if confirm "Are you sure?" [
+#             deleteItem
+#             status: "Item deleted"
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Form Submission</h2>
+#
+#     <p>Use the <code>form</code> component for submit handling:</p>
+#     <pre><code>
+#     view [
+#         form .on-submit:[
+#             print "Form submitted"
+#             processForm
+#         ] [
+#             label "Name:"
+#             field name
+#
+#             button "Submit"
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Click with Parameters</h2>
+#
+#     <p>Access current state in click handlers:</p>
+#     <pre><code>
+#     items: ["A" "B" "C"]
+#
+#     view [
+#         loop items [
+#             item ->
+#             button item [
+#                 print ["Clicked: " item]
+#                 selected: item
+#             ]
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Mouse Button Specificity</h2>
+#
+#     <p>Handle different mouse buttons:</p>
+#     <pre><code>
+#     box "Right-click me"
+#         .on-click:[
+#             print "Left click"
+#         ]
+#         .on-contextmenu:[
+#             print "Right click - show menu"
+#         ]
+#     </code></pre>
+#
+#     <h2>Double Click</h2>
+#
+#     <p>Handle double-click events:</p>
+#     <pre><code>
+#     list items ["File1" "File2" "File3"]
+#         .on-dblclick:[
+#             openItem
+#         ]
+#     </code></pre>
+#
+#     <h2>Click Prevention</h2>
+#
+#     <p>Prevent default click behavior:</p>
+#     <pre><code>
+#     link "Click me"
+#         .on-click:[
+#             doSomething
+#             ; return false to prevent default
+#         ]
+#     </code></pre>
+#
+#     <h2>Best Practices</h2>
+#
+#     <ul>
+#       <li>Use <code>button</code> for primary actions</li>
+#       <li>Use <code>on-click</code> for non-button clickables</li>
+#       <li>Keep handlers simple and focused</li>
+#       <li>Use <code>form</code> for form submissions</li>
+#     </ul>
+#
+#     <h2>See Also</h2>
+#     <ul>
+#       <li><a href="/wiki/core/events/event-overview/">Event Overview</a> - Complete event reference</li>
+#       <li><a href="/wiki/core/events/input-events/">Input Events</a> - Input change handling</li>
+#       <li><a href="/wiki/core/components/button-controls/">Button Controls</a> - Button components</li>
+#     </ul>
+#   }
+# ]

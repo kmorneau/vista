@@ -1,0 +1,246 @@
+# [
+#   "title": "Selection Controls"
+#   "layout": "docpage"
+#   "category": "Core > Components"
+#   "tags": ["selection", "checkbox", "toggle", "radio", "components", "controls"]
+#   "body": {
+#     <h1>Selection Controls</h1>
+#
+#     <p>Selection controls allow users to choose from predefined options. Vista provides checkbox, toggle, and radio components for different selection scenarios.</p>
+#
+#     <h2>Checkbox</h2>
+#
+#     <p>Checkboxes represent boolean on/off states.</p>
+#
+#     <h3>Basic Checkbox</h3>
+#     <pre><code>
+#     import 'vista!
+#
+#     accepted: false
+#
+#     view [
+#         checkbox accepted "I accept the terms"
+#
+#         button "Submit" [
+#             if accepted [
+#                 print "Proceeding..."
+#             ]
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h3>Checkbox with Block Label</h3>
+#     <p>Use block labels for rich content:</p>
+#     <pre><code>
+#     checkbox accepted [
+#         text "I agree to the "
+#         label .style:"text-decoration:underline" "terms and conditions"
+#     ]
+#     </code></pre>
+#
+#     <h3>Multiple Checkboxes</h3>
+#     <pre><code>
+#     options: #[
+#         news: false
+#         updates: true
+#         offers: false
+#     ]
+#
+#     view [
+#         checkbox options\news "Subscribe to newsletter"
+#         checkbox options\updates "Get product updates"
+#         checkbox options\offers "Receive special offers"
+#     ]
+#     </code></pre>
+#
+#     <h2>Toggle</h2>
+#
+#     <p>Toggles are stylized checkboxes for on/off settings.</p>
+#
+#     <h3>Basic Toggle</h3>
+#     <pre><code>
+#     darkMode: false
+#
+#     view [
+#         toggle darkMode "Dark Mode"
+#
+#         button "Apply" [
+#             if darkMode [
+#                 enableDarkTheme
+#             ]
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h3>Toggles for Settings</h3>
+#     <pre><code>
+#     settings: #[
+#         notifications: true
+#         autoSave: false
+#         compactView: true
+#     ]
+#
+#     view [
+#         toggle settings\notifications "Enable notifications"
+#         toggle settings\autoSave "Auto-save changes"
+#         toggle settings\compactView "Compact view mode"
+#     ]
+#     </code></pre>
+#
+#     <h3>Toggle with on-change</h3>
+#     <p>Respond to toggle changes:</p>
+#     <pre><code>
+#     enabled: false
+#
+#     view [
+#         toggle enabled "Feature Enabled"
+#             .on-change:[
+#                 if enabled [
+#                     activateFeature
+#                 ] [
+#                     deactivateFeature
+#                 ]
+#             ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Radio</h2>
+#
+#     <p>Radio buttons allow selecting one option from a group.</p>
+#
+#     <h3>Basic Radio Group</h3>
+#     <pre><code>
+#     color: "red"
+#
+#     view [
+#         label "Choose color:"
+#         radio color ["red" "green" "blue"]
+#     ]
+#     </code></pre>
+#
+#     <h3>Radio with on-change</h3>
+#     <p>Respond to selection changes:</p>
+#     <pre><code>
+#     size: "medium"
+#
+#     view [
+#         radio size ["small" "medium" "large"]
+#             .on-change:[
+#                 print ["Selected: " size]
+#                 updatePreview
+#             ]
+#     ]
+#     </code></pre>
+#
+#     <h3>Radio with Value-Label Pairs</h3>
+#     <pre><code>
+#     priority: 1
+#
+#     view [
+#         radio priority [
+#             [1 "Low"]
+#             [2 "Medium"]
+#             [3 "High"]
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h3>Block Labels for Radio</h3>
+#     <p>Rich content in radio labels:</p>
+#     <pre><code>
+#     color: "red"
+#
+#     radio color [
+#         ["red" [
+#             text "● "
+#             label .style:"color:red" "Red"
+#         ]]
+#         ["blue" [
+#             text "● "
+#             label .style:"color:blue" "Blue"
+#         ]]
+#     ]
+#     </code></pre>
+#
+#     <h3>Radio with Option Attributes</h3>
+#     <p>Disable individual options:</p>
+#     <pre><code>
+#     choice: "a"
+#
+#     radio choice [
+#         ["a" "Option A" #[]]
+#         ["b" "Option B" #[disabled: true]]  ; Disabled
+#         ["c" "Option C" #[]]
+#     ]
+#     </code></pre>
+#
+#     <h2>Selection Controls Comparison</h2>
+#
+#     <table>
+#       <tr>
+#         <th>Component</th>
+#         <th>Use Case</th>
+#         <th>State Type</th>
+#       </tr>
+#       <tr>
+#         <td><code>checkbox</code></td>
+#         <td>Boolean on/off</td>
+#         <td>Boolean</td>
+#       </tr>
+#       <tr>
+#         <td><code>toggle</code></td>
+#         <td>Settings on/off</td>
+#         <td>Boolean</td>
+#       </tr>
+#       <tr>
+#         <td><code>radio</code></td>
+#         <td>One of many</td>
+#         <td>String/Number</td>
+#       </tr>
+#     </table>
+#
+#     <h2>Complete Example</h2>
+#
+#     <pre><code>
+#     import 'vista!
+#
+#     formData: #[
+#         newsletter: false
+#         notifications: true
+#         theme: "light"
+#     ]
+#
+#     view [
+#         text "Preferences"
+#         box [
+#             checkbox formData\newsletter "Subscribe to newsletter"
+#             toggle formData\notifications "Push notifications"
+#         ]
+#
+#         text "Theme"
+#         radio formData\theme ["light" "dark" "system"]
+#
+#         button "Save" [
+#             savePreferences
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Best Practices</h2>
+#
+#     <ul>
+#       <li>Use <code>checkbox</code> for independent boolean choices</li>
+#       <li>Use <code>toggle</code> for settings and preferences</li>
+#       <li>Use <code>radio</code> for mutually exclusive options</li>
+#       <li>Provide clear labels for all selection controls</li>
+#       <li>Use <code>on-change</code> for immediate feedback</li>
+#     </ul>
+#
+#     <h2>See Also</h2>
+#     <ul>
+#       <li><a href="/wiki/core/components/sliders-choice/">Sliders & Choice</a> - Slider and drop-list components</li>
+#       <li><a href="/wiki/core/components/input-fields/">Input Fields</a> - Text input components</li>
+#       <li><a href="/wiki/core/events/input-events/">Input Events</a> - Event handling for selections</li>
+#     </ul>
+#   }
+# ]
