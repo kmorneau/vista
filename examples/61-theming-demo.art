@@ -1,0 +1,225 @@
+; Vista UI - Theming Examples
+; Demonstrates Vista's theming system with theme switching and icon packs
+
+; Import Vista framework
+import "src/vista/vista.art"!
+
+; Example 1: Theme switching demo
+theme_switching_demo: function [] [
+        view #[Title: "Vista Theming Demo"] [
+                title "Theme Switching Demo"
+                
+                text "Vista supports multiple themes with inheritance."
+                text "Try switching between Default, Dark, and Light themes."
+                
+                spacer
+                
+                row [
+                        button "Default Theme" .on-click: [
+                                set_theme "default"
+                        ]
+                        button "Dark Theme" .on-click: [
+                                set_theme "dark"
+                        ]
+                        button "Light Theme" .on-click: [
+                                set_theme "light"
+                        ]
+                ]
+                
+                spacer
+                
+                panel [
+                        text "Sample Panel"
+                        text "This panel's colors change with the theme."
+                        row [
+                                button "Primary"
+                                button "Secondary"
+                                button "Success"
+                                button "Danger"
+                        ]
+                ]
+                
+                row [
+                        box [text "Primary Box"]
+                        box [text "Secondary Box"]
+                        box [text "Success Box"]
+                ]
+        ]
+]
+
+; Example 2: Custom theme registration
+custom_theme_demo: function [] [
+        view #[Title: "Custom Theme Demo"] [
+                title "Custom Theme Registration"
+                
+                ; Register a custom theme programmatically
+                vista_themes\custom: #{
+                        name: "Custom"
+                        extends: "default"
+                        colors: #{
+                                primary: "#9c27b0"
+                                secondary: "#673ab7"
+                                background: "#f3e5f5"
+                                surface: "#ffffff"
+                                text: "#4a148c"
+                        }
+                        fonts: #{
+                                family: "'Comic Sans MS', cursive"
+                                size: "16px"
+                        }
+                }
+                
+                text "Custom purple theme registered!"
+                
+                row [
+                        button "Apply Custom Theme" .on-click: [
+                                set_theme "custom"
+                        ]
+                        button "Back to Default" .on-click: [
+                                set_theme "default"
+                        ]
+                ]
+                
+                panel [
+                        text "Custom Themed Panel"
+                        text "This uses the custom purple color scheme."
+                ]
+        ]
+]
+
+; Example 3: Theme-aware icons
+icon_theme_demo: function [] [
+        view #[Title: "Theme-Aware Icons Demo"] [
+                title "Icon Theme System"
+                
+                text "Icons can adapt to the current theme."
+                
+                spacer
+                
+                panel [
+                        text "Icon Theme Demo"
+                        row [
+                                icon_theme "home" "default" 24
+                                icon_theme "settings" "default" 24
+                                icon_theme "user" "default" 24
+                        ]
+                        row [
+                                icon_theme "home" "dark" 24
+                                icon_theme "settings" "dark" 24
+                                icon_theme "user" "dark" 24
+                        ]
+                        row [
+                                icon_theme "home" "light" 24
+                                icon_theme "settings" "light" 24
+                                icon_theme "user" "light" 24
+                        ]
+                ]
+        ]
+]
+
+; Example 4: Theme inheritance
+inheritance_demo: function [] [
+        view #[Title: "Theme Inheritance Demo"] [
+                title "Theme Inheritance"
+                
+                text "Themes can extend other themes and override specific properties."
+                text "The Dark theme extends Default but overrides colors."
+                
+                spacer
+                
+                panel [
+                        text "Inheritance Example"
+                        
+                        text "Default Theme Values:"
+                        text "Primary: #1f5cff"
+                        text "Secondary: #6c757d"
+                        
+                        text "Dark Theme (extends Default):"
+                        text "Primary: #4dabf7 (overridden)"
+                        text "Secondary: #868e96 (overridden)"
+                        text "Background: #212529 (new)"
+                        text "Surface: #343a40 (new)"
+                        text "Text: #dee2e6 (new)"
+                ]
+                
+                row [
+                        button "Show Default" .on-click: [
+                                set_theme "default"
+                        ]
+                        button "Show Dark" .on-click: [
+                                set_theme "dark"
+                        ]
+                ]
+                
+                box [
+                        text "Theme Inherited Box"
+                        text "Background and text colors inherit from theme."
+                ]
+        ]
+]
+
+; Example 5: Dynamic theme switching with preview
+preview_theme_demo: function [] [
+        view #[Title: "Theme Preview Demo"] [
+                title "Theme Preview"
+                
+                text "Preview theme before applying:"
+                
+                row [
+                        panel [
+                                text "Default Preview"
+                                text "Primary: #1f5cff"
+                                button "Apply" .on-click: [set_theme "default"]
+                        ]
+                        panel [
+                                text "Dark Preview"
+                                text "Primary: #4dabf7"
+                                button "Apply" .on-click: [set_theme "dark"]
+                        ]
+                        panel [
+                                text "Light Preview"
+                                text "Primary: #1f5cff"
+                                button "Apply" .on-click: [set_theme "light"]
+                        ]
+                ]
+        ]
+]
+
+; Example 6: Complete theming example
+theming_complete_demo: function [] [
+        view #[Title: "Complete Theming Example"] [
+                title "Complete Theming Demo"
+                
+                text "Vista's theming system provides:"
+                list [
+                        "Multiple predefined themes"
+                        "Theme inheritance"
+                        "Custom theme registration"
+                        "Theme-aware icons"
+                        "CSS variable integration"
+                ]
+                
+                spacer
+                
+                panel [
+                        text "Current Theme"
+                        text "Theme changes affect all themed components."
+                ]
+                
+                row [
+                        button "Default" .on-click: [set_theme "default"]
+                        button "Dark" .on-click: [set_theme "dark"]
+                        button "Light" .on-click: [set_theme "light"]
+                ]
+        ]
+]
+
+; Export for use
+exports: #{
+        switching: :theme_switching_demo
+        custom: :custom_theme_demo
+        icons: :icon_theme_demo
+        inheritance: :inheritance_demo
+        preview: :preview_theme_demo
+        complete: :theming_complete_demo
+}

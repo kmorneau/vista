@@ -1,0 +1,233 @@
+; Vista UI - Rate Facet and Feel Facets Tests
+; Tests for the rate facet and feel facets systems
+
+import "src/vista/vista.art"!
+
+;=============== RATE FACET TESTS ===============
+
+; Test 1: Rate registry exists
+test_rate_registry: function [] [
+        print "Test: Rate registry exists"
+        
+        if not? key? vista_rate_timers "face" [
+                print "FAIL: Rate registry should exist"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 2: Set rate
+test_set_rate: function [] [
+        print "Test: Set rate"
+        
+        ; Set a rate for a face
+        js: set_rate "test-face" 1000
+        
+        if equal? js null [
+                print "FAIL: set_rate should return JS string"
+                return false
+        ]
+        
+        if not? contains? js "setInterval" [
+                print "FAIL: set_rate should return interval JS"
+                return false
+        ]
+        
+        ; Rate should be stored
+        rate: get_rate "test-face"
+        if not? equal? rate 1000 [
+                print "FAIL: Rate should be stored"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 3: Get rate
+test_get_rate: function [] [
+        print "Test: Get rate"
+        
+        set_rate "get-test-face" 500
+        
+        rate: get_rate "get-test-face"
+        if not? equal? rate 500 [
+                print "FAIL: get_rate should return stored rate"
+                return false
+        ]
+        
+        ; Non-existent face should return null
+        rate: get_rate "nonexistent"
+        if not? equal? rate null [
+                print "FAIL: get_rate for non-existent should return null"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 4: Clear rate
+test_clear_rate: function [] [
+        print "Test: Clear rate"
+        
+        set_rate "clear-test-face" 1000
+        
+        ; Should have rate
+        rate: get_rate "clear-test-face"
+        if not? equal? rate 1000 [
+                print "FAIL: Rate should be set before clear"
+                return false
+        ]
+        
+        ; Clear rate
+        clear_rate "clear-test-face"
+        
+        ; Should be null after clear
+        rate: get_rate "clear-test-face"
+        if not? equal? rate null [
+                print "FAIL: Rate should be null after clear"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+;=============== FEEL FACETS TESTS ===============
+
+; Test 5: Apply feel function
+test_apply_feel: function [] [
+        print "Test: Apply feel"
+        
+        ; Create a simple face
+        face: #{
+                id: "feel-test"
+                type: "box"
+                attrs: #{}
+        }
+        
+        ; Apply feel
+        feel-def: #{
+                hover: function [] [print "hover"]
+                away: function [] [print "away"]
+        }
+        
+        result: apply_feel face feel-def
+        
+        if not? key? result "meta" [
+                print "FAIL: Face should have meta after apply_feel"
+                return false
+        ]
+        
+        if not? key? result\meta "feel" [
+                print "FAIL: Face meta should have feel"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 6: Feel face function
+test_feel_face: function [] [
+        print "Test: Feel face function"
+        
+        feel-def: #{
+                hover: function [] [print "hover"]
+        }
+        
+        face: feel_face "box" "Content" #{} feel-def
+        
+        if not? key? face "meta" [
+                print "FAIL: Feel face should have meta"
+                return false
+        ]
+        
+        if not? key? face\meta "feel" [
+                print "FAIL: Feel face meta should have feel"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 7: Feel handlers registry
+test_feel_handlers: function [] [
+        print "Test: Feel handlers registry"
+        
+        if not? key? vista_feel_handlers "hover" [
+                print "FAIL: hover feel handler should exist"
+                return false
+        ]
+        
+        if not? key? vista_feel_handlers "drag" [
+                print "FAIL: drag feel handler should exist"
+                return false
+        ]
+        
+        if not? key? vista_feel_handlers "resize" [
+                print "FAIL: resize feel handler should exist"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 8: Apply feel with state
+test_feel_with_state: function [] [
+        print "Test: Feel with state"
+        
+        face: #{
+                id: "state-test"
+                type: "box"
+                attrs: #{}
+        }
+        
+        feel-def: #{
+                hover: function [] [print "hover"]
+        }
+        
+        result: apply_feel face feel-def
+        
+        ; Should have both meta and state
+        if not? key? result "meta" [
+                print "FAIL: Face should have meta"
+                return false
+        ]
+        
+        if not? key? result "state" [
+                print "FAIL: Face should have state"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Run all rate and feel tests
+run_rate_feel_tests: function [] [
+        print "=== Rate Facet & Feel Facets Tests ==="
+        passed: 0
+        failed: 0
+        
+        ; Rate tests
+        if test_rate_registry [passed: passed + 1] [failed: failed + 1]
+        if test_set_rate [passed: passed + 1] [failed: failed + 1]
+        if test_get_rate [passed: passed + 1] [failed: failed + 1]
+        if test_clear_rate [passed: passed + 1] [failed: failed + 1]
+        
+        ; Feel tests
+        if test_apply_feel [passed: passed + 1] [failed: failed + 1]
+        if test_feel_face [passed: passed + 1] [failed: failed + 1]
+        if test_feel_handlers [passed: passed + 1] [failed: failed + 1]
+        if test_feel_with_state [passed: passed + 1] [failed: failed + 1]
+        
+        print ""
+        print "Results: " ++ to :string passed ++ " passed, " ++ to :string failed ++ " failed"
+        passed
+]

@@ -1,0 +1,215 @@
+; Vista UI - Computed State Tests
+; Tests for the computed properties system
+
+import "src/vista/vista.art"!
+
+; Test 1: Basic computed property
+test_basic_computed: function [] [
+        print "Test: Basic computed property"
+        
+        ; Define a simple computed
+        test-x: 10
+        test-y: 20
+        
+        computed "test-sum" @["test-x" "test-y"] function [x y] [x + y]
+        
+        ; Initial value should be calculated
+        result: get_computed "test-sum"
+        if not? equal? result 30 [
+                print "FAIL: Computed sum should be 30"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 2: Computed with dependency update
+test_computed_update: function [] [
+        print "Test: Computed dependency update"
+        
+        test-a: 5
+        test-b: 10
+        
+        computed "test-product" @["test-a" "test-b"] function [a b] [a * b]
+        
+        ; Initial value
+        result: get_computed "test-product"
+        if not? equal? result 50 [
+                print "FAIL: Initial product should be 50"
+                return false
+        ]
+        
+        ; Update dependency
+        test-a: 7
+        
+        ; Should recalculate
+        result: get_computed "test-product"
+        if not? equal? result 70 [
+                print "FAIL: Updated product should be 70"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 3: Multiple computed properties
+test_multiple_computed: function [] [
+        print "Test: Multiple computed properties"
+        
+        base-value: 100
+        
+        computed "test-double" @["base-value"] function [v] [v * 2]
+        computed "test-triple" @["base-value"] function [v] [v * 3]
+        computed "test-half" @["base-value"] function [v] [v / 2]
+        
+        ; All should calculate correctly
+        if not? equal? (get_computed "test-double") 200 [
+                print "FAIL: Double should be 200"
+                return false
+        ]
+        if not? equal? (get_computed "test-triple") 300 [
+                print "FAIL: Triple should be 300"
+                return false
+        ]
+        if not? equal? (get_computed "test-half") 50 [
+                print "FAIL: Half should be 50"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 4: Computed with array dependency
+test_computed_array: function [] [
+        print "Test: Computed with array"
+        
+        test-items: @[1, 2, 3, 4, 5]
+        
+        computed "test-sum" @["test-items"] function [items] [
+                sum: 0
+                i: 0
+                while [less? i (size items)] [
+                        sum: sum + (get items i)
+                        i: i + 1
+                ]
+                sum
+        ]
+        
+        result: get_computed "test-sum"
+        if not? equal? result 15 [
+                print "FAIL: Array sum should be 15"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 5: Invalidate computed
+test_invalidate_computed: function [] [
+        print "Test: Invalidate computed"
+        
+        test-calc: 10
+        
+        computed "test-calc-double" @["test-calc"] function [v] [v * 2]
+        
+        ; Initial value
+        if not? equal? (get_computed "test-calc-double") 20 [
+                print "FAIL: Initial double should be 20"
+                return false
+        ]
+        
+        ; Invalidate
+        invalidate_computed "test-calc-double"
+        
+        ; Should still return cached value (stale but not recalculated without dependency change)
+        result: get_computed "test-calc-double"
+        if not? equal? result 20 [
+                print "FAIL: Invalidated computed should still return cached value"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 6: Chained computed (computed depending on computed)
+test_chained_computed: function [] [
+        print "Test: Chained computed"
+        
+        chain-a: 10
+        
+        computed "chain-b" @["chain-a"] function [a] [a + 5]
+        computed "chain-c" @["chain-b"] function [b] [b * 2]
+        
+        ; chain-c should be (10 + 5) * 2 = 30
+        result: get_computed "chain-c"
+        if not? equal? result 30 [
+                print "FAIL: Chained computed should be 30"
+                return false
+        ]
+        
+        ; Update chain-a
+        chain-a: 20
+        
+        ; chain-c should be (20 + 5) * 2 = 50
+        result: get_computed "chain-c"
+        if not? equal? result 50 [
+                print "FAIL: Updated chained computed should be 50"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Test 7: Full name computed example
+test_fullname_computed: function [] [
+        print "Test: Full name computed"
+        
+        first-name: "John"
+        last-name: "Doe"
+        
+        computed "full-name" @["first-name" "last-name"] function [first last] [
+                first ++ " " ++ last
+        ]
+        
+        result: get_computed "full-name"
+        if not? equal? result "John Doe" [
+                print "FAIL: Full name should be 'John Doe'"
+                return false
+        ]
+        
+        ; Update first name
+        first-name: "Jane"
+        result: get_computed "full-name"
+        if not? equal? result "Jane Doe" [
+                print "FAIL: Updated full name should be 'Jane Doe'"
+                return false
+        ]
+        
+        print "PASS"
+        true
+]
+
+; Run all computed tests
+run_computed_tests: function [] [
+        print "=== Computed State Tests ==="
+        passed: 0
+        failed: 0
+        
+        if test_basic_computed [passed: passed + 1] [failed: failed + 1]
+        if test_computed_update [passed: passed + 1] [failed: failed + 1]
+        if test_multiple_computed [passed: passed + 1] [failed: failed + 1]
+        if test_computed_array [passed: passed + 1] [failed: failed + 1]
+        if test_invalidate_computed [passed: passed + 1] [failed: failed + 1]
+        if test_chained_computed [passed: passed + 1] [failed: failed + 1]
+        if test_fullname_computed [passed: passed + 1] [failed: failed + 1]
+        
+        print ""
+        print "Results: " ++ to :string passed ++ " passed, " ++ to :string failed ++ " failed"
+        passed
+]

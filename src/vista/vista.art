@@ -16,6 +16,7 @@ import "src/vista/core/compilation.art"!
 import "src/vista/core/render-scripts.art"!
 import "src/vista/core/layout.art"!
 import "src/vista/core/view.art"!
+import "src/vista/core/enhancements.art"!
 
 ; Webview configuration
 webview_title: "ARTURO/VISTA"

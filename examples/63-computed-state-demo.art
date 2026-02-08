@@ -1,0 +1,290 @@
+; Vista UI - Computed State Examples
+; Demonstrates Vista's computed properties system for derived values
+
+; Import Vista framework
+import "src/vista/vista.art"!
+
+; Example 1: Basic computed property
+basic_computed_demo: function [] [
+        view #[Title: "Computed State Demo"] [
+                title "Basic Computed Property"
+                
+                text "Values that automatically update when dependencies change."
+                
+                spacer
+                
+                ; Define computed properties
+                number-a: 10
+                number-b: 20
+                
+                computed "sum" @["number-a" "number-b"] function [a b] [
+                        a + b
+                ]
+                
+                computed "product" @["number-a" "number-b"] function [a b] [
+                        a * b
+                ]
+                
+                panel [
+                        text "Values"
+                        row [
+                                text "A: "
+                                input "val-a" value: number-a .on-change: [
+                                        number-a: to :integer value
+                                ]
+                                text "B: "
+                                input "val-b" value: number-b .on-change: [
+                                        number-b: to :integer value
+                                ]
+                        ]
+                        text "Sum: " ++ to :string get_computed "sum"
+                        text "Product: " ++ to :string get_computed "product"
+                ]
+        ]
+]
+
+; Example 2: Full name computed from first/last
+fullname_demo: function [] [
+        view #[Title: "Full Name Computed Demo"] [
+                title "Full Name from Components"
+                
+                text "Automatically combine first and last name."
+                
+                spacer
+                
+                first-name: "John"
+                last-name: "Doe"
+                
+                computed "full-name" @["first-name" "last-name"] function [first last] [
+                        first ++ " " ++ last
+                ]
+                
+                form [
+                        field [
+                                label "First Name:"
+                                input "first" value: first-name .on-change: [
+                                        first-name: value
+                                ]
+                        ]
+                        
+                        field [
+                                label "Last Name:"
+                                input "last" value: last-name .on-change: [
+                                        last-name: value
+                                ]
+                        ]
+                        
+                        field [
+                                label "Full Name (computed):"
+                                input "full" value: get_computed "full-name" readonly: true
+                        ]
+                ]
+        ]
+]
+
+; Example 3: Order total with tax and shipping
+order_total_demo: function [] [
+        view #[Title: "Order Total Computed Demo"] [
+                title "Order Total Calculator"
+                
+                text "Compute totals with tax and shipping automatically."
+                
+                spacer
+                
+                subtotal: 100
+                tax-rate: 0.08
+                shipping: 10
+                
+                computed "tax" @["subtotal" "tax-rate"] function [st rate] [
+                        st * rate
+                ]
+                
+                computed "total" @["subtotal" "tax" "shipping"] function [st tx ship] [
+                        st + tx + ship
+                ]
+                
+                panel [
+                        text "Order Details"
+                        row [
+                                text "Subtotal: $"
+                                input "subtotal-input" type: "number" value: subtotal .on-change: [
+                                        subtotal: to :integer value
+                                ]
+                        ]
+                        text "Tax (8%): $" ++ to :string get_computed "tax"
+                        text "Shipping: $"
+                                input "shipping-input" type: "number" value: shipping .on-change: [
+                                        shipping: to :integer value
+                                ]
+                        ]
+                        text "Total: $" ++ to :string get_computed "total"
+                ]
+        ]
+]
+
+; Example 4: BMI computed from height/weight
+bmi_demo: function [] [
+        view #[Title: "BMI Computed Demo"] [
+                title "BMI Calculator"
+                
+                text "Automatically calculate BMI from height and weight."
+                
+                spacer
+                
+                height-cm: 170
+                weight-kg: 70
+                
+                computed "bmi" @["height-cm" "weight-kg"] function [h w] [
+                        h-m: h / 100.0
+                        w / (h-m * h-m)
+                ]
+                
+                computed "bmi-category" @["bmi"] function [bmi] [
+                        if less? bmi 18.5 ["Underweight"]
+                        else [
+                                if less? bmi 25 ["Normal"]
+                                else [
+                                        if less? bmi 30 ["Overweight"]
+                                        else ["Obese"]
+                                ]
+                        ]
+                ]
+                
+                panel [
+                        text "BMI Calculator"
+                        row [
+                                text "Height (cm):"
+                                input "height" type: "number" value: height-cm .on-change: [
+                                        height-cm: to :integer value
+                                ]
+                        ]
+                        row [
+                                text "Weight (kg):"
+                                input "weight" type: "number" value: weight-kg .on-change: [
+                                        weight-kg: to :integer value
+                                ]
+                        ]
+                        text "BMI: " ++ to :string get_computed "bmi"
+                        text "Category: " ++ to :string get_computed "bmi-category"
+                ]
+        ]
+]
+
+; Example 5: Derived list with filtering
+filtered_list_demo: function [] [
+        view #[Title: "Filtered List Computed Demo"] [
+                title "Filtered List"
+                
+                text "List that automatically filters based on search term."
+                
+                spacer
+                
+                all-items: @["Apple" "Banana" "Cherry" "Date" "Elderberry" "Fig" "Grape"]
+                search-term: ""
+                
+                computed "filtered-items" @["all-items" "search-term"] function [items term] [
+                        if equal? term "" [
+                                return items
+                        ]
+                        filter: []
+                        i: 0
+                        while [less? i (size items)] [
+                                if contains? (lowercase (get items i)) (lowercase term) [
+                                        filter: filter ++ @[get items i]
+                                ]
+                                i: i + 1
+                        ]
+                        filter
+                ]
+                
+                panel [
+                        text "Search:"
+                        input "search" .placeholder: "Filter items..." .on-input: [
+                                search-term: value
+                        ]
+                        text "Items:"
+                        list "filtered-list" options: get_computed "filtered-items"
+                ]
+        ]
+]
+
+; Example 6: Stats computed from data array
+stats_demo: function [] [
+        view #[Title: "Stats Computed Demo"] [
+                title "Statistics from Data"
+                
+                text "Automatically compute stats when data changes."
+                
+                spacer
+                
+                data-points: @[10, 20, 30, 40, 50]
+                
+                computed "data-count" @["data-points"] function [points] [
+                        size points
+                ]
+                
+                computed "data-sum" @["data-points"] function [points] [
+                        sum: 0
+                        i: 0
+                        while [less? i (size points)] [
+                                sum: sum + (get points i)
+                                i: i + 1
+                        ]
+                        sum
+                ]
+                
+                computed "data-average" @["data-sum" "data-count"] function [sum count] [
+                        if equal? count 0 [0]
+                        else [sum / count]
+                ]
+                
+                computed "data-min" @["data-points"] function [points] [
+                        if equal? (size points) 0 [0]
+                        else [
+                                min: get points 0
+                                i: 1
+                                while [less? i (size points)] [
+                                        if less? (get points i) min [
+                                                min: get points i
+                                        ]
+                                        i: i + 1
+                                ]
+                                min
+                        ]
+                ]
+                
+                computed "data-max" @["data-points"] function [points] [
+                        if equal? (size points) 0 [0]
+                        else [
+                                max: get points 0
+                                i: 1
+                                while [less? i (size points)] [
+                                        if greater? (get points i) max [
+                                                max: get points i
+                                        ]
+                                        i: i + 1
+                                ]
+                                max
+                        ]
+                ]
+                
+                panel [
+                        text "Data Statistics"
+                        text "Count: " ++ to :string get_computed "data-count"
+                        text "Sum: " ++ to :string get_computed "data-sum"
+                        text "Average: " ++ to :string get_computed "data-average"
+                        text "Min: " ++ to :string get_computed "data-min"
+                        text "Max: " ++ to :string get_computed "data-max"
+                ]
+        ]
+]
+
+; Export for use
+exports: #{
+        basic: :basic_computed_demo
+        fullname: :fullname_demo
+        order: :order_total_demo
+        bmi: :bmi_demo
+        filtered: :filtered_list_demo
+        stats: :stats_demo
+}

@@ -62,6 +62,12 @@ build_full_html: function [layoutBlock] [
         if vista_vid_mode [
                 css: css ++ vista_vid_css
         ]
+        ; Include animation CSS
+        css: css ++ vista_animation_css
+        ; Include theme CSS
+        css: css ++ vista_theme_css
+        ; Include validation CSS
+        css: css ++ vista_validation_css
         html: "<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>"
         html: html ++ "<title>" ++ webview_title ++ "</title><style>" ++ css ++ "</style></head>"
         appTitle: html_escape_text webview_title
@@ -89,6 +95,12 @@ build_full_html: function [layoutBlock] [
                 ]
                 fi: fi + 1
         ]
+        ; Animation runtime script
+        animationScript: vista_animation_runtime
+        ; Theme runtime script
+        themeScript: vista_theme_runtime
+        ; Validation runtime script
+        validationScript: vista_validation_runtime
         html: html ++ "<main class='vista-app-body'>" ++ htmlContent ++ "</main>"
         html: html ++ script
         html: html ++ tabsScript
@@ -96,6 +108,9 @@ build_full_html: function [layoutBlock] [
         html: html ++ tableScript
         html: html ++ canvasScript
         html: html ++ reloadScript
+        html: html ++ animationScript
+        html: html ++ themeScript
+        html: html ++ validationScript
         html: html ++ "</body></html>"
         html
 ]

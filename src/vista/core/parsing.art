@@ -22,11 +22,11 @@ parse_attrs: function [args] [
                         switch less? i + advance args_len [
                                 val: get args (i + advance)
                                 handled: false
-                                if [equal? (type val) :symbol [
-                                        if [equal? (to :string val) "#" [
+                                if equal? (type val) :symbol [
+                                        if equal? (to :string val) "#" [
                                                 if less? (i + advance + 1) args_len [
                                                         nextVal: get args (i + advance + 1)
-                                                        if [equal? (type nextVal) :block [
+                                                        if equal? (type nextVal) :block [
                                                                 attrs\[name]: header_from_block nextVal
                                                                 i: i + advance + 2
                                                                 handled: true

@@ -1,0 +1,906 @@
+; Vista UI - Advanced Features Extension
+; Adds animation, theming, feel facets, validation, and computed state
+
+;=============================================================================
+; THEMING SYSTEM
+;=============================================================================
+
+; Theme registry
+vista_themes: #[
+        default: #[
+                name: "Default"
+                colors: #[
+                        primary: "#1f5cff"
+                        secondary: "#6c757d"
+                        success: "#28a745"
+                        danger: "#dc3545"
+                        warning: "#ffc107"
+                        info: "#17a2b8"
+                        light: "#f8f9fa"
+                        dark: "#343a40"
+                ]
+                fonts: #[
+                        family: "system-ui, -apple-system, sans-serif"
+                        size: "14px"
+                ]
+                icons: #[
+                        path: "/icons/"
+                        ext: ".png"
+                ]
+        ]
+        dark: #[
+                name: "Dark"
+                extends: "default"
+                colors: #[
+                        primary: "#4dabf7"
+                        secondary: "#868e96"
+                        background: "#212529"
+                        surface: "#343a40"
+                        text: "#dee2e6"
+                ]
+        ]
+        light: #[
+                name: "Light"
+                extends: "default"
+                colors: #[
+                        background: "#ffffff"
+                        surface: "#f8f9fa"
+                        text: "#212529"
+                ]
+        ]
+]
+
+; Current theme
+vista_current_theme: "default"
+
+; Get theme value with inheritance
+get_theme_value: function [themeName keyPath] [
+        theme: get vista_themes themeName
+        if equal? theme null [
+                theme: get vista_themes "default"
+        ]
+        ; Check for extends
+        if all? @[key? theme "extends" notEqual? theme\extends null] [
+                baseValue: get_theme_value theme\extends keyPath
+                if notEqual? baseValue null [
+                        return baseValue
+                ]
+        ]
+        ; Navigate key path
+        keys: split keyPath "."
+        current: theme
+        k: 0
+        keys_len: size keys
+        while [less? k keys_len][
+                part: get keys k
+                if key? current part [
+                        current: current\[part]
+                ][
+                        return null
+                ]
+                k: k + 1
+        ]
+        current
+]
+
+; Apply theme to face
+apply_theme: function [face themeName] [
+        theme: get vista_themes themeName
+        if equal? theme null [
+                return face
+        ]
+        ; Apply color theme
+        if key? theme "colors" [
+                colors: theme\colors
+                if key? colors "primary" [
+                        face: set_face_attr face "data-theme-primary" colors\primary
+                ]
+                if key? colors "background" [
+                        face: set_face_attr face "data-theme-bg" colors\background
+                ]
+        ]
+        face
+]
+
+; Set current theme
+set_theme: function [themeName] [
+        if key? vista_themes themeName [
+                vista_current_theme: themeName
+                return true
+        ]
+        false
+]
+
+; Theme-aware icon function
+icon_theme: function [name themeName size] [
+        theme: get_theme_value themeName "icons"
+        if equal? theme null [
+                theme: get_theme_value "default" "icons"
+        ]
+        path: ""
+        if key? theme "path" [
+                path: theme\path
+        ]
+        ext: "png"
+        if key? theme "ext" [
+                ext: theme\ext
+        ]
+        fullPath: path ++ name ++ "." ++ ext
+        iconSize: ""
+        if notEqual? size null [
+                iconSize: " width='" ++ to :string size ++ "' height='" ++ to :string size ++ "'"
+        ]
+        "<img src='" ++ fullPath ++ "'" ++ iconSize ++ " class='vista-icon vista-icon-theme'>"
+]
+
+;=============================================================================
+; ANIMATION SYSTEM
+;=============================================================================
+
+; Animation registry
+vista_animations: #[
+        fade-in: "fadeIn"
+        fade-out: "fadeOut"
+        slide-in: "slideIn"
+        slide-out: "slideOut"
+        scale-in: "scaleIn"
+        scale-out: "scaleOut"
+        bounce: "bounce"
+        shake: "shake"
+        pulse: "pulse"
+        spin: "spin"
+]
+
+; Animation state
+vista_animation_counter: 0
+
+; Create animated face
+animate: function [faceId animation duration] [
+        animName: animation
+        if key? vista_animations animation [
+                animName: get vista_animations animation
+        ]
+        vista_animation_counter: vista_animation_counter + 1
+        animId: "anim-" ++ to :string vista_animation_counter
+        ; Return animation setup code
+        #[
+                id: animId
+                name: animName
+                duration: duration
+                js: "Vista.animate('" ++ faceId ++ "', '" ++ animName ++ "', " ++ to :string duration ++ ");"
+        ]
+]
+
+; Sprite animation face
+sprite_anim: function [src frames fps width height] [
+        fpsVal: 12
+        if notEqual? fps null [
+                fpsVal: fps
+        ]
+        frameTime: 1000 / fpsVal
+        "<div class='vista-sprite' data-src='" ++ to :string src ++ "' data-frames='" ++ to :string frames ++ "' data-fps='" ++ to :string fpsVal ++ "' data-width='" ++ to :string width ++ "' data-height='" ++ to :string height ++ "' style='width:" ++ to :string width ++ "px;height:" ++ to :string height ++ "px;'></div>"
+]
+
+; Animation keyframes CSS
+vista_animation_css: ""
+animation_css: function [] [
+        vista_animation_css: "/* Vista Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes slideOut { from { transform: translateX(0); } to { transform: translateX(100%); } }
+@keyframes scaleIn { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes scaleOut { from { transform: scale(1); } to { transform: scale(0); } }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.vista-animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+.vista-animate-fade-out { animation: fadeOut 0.3s ease-in-out; }
+.vista-animate-slide-in { animation: slideIn 0.3s ease-out; }
+.vista-animate-slide-out { animation: slideOut 0.3s ease-in; }
+.vista-animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.vista-animate-scale-out { animation: scaleOut 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045); }
+.vista-animate-bounce { animation: bounce 0.5s ease; }
+.vista-animate-shake { animation: shake 0.5s ease-in-out; }
+.vista-animate-pulse { animation: pulse 1s infinite; }
+.vista-animate-spin { animation: spin 1s linear infinite; }
+.vista-sprite { background-repeat: no-repeat; }
+"
+]
+
+;=============================================================================
+; FEEL FACET SYSTEM
+;=============================================================================
+
+; Feel handlers registry
+vista_feel_handlers: #[
+        hover: {
+                onMouseEnter: function [face event] [
+                        if key? face\meta "feel" [
+                                if key? face\meta\feel "hover" [
+                                        do face\meta\feel\hover
+                                ]
+                        ]
+                ]
+                onMouseLeave: function [face event] [
+                        if key? face\meta "feel" [
+                                if key? face\meta\feel "away" [
+                                        do face\meta\feel\away
+                                ]
+                        ]
+                ]
+        }
+        drag: {
+                onMouseDown: function [face event] [
+                        face\state\dragging: true
+                        face\state\startX: event\clientX
+                        face\state\startY: event\clientY
+                ]
+                onMouseMove: function [face event] [
+                        if face\state\dragging [
+                                dx: event\clientX - face\state\startX
+                                dy: event\clientY - face\state\startY
+                                if key? face\meta\feel "drag" [
+                                        face\meta\feel\drag dx dy
+                                ]
+                        ]
+                ]
+                onMouseUp: function [face event] [
+                        face\state\dragging: false
+                ]
+        }
+        resize: {
+                onResize: function [face event] [
+                        if key? face\meta\feel "resize" [
+                                do face\meta\feel\resize
+                        ]
+                ]
+        }
+]
+
+; Apply feel to face
+apply_feel: function [face feelDef] [
+        if not? key? face "meta" [
+                face\meta: #[]
+        ]
+        if not? key? face "state" [
+                face\state: #[]
+        ]
+        face\meta\feel: feelDef
+        face
+]
+
+; Create feel-aware face
+feel_face: function [type content attrs feelDef] [
+        faceId: next_face_id
+        face: #[
+                id: faceId
+                type: type
+                attrs: attrs
+                html: ""
+                children: []
+                meta: #[feel: feelDef]
+                state: #[]
+        ]
+        face
+]
+
+;=============================================================================
+; RATE FACET (Timed Updates)
+;=============================================================================
+
+; Rate-based update system
+vista_rate_timers: #[
+        face: null
+        interval: null
+]
+
+; Set rate for a face
+set_rate: function [faceId rateMs] [
+        rateValue: rateMs
+        if notEqual? (type rateMs) :integer [
+                rateValue: 1000
+        ]
+        vista_rate_timers\[faceId]: rateValue
+        "setInterval(function() { Vista.updateRateFace('" ++ faceId ++ "'); }, " ++ to :string rateValue ++ ");"
+]
+
+; Get rate for a face
+get_rate: function [faceId] [
+        if key? vista_rate_timers faceId [
+                return vista_rate_timers\[faceId]
+        ]
+        null
+]
+
+; Clear rate timer
+clear_rate: function [faceId] [
+        if key? vista_rate_timers faceId [
+                vista_rate_timers\[faceId]: null
+        ]
+]
+
+;=============================================================================
+; OPTIONS FACET & VALIDATION
+;=============================================================================
+
+; Validation rules registry
+validation_rules: #[
+        required: function [value] [
+                if equal? value null [
+                        return false
+                ]
+                if equal? (type value) :string [
+                        return notEqual? (size value) 0
+                ]
+                true
+        ]
+        email: function [value] [
+                if notEqual? (type value) :string [
+                        return false
+                ]
+                contains? value "@" and contains? value "."
+        ]
+        min: function [value minVal] [
+                if less? value minVal [
+                        return false
+                ]
+                true
+        ]
+        max: function [value maxVal] [
+                if greater? value maxVal [
+                        return false
+                ]
+                true
+        ]
+        pattern: function [value pattern] [
+                if notEqual? (type value) :string [
+                        return false
+                ]
+                true
+        ]
+        minLength: function [value minLen] [
+                if less? (size value) minLen [
+                        return false
+                ]
+                true
+        ]
+        maxLength: function [value maxLen] [
+                if greater? (size value) maxLen [
+                        return false
+                ]
+                true
+        ]
+]
+
+; Validate field with options
+validate_field: function [value options] [
+        errors: []
+        if key? options "required" [
+                if not? (get validation_rules\required) value [
+                        errors: errors ++ @["Field is required"]
+                ]
+        ]
+        if key? options "email" [
+                if options\email [
+                        if not? (get validation_rules\email) value [
+                                errors: errors ++ @["Invalid email format"]
+                        ]
+                ]
+        ]
+        if key? options "min" [
+                if not? (get validation_rules\min) value options\min [
+                        errors: errors ++ @["Value must be at least " ++ to :string options\min]
+                ]
+        ]
+        if key? options "max" [
+                if not? (get validation_rules\max) value options\max [
+                        errors: errors ++ @["Value must be at most " ++ to :string options\max]
+                ]
+        ]
+        if key? options "minLength" [
+                if not? (get validation_rules\minLength) value options\minLength [
+                        errors: errors ++ @["Minimum length is " ++ to :string options\minLength]
+                ]
+        ]
+        if key? options "maxLength" [
+                if not? (get validation_rules\maxLength) value options\maxLength [
+                        errors: errors ++ @["Maximum length is " ++ to :string options\maxLength]
+                ]
+        ]
+        if key? options "pattern" [
+                if not? (get validation_rules\pattern) value options\pattern [
+                        errors: errors ++ @["Invalid format"]
+                ]
+        ]
+        errors
+]
+
+; Apply validation to field
+apply_validation: function [faceId value options] [
+        errors: validate_field value options
+        if greater? (size errors) 0 [
+                "Vista.setFaceInvalid('" ++ faceId ++ "', " ++ to :string errors ++ ");"
+        ][
+                "Vista.setFaceValid('" ++ faceId ++ "');"
+        ]
+        errors
+]
+
+;=============================================================================
+; FORM VALIDATION
+;=============================================================================
+
+; Form validation state
+vista_form_errors: #[
+        fields: []
+        errors: []
+        valid: true
+]
+
+; Register form for validation
+register_form: function [formId fields] [
+        vista_form_errors\[formId]: #[
+                fields: fields
+                errors: #[]
+                valid: true
+        ]
+]
+
+; Validate entire form
+validate_form: function [formId data] [
+        if not? key? vista_form_errors formId [
+                return []
+        ]
+        formState: vista_form_errors\[formId]
+        allErrors: []
+        i: 0
+        fields_len: size formState\fields
+        while [less? i fields_len][
+                field: get formState\fields i
+                fieldName: get field 0
+                fieldOptions: get field 1
+                fieldValue: data\[fieldName]
+                errors: validate_field fieldValue fieldOptions
+                if greater? (size errors) 0 [
+                        formState\errors\[fieldName]: errors
+                        allErrors: allErrors ++ errors
+                ]
+                i: i + 1
+        ]
+        formState\valid: equal? (size allErrors) 0
+        vista_form_errors\[formId]: formState
+        allErrors
+]
+
+; Check if form is valid
+is_form_valid: function [formId] [
+        if not? key? vista_form_errors formId [
+                return true
+        ]
+        vista_form_errors\[formId]\valid
+]
+
+; Get form errors
+get_form_errors: function [formId] [
+        if not? key? vista_form_errors formId [
+                return []
+        ]
+        vista_form_errors\[formId]\errors
+]
+
+;=============================================================================
+; COMPUTED STATE / DERIVED VALUES
+;=============================================================================
+
+; Computed properties registry
+vista_computed: #[
+        name: null
+        dependencies: []
+        formula: null
+        value: null
+        stale: true
+]
+
+; Define a computed property
+computed: function [name dependencies formula] [
+        vista_computed\[name]: #[
+                dependencies: dependencies
+                formula: formula
+                value: null
+                stale: true
+        ]
+        name
+]
+
+; Update a computed property
+update_computed: function [name] [
+        if not? key? vista_computed name [
+                return null
+        ]
+        comp: vista_computed\[name]
+        args: []
+        i: 0
+        deps_len: size comp\dependencies
+        while [less? i deps_len][
+                depName: get comp\dependencies i
+                depValue: do depName
+                args: args ++ @[depValue]
+                i: i + 1
+        ]
+        newValue: do_comp comp\formula args
+        oldValue: comp\value
+        comp\value: newValue
+        comp\stale: false
+        newValue
+]
+
+; Mark computed as stale
+invalidate_computed: function [name] [
+        if key? vista_computed name [
+                vista_computed\[name]\stale: true
+        ]
+]
+
+; Invalidate all computed properties that depend on a variable
+invalidate_dependents: function [varName] [
+        keysList: keys vista_computed
+        i: 0
+        keys_len: size keysList
+        while [less? i keys_len][
+                compName: get keysList i
+                comp: vista_computed\[compName]
+                j: 0
+                deps_len: size comp\dependencies
+                while [less? j deps_len][
+                        if equal? (get comp\dependencies j) varName [
+                                comp\stale: true
+                                break
+                        ]
+                        j: j + 1
+                ]
+                i: i + 1
+        ]
+]
+
+; Sync all stale computed properties
+sync_computed: function [] [
+        keysList: keys vista_computed
+        i: 0
+        keys_len: size keysList
+        while [less? i keys_len][
+                compName: get keysList i
+                comp: vista_computed\[compName]
+                if comp\stale [
+                        update_computed compName
+                ]
+                i: i + 1
+        ]
+]
+
+; Get computed value
+get_computed: function [name] [
+        if not? key? vista_computed name [
+                return null
+        ]
+        comp: vista_computed\[name]
+        if comp\stale [
+                update_computed name
+        ]
+        comp\value
+]
+
+;=============================================================================
+; HELPER FUNCTIONS
+;=============================================================================
+
+; Set face attribute helper
+set_face_attr: function [face attrName value] [
+        if not? key? face "attrs" [
+                face\attrs: #[]
+        ]
+        face\attrs\[attrName]: value
+        face
+]
+
+; Do with arguments
+do_comp: function [func args] [
+        func
+]
+
+;=============================================================================
+; CSS STYLES FOR ENHANCEMENTS
+;=============================================================================
+
+; Theme CSS
+vista_theme_css: "/* Vista Theme Support */
+.vista-icon-theme { display: inline-block; vertical-align: middle; }
+[data-theme-primary] { --vista-primary: attr(data-theme-primary); }
+[data-theme-bg] { --vista-bg: attr(data-theme-bg); }
+"
+
+; Validation CSS
+vista_validation_css: "/* Vista Validation Styles */
+.vista-field-error { color: #dc3545; font-size: 0.875rem; margin-top: 0.25rem; }
+.vista-invalid { border-color: #dc3545 !important; }
+.vista-invalid input, .vista-invalid select, .vista-invalid textarea { border-color: #dc3545; }
+.vista-valid { border-color: #28a745 !important; }
+.vista-valid input, .vista-valid select, .vista-valid textarea { border-color: #28a745; }
+.vista-form-group.vista-invalid .vista-field-error { display: block; }
+"
+
+;=============================================================================
+; JAVASCRIPT RUNTIME SCRIPTS
+;=============================================================================
+
+; Animation runtime JavaScript
+vista_animation_runtime: "<script>
+var Vista = Vista || {};
+
+Vista.animate = function(elementId, animationName, duration) {
+    var element = document.getElementById(elementId);
+    if (!element) return;
+    
+    element.classList.remove('vista-animate-fade-in', 'vista-animate-fade-out', 
+                           'vista-animate-slide-in', 'vista-animate-slide-out',
+                           'vista-animate-scale-in', 'vista-animate-scale-out',
+                           'vista-animate-bounce', 'vista-animate-shake',
+                           'vista-animate-pulse', 'vista-animate-spin');
+    
+    void element.offsetWidth;
+    
+    var className = 'vista-animate-' + animationName.toLowerCase().replace(/-/g, '-');
+    element.classList.add(className);
+    
+    element.style.animationDuration = duration + 'ms';
+    
+    setTimeout(function() {
+        var event = new CustomEvent('vista:animationend', { detail: { elementId: elementId, animation: animationName } });
+        element.dispatchEvent(event);
+    }, duration);
+};
+
+Vista.animateSprite = function(element) {
+    if (!element || !element.classList.contains('vista-sprite')) return;
+    
+    var src = element.getAttribute('data-src');
+    var frames = parseInt(element.getAttribute('data-frames'));
+    var fps = parseInt(element.getAttribute('data-fps'));
+    var width = parseInt(element.getAttribute('data-width'));
+    var height = parseInt(element.getAttribute('data-height'));
+    
+    var currentFrame = 0;
+    var interval = 1000 / fps;
+    
+    element.style.backgroundSize = (width * frames) + 'px ' + height + 'px';
+    element.style.backgroundImage = 'url(' + src + ')';
+    
+    var timer = setInterval(function() {
+        if (currentFrame >= frames) {
+            clearInterval(timer);
+            element.dispatchEvent(new CustomEvent('vista:spritecomplete'));
+            return;
+        }
+        var offset = -(currentFrame * width);
+        element.style.backgroundPosition = offset + 'px 0';
+        currentFrame++;
+    }, interval);
+    
+    element._spriteTimer = timer;
+};
+
+Vista.startSprite = function(elementId) {
+    var element = document.getElementById(elementId);
+    if (element) Vista.animateSprite(element);
+};
+
+Vista.stopSprite = function(elementId) {
+    var element = document.getElementById(elementId);
+    if (element && element._spriteTimer) {
+        clearInterval(element._spriteTimer);
+        element._spriteTimer = null;
+    }
+};
+</script>"
+
+; Theme runtime JavaScript
+vista_theme_runtime: "<script>
+var Vista = Vista || {};
+
+Vista.Themes = {
+    current: 'default',
+    registry: {},
+    
+    register: function(name, theme) {
+        this.registry[name] = theme;
+    },
+    
+    apply: function(name) {
+        if (!this.registry[name]) {
+            console.warn('Theme \"' + name + '\" not found');
+            return false;
+        }
+        
+        this.current = name;
+        var theme = this.registry[name];
+        var root = document.documentElement;
+        
+        if (theme.colors) {
+            Object.keys(theme.colors).forEach(function(key) {
+                var value = theme.colors[key];
+                root.style.setProperty('--vista-' + key, value);
+            });
+        }
+        
+        if (theme.fonts) {
+            if (theme.fonts.family) {
+                root.style.setProperty('--vista-font-family', theme.fonts.family);
+            }
+            if (theme.fonts.size) {
+                root.style.setProperty('--vista-font-size', theme.fonts.size);
+            }
+        }
+        
+        document.dispatchEvent(new CustomEvent('vista:themchange', { detail: { theme: name } }));
+        
+        return true;
+    },
+    
+    get: function(name) {
+        return this.registry[name] || null;
+    },
+    
+    getCurrent: function() {
+        return this.registry[this.current];
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    Vista.Themes.apply('default');
+});
+</script>"
+
+; Validation runtime JavaScript
+vista_validation_runtime: "<script>
+var Vista = Vista || {};
+
+Vista.Validation = {
+    rules: {
+        required: function(value) {
+            return value !== null && value !== undefined && value !== '';
+        },
+        email: function(value) {
+            if (!value) return true;
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        },
+        min: function(value, minVal) {
+            if (!value && value !== 0) return true;
+            return Number(value) >= Number(minVal);
+        },
+        max: function(value, maxVal) {
+            if (!value && value !== 0) return true;
+            return Number(value) <= Number(maxVal);
+        },
+        minLength: function(value, minLen) {
+            if (!value) return true;
+            return String(value).length >= Number(minLen);
+        },
+        maxLength: function(value, maxLen) {
+            if (!value) return true;
+            return String(value).length <= Number(maxLen);
+        },
+        pattern: function(value, pattern) {
+            if (!value) return true;
+            var regex = new RegExp(pattern);
+            return regex.test(value);
+        }
+    },
+    
+    validateField: function(fieldId, options) {
+        var field = document.getElementById(fieldId);
+        if (!field) return { valid: true, errors: [] };
+        
+        var value = field.value;
+        var errors = [];
+        
+        Object.keys(options).forEach(function(rule) {
+            if (this.rules[rule]) {
+                var ruleOptions = options[rule];
+                var valid;
+                if (typeof ruleOptions === 'boolean') {
+                    valid = this.rules[rule](value);
+                } else {
+                    valid = this.rules[rule](value, ruleOptions);
+                }
+                if (!valid) {
+                    errors.push(this.getErrorMessage(rule, ruleOptions));
+                }
+            }
+        }, this);
+        
+        var isValid = errors.length === 0;
+        this.setFieldState(fieldId, isValid, errors);
+        
+        return { valid: isValid, errors: errors };
+    },
+    
+    getErrorMessage: function(rule, options) {
+        var messages = {
+            required: 'This field is required',
+            email: 'Please enter a valid email address',
+            min: 'Value must be at least ' + options,
+            max: 'Value must be at most ' + options,
+            minLength: 'Minimum length is ' + options + ' characters',
+            maxLength: 'Maximum length is ' + options + ' characters',
+            pattern: 'Invalid format'
+        };
+        return messages[rule] || 'Invalid value';
+    },
+    
+    setFieldState: function(fieldId, isValid, errors) {
+        var field = document.getElementById(fieldId);
+        if (!field) return;
+        
+        var parent = field.closest('.vista-field, .vista-input, .vista-form-group');
+        if (!parent) parent = field.parentElement;
+        
+        field.classList.remove('vista-invalid', 'vista-valid');
+        
+        var existingError = parent.querySelector('.vista-field-error');
+        if (existingError) existingError.remove();
+        
+        if (isValid) {
+            field.classList.add('vista-valid');
+        } else {
+            field.classList.add('vista-invalid');
+            var errorDiv = document.createElement('div');
+            errorDiv.className = 'vista-field-error';
+            errorDiv.textContent = errors[0];
+            parent.appendChild(errorDiv);
+        }
+        
+        field.dispatchEvent(new CustomEvent('vista:validate', { 
+            detail: { valid: isValid, errors: errors }
+        }));
+    },
+    
+    setFaceInvalid: function(faceId, errors) {
+        var field = document.getElementById(faceId);
+        if (field) {
+            this.setFieldState(faceId, false, errors);
+        }
+    },
+    
+    setFaceValid: function(faceId) {
+        var field = document.getElementById(faceId);
+        if (field) {
+            this.setFieldState(faceId, true, []);
+        }
+    }
+};
+
+Vista.Validation.validateOnBlur = function() {
+    document.addEventListener('blur', function(e) {
+        if (e.target.hasAttribute('data-validate')) {
+            var options = JSON.parse(e.target.getAttribute('data-validate') || '{}');
+            Vista.Validation.validateField(e.target.id, options);
+        }
+    }, true);
+};
+
+Vista.Validation.validateOnInput = function() {
+    document.addEventListener('input', function(e) {
+        if (e.target.hasAttribute('data-validate-on-input')) {
+            var options = JSON.parse(e.target.getAttribute('data-validate-on-input') || '{}');
+            Vista.Validation.validateField(e.target.id, options);
+        }
+    }, true);
+};
+
+Vista.Validation.validateOnBlur();
+Vista.Validation.validateOnInput();
+</script>"
+
+; Initialize CSS on load
+animation_css

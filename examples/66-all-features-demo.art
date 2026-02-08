@@ -1,0 +1,255 @@
+; Vista UI - Complete Feature Demo
+; Demonstrates all Vista features working together: animation, themes, validation, computed state, feel facets, and rate
+
+; Import Vista framework
+import "src/vista/vista.art"!
+
+complete_demo: function [] [
+        view #[Title: "Vista Complete Feature Demo"] [
+                title "Vista UI Framework - Complete Demo"
+                
+                text "This demo showcases all major Vista features:"
+                list [
+                        "Animation System"
+                        "Theming System"
+                        "Form Validation"
+                        "Computed Properties"
+                        "Feel Facets"
+                        "Rate Facet (Timed Updates)"
+                ]
+                
+                spacer
+                
+                ; Row 1: Animation Demo
+                panel [
+                        text "1. Animation System"
+                        row [
+                                button "Fade In" .on-click: [
+                                        "anim-box" animate: "fade-in" 400
+                                ]
+                                button "Bounce" .on-click: [
+                                        "anim-box" animate: "bounce" 500
+                                ]
+                                button "Pulse" .on-click: [
+                                        "anim-box" animate: "pulse" 1000
+                                ]
+                        ]
+                        box "anim-box" [
+                                text "Animated Box"
+                        ]
+                ]
+                
+                spacer
+                
+                ; Row 2: Theme Switching
+                panel [
+                        text "2. Theme Switching"
+                        text "Current: Default"
+                        row [
+                                button "Default" .on-click: [set_theme "default"]
+                                button "Dark" .on-click: [set_theme "dark"]
+                                button "Light" .on-click: [set_theme "light"]
+                        ]
+                        box [
+                                text "Theme affects colors"
+                        ]
+                ]
+                
+                spacer
+                
+                ; Row 3: Form Validation
+                panel [
+                        text "3. Form Validation"
+                        form "demo-form" [
+                                field [
+                                        label "Name (required):"
+                                        input "demo-name" .placeholder: "Enter name"
+                                        .validate: #{
+                                                required: true
+                                        }
+                                ]
+                                field [
+                                        label "Email:"
+                                        input "demo-email" .placeholder: "Enter email"
+                                        .validate: #{
+                                                required: true
+                                                email: true
+                                        }
+                                ]
+                                row [
+                                        button "Validate" .on-click: [
+                                                if is_form_valid "demo-form" [
+                                                        show_message "Form is valid!"
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ]
+                
+                spacer
+                
+                ; Row 4: Computed Properties
+                panel [
+                        text "4. Computed Properties"
+                        
+                        value-x: 10
+                        value-y: 20
+                        
+                        computed "computed-sum" @["value-x" "value-y"] function [x y] [x + y]
+                        computed "computed-product" @["value-x" "value-y"] function [x y] [x * y]
+                        
+                        row [
+                                text "X: "
+                                input "input-x" type: "number" value: value-x .on-change: [
+                                        value-x: to :integer value
+                                ]
+                                text "Y: "
+                                input "input-y" type: "number" value: value-y .on-change: [
+                                        value-y: to :integer value
+                                ]
+                        ]
+                        text "Sum: " ++ to :string get_computed "computed-sum"
+                        text "Product: " ++ to :string get_computed "computed-product"
+                ]
+                
+                spacer
+                
+                ; Row 5: Feel Facets
+                panel [
+                        text "5. Feel Facets"
+                        text "Hover over the box below:"
+                        box "feel-box" [
+                                text "Hover Me!"
+                        ] .feel: #{
+                                hover: function [] [
+                                        set_face_attr "feel-box" "style:background:#e3f2fd"
+                                ]
+                                away: function [] [
+                                        set_face_attr "feel-box" "style:background:#ffffff"
+                                ]
+                        }
+                ]
+                
+                spacer
+                
+                ; Row 6: Rate Facet
+                panel [
+                        text "6. Rate Facet (Timed Updates)"
+                        text "Counter updates every second:"
+                        counter: 0
+                        
+                        box "rate-box" [
+                                text "Count: " ++ to :string counter
+                        ] .rate: 1000 .on-tick: function [] [
+                                counter: counter + 1
+                                update_face "rate-box" #[text: "Count: " ++ to :string counter]
+                        ]
+                        
+                        row [
+                                button "Start" .on-click: [
+                                        set_rate "rate-box" 1000
+                                ]
+                                button "Stop" .on-click: [
+                                        clear_rate "rate-box"
+                                ]
+                        ]
+                ]
+        ]
+]
+
+; Combined registration form with all features
+combined_form_demo: function [] [
+        view #[Title: "Combined Form Features"] [
+                title "Registration Form with All Features"
+                
+                text "This form demonstrates validation, computed state, and animations."
+                
+                spacer
+                
+                ; Computed properties for form
+                username: ""
+                password: ""
+                email: ""
+                
+                computed "form-valid" @["username" "password" "email"] function [user pass mail] [
+                        if or? @[equal? user "" equal? pass "" equal? mail ""] [
+                                return false
+                        ]
+                        if less? (size pass) 8 [return false]
+                        if not? contains? mail "@" [return false]
+                        true
+                ]
+                
+                computed "password-strength" @["password"] function [pass] [
+                        len: size pass
+                        if equal? len 0 ["None"]
+                        else [
+                                if less? len 5 ["Weak"]
+                                else [
+                                        if less? len 8 ["Medium"]
+                                        else ["Strong"]
+                                ]
+                        ]
+                ]
+                
+                form "combined-form" [
+                        field [
+                                label "Username:"
+                                input "username" .placeholder: "Choose username"
+                                .validate: #{
+                                        required: true
+                                        minLength: 3
+                                }
+                                .on-input: [
+                                        username: value
+                                ]
+                        ]
+                        
+                        field [
+                                label "Email:"
+                                input "email" .placeholder: "your@email.com"
+                                .validate: #{
+                                        required: true
+                                        email: true
+                                }
+                                .on-input: [
+                                        email: value
+                                ]
+                        ]
+                        
+                        field [
+                                label "Password:"
+                                input "password" type: "password" .placeholder: "Min 8 chars"
+                                .validate: #{
+                                        required: true
+                                        minLength: 8
+                                }
+                                .on-input: [
+                                        password: value
+                                ]
+                                text "Strength: " ++ to :string get_computed "password-strength"
+                        ]
+                        
+                        row [
+                                button "Register" .on-click: [
+                                        if is_form_valid "combined-form" [
+                                                show_message "Registration successful!"
+                                        ] [
+                                                show_message "Please fix errors"
+                                        ]
+                                ]
+                                button "Clear" .on-click: [
+                                        username: ""
+                                        password: ""
+                                        email: ""
+                                ]
+                        ]
+                ]
+        ]
+]
+
+; Export for use
+exports: #{
+        complete: :complete_demo
+        combined: :combined_form_demo
+}

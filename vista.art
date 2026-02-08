@@ -1,7 +1,7 @@
 ; Vista UI Framework for Arturo - Modeling Rebol View
 ; Generates HTML5 UI from declarative blocks, rendered via WebView/HTML5
 
-import "vista-graphics.art"!
+import "src/vista/graphics/vista-graphics.art"!
 
 ; Face types: functions that generate HTML for UI elements
 button: function [text action attrs] [
@@ -422,7 +422,7 @@ input_field: function [bindName attrs] [
 
 slider_field: function [bindName attrs] [
         attrsVal: attrs
-        if [notEqual? (type attrsVal) :dictionary [
+        if notEqual? (type attrsVal) :dictionary [
             attrsVal: #[]
         ]
         merged: merge_class_attr attrsVal "vista-slider"
@@ -435,7 +435,7 @@ slider_field: function [bindName attrs] [
 
 rotary_field: function [bindName attrs] [
         attrsVal: attrs
-        if [notEqual? (type attrsVal) :dictionary [
+        if notEqual? (type attrsVal) :dictionary [
             attrsVal: #[]
         ]
         merged: merge_class_attr attrsVal "vista-rotary"
@@ -536,7 +536,7 @@ radio_group: function [bindName attrs options bindings] [
                 opt_label: html_text opt
             ]
             optAttrStr: ""
-            if [equal? (type opt_attrs) :dictionary [
+            if equal? (type opt_attrs) :dictionary [
                 optAttrStr: attrs_to_html opt_attrs
             ]
             html: html ++ "<label class='vista-radio-item'>"
@@ -681,7 +681,7 @@ logo_data_url: function [pathStr] [
 ]
 
 is_raw_html: function [value] [
-        if [equal? (type value) :dictionary [
+        if equal? (type value) :dictionary [
                 if key? value "raw" [
                         return value\raw
                 ]
@@ -704,7 +704,7 @@ html_text: function [value] [
 ]
 
 normalize_block: function [block] [
-        if [notEqual? (type block) :block [
+        if notEqual? (type block) :block [
                 return block
         ]
         out: []
@@ -974,16 +974,16 @@ apply_style_args: function [blk args attrs] [
 ]
 
 get_face_path: function [path] [
-    if [equal? (type path) :string [
+    if equal? (type path) :string [
         return get_face path
     ]
-    if [equal? (type path) :word [
+    if equal? (type path) :word [
         return get_face path
     ]
-    if [notEqual? (type path) :block [
+    if notEqual? (type path) :block [
         return null
     ]
-    if [equal? (size path) 0 [
+    if equal? (size path) 0 [
         return null
     ]
     idx: 0
@@ -1018,7 +1018,7 @@ get_face_path: function [path] [
             index: 0
             if less? idx + 1 (size path) [
                 nextTok: get path (idx + 1)
-                if [equal? (type nextTok) :integer [
+                if equal? (type nextTok) :integer [
                     index: nextTok
                     idx: idx + 1
                 ]
@@ -1207,7 +1207,7 @@ set_state: function [key value] [
 ]
 
 apply_state_from_ui: function [data] [
-    if [equal? (type data) :dictionary [
+    if equal? (type data) :dictionary [
         keysList: keys data
         i: 0
         klen: size keysList
@@ -1277,7 +1277,7 @@ walk_face_tree: function [face depth] [
 ]
 
 find_faces: function [criteria] [
-    if [notEqual? (type criteria) :dictionary [
+    if notEqual? (type criteria) :dictionary [
         return []
     ]
     results: []
@@ -1517,7 +1517,7 @@ face_tree_pretty: function [] [
 
 face_tree_by_id: function [criteria] [
     crit: criteria
-    if [equal? (type criteria) :string [
+    if equal? (type criteria) :string [
         crit: #[id: criteria]
     ]
     face: find_face crit
@@ -1582,7 +1582,7 @@ build_face_json: function [face] [
 ]
 
 path_first: function [path] [
-    if [equal? (type path) :block [
+    if equal? (type path) :block [
         return get_face_path (path ++ [0])
     ]
     null
@@ -1604,7 +1604,7 @@ path_last: function [path] [
 ]
 
 path_nth: function [path index] [
-    if [equal? (type path) :block [
+    if equal? (type path) :block [
         return get_face_path (path ++ [index])
     ]
     null
@@ -1636,7 +1636,7 @@ is_keyword: function [item block] [
                 found_idx: -1
                 j: 0
                 while [less? j blen] [
-                    if [equal? (get block j) item [
+                    if equal? (get block j) item [
                         found_idx: j
                         break
                     ]
@@ -1692,11 +1692,11 @@ parse_attrs: function [args] [
                 switch less? i + advance args_len [
                     val: get args (i + advance)
                     handled: false
-                    if [equal? (type val) :symbol [
-                        if [equal? (to :string val) "#" [
+                    if equal? (type val) :symbol [
+                        if equal? (to :string val) "#" [
                             if less? (i + advance + 1) args_len [
                                 nextVal: get args (i + advance + 1)
-                                if [equal? (type nextVal) :block [
+                                if equal? (type nextVal) :block [
                                     attrs\[name]: header_from_block nextVal
                                     i: i + advance + 2
                                     handled: true
@@ -1802,10 +1802,10 @@ append_style: function [style fragment] [
 has_style_dim: function [attrs] [
         if key? attrs "style" [
             s: to :string attrs\style
-            if [notEqual? (find s "width:") null [
+            if notEqual? (find s "width:") null [
                 return true
             ]
-            if [notEqual? (find s "height:") null [
+            if notEqual? (find s "height:") null [
                 return true
             ]
         ]
@@ -2059,7 +2059,7 @@ header_value: function [hdr key] [
 
 header_from_block: function [blk] [
         hdr: #[]
-        if [notEqual? (type blk) :block [
+        if notEqual? (type blk) :block [
             return hdr
         ]
         blen: size blk
@@ -2153,7 +2153,7 @@ apply_layout_attrs: function [attrs] [
             sizeVal: attrs\size
             sizeType: type sizeVal
             switch equal? sizeType :block [
-                if [equal? (size sizeVal) 2 [
+                if equal? (size sizeVal) 2 [
                     w: get sizeVal 0
                     h: get sizeVal 1
                     widthVal: style_value w
@@ -2178,8 +2178,8 @@ apply_layout_attrs: function [attrs] [
         ]
         if key? attrs "origin" [
             pos: attrs\origin
-            if [equal? (type pos) :block [
-                if [equal? (size pos) 2 [
+            if equal? (type pos) :block [
+                if equal? (size pos) 2 [
                     leftVal: style_value (get pos 0)
                     topVal: style_value (get pos 1)
                     style: append_style style ("padding-left: " ++ leftVal ++ ";")
@@ -2190,8 +2190,8 @@ apply_layout_attrs: function [attrs] [
         ]
         if key? attrs "offset" [
             pos: attrs\offset
-            if [equal? (type pos) :block [
-                if [equal? (size pos) 2 [
+            if equal? (type pos) :block [
+                if equal? (size pos) 2 [
                     style: append_style style "position: relative;"
                     leftVal: style_value (get pos 0)
                     topVal: style_value (get pos 1)
@@ -2203,8 +2203,8 @@ apply_layout_attrs: function [attrs] [
         ]
         if key? attrs "at" [
             pos: attrs\at
-            if [equal? (type pos) :block [
-                if [equal? (size pos) 2 [
+            if equal? (type pos) :block [
+                if equal? (size pos) 2 [
                     style: append_style style "position: absolute;"
                     leftVal: style_value (get pos 0)
                     topVal: style_value (get pos 1)
@@ -2368,7 +2368,7 @@ prepare_attrs: function [attrs bindings] [
 ]
 
 merge_class_attr: function [attrs baseClass] [
-        if [notEqual? (type attrs) :dictionary [
+        if notEqual? (type attrs) :dictionary [
             attrs: #[]
         ]
         classVal: baseClass
@@ -2498,7 +2498,7 @@ compile_expr: function [tokens bindings] [
 
 dict_to_block: function [d] [
         out: []
-        if [notEqual? (type d) :dictionary [
+        if notEqual? (type d) :dictionary [
                 return out
         ]
         keysList: keys d
@@ -2514,7 +2514,7 @@ dict_to_block: function [d] [
 ]
 
 compile_action: function [blk bindings] [
-        if [equal? (type blk) :dictionary [
+        if equal? (type blk) :dictionary [
                 blk: dict_to_block blk
         ]
         js: ""
@@ -2844,7 +2844,7 @@ layout_state: function [block] [
                                         if greater? (size info\args) 0 [
                                                 bodyVal: get info\args 0
                                         ]
-                                        if [equal? (type bodyVal) :block [
+                                        if equal? (type bodyVal) :block [
                                                 prevStack: vista_state\layout_scope_stack
                                                 vista_state\layout_scope_stack: vista_state\layout_scope_stack ++ @[scopeAttrs]
                                                 inner: layout_state bodyVal
@@ -3357,7 +3357,7 @@ layout_state: function [block] [
                                                 sizeVal: get args 0
                                                 sizeType: type sizeVal
                                                 switch equal? sizeType :block [
-                                                        if [equal? (size sizeVal) 2 [
+                                                        if equal? (size sizeVal) 2 [
                                                                 widthVal: style_value (get sizeVal 0)
                                                                 heightVal: style_value (get sizeVal 1)
                                                                 attrs\style: "width: " ++ widthVal ++ "; height: " ++ heightVal ++ ";"
@@ -3659,8 +3659,8 @@ layout_state: function [block] [
                                         labelMax: null
                                         if key? attrs "labels" [
                                                 labelsVal: attrs\labels
-                                                if [equal? (type labelsVal) :block [
-                                                        if [equal? (size labelsVal) 2 [
+                                                if equal? (type labelsVal) :block [
+                                                        if equal? (size labelsVal) 2 [
                                                                 labelMin: get labelsVal 0
                                                                 labelMax: get labelsVal 1
                                                         ]
@@ -3967,7 +3967,7 @@ layout_state: function [block] [
                                                 opts: []
                                                 if greater? args_len 1 [
                                                         arg1: get args 1
-                                                        if [equal? (type arg1) :block [
+                                                        if equal? (type arg1) :block [
                                                                 opts: arg1
                                                         ]
                                                 ]
@@ -4018,7 +4018,7 @@ layout_state: function [block] [
                                                 opts: []
                                                 if greater? args_len 1 [
                                                         arg1: get args 1
-                                                        if [equal? (type arg1) :block [
+                                                        if equal? (type arg1) :block [
                                                                 opts: arg1
                                                         ]
                                                 ]
@@ -4069,7 +4069,7 @@ layout_state: function [block] [
                                                 opts: []
                                                 if greater? args_len 1 [
                                                         arg1: get args 1
-                                                        if [equal? (type arg1) :block [
+                                                        if equal? (type arg1) :block [
                                                                 opts: arg1
                                                         ]
                                                 ]
@@ -4219,7 +4219,7 @@ layout_state: function [block] [
                                         args_len: size args
                                         if greater? args_len 0 [
                                                 tabsBlock: get args 0
-                                                if [equal? (type tabsBlock) :block [
+                                                if equal? (type tabsBlock) :block [
                                                         vista_state\tabs_id_counter: vista_state\tabs_id_counter + 1
                                                         tabIdBase: "tabs-" ++ to :string vista_state\tabs_id_counter
                                                         merged: merge_class_attr attrs "vista-tabs"
@@ -4241,8 +4241,8 @@ layout_state: function [block] [
                                                         htmlTabs: "<div class='" ++ merged\class ++ "' data-tabs='" ++ tabIdBase ++ "' data-tabs-selected='" ++ selectedStr ++ "'" ++ attrStr ++ ">"
                                                         while [less? t tlen][
                                                                 tok: get tabsBlock t
-                                                                if [equal? (type tok) :word [
-                                                                        if [equal? (to :string tok) "tab" [
+                                                                if equal? (type tok) :word [
+                                                                        if equal? (to :string tok) "tab" [
                                                                                 t: t + 1
                                                                                 if less? t tlen [
                                                                                         titleVal: get tabsBlock t
@@ -4361,7 +4361,7 @@ layout_state: function [block] [
                                                         bindName: to :string (get args 0)
                                                         add_binding bindings (get args 0)
                                                         if greater? args_len 1 [
-                                                                if [equal? (type (get args 1)) :block [
+                                                                if equal? (type (get args 1)) :block [
                                                                         items: get args 1
                                                                 ]
                                                         ]
@@ -4687,7 +4687,7 @@ layout_state: function [block] [
                                         args: info\args
                                         drawBlock: null
                                         if greater? (size args) 0 [
-                                                if [equal? (type (get args 0)) :block [
+                                                if equal? (type (get args 0)) :block [
                                                         drawBlock: normalize_block (get args 0)
                                                 ]
                                         ]

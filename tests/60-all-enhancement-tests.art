@@ -1,0 +1,56 @@
+; Vista UI - All Enhancement Tests Runner
+; Runs all tests for the new Vista features
+
+import "src/vista/vista.art"!
+
+; Import individual test modules
+; (Tests are already loaded via vista.art import)
+
+run_all_enhancement_tests: function [] [
+        print "============================================"
+        print "Vista UI - Enhancement Features Test Suite"
+        print "============================================"
+        print ""
+        
+        total-passed: 0
+        total-failed: 0
+        
+        ; Run validation tests
+        print ""
+        result: run_validation_tests
+        if greater? result 0 [total-passed: total-passed + result]
+        
+        ; Run computed tests
+        print ""
+        result: run_computed_tests
+        if greater? result 0 [total-passed: total-passed + result]
+        
+        ; Run theme tests
+        print ""
+        result: run_theme_tests
+        if greater? result 0 [total-passed: total-passed + result]
+        
+        ; Run animation tests
+        print ""
+        result: run_animation_tests
+        if greater? result 0 [total-passed: total-passed + result]
+        
+        ; Run rate and feel tests
+        print ""
+        result: run_rate_feel_tests
+        if greater? result 0 [total-passed: total-passed + result]
+        
+        ; Summary
+        print ""
+        print "============================================"
+        print "Test Suite Complete"
+        print "============================================"
+        print "Total: " ++ to :string total-passed ++ " tests passed"
+        
+        total-failed
+]
+
+; Export for use
+exports: #{
+        run: :run_all_enhancement_tests
+}

@@ -83,7 +83,7 @@ compile_expr: function [tokens bindings] [
 
 dict_to_block: function [d] [
         out: []
-        if [notEqual? (type d) :dictionary [
+        if notEqual? (type d) :dictionary [
                 return out
         ]
         keysList: keys d
@@ -99,7 +99,7 @@ dict_to_block: function [d] [
 ]
 
 compile_action: function [blk bindings] [
-        if [equal? (type blk) :dictionary [
+        if equal? (type blk) :dictionary [
                 blk: dict_to_block blk
         ]
         js: ""

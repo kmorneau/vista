@@ -1,0 +1,248 @@
+; Vista UI - Rate Facet Examples
+; Demonstrates Vista's rate facet system for timed updates
+
+; Import Vista framework
+import "src/vista/vista.art"!
+
+; Example 1: Basic rate - clock display
+basic_rate_demo: function [] [
+        view #[Title: "Rate Facet Demo"] [
+                title "Basic Rate Update"
+                
+                text "Face updates at a specified rate interval."
+                
+                spacer
+                
+                current-time: to :string now
+                
+                box "clock-box" [
+                        text "Clock"
+                        text "Time: " ++ current-time
+                ] .rate: 1000
+        ]
+]
+
+; Example 2: Countdown timer
+countdown_demo: function [] [
+        view #[Title: "Countdown Timer Demo"] [
+                title "Countdown Timer"
+                
+                text "Timer that counts down from a specified value."
+                
+                spacer
+                
+                counter-value: 60
+                timer-running: false
+                
+                box "countdown-box" [
+                        text "Countdown: " ++ to :string counter-value
+                ] .rate: 1000 .on-tick: function [] [
+                        if greater? counter-value 0 [
+                                counter-value: counter-value - 1
+                                update_face "countdown-box" #[text: "Countdown: " ++ to :string counter-value]
+                        ] [
+                                timer-running: false
+                                clear_rate "countdown-box"
+                        ]
+                ]
+                
+                row [
+                        button "Start" .on-click: [
+                                if not? timer-running [
+                                        timer-running: true
+                                        set_rate "countdown-box" 1000
+                                ]
+                        ]
+                        button "Reset" .on-click: [
+                                timer-running: false
+                                counter-value: 60
+                                clear_rate "countdown-box"
+                                update_face "countdown-box" #[text: "Countdown: 60"]
+                        ]
+                ]
+        ]
+]
+
+; Example 3: Progress bar with auto-update
+progress_rate_demo: function [] [
+        view #[Title: "Progress Rate Demo"] [
+                title "Auto-Updating Progress"
+                
+                text "Progress bar that updates automatically."
+                
+                spacer
+                
+                progress-value: 0
+                is-progress-active: false
+                
+                box "progress-box" [
+                        progress "progress-bar" value: progress-value max: 100
+                        text "Progress: " ++ to :string progress-value ++ "%"
+                ] .rate: 100 .on-tick: function [] [
+                        if is-progress-active [
+                                if less? progress-value 100 [
+                                        progress-value: progress-value + 1
+                                        update_face "progress-bar" #[value: progress-value]
+                                        update_face "progress-box" #[text: "Progress: " ++ to :string progress-value ++ "%"]
+                                ] [
+                                        is-progress-active: false
+                                        clear_rate "progress-box"
+                                ]
+                        ]
+                ]
+                
+                row [
+                        button "Start" .on-click: [
+                                if not? is-progress-active [
+                                        is-progress-active: true
+                                        set_rate "progress-box" 100
+                                ]
+                        ]
+                        button "Pause" .on-click: [
+                                is-progress-active: false
+                                clear_rate "progress-box"
+                        ]
+                        button "Reset" .on-click: [
+                                is-progress-active: false
+                                progress-value: 0
+                                clear_rate "progress-box"
+                                update_face "progress-bar" #[value: 0]
+                                update_face "progress-box" #[text: "Progress: 0%"]
+                        ]
+                ]
+        ]
+]
+
+; Example 4: Live data feed simulation
+live_data_demo: function [] [
+        view #[Title: "Live Data Rate Demo"] [
+                title "Live Data Feed"
+                
+                text "Data that updates at a regular interval."
+                
+                spacer
+                
+                data-points: []
+        
+                box "data-box" [
+                        text "Live Data"
+                        list "data-list" options: data-points
+                ] .rate: 2000 .on-tick: function [] [
+                        new-value: random 100
+                        data-points: data-points ++ @["Value: " ++ to :string new-value]
+                        if greater? (size data-points) 10 [
+                                data-points: slice data-points 1 (size data-points)
+                        ]
+                        update_face "data-list" #[options: data-points]
+                ]
+                
+                row [
+                        button "Start Feed" .on-click: [
+                                set_rate "data-box" 2000
+                        ]
+                        button "Stop Feed" .on-click: [
+                                clear_rate "data-box"
+                        ]
+                        button "Clear" .on-click: [
+                                data-points: []
+                                update_face "data-list" #[options: data-points]
+                        ]
+                ]
+        ]
+]
+
+; Example 5: Animation frame rate
+animation_rate_demo: function [] [
+        view #[Title: "Animation Rate Demo"] [
+                title "Frame-Based Animation"
+                
+                text "Smooth animation using rate facet."
+                
+                spacer
+                
+                frame-index: 0
+                frame-count: 8
+                is-animating: false
+        
+                box "anim-box" [
+                        image "sprite" "character.png" width: 64 height: 64
+                        text "Frame: " ++ to :string frame-index
+                ] .rate: 125 .on-tick: function [] [
+                        if is-animating [
+                                frame-index: frame-index + 1
+                                if greater? frame-index (frame-count - 1) [
+                                        frame-index: 0
+                                ]
+                                update_face "anim-box" #[text: "Frame: " ++ to :string frame-index]
+                        ]
+                ]
+                
+                row [
+                        button "Play" .on-click: [
+                                is-animating: true
+                                set_rate "anim-box" 125
+                        ]
+                        button "Pause" .on-click: [
+                                is-animating: false
+                                clear_rate "anim-box"
+                        ]
+                        button "Reset" .on-click: [
+                                is-animating: false
+                                frame-index: 0
+                                clear_rate "anim-box"
+                                update_face "anim-box" #[text: "Frame: 0"]
+                        ]
+                ]
+        ]
+]
+
+; Example 6: Rate with different intervals
+multi_rate_demo: function [] [
+        view #[Title: "Multi-Rate Demo"] [
+                title "Multiple Rates"
+                
+                text "Different faces with different update rates."
+                
+                spacer
+                
+                fast-counter: 0
+                slow-counter: 0
+                
+                panel [
+                        text "Fast Counter (100ms)"
+                        text "fast-counter"
+                ] .rate: 100 .on-tick: function [] [
+                        fast-counter: fast-counter + 1
+                        update_face "fast-counter" #[text: to :string fast-counter]
+                ]
+                
+                panel [
+                        text "Slow Counter (1000ms)"
+                        text "slow-counter"
+                ] .rate: 1000 .on-tick: function [] [
+                        slow-counter: slow-counter + 1
+                        update_face "slow-counter" #[text: to :string slow-counter]
+                ]
+                
+                row [
+                        button "Start All" .on-click: [
+                                set_rate "fast-panel" 100
+                                set_rate "slow-panel" 1000
+                        ]
+                        button "Stop All" .on-click: [
+                                clear_rate "fast-panel"
+                                clear_rate "slow-panel"
+                        ]
+                ]
+        ]
+]
+
+; Export for use
+exports: #{
+        basic: :basic_rate_demo
+        countdown: :countdown_demo
+        progress: :progress_rate_demo
+        live: :live_data_demo
+        animation: :animation_rate_demo
+        multi: :multi_rate_demo
+}

@@ -39,7 +39,7 @@ logo_data_url: function [pathStr] [
 ]
 
 is_raw_html: function [value] [
-        if [equal? (type value) :dictionary [
+        if equal? (type value) :dictionary [
                 if key? value "raw" [
                         return value\raw
                 ]
@@ -62,7 +62,7 @@ html_text: function [value] [
 ]
 
 normalize_block: function [block] [
-        if [notEqual? (type block) :block [
+        if notEqual? (type block) :block [
                 return block
         ]
         out: []
@@ -201,10 +201,10 @@ append_style: function [style fragment] [
 has_style_dim: function [attrs] [
         if key? attrs "style" [
                 s: to :string attrs\style
-                if [notEqual? (find s "width:") null [
+                if notEqual? (find s "width:") null [
                         return true
                 ]
-                if [notEqual? (find s "height:") null [
+                if notEqual? (find s "height:") null [
                         return true
                 ]
         ]
@@ -271,7 +271,7 @@ merge_layout_scopes: function [attrs] [
 ]
 
 merge_class_attr: function [attrs baseClass] [
-        if [notEqual? (type attrs) :dictionary [
+        if notEqual? (type attrs) :dictionary [
                 attrs: #[]
         ]
         classVal: baseClass
@@ -493,7 +493,7 @@ header_value: function [hdr key] [
 
 header_from_block: function [blk] [
         hdr: #[]
-        if [notEqual? (type blk) :block [
+        if notEqual? (type blk) :block [
                 return hdr
         ]
         blen: size blk

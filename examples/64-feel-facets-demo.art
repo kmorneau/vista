@@ -1,0 +1,178 @@
+; Vista UI - Feel Facets Examples
+; Demonstrates Vista's feel facet system for interactive behaviors
+
+; Import Vista framework
+import "src/vista/vista.art"!
+
+; Example 1: Hover feel - highlight on mouse over
+hover_demo: function [] [
+        view #[Title: "Hover Feel Demo"] [
+                title "Hover Feel"
+                
+                text "Face highlights when mouse hovers over it."
+                
+                spacer
+                
+                box "hover-box" [
+                        text "Hover over me!"
+                        text "I'll highlight when you hover."
+                ] .feel: #{
+                        hover: function [] [
+                                set_face_attr "hover-box" "style:background:#e3f2fd"
+                        ]
+                        away: function [] [
+                                set_face_attr "hover-box" "style:background:#ffffff"
+                        ]
+                }
+        ]
+]
+
+; Example 2: Drag feel - draggable face
+drag_demo: function [] [
+        view #[Title: "Drag Feel Demo"] [
+                title "Drag Feel"
+                
+                text "Face can be dragged around the container."
+                
+                spacer
+                
+                box "draggable-box" [
+                        text "Drag me!"
+                        text "I'm draggable!"
+                ] .feel: #{
+                        drag: function [dx dy] [
+                                pos: get_face_attr "draggable-box" "data-pos"
+                                if equal? pos null [pos: #[x: 0 y: 0]]
+                                new-x: pos\x + dx
+                                new-y: pos\y + dy
+                                set_face_attr "draggable-box" "data-pos" #[x: new-x y: new-y]
+                                set_face_attr "draggable-box" "style:position:absolute;left:" ++ to :string new-x ++ "px;top:" ++ to :string new-y ++ "px"
+                        ]
+                }
+        ]
+]
+
+; Example 3: Combined hover and drag
+combined_demo: function [] [
+        view #[Title: "Combined Feel Demo"] [
+                title "Combined Hover & Drag Feel"
+                
+                text "Box highlights on hover and can be dragged."
+                
+                spacer
+                
+                box "combo-box" [
+                        text "Combo Box"
+                        text "Hover + Drag"
+                ] .feel: #{
+                        hover: function [] [
+                                set_face_attr "combo-box" "style:background:#fff3e0;cursor:move"
+                        ]
+                        away: function [] [
+                                set_face_attr "combo-box" "style:background:#ffffff"
+                        ]
+                        drag: function [dx dy] [
+                                pos: get_face_attr "combo-box" "data-pos"
+                                if equal? pos null [pos: #[x: 0 y: 0]]
+                                new-x: pos\x + dx
+                                new-y: pos\y + dy
+                                set_face_attr "combo-box" "data-pos" #[x: new-x y: new-y]
+                                set_face_attr "combo-box" "style:left:" ++ to :string new-x ++ "px;top:" ++ to :string new-y ++ "px"
+                        ]
+                }
+        ]
+]
+
+; Example 4: Dynamic feel application
+dynamic_feel_demo: function [] [
+        view #[Title: "Dynamic Feel Demo"] [
+                title "Dynamic Feel Application"
+                
+                text "Apply feel programmatically after face creation."
+                
+                spacer
+                
+                box "dynamic-box" [
+                        text "Dynamic Feel"
+                ]
+                
+                row [
+                        button "Add Hover" .on-click: [
+                                apply_feel (get_face "dynamic-box") #{
+                                        hover: function [] [
+                                                set_face_attr "dynamic-box" "style:background:#e8f5e9"
+                                        ]
+                                        away: function [] [
+                                                set_face_attr "dynamic-box" "style:background:#ffffff"
+                                        ]
+                                }
+                        ]
+                        button "Remove Feel" .on-click: [
+                                remove_feel (get_face "dynamic-box")
+                        ]
+                ]
+        ]
+]
+
+; Example 5: Interactive feel with state changes
+interactive_feel_demo: function [] [
+        view #[Title: "Interactive Feel Demo"] [
+                title "Interactive Feel States"
+                
+                text "Feel can change face state and trigger updates."
+                
+                spacer
+                
+                click-count: 0
+                
+                box "interactive-box" [
+                        text "Interactive Box"
+                        text "Click count: 0"
+                ] .feel: #{
+                        hover: function [] [
+                                set_face_attr "interactive-box" "style:background:#f3e5f5"
+                        ]
+                        away: function [] [
+                                set_face_attr "interactive-box" "style:background:#ffffff"
+                        ]
+                        click: function [] [
+                                click-count: click-count + 1
+                                update_face "interactive-box" #[text: "Click count: " ++ to :string click-count]
+                        ]
+                }
+        ]
+]
+
+; Example 6: Tooltip feel - show on hover
+tooltip_demo: function [] [
+        view #[Title: "Tooltip Feel Demo"] [
+                title "Tooltip Feel"
+                
+                text "Show tooltip when hovering over face."
+                
+                spacer
+                
+                box "tooltip-box" [
+                        text "Hover for tooltip"
+                ] .feel: #{
+                        hover: function [] [
+                                set_face_attr "tooltip-box" "data-tooltip-visible" "true"
+                                update_face "tooltip-box" #[text: "Hover for tooltip" html: "<span>Hover for tooltip</span><div class='tooltip'>This is a tooltip!</div>"]
+                        ]
+                        away: function [] [
+                                set_face_attr "tooltip-box" "data-tooltip-visible" "false"
+                                update_face "tooltip-box" #[text: "Hover for tooltip" html: "<span>Hover for tooltip</span>"]
+                        ]
+                }
+        ]
+]
+
+; Export for use
+exports: #{
+        hover: :hover_demo
+        drag: :drag_demo
+        combined: :combined_demo
+        dynamic: :dynamic_feel_demo
+        interactive: :interactive_feel_demo
+        tooltip: :tooltip_demo
+}

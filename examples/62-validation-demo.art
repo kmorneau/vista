@@ -1,0 +1,326 @@
+; Vista UI - Form Validation Examples
+; Demonstrates Vista's form validation system with rules and error handling
+
+; Import Vista framework
+import "src/vista/vista.art"!
+
+; Example 1: Basic form validation
+basic_validation_demo: function [] [
+        view #[Title: "Form Validation Demo"] [
+                title "Basic Form Validation"
+                
+                text "Enter values and see validation in action."
+                
+                spacer
+                
+                form "basic-form" [
+                        field [
+                                label "Name (required):"
+                                input "name" .placeholder: "Enter your name"
+                                .validate: #{
+                                        required: true
+                                }
+                        ]
+                        
+                        field [
+                                label "Email (required, email format):"
+                                input "email" .placeholder: "you@example.com"
+                                .validate: #{
+                                        required: true
+                                        email: true
+                                }
+                        ]
+                        
+                        field [
+                                label "Age (18-99):"
+                                input "age" type: "number" .placeholder: "Enter age"
+                                .validate: #{
+                                        required: true
+                                        min: 18
+                                        max: 99
+                                }
+                        ]
+                        
+                        row [
+                                button "Validate" .on-click: [
+                                        validate_form "basic-form" data
+                                ]
+                                button "Clear" .on-click: [
+                                        clear_form "basic-form"
+                                ]
+                        ]
+                ]
+        ]
+]
+
+; Example 2: Registration form with multiple validations
+registration_demo: function [] [
+        view #[Title: "Registration Form Demo"] [
+                title "Registration Form"
+                
+                text "Complete form with comprehensive validation."
+                
+                spacer
+                
+                form "reg-form" [
+                        field [
+                                label "Username (4-20 chars):"
+                                input "username" .placeholder: "Choose a username"
+                                .validate-on-input: #{
+                                        minLength: 4
+                                        maxLength: 20
+                                }
+                        ]
+                        
+                        field [
+                                label "Email:"
+                                input "reg-email" .placeholder: "your@email.com"
+                                .validate: #{
+                                        required: true
+                                        email: true
+                                }
+                        ]
+                        
+                        field [
+                                label "Password (min 8 chars):"
+                                input "password" type: "password" .placeholder: "Create password"
+                                .validate: #{
+                                        required: true
+                                        minLength: 8
+                                }
+                        ]
+                        
+                        field [
+                                label "Confirm Password:"
+                                input "confirm-password" type: "password" .placeholder: "Confirm password"
+                                .validate: #{
+                                        required: true
+                                }
+                        ]
+                        
+                        field [
+                                label "Age:"
+                                input "reg-age" type: "number" .placeholder: "Must be 18+"
+                                .validate: #{
+                                        required: true
+                                        min: 18
+                                        max: 120
+                                }
+                        ]
+                        
+                        row [
+                                button "Register" .on-click: [
+                                        if is_form_valid "reg-form" [
+                                                show_message "Registration successful!"
+                                        ]
+                                ]
+                                button "Clear" .on-click: [
+                                        clear_form "reg-form"
+                                ]
+                        ]
+                ]
+        ]
+]
+
+; Example 3: Login form validation
+login_demo: function [] [
+        view #[Title: "Login Form Demo"] [
+                title "Login Form"
+                
+                text "Simple login with email and password validation."
+                
+                spacer
+                
+                form "login-form" [
+                        field [
+                                label "Email:"
+                                input "login-email" .placeholder: "Enter email"
+                                .validate: #{
+                                        required: true
+                                        email: true
+                                }
+                        ]
+                        
+                        field [
+                                label "Password:"
+                                input "login-password" type: "password" .placeholder: "Enter password"
+                                .validate: #{
+                                        required: true
+                                }
+                        ]
+                        
+                        checkbox "remember" "Remember me"
+                        
+                        row [
+                                button "Login" .on-click: [
+                                        if is_form_valid "login-form" [
+                                                show_message "Login successful!"
+                                        ]
+                                ]
+                                button "Cancel" .on-click: [
+                                        clear_form "login-form"
+                                ]
+                        ]
+                ]
+        ]
+]
+
+; Example 4: Field-level validation with custom feedback
+custom_validation_demo: function [] [
+        view #[Title: "Custom Validation Demo"] [
+                title "Custom Validation Rules"
+                
+                text "Various validation rules available:"
+                
+                spacer
+                
+                form "custom-form" [
+                        field [
+                                label "Username (alphanumeric only):"
+                                input "custom-user" .placeholder: "letters and numbers"
+                                .validate: #{
+                                        required: true
+                                        pattern: "^[a-zA-Z0-9]+$"
+                                }
+                        ]
+                        
+                        field [
+                                label "Phone (10 digits):"
+                                input "custom-phone" .placeholder: "1234567890"
+                                .validate: #{
+                                        required: true
+                                        pattern: "^[0-9]{10}$"
+                                }
+                        ]
+                        
+                        field [
+                                label "Quantity (1-100):"
+                                input "custom-qty" type: "number" .placeholder: "1-100"
+                                .validate: #{
+                                        required: true
+                                        min: 1
+                                        max: 100
+                                }
+                        ]
+                        
+                        field [
+                                label "Description (10-500 chars):"
+                                textarea "custom-desc" .placeholder: "Enter description"
+                                .validate: #{
+                                        minLength: 10
+                                        maxLength: 500
+                                }
+                        ]
+                        
+                        row [
+                                button "Validate All" .on-click: [
+                                        result: validate_form "custom-form" data
+                                        if greater? (size result) 0 [
+                                                show_message "Validation failed"
+                                        ]
+                                ]
+                        ]
+                ]
+        ]
+]
+
+; Example 5: Validation with dependent fields
+dependent_validation_demo: function [] [
+        view #[Title: "Dependent Validation Demo"] [
+                title "Dependent Field Validation"
+                
+                text "Fields can have validation that depends on other fields."
+                
+                spacer
+                
+                form "dependent-form" [
+                        field [
+                                label "Start Date:"
+                                input "start-date" type: "date"
+                                .validate: #{
+                                        required: true
+                                }
+                        ]
+                        
+                        field [
+                                label "End Date:"
+                                input "end-date" type: "date"
+                                .validate: #{
+                                        required: true
+                                }
+                        ]
+                        
+                        field [
+                                label "Project URL:"
+                                input "project-url" .placeholder: "https://..."
+                                .validate: #{
+                                        pattern: "^https?://.+"
+                                }
+                        ]
+                        
+                        row [
+                                button "Validate" .on-click: [
+                                        validate_form "dependent-form" data
+                                ]
+                        ]
+                ]
+]
+
+; Example 6: Inline validation on blur
+inline_validation_demo: function [] [
+        view #[Title: "Inline Validation Demo"] [
+                title "Inline Validation on Blur"
+                
+                text "Validation occurs automatically when fields lose focus."
+                text "No need to click validate button."
+                
+                spacer
+                
+                form "inline-form" [
+                        field [
+                                label "Required Field:"
+                                input "inline-required" .placeholder: "This field is required"
+                                .validate: #{
+                                        required: true
+                                }
+                        ]
+                        
+                        field [
+                                label "Email Field:"
+                                input "inline-email" .placeholder: "Enter valid email"
+                                .validate: #{
+                                        required: true
+                                        email: true
+                                }
+                        ]
+                        
+                        field [
+                                label "Number (1-100):"
+                                input "inline-num" type: "number" .placeholder: "1-100"
+                                .validate: #{
+                                        min: 1
+                                        max: 100
+                                }
+                        ]
+                        
+                        row [
+                                button "Check Form Status" .on-click: [
+                                        if is_form_valid "inline-form" [
+                                                show_message "Form is valid!"
+                                        ] [
+                                                show_message "Form has errors"
+                                        ]
+                                ]
+                        ]
+                ]
+]
+
+; Export for use
+exports: #{
+        basic: :basic_validation_demo
+        registration: :registration_demo
+        login: :login_demo
+        custom: :custom_validation_demo
+        dependent: :dependent_validation_demo
+        inline: :inline_validation_demo
+}

@@ -154,7 +154,7 @@ layout_state: function [block] [
                                         if greater? (size info\args) 0 [
                                                 bodyVal: get info\args 0
                                         ]
-                                        if [equal? (type bodyVal) :block [
+                                        if equal? (type bodyVal) :block [
                                                 prevStack: vista_state\layout_scope_stack
                                                 vista_state\layout_scope_stack: vista_state\layout_scope_stack ++ @[scopeAttrs]
                                                 inner: layout_state bodyVal
@@ -667,7 +667,7 @@ layout_state: function [block] [
                                                 sizeVal: get args 0
                                                 sizeType: type sizeVal
                                                 switch equal? sizeType :block [
-                                                        if [equal? (size sizeVal) 2 [
+                                                        if equal? (size sizeVal) 2 [
                                                                 widthVal: style_value (get sizeVal 0)
                                                                 heightVal: style_value (get sizeVal 1)
                                                                 attrs\style: "width: " ++ widthVal ++ "; height: " ++ heightVal ++ ";"
@@ -969,8 +969,8 @@ layout_state: function [block] [
                                         labelMax: null
                                         if key? attrs "labels" [
                                                 labelsVal: attrs\labels
-                                                if [equal? (type labelsVal) :block [
-                                                        if [equal? (size labelsVal) 2 [
+                                                if equal? (type labelsVal) :block [
+                                                        if equal? (size labelsVal) 2 [
                                                                 labelMin: get labelsVal 0
                                                                 labelMax: get labelsVal 1
                                                         ]
@@ -1277,10 +1277,9 @@ layout_state: function [block] [
                                                 opts: []
                                                 if greater? args_len 1 [
                                                         arg1: get args 1
-                                                        if [equal? (type arg1) :block [
+                                                        if equal? (type arg1) :block [
                                                                 opts: arg1
                                                         ]
-                                                ]
                                                 ]
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "select" attrs ""
@@ -1329,10 +1328,9 @@ layout_state: function [block] [
                                                 opts: []
                                                 if greater? args_len 1 [
                                                         arg1: get args 1
-                                                        if [equal? (type arg1) :block [
+                                                        if equal? (type arg1) :block [
                                                                 opts: arg1
                                                         ]
-                                                ]
                                                 ]
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "drop-list" attrs ""
@@ -1381,10 +1379,9 @@ layout_state: function [block] [
                                                 opts: []
                                                 if greater? args_len 1 [
                                                         arg1: get args 1
-                                                        if [equal? (type arg1) :block [
+                                                        if equal? (type arg1) :block [
                                                                 opts: arg1
                                                         ]
-                                                ]
                                                 ]
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "drop-list" attrs ""
@@ -1524,15 +1521,15 @@ layout_state: function [block] [
                                         i: info\next
                                         attrs: prepare_attrs info\attrs bindings
                                         selectedIndex: 0
-                                        if key? attrs "selected" {
+                                        if key? attrs "selected" [
                                                 selectedIndex: attrs\selected
                                                 attrs: attrs_without attrs "selected"
-                                        }
+                                        ]
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 tabsBlock: get args 0
-                                                if [equal? (type tabsBlock) :block [
+                                                if equal? (type tabsBlock) :block [
                                                         vista_state\tabs_id_counter: vista_state\tabs_id_counter + 1
                                                         tabIdBase: "tabs-" ++ to :string vista_state\tabs_id_counter
                                                         merged: merge_class_attr attrs "vista-tabs"
@@ -1554,17 +1551,17 @@ layout_state: function [block] [
                                                         htmlTabs: "<div class='" ++ merged\class ++ "' data-tabs='" ++ tabIdBase ++ "' data-tabs-selected='" ++ selectedStr ++ "'" ++ attrStr ++ ">"
                                                         while [less? t tlen][
                                                                 tok: get tabsBlock t
-                                                                if [equal? (type tok) :word [
-                                                                        if [equal? (to :string tok) "tab" [
+                                                                if equal? (type tok) :word [
+                                                                        if equal? (to :string tok) "tab" [
                                                                                 t: t + 1
-                                                                                if less? t tlen {
+                                                                                if less? t tlen [
                                                                                         titleVal: get tabsBlock t
                                                                                         t: t + 1
                                                                                         bodyVal: null
-                                                                                        if less? t tlen {
+                                                                                        if less? t tlen [
                                                                                                 bodyVal: get tabsBlock t
                                                                                                 t: t + 1
-                                                                                        }
+                                                                                        ]
                                                                                         tabKey: tabIdBase ++ "-" ++ to :string tabIndex
                                                                                         tabIndex: tabIndex + 1
                                                                                         titleHtml: ""
@@ -1619,7 +1616,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 arg0: get args 0
                                                 arg0_type: type arg0
                                                 parentId: current_parent_id face_stack
@@ -1643,7 +1640,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 arg0: get args 0
                                                 arg0_type: type arg0
                                                 parentId: current_parent_id face_stack
@@ -1667,14 +1664,14 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 bindName: "value"
                                                 items: []
                                                 switch equal? (type (get args 0)) :word [
                                                         bindName: to :string (get args 0)
                                                         add_binding bindings (get args 0)
-                                                        if greater? args_len 1 {
-                                                                if [equal? (type (get args 1)) :block [
+                                                        if greater? args_len 1 [
+                                                                if equal? (type (get args 1)) :block [
                                                                         items: get args 1
                                                                 ]
                                                         ]
@@ -1686,10 +1683,10 @@ layout_state: function [block] [
                                                         ]
                                                 ]
                                                 multi: false
-                                                if key? attrs "multi" {
+                                                if key? attrs "multi" [
                                                         multi: attrs\multi
                                                         attrs: attrs_without attrs "multi"
-                                                }
+                                                ]
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "list" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1710,7 +1707,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1719,7 +1716,7 @@ layout_state: function [block] [
                                                 faceHtml: table_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table-row" -> [
                                         info: parse_args_from block (i + 1)
@@ -1727,7 +1724,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-row" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1736,7 +1733,7 @@ layout_state: function [block] [
                                                 faceHtml: table_row_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table_row" -> [
                                         info: parse_args_from block (i + 1)
@@ -1744,7 +1741,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-row" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1753,7 +1750,7 @@ layout_state: function [block] [
                                                 faceHtml: table_row_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table-header" -> [
                                         info: parse_args_from block (i + 1)
@@ -1761,7 +1758,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-header" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1770,7 +1767,7 @@ layout_state: function [block] [
                                                 faceHtml: table_header_cell_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table_header" -> [
                                         info: parse_args_from block (i + 1)
@@ -1778,7 +1775,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-header" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1787,7 +1784,7 @@ layout_state: function [block] [
                                                 faceHtml: table_header_cell_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table-cell" -> [
                                         info: parse_args_from block (i + 1)
@@ -1795,7 +1792,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-cell" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1804,7 +1801,7 @@ layout_state: function [block] [
                                                 faceHtml: table_cell_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table_cell" -> [
                                         info: parse_args_from block (i + 1)
@@ -1812,7 +1809,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-cell" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1821,7 +1818,7 @@ layout_state: function [block] [
                                                 faceHtml: table_cell_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table-head" -> [
                                         info: parse_args_from block (i + 1)
@@ -1829,7 +1826,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-head" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1838,7 +1835,7 @@ layout_state: function [block] [
                                                 faceHtml: table_head_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table_head" -> [
                                         info: parse_args_from block (i + 1)
@@ -1846,7 +1843,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-head" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1855,7 +1852,7 @@ layout_state: function [block] [
                                                 faceHtml: table_head_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table-body" -> [
                                         info: parse_args_from block (i + 1)
@@ -1863,7 +1860,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-body" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1872,7 +1869,7 @@ layout_state: function [block] [
                                                 faceHtml: table_body_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table_body" -> [
                                         info: parse_args_from block (i + 1)
@@ -1880,7 +1877,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-body" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1889,7 +1886,7 @@ layout_state: function [block] [
                                                 faceHtml: table_body_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table-foot" -> [
                                         info: parse_args_from block (i + 1)
@@ -1897,7 +1894,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-foot" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1906,7 +1903,7 @@ layout_state: function [block] [
                                                 faceHtml: table_foot_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "table_foot" -> [
                                         info: parse_args_from block (i + 1)
@@ -1914,7 +1911,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "table-foot" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1923,7 +1920,7 @@ layout_state: function [block] [
                                                 faceHtml: table_foot_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "toolbar" -> [
                                         info: parse_args_from block (i + 1)
@@ -1931,7 +1928,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "toolbar" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1940,7 +1937,7 @@ layout_state: function [block] [
                                                 faceHtml: toolbar_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "menubar" -> [
                                         info: parse_args_from block (i + 1)
@@ -1948,7 +1945,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "menubar" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1957,7 +1954,7 @@ layout_state: function [block] [
                                                 faceHtml: menubar_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "tool-group" -> [
                                         info: parse_args_from block (i + 1)
@@ -1965,7 +1962,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "tool-group" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1974,7 +1971,7 @@ layout_state: function [block] [
                                                 faceHtml: tool_group_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "tool_group" -> [
                                         info: parse_args_from block (i + 1)
@@ -1982,7 +1979,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 parentId: current_parent_id face_stack
                                                 faceId: register_face faces parentId "tool-group" attrs ""
                                                 attrs: with_face_id attrs faceId
@@ -1991,7 +1988,7 @@ layout_state: function [block] [
                                                 faceHtml: tool_group_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
-                                        }
+                                        ]
                                 ]
                                 "canvas" -> [
                                         info: parse_args_from block (i + 1)
@@ -1999,18 +1996,18 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         drawBlock: null
-                                        if greater? (size args) 0 {
-                                                if [equal? (type (get args 0)) :block [
+                                        if greater? (size args) 0 [
+                                                if equal? (type (get args 0)) :block [
                                                         drawBlock: normalize_block (get args 0)
                                                 ]
-                                        }
+                                        ]
                                         parentId: current_parent_id face_stack
                                         faceId: register_face faces parentId "canvas" attrs ""
                                         attrs: with_face_id attrs faceId
                                         set_face_attrs_and_name faces faceId attrs
-                                        if notEqual? drawBlock null {
+                                        if notEqual? drawBlock null [
                                                 set_face_meta faces faceId #[draw: drawBlock]
-                                        }
+                                        ]
                                         faceHtml: canvas_face attrs
                                         html: html ++ faceHtml
                                         set_face_html faces faceId faceHtml
@@ -2035,39 +2032,39 @@ layout_state: function [block] [
                                         args_len: size args
                                         ratio: null
                                         orientation: "horizontal"
-                                        if key? attrs "ratio" {
+                                        if key? attrs "ratio" [
                                                 ratio: attrs\ratio
                                                 attrs: attrs_without attrs "ratio"
-                                        }
-                                        if key? attrs "orientation" {
+                                        ]
+                                        if key? attrs "orientation" [
                                                 orientation: to :string attrs\orientation
                                                 attrs: attrs_without attrs "orientation"
-                                        }
+                                        ]
                                         leftHtml: ""
                                         rightHtml: ""
                                         parentId: current_parent_id face_stack
                                         faceId: register_face faces parentId "split" attrs ""
                                         attrs: with_face_id attrs faceId
                                         set_face_attrs_and_name faces faceId attrs
-                                        if greater? args_len 0 {
+                                        if greater? args_len 0 [
                                                 leftVal: get args 0
                                                 leftHtml: render_block_or_string leftVal bindings faces faceId
-                                        }
-                                        if greater? args_len 1 {
+                                        ]
+                                        if greater? args_len 1 [
                                                 rightVal: get args 1
                                                 rightHtml: render_block_or_string rightVal bindings faces faceId
-                                        }
+                                        ]
                                         set_face_meta faces faceId #[
                                                 ratio: ratio
                                                 orientation: orientation
                                         ]
-                                        if equal? orientation "vertical" {
+                                        if equal? orientation "vertical" [
                                                 switch key? attrs "class" [
                                                         attrs\class: "vista-split-vertical " ++ to :string attrs\class
                                                 ][
                                                         attrs\class: "vista-split-vertical"
                                                 ]
-                                        }
+                                        ]
                                         faceHtml: split_face leftHtml rightHtml attrs ratio
                                         set_face_html faces faceId faceHtml
                                         html: html ++ faceHtml

@@ -69,7 +69,7 @@ input_field: function [bindName attrs] [
 
 slider_field: function [bindName attrs] [
         attrsVal: attrs
-        if [notEqual? (type attrsVal) :dictionary [
+        if notEqual? (type attrsVal) :dictionary [
                 attrsVal: #[]
         ]
         merged: merge_class_attr attrsVal "vista-slider"
@@ -82,7 +82,7 @@ slider_field: function [bindName attrs] [
 
 rotary_field: function [bindName attrs] [
         attrsVal: attrs
-        if [notEqual? (type attrsVal) :dictionary [
+        if notEqual? (type attrsVal) :dictionary [
                 attrsVal: #[]
         ]
         merged: merge_class_attr attrsVal "vista-rotary"
@@ -183,7 +183,7 @@ radio_group: function [bindName attrs options bindings] [
                         opt_label: html_text opt
                 ]
                 optAttrStr: ""
-                if [equal? (type opt_attrs) :dictionary [
+                if equal? (type opt_attrs) :dictionary [
                         optAttrStr: attrs_to_html opt_attrs
                 ]
                 html: html ++ "<label class='vista-radio-item'>"

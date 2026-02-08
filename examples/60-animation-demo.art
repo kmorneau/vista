@@ -1,0 +1,183 @@
+; Vista UI - Animation Examples
+; Demonstrates Vista's animation system for UI transitions and sprite animations
+
+; Import Vista framework
+import "src/vista/vista.art"!
+
+; Example 1: Fade-in animation on panel
+fade_in_demo: function [] [
+        view #[Title: "Vista Animation Demo"] [
+                box [
+                        text "Fade In Animation"
+                        button "Show with Fade" .on-click: [
+                                "panel-1" animate: "fade-in" 500
+                        ]
+                ]
+                panel "panel-1" [
+                        text "This panel fades in!"
+                        text "Animation: fade-in (500ms)"
+                ]
+        ]
+]
+
+; Example 2: Slide and scale animations
+slide_scale_demo: function [] [
+        view #[Title: "Slide & Scale Demo"] [
+                row [
+                        button "Slide In" .on-click: [
+                                "slide-box" animate: "slide-in" 300
+                        ]
+                        button "Scale In" .on-click: [
+                                "scale-box" animate: "scale-in" 300
+                        ]
+                        button "Bounce" .on-click: [
+                                "bounce-box" animate: "bounce" 500
+                        ]
+                ]
+                row [
+                        box "slide-box" [
+                                text "Slide Panel"
+                        ]
+                        box "scale-box" [
+                                text "Scale Panel"
+                        ]
+                        box "bounce-box" [
+                                text "Bounce Panel"
+                        ]
+                ]
+        ]
+]
+
+; Example 3: Pulse animation for attention
+pulse_demo: function [] [
+        view #[Title: "Pulse Animation Demo"] [
+                box [
+                        text "Pulse Animation (Continuous)"
+                        button "Start Pulse" .on-click: [
+                                "pulse-icon" animate: "pulse" 1000
+                        ]
+                        button "Stop Pulse" .on-click: [
+                                "pulse-icon" style: ""  ; Remove animation
+                        ]
+                ]
+                row [
+                        image "pulse-icon" "heart.png" width: 48 height: 48
+                ]
+        ]
+]
+
+; Example 4: Spin animation for loading
+spin_demo: function [] [
+        view #[Title: "Spin Animation Demo"] [
+                box [
+                        text "Spin Animation (Loading)"
+                        button "Start Spinner" .on-click: [
+                                "spinner" animate: "spin" 1000
+                        ]
+                        button "Stop Spinner" .on-click: [
+                                "spinner" style: ""
+                        ]
+                ]
+                image "spinner" "spinner.png" width: 32 height: 32
+        ]
+]
+
+; Example 5: Sprite animation
+sprite_demo: function [] [
+        view #[Title: "Sprite Animation Demo"] [
+                box [
+                        text "Sprite Animation"
+                        button "Start Animation" .on-click: [
+                                "sprite-1" startSprite
+                        ]
+                        button "Stop Animation" .on-click: [
+                                "sprite-1" stopSprite
+                        ]
+                ]
+                sprite_anim "character.png" frames: 8 fps: 12 width: 64 height: 64
+        ]
+]
+
+; Example 6: Animation sequence
+sequence_demo: function [] [
+        view #[Title: "Animation Sequence Demo"] [
+                box [
+                        text "Animation Sequence"
+                        button "Play Sequence" .on-click: [
+                                "seq-box" animateSequence: @[
+                                        [name: "fade-in" duration: 300]
+                                        [name: "scale-in" duration: 300]
+                                        [name: "bounce" duration: 500]
+                                ]
+                        ]
+                ]
+                box "seq-box" [
+                        text "Sequence Box"
+                ]
+        ]
+]
+
+; Example 7: Multiple animations on different elements
+multi_demo: function [] [
+        view #[Title: "Multiple Animations Demo"] [
+                row [
+                        box "box-1" [text "Box 1"]
+                        box "box-2" [text "Box 2"]
+                        box "box-3" [text "Box 3"]
+                ]
+                row [
+                        button "Animate All" .on-click: [
+                                "box-1" animate: "fade-in" 300
+                                "box-2" animate: "slide-in" 400
+                                "box-3" animate: "scale-in" 500
+                        ]
+                        button "Shake Error" .on-click: [
+                                "box-2" animate: "shake" 500
+                        ]
+                        button "Pulse Alert" .on-click: [
+                                "box-3" animate: "pulse" 1000
+                        ]
+                ]
+        ]
+]
+
+; Run animation demo
+animation_demo: function [] [
+        view #[Title: "Vista Animation System"] [
+                title "Vista Animation Examples"
+                
+                text "Vista provides CSS-based animations inspired by REBOL View:"
+                text "fade-in, fade-out, slide-in, slide-out, scale-in, scale-out, bounce, shake, pulse, spin"
+                
+                spacer
+                
+                panel [
+                        text "Quick Demo"
+                        button "Fade In" .on-click: [
+                                "demo-panel" animate: "fade-in" 400
+                        ]
+                        button "Bounce" .on-click: [
+                                "demo-panel" animate: "bounce" 500
+                        ]
+                        button "Shake" .on-click: [
+                                "demo-panel" animate: "shake" 500
+                        ]
+                ]
+                
+                box "demo-panel" [
+                        text "Animated Panel"
+                ]
+        ]
+]
+
+; Export for use
+exports: #{
+        demo: :animation_demo
+        fade: :fade_in_demo
+        slide: :slide_scale_demo
+        pulse: :pulse_demo
+        spin: :spin_demo
+        sprite: :sprite_demo
+        sequence: :sequence_demo
+        multi: :multi_demo
+}
