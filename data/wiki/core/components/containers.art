@@ -1,0 +1,105 @@
+# [
+#   "title": "Container Components"
+#   "layout": "docpage"
+#   "category": "Components"
+#   "tags": ["container", "box", "panel", "grid", "row", "col", "group", "layout"]
+#   "body": {
+#     <h1>Container Components</h1>
+#
+#     <p>Container components organize and structure your UI layout. They provide the building blocks for creating complex interfaces.</p>
+#
+#     <h2>Box</h2>
+#     <p>A basic container with the <code>vista-box</code> class for styling:</p>
+#     <pre><code>
+#     box "Content goes here" .class: "my-box"
+#     </code></pre>
+#
+#     <h2>Panel</h2>
+#     <p>A panel with optional title and body sections:</p>
+#     <pre><code>
+#     panel "Panel Title" [
+#         ; Panel body content
+#         text "Content inside panel"
+#     ]
+#     </code></pre>
+#
+#     <h2>Grid</h2>
+#     <p>A CSS grid container with specified number of columns:</p>
+#     <pre><code>
+#     grid 3 [
+#         box "Cell 1"
+#         box "Cell 2"
+#         box "Cell 3"
+#         box "Cell 4"
+#     ]
+#     </code></pre>
+#     <p>Creates a 3-column grid layout.</p>
+#
+#     <h2>Row</h2>
+#     <p>A horizontal flex container:</p>
+#     <pre><code>
+#     row [
+#         button "Left"
+#         button "Center"
+#         button "Right"
+#     ]
+#     </code></pre>
+#
+#     <h2>Column (col)</h2>
+#     <p>A vertical flex container:</p>
+#     <pre><code>
+#     col [
+#         text "Top"
+#         text "Middle"
+#         text "Bottom"
+#     ]
+#     </code></pre>
+#
+#     <h2>Group</h2>
+#     <p>A generic container without default styling:</p>
+#     <pre><code>
+#     group .id: "my-group" [
+#         text "Grouped content"
+#     ]
+#     </code></pre>
+#
+#     <h2>Spacer</h2>
+#     <p>Adds flexible spacing between elements:</p>
+#     <pre><code>
+#     row [
+#         button "Left"
+#         spacer
+#         button "Right"
+#     ]
+#     </code></pre>
+#
+#     <h2>Sensor</h2>
+#     <p>A clickable container with accessibility support:</p>
+#     <pre><code>
+#     sensor .onclick: "handleClick()" [
+#         text "Click this area"
+#     ]
+#     </code></pre>
+#     <p>Sensors automatically add keyboard accessibility (Enter/Space) and ARIA roles.</p>
+#
+#     <h2>Example</h2>
+#     <pre><code>
+#     view .html [
+#         panel "Dashboard" [
+#             grid 2 [
+#                 box "Widget 1"
+#                 box "Widget 2"
+#                 box "Widget 3"
+#                 box "Widget 4"
+#             ]
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>See Also</h2>
+#     <ul>
+#       <li><a href="/wiki/core/layout/layout-overview/">Layout Overview</a> - Layout system concepts</li>
+#       <li><a href="/wiki/core/components/data-display/">Data Display</a> - Table and list components</li>
+#     </ul>
+#   }
+# ]

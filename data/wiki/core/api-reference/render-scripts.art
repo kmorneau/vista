@@ -1,0 +1,145 @@
+# [
+#   "title": "Render Scripts"
+#   "layout": "docpage"
+#   "category": "API Reference"
+#   "tags": ["render", "script", "javascript", "binding", "client"]
+#   "body": {
+#     <h1>Render Scripts</h1>
+#
+#     <p>Render scripts generate the client-side JavaScript that powers data binding, state management, and UI updates in Vista applications.</p>
+#
+#     <h2>Overview</h2>
+#     <p>The render script system automatically generates JavaScript code that:</p>
+#     <ul>
+#       <li>Initializes client-side state from server data</li>
+#       <li>Binds input elements to state variables</li>
+#       <li>Handles two-way data synchronization</li>
+#       <li>Manages list and table interactions</li>
+#       <li>Supports keyboard navigation and accessibility</li>
+#     </ul>
+#
+#     <h2>render_script</h2>
+#     <p>Generates the main client-side script for a view.</p>
+#     <pre><code>
+#     script: render_script bindings
+#     </code></pre>
+#     <h3>Parameters</h3>
+#     <ul>
+#       <li><code>bindings</code> - Dictionary of state variable names to initial values</li>
+#     </ul>
+#     <h3>Returns</h3>
+#     <p>A <code><script></code> element containing the client-side code.</p>
+#
+#     <h3>Generated Functions</h3>
+#     <ul>
+#       <li><code>state</code> - Global state object</li>
+#       <li><code>render()</code> - Updates all bound elements from state</li>
+#       <li><code>bindInputs()</code> - Attaches event listeners to inputs</li>
+#       <li><code>autoSize()</code> - Auto-sizes elements with data-auto-size</li>
+#       <li><code>_vistaMeasureText()</code> - Text measurement utility</li>
+#       <li><code>_vistaParsePx()</code> - Pixel value parser</li>
+#     </ul>
+#
+#     <h2>tabs_script</h2>
+#     <p>Generates JavaScript for tab component functionality.</p>
+#     <pre><code>
+#     script: tabs_script
+#     </code></pre>
+#     <p>Features:</p>
+#     <ul>
+#       <li>Click activation of tabs</li>
+#       <li>Keyboard navigation (Arrow keys, Home, End)</li>
+#       <li>Panel visibility management</li>
+#     </ul>
+#
+#     <h2>menubar_script</h2>
+#     <p>Generates JavaScript for menubar functionality.</p>
+#     <pre><code>
+#     script: menubar_script
+#     </code></pre>
+#     <p>Features:</p>
+#     <ul>
+#       <li>Dropdown menu toggling</li>
+#       <li>Hover activation when menu is open</li>
+#       <li>Click-outside to close</li>
+#       <li>Escape key to close</li>
+#     </ul>
+#
+#     <h2>table_script</h2>
+#     <p>Generates JavaScript for table row selection.</p>
+#     <pre><code>
+#     script: table_script
+#     </code></pre>
+#     <p>Features:</p>
+#     <ul>
+#       <li>Row click selection</li>
+#       <li>Visual highlighting of selected row</li>
+#     </ul>
+#
+#     <h2>auto_reload_script</h2>
+#     <p>Generates script for automatic page reloading (useful for development).</p>
+#     <pre><code>
+#     script: auto_reload_script
+#     </code></pre>
+#     <p>Controlled by <code>webview_auto_reload</code> and <code>webview_reload_ms</code> settings.</p>
+#
+#     <h2>WebView State Sync</h2>
+#     <p>When <code>webview_state_sync_from_ui</code> is enabled, the script includes:</p>
+#     <pre><code>
+#     window.vistaPushState = function() {
+#         fetch('/vista-state', {
+#             method: 'POST',
+#             body: JSON.stringify(state)
+#         });
+#     };
+#     </code></pre>
+#
+#     <p>When <code>webview_state_sync_ms</code> is set, periodic polling is enabled:</p>
+#     <pre><code>
+#     setInterval(() => {
+#         fetch('/vista-sync')
+#             .then(r => r.json())
+#             .then(data => {
+#                 Object.assign(state, data);
+#                 render();
+#             });
+#     }, syncInterval);
+#     </code></pre>
+#
+#     <h2>window.vistaShow</h2>
+#     <p>Global function for updating a face's HTML dynamically:</p>
+#     <pre><code>
+#     window.vistaShow = function(id, html) {
+#         const el = document.querySelector('[data-face-id="' + id + '"]');
+#         if (el) {
+#             el.outerHTML = html;
+#             render();
+#             bindInputs();
+#             return true;
+#         }
+#         return false;
+#     };
+#     </code></pre>
+#
+#     <h2>Data Attributes</h2>
+#     <ul>
+#       <li><code>data-bind</code> - Binds element to state variable</li>
+#       <li><code>data-show-bind</code> - Conditional visibility binding</li>
+#       <li><code>data-show-value</code> - Value for conditional visibility</li>
+#       <li><code>data-list-bind</code> - List selection binding</li>
+#       <li><code>data-multi</code> - Enable multi-select for lists</li>
+#       <li><code>data-key-bind</code> - Keyboard input binding</li>
+#       <li><code>data-key-mode</code> - Key event mode (keydown/keyup)</li>
+#       <li><code>data-key-filter</code> - Filter specific keys</li>
+#       <li><code>data-key-modifiers</code> - Capture only modifiers</li>
+#       <li><code>data-face-id</code> - Face identifier for updates</li>
+#       <li><code>data-auto-size</code> - Enable auto-sizing</li>
+#     </ul>
+#
+#     <h2>See Also</h2>
+#     <ul>
+#       <li><a href="/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Data binding concepts</li>
+#       <li><a href="/wiki/core/events/event-overview/">Event Overview</a> - Event handling</li>
+#     </ul>
+#   }
+# ]

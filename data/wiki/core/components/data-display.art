@@ -1,0 +1,137 @@
+# [
+#   "title": "Data Display Components"
+#   "layout": "docpage"
+#   "category": "Components"
+#   "tags": ["list", "table", "toolbar", "menubar", "data", "display"]
+#   "body": {
+#     <h1>Data Display Components</h1>
+#
+#     <p>Data display components present collections and structured data to users.</p>
+#
+#     <h2>Text List</h2>
+#     <p>A simple unordered list for displaying text items:</p>
+#     <pre><code>
+#     text_list ["Item 1" "Item 2" "Item 3"]
+#     </code></pre>
+#     <p>With variable values:</p>
+#     <pre><code>
+#     name: "Alice"
+#     status: "Active"
+#     text_list [name status "Static Item"]
+#     </code></pre>
+#
+#     <h2>Text List with Binding</h2>
+#     <p>Creates a list with data binding for dynamic updates:</p>
+#     <pre><code>
+#     text_list_bind [userName userStatus] bindings
+#     </code></pre>
+#
+#     <h2>List Face with Binding</h2>
+#     <p>An interactive list with selection support:</p>
+#     <pre><code>
+#     list_face_bind ["Option 1" "Option 2" "Option 3"] 'selectedItem false bindings
+#     </code></pre>
+#     <p>For multi-select lists:</p>
+#     <pre><code>
+#     list_face_bind ["Tag A" "Tag B" "Tag C"] 'selectedTags true bindings
+#     </code></pre>
+#
+#     <h2>Table Components</h2>
+#     <p>Build tables using table, row, and cell components:</p>
+#
+#     <h3>Table Container</h3>
+#     <pre><code>
+#     table [
+#         ; Table content
+#     ]
+#     </code></pre>
+#
+#     <h3>Table Sections</h3>
+#     <pre><code>
+#     table_head [table_row [table_header_cell "Name" table_header_cell "Email"]]
+#     table_body [
+#         table_row [table_cell "John" table_cell "john@example.com"]
+#         table_row [table_cell "Jane" table_cell "jane@example.com"]
+#     ]
+#     </code></pre>
+#
+#     <h3>Complete Table Example</h3>
+#     <pre><code>
+#     table .id: "users-table" [
+#         table_head [
+#             table_row [
+#                 table_header_cell "Name"
+#                 table_header_cell "Email"
+#                 table_header_cell "Role"
+#             ]
+#         ]
+#         table_body [
+#             table_row [
+#                 table_cell "Alice"
+#                 table_cell "alice@example.com"
+#                 table_cell "Admin"
+#             ]
+#             table_row [
+#                 table_cell "Bob"
+#                 table_cell "bob@example.com"
+#                 table_cell "User"
+#             ]
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>Toolbar</h2>
+#     <p>A horizontal toolbar container:</p>
+#     <pre><code>
+#     toolbar [
+#         button "New"
+#         button "Open"
+#         button "Save"
+#     ]
+#     </code></pre>
+#
+#     <h2>Menubar</h2>
+#     <p>A menu bar for application menus:</p>
+#     <pre><code>
+#     menubar [
+#         ; Menu items
+#     ]
+#     </code></pre>
+#
+#     <h2>Tool Group</h2>
+#     <p>Groups related toolbar items:</p>
+#     <pre><code>
+#     toolbar [
+#         tool_group [
+#             button "Bold"
+#             button "Italic"
+#         ]
+#         tool_group [
+#             button "Align Left"
+#             button "Align Center"
+#         ]
+#     ]
+#     </code></pre>
+#
+#     <h2>CSS Classes</h2>
+#     <ul>
+#       <li><code>vista-text-list</code> - Text list container</li>
+#       <li><code>vista-list</code> - Interactive list</li>
+#       <li><code>vista-table</code> - Table container</li>
+#       <li><code>vista-table-row</code> - Table row</li>
+#       <li><code>vista-table-cell</code> - Table cell</li>
+#       <li><code>vista-table-header</code> - Header cell</li>
+#       <li><code>vista-toolbar</code> - Toolbar container</li>
+#       <li><code>vista-menubar</code> - Menubar container</li>
+#       <li><code>vista-tool-group</code> - Tool group</li>
+#       <li><code>is-active</code> - Active list item</li>
+#       <li><code>is-selected</code> - Selected table row</li>
+#     </ul>
+#
+#     <h2>See Also</h2>
+#     <ul>
+#       <li><a href="/wiki/core/data-binding/binding-overview/">Data Binding Overview</a> - Binding concepts</li>
+#       <li><a href="/wiki/core/components/containers/">Container Components</a> - Layout containers</li>
+#     </ul>
+#   }
+# ]

@@ -2,66 +2,68 @@
 #   "title": "Text Components"
 #   "layout": "docpage"
 #   "category": "Components"
-#   "tags": ["text", "components", "core"]
+#   "tags": ["text", "title", "subtitle", "label", "typography"]
 #   "body": {
 #     <h1>Text Components</h1>
 #
-#     <p>Text components display textual content in various styles.</p>
+#     <p>Text components display textual content with appropriate semantic HTML elements and styling.</p>
 #
-#     <h2>Text Face</h2>
-#     <p>Basic text display:</p>
+#     <h2>Text</h2>
+#     <p>Basic inline text wrapped in a <code><span></code> element:</p>
 #     <pre><code>
 #     text "Hello, World!"
 #     </code></pre>
+#     <p>HTML content is automatically escaped for safety.</p>
 #
-#     <h2>Title Face</h2>
-#     <p>Large heading text:</p>
+#     <h2>Title</h2>
+#     <p>Creates a main heading with <code><h1></code> and <code>vista-title</code> class:</p>
 #     <pre><code>
-#     title "Welcome"
+#     title "Application Title"
+#     </code></pre>
+#     <p>With custom attributes:</p>
+#     <pre><code>
+#     title "Welcome" .class: "custom-title"
 #     </code></pre>
 #
-#     <h2>Subtitle Face</h2>
-#     <p>Smaller heading text:</p>
+#     <h2>Subtitle</h2>
+#     <p>Creates a secondary heading with <code><h2></code> and <code>vista-subtitle</code> class:</p>
 #     <pre><code>
-#     subtitle "Chapter 1"
+#     subtitle "Section Heading"
 #     </code></pre>
 #
-#     <h2>Label Face</h2>
-#     <p>Label for form inputs:</p>
+#     <h2>Label</h2>
+#     <p>Creates a form label with <code><label></code> element:</p>
 #     <pre><code>
-#     label "Name:"
-#     field .bind: 'name
+#     label "Username:"
 #     </code></pre>
-#
-#     <h2>Bound Text</h2>
-#     <p>Text that displays state values:</p>
-#     <pre><code>
-#     text ["Hello " userName]
-#     </code></pre>
-#
-#     <h2>Styling</h2>
-#     <pre><code>
-#     text "Styled text"
-#         .color: blue
-#         .style: "font-weight: bold"
-#     </code></pre>
+#     <p>Use labels with input fields for proper form accessibility.</p>
 #
 #     <h2>Example</h2>
 #     <pre><code>
 #     view .html [
-#         panel "Text Styles" [
-#             title "Main Title"
-#             subtitle "Section Title"
-#             text "Regular text paragraph."
-#             label "Label:"
+#         title "My Application"
+#         subtitle "User Profile"
+#         
+#         panel "Details" [
+#             label "Name:"
+#             text "John Doe"
+#             
+#             label "Email:"
+#             text "john@example.com"
 #         ]
 #     ]
 #     </code></pre>
 #
+#     <h2>CSS Classes</h2>
+#     <ul>
+#       <li><code>vista-title</code> - Applied to title components</li>
+#       <li><code>vista-subtitle</code> - Applied to subtitle components</li>
+#     </ul>
+#
 #     <h2>See Also</h2>
 #     <ul>
-#       <li><a href="/wiki/core/layout/layout-overview/">Layout Overview</a> - Positioning text</li>
-#       <li><a href="/wiki/core/data-binding/binding-overview/">Data Binding</a> - Bound text</li>
+#       <li><a href="/wiki/core/components/input-fields/">Input Fields</a> - Form inputs</li>
+#       <li><a href="/wiki/graphics/text-fonts/text-rendering/">Text Rendering</a> - Canvas text drawing</li>
 #     </ul>
 #   }
 # ]
