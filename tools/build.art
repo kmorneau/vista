@@ -1,189 +1,226 @@
-; ------------------------------------------------------------
 ; Static site generator for Vista documentation
-; ------------------------------------------------------------
 
 print "Starting build..."
 
-; --- init dist ---
+; Init dist
 print "Initializing dist folder..."
 execute "rm -rf dist"
 execute "mkdir -p dist"
 
-; copy static assets
+; Copy static assets
 print "Copying assets..."
 execute "mkdir -p dist/assets"
-execute "cp src/theme/resources/styles/main.css dist/assets/"
-execute "cp src/theme/resources/scripts/main.js dist/assets/"
+execute "cp src/theme/resources/styles/main.css dist/assets/ 2>/dev/null || true"
+execute "cp src/theme/resources/scripts/main.js dist/assets/ 2>/dev/null || true"
 
-; copy icons
+; Copy icons
 print "Copying icons..."
 execute "mkdir -p dist/assets/icons"
 execute "cp -r src/theme/resources/icons/*.svg dist/assets/icons/ 2>/dev/null || true"
 
-; --- wiki index page ---
-print "Generating wiki index page..."
-execute "mkdir -p dist/wiki"
+; Copy images
+print "Copying images..."
+execute "mkdir -p dist/assets/images"
+execute "cp Arturo_Guide.png dist/assets/images/ 2>/dev/null || true"
+execute "cp arturo-vista.png dist/assets/images/ 2>/dev/null || true"
 
-wikiHtml: {
+; Helper: Create page HTML
+pageTemplate: function [title, content][
+    html: {
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Vista Documentation</title>
+  <title>__TITLE__ - Vista</title>
   <link rel="stylesheet" href="/assets/main.css" />
 </head>
 <body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
   <main class="container">
-    <h1>Vista Documentation</h1>
-    <p>Welcome to the Vista UI framework documentation.</p>
-    <h2>Getting Started</h2>
-    <ul>
-      <li><a href="https://github.com/kmorneau/vista">GitHub Repository</a></li>
-      <li><a href="https://github.com/kmorneau/vista/blob/main/README.md">README</a></li>
-    </ul>
-    <h2>Examples</h2>
-    <p>See the <a href="https://github.com/kmorneau/vista/tree/main/examples/">examples folder</a> for code samples.</p>
+    <h1>__TITLE__</h1>
+    <div class="markdown-body">
+    __CONTENT__
+    </div>
   </main>
   <script src="/assets/main.js"></script>
 </body>
 </html>
 }
+    html: replace html "__TITLE__" title
+    html: replace html "__CONTENT__" content
+    return html
+]
 
-write wikiHtml "dist/wiki/index.html"
-print "Generated: dist/wiki/index.html"
-
-; --- root index page ---
+; Root index page
 print "Generating root index page..."
 
-rootHtml: {
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Vista Documentation</title>
-  <link rel="stylesheet" href="/assets/main.css" />
-</head>
-<body>
-  <main class="container">
-    <h1>Vista Documentation</h1>
-    <p>Welcome to Vista! <a href="/wiki/">View the documentation</a>.</p>
-  </main>
-  <script src="/assets/main.js"></script>
-</body>
-</html>
+rootContent: {
+<p>Welcome to Vista, an Arturo GUI framework! <a href="/guide/">View the Arturo Guide</a> or explore the <a href="/wiki/">Wiki</a>.</p>
+<h2>Quick Links</h2>
+<ul>
+  <li><a href="/guide/">Getting Started Guide</a></li>
+  <li><a href="/wiki/core/">Core Concepts</a></li>
+  <li><a href="/wiki/graphics/">Graphics & Animation</a></li>
+</ul>
 }
 
+rootHtml: pageTemplate "Vista Documentation" rootContent
 write rootHtml "dist/index.html"
 print "Generated: dist/index.html"
 
-; --- convert .art wiki files to HTML ---
-print "Converting wiki .art files to HTML..."
-
-convertArtToHtml: function [inputPath outputPath][
-    pageData: do read inputPath
-    title: pageData\title
-    layout: pageData\layout
-    category: pageData\category
-    tags: pageData\tags
-    bodyContent: pageData\body
-    
-    fullHtml: {
-    <!doctype html>
-    <html lang="en">
-    <head>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width,initial-scale=1" />
-      <title>|title| - Vista Docs</title>
-      <link rel="stylesheet" href="/assets/main.css" />
-      <script src="/assets/main.js"></script>
-    </head>
-    <body>
-      <header class="doc-header">
-        <div class="header-content">
-          <div class="logo">
-            <a href="/">Vista</a>
-          </div>
-          <nav class="doc-nav">
-            <ul>
-              <li><a href="/wiki/">Documentation</a></li>
-              <li><a href="/wiki/getting-started/">Getting Started</a></li>
-              <li><a href="/wiki/core/">Core</a></li>
-              <li><a href="/wiki/graphics/">Graphics</a></li>
-              <li><a href="https://github.com/kmorneau/vista">GitHub</a></li>
-            </ul>
-          </nav>
-        </div>
-      </header>
-      <div class="doc-container">
-        <nav class="sidebar">
-          <div class="nav-header">Vista Docs</div>
-          <ul>
-            <li><a href="/wiki/">Home</a></li>
-            <li><a href="/wiki/getting-started/">Getting Started</a></li>
-            <li><a href="/wiki/core/">Core</a></li>
-            <li><a href="/wiki/graphics/">Graphics</a></li>
-          </ul>
-        </nav>
-        <main class="content">
-          <article>
-            <header class="page-header">
-              <h1>|title|</h1>
-            </header>
-            <div class="page-content">
-              |bodyContent|
-            </div>
-          </article>
-        </main>
-      </div>
-    </body>
-    </html>
-    }
-    
-    write fullHtml outputPath
+; Helper: Get dict value with default
+getValue: function [dict, key, default][
+    if key? dict key [
+        return dict\[key]
+    ]
+    return default
 ]
 
-processWikiFiles: function [sourceDir destDir][
-    allFiles: list.recursive sourceDir
+; Helper: Parse markdown file
+parseMarkdown: function [filePath][
+    lines: read.lines filePath
     
-    print ["Found" (size allFiles) "items in" sourceDir]
+    ; Only treat --- as frontmatter if it starts the file
+    hasFrontmatter: false
+    if (size lines) > 0 [
+        if (strip lines\0) = "---" [
+            hasFrontmatter: true
+        ]
+    ]
     
-    loop allFiles 'fileItem [
-        ; Skip if not a string or path (fileItem might be logical false)
-        fileType: type? fileItem
+    inFrontmatter: false
+    frontmatter: #[]
+    bodyLines: []
+    
+    if hasFrontmatter [
+        inFrontmatter: true
+    ]
+    
+    loop lines 'line [
+        trimmed: strip line
+        prevInFrontmatter: inFrontmatter
         
-        ; Convert to string if possible
-        fileStr: to :string fileItem
-        
-        ; Check if it's a valid string and ends with .art
-        ext: extract.extension fileStr
-        
-        if ext = ".art" [
-            print ["Found .art file:" fileStr]
-            ; Get relative path from sourceDir
-            sourceDirSlash: sourceDir ++ "/"
-            relPath: replace fileStr sourceDirSlash ""
-            
-            htmlPath: destDir ++ "/" ++ relPath
-            htmlPath: replace htmlPath ".art" "/index.html"
-            
-            ; Extract directory from path - handle root-level files
-            htmlPathParts: split htmlPath "/"
-            if greater? (size htmlPathParts) 1 [
-                ; Remove last part (filename) to get directory
-                partsWithoutFile: slice htmlPathParts 0 (sub (size htmlPathParts) 1)
-                destFolder: replace (join partsWithoutFile) " " "/"
-                execute "mkdir -p " ++ destFolder
+        if trimmed = "---" [
+            if not? prevInFrontmatter [
+                inFrontmatter: true
             ]
+            if prevInFrontmatter [
+                inFrontmatter: false
+            ]
+        ]
+        
+        if prevInFrontmatter [
+            if trimmed <> "---" [
+                colonPos: index trimmed ":"
+                if not? null? colonPos [
+                    key: strip (slice trimmed 0 colonPos)
+                    value: strip (slice trimmed (add colonPos 1) (size trimmed))
+                    frontmatter\[key]: value
+                ]
+            ]
+        ]
+        
+        if not? inFrontmatter [
+            if trimmed <> "---" [
+                'bodyLines ++ line
+            ]
+        ]
+    ]
+    
+    body: join.with:"\n" bodyLines
+    return #[
+        frontmatter: frontmatter
+        body: body
+    ]
+]
+
+; Helper: Get safe title
+getTitle: function [frontmatter, default][
+    title: getValue frontmatter "title" ""
+    if equal? title "" [
+        return default
+    ]
+    return title
+]
+
+; Generate ARTURO_GUIDE.md page
+execute "mkdir -p dist/guide"
+
+guideContent: parseMarkdown "ARTURO_GUIDE.md"
+guideTitle: getTitle guideContent\frontmatter "Arturo Guide"
+print "Title:" guideTitle
+print "Body length:" (size guideContent\body)
+
+guideBody: guideContent\body
+
+guideHtml: pageTemplate guideTitle guideBody
+write guideHtml "dist/guide/index.html"
+print "Generated: dist/guide/index.html"
+
+; Helper: Process all wiki files recursively
+print "Processing wiki files..."
+
+processWikiFiles: function [dir, baseOutputDir][
+    ; Use 'list' to get files in directory - returns full paths
+    rawFiles: list dir
+    
+    ; Ensure files is a block
+    files: if block? rawFiles [rawFiles] [
+        if string? rawFiles [[rawFiles]] [[]]
+    ]
+    
+    loop files 'item [
+        ; item is already a full path from list
+        itemPath: item
+        
+        if directory? itemPath [
+            ; Extract just the directory name using the dir prefix
+            dirPrefix: dir ++ "/"
+            dirName: replace item dirPrefix ""
             
-            convertArtToHtml fileItem htmlPath
-            print ["Converted:" relPath "->" htmlPath]
+            ; Build output path: dist/baseOutputDir + "/" + dirName
+            outputSubdir: "dist/" ++ baseOutputDir ++ "/" ++ dirName
+            
+            ; Create directory using execute with proper quoting
+            cmd: "mkdir -p \"" ++ outputSubdir ++ "\""
+            execute cmd
+            processWikiFiles itemPath (baseOutputDir ++ "/" ++ dirName)
+        ]
+        
+        if file? itemPath [
+            if suffix? item ".md" [
+                ; Extract filename without extension
+                fileName: extract.filename itemPath
+                
+                ; Build html name
+                htmlName: fileName ++ ".html"
+                
+                ; Build final output path
+                finalOutput: "dist/" ++ baseOutputDir ++ "/" ++ htmlName
+                
+                print ["Processing:" itemPath "->" finalOutput]
+                
+                content: parseMarkdown itemPath
+                title: getTitle content\frontmatter item
+                body: content\body
+                
+                pageHtml: pageTemplate title body
+                
+                write pageHtml finalOutput
+                print ["Generated:" finalOutput]
+            ]
         ]
     ]
 ]
 
-processWikiFiles "data/wiki" "dist/wiki"
+execute "mkdir -p dist/wiki"
+processWikiFiles "data/wiki" "wiki"
 
 print "Build complete!"
-

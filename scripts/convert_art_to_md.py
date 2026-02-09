@@ -44,8 +44,7 @@ def html_to_markdown(html):
     # Links
     md = re.sub(r'<a href="([^"]*)">(.*?)</a>', r'[\2](\1)', md, flags=re.DOTALL)
 
-    # Code blocks - handle indented code blocks (common in Arturo wiki)
-    # Match <pre><code>...</code></pre> or indented code
+    # Code blocks - use triple backticks for multi-line code
     md = re.sub(r'<pre><code>\s*(.*?)\s*</code></pre>', r'```\n\1\n```', md, flags=re.DOTALL)
     
     # Remove any remaining HTML tags
