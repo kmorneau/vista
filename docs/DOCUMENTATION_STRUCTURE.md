@@ -205,13 +205,13 @@ Categories serve as the primary navigation organization. Use these standardized 
 Tags help with search and cross-referencing. Use consistent tags:
 
 ```arturo
-# [
-#   "title": "Component Name"
-#   "layout": "docpage"
-#   "category": "Components"
-#   "tags": ["component", "ui", "input", "example"]
-#   "body": { ... }
-# ]
+#[
+   "title": "Component Name"
+   "layout": "docpage"
+   "category": "Components"
+   "tags": ["component", "ui", "input", "example"]
+   "body": { ... }
+ ]
 ```
 
 ---

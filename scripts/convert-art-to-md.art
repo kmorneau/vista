@@ -1,0 +1,130 @@
+; Arturo conversion script - based on build.art syntax
+
+convertHtmlToMarkdown: function [html][
+    md: html
+
+    md: replace.part md "<h1>" "# "
+    md: replace.part md "</h1>" ""
+    md: replace.part md "<h2>" "## "
+    md: replace.part md "</h2>" ""
+    md: replace.part md "<h3>" "### "
+    md: replace.part md "</h3>" ""
+    md: replace.part md "<h4>" "#### "
+    md: replace.part md "</h4>" ""
+
+    md: replace.part md "<strong>" "**"
+    md: replace.part md "</strong>" "**"
+    md: replace.part md "<b>" "**"
+    md: replace.part md "</b>" "**"
+
+    md: replace.part md "<em>" "*"
+    md: replace.part md "</em>" "*"
+    md: replace.part md "<i>" "*"
+    md: replace.part md "</i>" "*"
+
+    md: replace.part md "<code>" "`"
+    md: replace.part md "</code>" "`"
+
+    md: replace.part md "<li>" "- "
+    md: replace.part md "</li>" ""
+    md: replace.part md "<ul>" ""
+    md: replace.part md "</ul>" ""
+    md: replace.part md "<ol>" ""
+    md: replace.part md "</ol>" ""
+
+    md: replace.part md "<p>" ""
+    md: replace.part md "</p>" "\n\n"
+
+    md: replace.part md "<br>" "\n"
+    md: replace.part md "<br/>" "\n"
+    md: replace.part md "<br />" "\n"
+
+    while [contains? md "<a href="][
+        hrefStart: index? md "<a href=\""
+        if null? hrefStart -> break
+        hrefEnd: index? md "\"" (hrefStart + 9)
+        if null? hrefEnd -> break
+        url: slice md (hrefStart + 9) hrefEnd
+        textStart: index? md ">" hrefEnd
+        textEnd: index? md "</a>" textStart
+        if or? [null? textStart][null? textEnd] -> break
+        text: slice md (textStart + 1) textEnd
+        linkMarkdown: join ["[" text "](" url ")"]
+        md: replace.part md (slice md hrefStart (textEnd + 4)) linkMarkdown
+    ]
+
+    while [contains? md "<pre><code>"][
+        codeStart: index? md "<pre><code>"
+        codeEnd: index? md "</code></pre>" codeStart
+        if or? [null? codeStart][null? codeEnd] -> break
+        codeContent: slice md (codeStart + 9) codeEnd
+        codeBlock: join ["```" ""] codeContent
+        codeBlock: join codeBlock "```"
+        md: replace.part md (slice md codeStart (codeEnd + 12)) codeBlock
+    ]
+
+    md: replace.part md "\n\n\n" "\n\n"
+    md: trim md
+
+    return md
+]
+
+convertFile: function [inputPath outputPath][
+    print join "Converting: " inputPath
+
+    pageData: do read inputPath
+    title: pageData\title
+    layout: pageData\layout
+    category: pageData\category
+    tags: pageData\tags
+    bodyContent: pageData\body
+
+    bodyMd: convertHtmlToMarkdown bodyContent
+
+    mdContent: join ["---" ""]
+    mdContent: join mdContent "title: "
+    mdContent: join mdContent title
+    mdContent: join mdContent "" "layout: "
+    mdContent: join mdContent layout
+    mdContent: join mdContent "" "category: "
+    mdContent: join mdContent category
+    mdContent: join mdContent "" "tags: "
+    mdContent: join mdContent tags
+    mdContent: join mdContent "" "---" ""
+    mdContent: join mdContent "" bodyMd
+    mdContent: join mdContent "" ""
+
+    write outputPath mdContent
+    print join "  -> " outputPath
+]
+
+findArtFiles: function [dir][
+    files: list.recursive dir
+    result: []
+    loop files 'fileItem [
+        fileStr: to :string fileItem
+        ext: extract.extension fileStr
+        if ext = ".art" [
+            result: join result fileItem
+        ]
+    ]
+    return result
+]
+
+artFiles: findArtFiles "data/wiki"
+artFiles: sort artFiles
+
+print ["Found" (size artFiles) ".art files"]
+print ""
+
+loop artFiles 'artFile [
+    outputFile: replace artFile ".art" ".md"
+    outputDir: replace extract.path outputFile "/" ""
+    if not? empty? outputDir [
+        execute join "mkdir -p '" outputDir "'"
+    ]
+    convertFile artFile outputFile
+]
+
+print ""
+print "Conversion complete!"

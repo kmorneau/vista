@@ -22,7 +22,6 @@ execute "cp -r src/theme/resources/icons/*.svg dist/assets/icons/ 2>/dev/null ||
 
 ; --- wiki index page ---
 print "Generating wiki index page..."
-
 execute "mkdir -p dist/wiki"
 
 wikiHtml: {
@@ -79,4 +78,112 @@ rootHtml: {
 write rootHtml "dist/index.html"
 print "Generated: dist/index.html"
 
+; --- convert .art wiki files to HTML ---
+print "Converting wiki .art files to HTML..."
+
+convertArtToHtml: function [inputPath outputPath][
+    pageData: do read inputPath
+    title: pageData\title
+    layout: pageData\layout
+    category: pageData\category
+    tags: pageData\tags
+    bodyContent: pageData\body
+    
+    fullHtml: {
+    <!doctype html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width,initial-scale=1" />
+      <title>|title| - Vista Docs</title>
+      <link rel="stylesheet" href="/assets/main.css" />
+      <script src="/assets/main.js"></script>
+    </head>
+    <body>
+      <header class="doc-header">
+        <div class="header-content">
+          <div class="logo">
+            <a href="/">Vista</a>
+          </div>
+          <nav class="doc-nav">
+            <ul>
+              <li><a href="/wiki/">Documentation</a></li>
+              <li><a href="/wiki/getting-started/">Getting Started</a></li>
+              <li><a href="/wiki/core/">Core</a></li>
+              <li><a href="/wiki/graphics/">Graphics</a></li>
+              <li><a href="https://github.com/kmorneau/vista">GitHub</a></li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+      <div class="doc-container">
+        <nav class="sidebar">
+          <div class="nav-header">Vista Docs</div>
+          <ul>
+            <li><a href="/wiki/">Home</a></li>
+            <li><a href="/wiki/getting-started/">Getting Started</a></li>
+            <li><a href="/wiki/core/">Core</a></li>
+            <li><a href="/wiki/graphics/">Graphics</a></li>
+          </ul>
+        </nav>
+        <main class="content">
+          <article>
+            <header class="page-header">
+              <h1>|title|</h1>
+            </header>
+            <div class="page-content">
+              |bodyContent|
+            </div>
+          </article>
+        </main>
+      </div>
+    </body>
+    </html>
+    }
+    
+    write fullHtml outputPath
+]
+
+processWikiFiles: function [sourceDir destDir][
+    allFiles: list.recursive sourceDir
+    
+    print ["Found" (size allFiles) "items in" sourceDir]
+    
+    loop allFiles 'fileItem [
+        ; Skip if not a string or path (fileItem might be logical false)
+        fileType: type? fileItem
+        
+        ; Convert to string if possible
+        fileStr: to :string fileItem
+        
+        ; Check if it's a valid string and ends with .art
+        ext: extract.extension fileStr
+        
+        if ext = ".art" [
+            print ["Found .art file:" fileStr]
+            ; Get relative path from sourceDir
+            sourceDirSlash: sourceDir ++ "/"
+            relPath: replace fileStr sourceDirSlash ""
+            
+            htmlPath: destDir ++ "/" ++ relPath
+            htmlPath: replace htmlPath ".art" "/index.html"
+            
+            ; Extract directory from path - handle root-level files
+            htmlPathParts: split htmlPath "/"
+            if greater? (size htmlPathParts) 1 [
+                ; Remove last part (filename) to get directory
+                partsWithoutFile: slice htmlPathParts 0 (sub (size htmlPathParts) 1)
+                destFolder: replace (join partsWithoutFile) " " "/"
+                execute "mkdir -p " ++ destFolder
+            ]
+            
+            convertArtToHtml fileItem htmlPath
+            print ["Converted:" relPath "->" htmlPath]
+        ]
+    ]
+]
+
+processWikiFiles "data/wiki" "dist/wiki"
+
 print "Build complete!"
+
