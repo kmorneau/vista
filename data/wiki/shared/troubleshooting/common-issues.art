@@ -1,205 +1,205 @@
-# [
-#   "title": "Common Issues"
-#   "layout": "docpage"
-#   "category": "Shared > Troubleshooting"
-#   "tags": ["troubleshooting", "issues", "problems", "debug", "help"]
-#   "body": {
-#     <h1>Common Issues</h1>
-#
-#     <p>This guide covers common issues encountered when building Vista applications and their solutions.</p>
-#
-#     <h2>Data Binding Issues</h2>
-#
-#     <h3>Binding Not Updating</h3>
-#     <p><strong>Problem:</strong> UI doesn't update when state changes.</p>
-#     <p><strong>Solution:</strong></p>
-#     <ul>
-#       <li>Ensure <code>webview_state_sync_ms</code> is set</li>
-#       <li>Call <code>sync_state</code> after modifications</li>
-#       <li>Verify the word is a literal token (not a string)</li>
-#     </ul>
-#     <pre><code>
-#     ; Enable auto-sync
-#     webview_state_sync_ms: 500
-#
-#     ; Or manually sync
-#     counter: counter + 1
-#     sync_state
-#     </code></pre>
-#
-#     <h3>Binding Word Not Recognized</h3>
-#     <p><strong>Problem:</strong> "Word not bound" error or no binding generated.</p>
-#     <p><strong>Solution:</strong></p>
-#     <ul>
-#       <li>Use a literal word, not a string: <code>field counter</code> not <code>field "counter"</code></li>
-#       <li>Define the variable before calling <code>view</code></li>
-#     </ul>
-#
-#     <h2>Layout Issues</h2>
-#
-#     <h3>Elements Not Stacking</h3>
-#     <p><strong>Problem:</strong> Elements appear horizontally instead of vertically.</p>
-#     <p><strong>Solution:</strong> Add layout keywords:</p>
-#     <pre><code>
-#     view [
-#         below          ; Start vertical layout
-#         text "A"
-#         text "B"
-#     ]
-#     </code></pre>
-#
-#     <h3>Spacing Issues</h3>
-#     <p><strong>Problem:</strong> Elements are too close together.</p>
-#     <p><strong>Solution:</strong> Use <code>spacer</code> or layout attributes:</p>
-#     <pre><code>
-#     view [
-#         across
-#         text "A"
-#         spacer 12
-#         text "B"
-#     ]
-#     </code></pre>
-#
-#     <h3>Reserved Word Conflicts</h3>
-#     <p><strong>Problem:</strong> "list" causes parsing errors.</p>
-#     <p><strong>Solution:</strong> Use <code>text_list</code> instead of <code>list</code>:</p>
-#     <pre><code>
-#     ; Instead of:
-#     list ["A" "B"]
-#
-#     ; Use:
-#     text_list ["A" "B"]
-#     </code></pre>
-#
-#     <h2>Event Issues</h2>
-#
-#     <h3>Event Handler Not Firing</h3>
-#     <p><strong>Problem:</strong> Click or input events don't trigger.</p>
-#     <p><strong>Solution:</strong></p>
-#     <ul>
-#       <li>Check syntax: <code>.on-click:</code> not <code>on-click:</code></li>
-#       <li>Ensure the block is properly formatted</li>
-#     </ul>
-#     <pre><code>
-#     button "Click" [
-#         .on-click:[print "Test"]  ; Correct
-#     ]
-#     </code></pre>
-#
-#     <h3>on-input vs on-change Confusion</h3>
-#     <p><strong>Problem:</strong> Wrong event fires or events don't fire as expected.</p>
-#     <p><strong>Solution:</strong> Understand the difference:</p>
-#     <ul>
-#       <li><code>on-input</code>: Fires on every keystroke</li>
-#       <li><code>on-change</code>: Fires on blur or Enter</li>
-#     </ul>
-#
-#     <h2>Action Compilation Issues</h2>
-#
-#     <h3>Complex Expressions Not Compiling</h3>
-#     <p><strong>Problem:</strong> Action block with complex logic doesn't work.</p>
-#     <p><strong>Solution:</strong> Keep actions simple or split into functions:</p>
-#     <pre><code>
-#     ; Instead of complex inline logic:
-#     button "Process" [
-#         result: loop 100 [complex-calculation]
-#         saveResult
-#     ]
-#
-#     ; Define function:
-#     processAction [
-#         result: loop 100 [complex-calculation]
-#         saveResult
-#     ]
-#
-#     button "Process" [processAction]
-#     </code></pre>
-#
-#     <h2>WebView Issues</h2>
-#
-#     <h3>Window Doesn't Open</h3>
-#     <p><strong>Problem:</strong> <code>view</code> runs but no window appears.</p>
-#     <p><strong>Solution:</strong></p>
-#     <ul>
-#       <li>Check <code>webview_enabled: true</code></li>
-#       <li>Verify HTML output with <code>view .html:[...]</code></li>
-#       <li>Check console for errors</li>
-#     </ul>
-#
-#     <h3>DevTools Not Opening</h3>
-#     <p><strong>Problem:</strong> Can't debug the WebView.</p>
-#     <p><strong>Solution:</strong> Enable debug mode:</p>
-#     <pre><code>
-#     webview_debug: true
-#     </code></pre>
-#
-#     <h2>Style Issues</h2>
-#
-#     <h3>CSS Not Applying</h3>
-#     <p><strong>Problem:</strong> Custom styles don't appear.</p>
-#     <p><strong>Solution:</strong></p>
-#     <ul>
-#       <li>Use <code>.style:</code> for inline styles</li>
-#       <li>Use <code>.class:</code> for CSS classes</li>
-#       <li>Check browser DevTools for style conflicts</li>
-#     </ul>
-#     <pre><code>
-#     text "Styled" .style:"color: red; font-weight: bold"
-#     text "Classy" .class:"my-class"
-#     </code></pre>
-#
-#     <h2>Canvas/Drawing Issues</h2>
-#
-#     <h3>Draw Commands Not Rendering</h3>
-#     <p><strong>Problem:</strong> Canvas is blank or Draw commands don't work.</p>
-#     <p><strong>Solution:</strong></p>
-#     <ul>
-#       <li>Ensure <code>pen</code> is set before drawing</li>
-#       <li>Check coordinates are within canvas bounds</li>
-#       <li>Use <code>fill-pen</code> for filled shapes</li>
-#     </ul>
-#     <pre><code>
-#     canvas .width:200 .height:100 [
-#         pen "#000"
-#         line-width 2
-#         line [10 10] [190 90]
-#     ]
-#     </code></pre>
-#
-#     <h2>Performance Issues</h2>
-#
-#     <h3>Slow Updates</h3>
-#     <p><strong>Problem:</strong> UI feels sluggish on updates.</p>
-#     <p><strong>Solution:</strong></p>
-#     <ul>
-#       <li>Increase sync interval: <code>webview_state_sync_ms: 1000</code></li>
-#       <li>Reduce number of bound components</li>
-#       <li>Avoid expensive operations in <code>on-input</code></li>
-#     </ul>
-#
-#     <h2>Debugging Tips</h2>
-#
-#     <ul>
-#       <li>Use <code>view .html:[...]</code> to inspect generated HTML</li>
-#       <li>Enable <code>webview_debug: true</code> for DevTools</li>
-#       <li>Use <code>print</code> statements in actions</li>
-#       <li>Check browser console for JavaScript errors</li>
-#       <li>Use <code>face_tree_overlay</code> for UI debugging</li>
-#     </ul>
-#
-#     <h2>Getting More Help</h2>
-#
-#     <ul>
-#       <li>Check the <a href="/wiki/core/api-reference/">API Reference</a></li>
-#       <li>Review <a href="/examples/">Examples</a> for similar use cases</li>
-#       <li>Look for similar issues in the GitHub repository</li>
-#     </ul>
-#
-#     <h2>See Also</h2>
-#     <ul>
-#       <li><a href="/wiki/shared/migration/from-rebol-view/">Migration Guide</a> - REBOL View migration</li>
-#       <li><a href="/wiki/core/concepts/event-system/">Event System</a> - Event handling</li>
-#       <li><a href="/wiki/core/api-reference/">API Reference</a> - Complete API</li>
-#     </ul>
-#   }
-# ]
+#[
+  "title": "Common Issues"
+  "layout": "docpage"
+  "category": "Shared > Troubleshooting"
+  "tags": ["troubleshooting", "issues", "problems", "debug", "help"]
+  "body": {
+    <h1>Common Issues</h1>
+
+    <p>This guide covers common issues encountered when building Vista applications and their solutions.</p>
+
+    <h2>Data Binding Issues</h2>
+
+    <h3>Binding Not Updating</h3>
+    <p><strong>Problem:</strong> UI doesn't update when state changes.</p>
+    <p><strong>Solution:</strong></p>
+    <ul>
+      <li>Ensure <code>webview_state_sync_ms</code> is set</li>
+      <li>Call <code>sync_state</code> after modifications</li>
+      <li>Verify the word is a literal token (not a string)</li>
+    </ul>
+    <pre><code>
+    ; Enable auto-sync
+    webview_state_sync_ms: 500
+
+    ; Or manually sync
+    counter: counter + 1
+    sync_state
+    </code></pre>
+
+    <h3>Binding Word Not Recognized</h3>
+    <p><strong>Problem:</strong> "Word not bound" error or no binding generated.</p>
+    <p><strong>Solution:</strong></p>
+    <ul>
+      <li>Use a literal word, not a string: <code>field counter</code> not <code>field "counter"</code></li>
+      <li>Define the variable before calling <code>view</code></li>
+    </ul>
+
+    <h2>Layout Issues</h2>
+
+    <h3>Elements Not Stacking</h3>
+    <p><strong>Problem:</strong> Elements appear horizontally instead of vertically.</p>
+    <p><strong>Solution:</strong> Add layout keywords:</p>
+    <pre><code>
+    view [
+        below          ; Start vertical layout
+        text "A"
+        text "B"
+    ]
+    </code></pre>
+
+    <h3>Spacing Issues</h3>
+    <p><strong>Problem:</strong> Elements are too close together.</p>
+    <p><strong>Solution:</strong> Use <code>spacer</code> or layout attributes:</p>
+    <pre><code>
+    view [
+        across
+        text "A"
+        spacer 12
+        text "B"
+    ]
+    </code></pre>
+
+    <h3>Reserved Word Conflicts</h3>
+    <p><strong>Problem:</strong> "list" causes parsing errors.</p>
+    <p><strong>Solution:</strong> Use <code>text_list</code> instead of <code>list</code>:</p>
+    <pre><code>
+    ; Instead of:
+    list ["A" "B"]
+
+    ; Use:
+    text_list ["A" "B"]
+    </code></pre>
+
+    <h2>Event Issues</h2>
+
+    <h3>Event Handler Not Firing</h3>
+    <p><strong>Problem:</strong> Click or input events don't trigger.</p>
+    <p><strong>Solution:</strong></p>
+    <ul>
+      <li>Check syntax: <code>.on-click:</code> not <code>on-click:</code></li>
+      <li>Ensure the block is properly formatted</li>
+    </ul>
+    <pre><code>
+    button "Click" [
+        .on-click:[print "Test"]  ; Correct
+    ]
+    </code></pre>
+
+    <h3>on-input vs on-change Confusion</h3>
+    <p><strong>Problem:</strong> Wrong event fires or events don't fire as expected.</p>
+    <p><strong>Solution:</strong> Understand the difference:</p>
+    <ul>
+      <li><code>on-input</code>: Fires on every keystroke</li>
+      <li><code>on-change</code>: Fires on blur or Enter</li>
+    </ul>
+
+    <h2>Action Compilation Issues</h2>
+
+    <h3>Complex Expressions Not Compiling</h3>
+    <p><strong>Problem:</strong> Action block with complex logic doesn't work.</p>
+    <p><strong>Solution:</strong> Keep actions simple or split into functions:</p>
+    <pre><code>
+    ; Instead of complex inline logic:
+    button "Process" [
+        result: loop 100 [complex-calculation]
+        saveResult
+    ]
+
+    ; Define function:
+    processAction [
+        result: loop 100 [complex-calculation]
+        saveResult
+    ]
+
+    button "Process" [processAction]
+    </code></pre>
+
+    <h2>WebView Issues</h2>
+
+    <h3>Window Doesn't Open</h3>
+    <p><strong>Problem:</strong> <code>view</code> runs but no window appears.</p>
+    <p><strong>Solution:</strong></p>
+    <ul>
+      <li>Check <code>webview_enabled: true</code></li>
+      <li>Verify HTML output with <code>view .html:[...]</code></li>
+      <li>Check console for errors</li>
+    </ul>
+
+    <h3>DevTools Not Opening</h3>
+    <p><strong>Problem:</strong> Can't debug the WebView.</p>
+    <p><strong>Solution:</strong> Enable debug mode:</p>
+    <pre><code>
+    webview_debug: true
+    </code></pre>
+
+    <h2>Style Issues</h2>
+
+    <h3>CSS Not Applying</h3>
+    <p><strong>Problem:</strong> Custom styles don't appear.</p>
+    <p><strong>Solution:</strong></p>
+    <ul>
+      <li>Use <code>.style:</code> for inline styles</li>
+      <li>Use <code>.class:</code> for CSS classes</li>
+      <li>Check browser DevTools for style conflicts</li>
+    </ul>
+    <pre><code>
+    text "Styled" .style:"color: red; font-weight: bold"
+    text "Classy" .class:"my-class"
+    </code></pre>
+
+    <h2>Canvas/Drawing Issues</h2>
+
+    <h3>Draw Commands Not Rendering</h3>
+    <p><strong>Problem:</strong> Canvas is blank or Draw commands don't work.</p>
+    <p><strong>Solution:</strong></p>
+    <ul>
+      <li>Ensure <code>pen</code> is set before drawing</li>
+      <li>Check coordinates are within canvas bounds</li>
+      <li>Use <code>fill-pen</code> for filled shapes</li>
+    </ul>
+    <pre><code>
+    canvas .width:200 .height:100 [
+        pen "#000"
+        line-width 2
+        line [10 10] [190 90]
+    ]
+    </code></pre>
+
+    <h2>Performance Issues</h2>
+
+    <h3>Slow Updates</h3>
+    <p><strong>Problem:</strong> UI feels sluggish on updates.</p>
+    <p><strong>Solution:</strong></p>
+    <ul>
+      <li>Increase sync interval: <code>webview_state_sync_ms: 1000</code></li>
+      <li>Reduce number of bound components</li>
+      <li>Avoid expensive operations in <code>on-input</code></li>
+    </ul>
+
+    <h2>Debugging Tips</h2>
+
+    <ul>
+      <li>Use <code>view .html:[...]</code> to inspect generated HTML</li>
+      <li>Enable <code>webview_debug: true</code> for DevTools</li>
+      <li>Use <code>print</code> statements in actions</li>
+      <li>Check browser console for JavaScript errors</li>
+      <li>Use <code>face_tree_overlay</code> for UI debugging</li>
+    </ul>
+
+    <h2>Getting More Help</h2>
+
+    <ul>
+      <li>Check the <a href="/wiki/core/api-reference/">API Reference</a></li>
+      <li>Review <a href="/examples/">Examples</a> for similar use cases</li>
+      <li>Look for similar issues in the GitHub repository</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/migration/from-rebol-view/">Migration Guide</a> - REBOL View migration</li>
+      <li><a href="/wiki/core/concepts/event-system/">Event System</a> - Event handling</li>
+      <li><a href="/wiki/core/api-reference/">API Reference</a> - Complete API</li>
+    </ul>
+  }
+#]

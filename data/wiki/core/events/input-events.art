@@ -1,222 +1,222 @@
-# [
-#   "title": "Input Events"
-#   "layout": "docpage"
-#   "category": "Core > Events"
-#   "tags": ["input", "events", "change", "on-input", "on-change", "core"]
-#   "body": {
-#     <h1>Input Events</h1>
-#
-#     <p>Input events handle changes to form fields and selection controls. Vista provides two primary input events: <code>on-input</code> for real-time changes and <code>on-change</code> for committed changes.</p>
-#
-#     <h2>on-input vs on-change</h2>
-#
-#     <table>
-#       <tr>
-#         <th>Event</th>
-#         <th>When It Fires</th>
-#         <th>Use Case</th>
-#       </tr>
-#       <tr>
-#         <td><code>on-input</code></td>
-#         <td>Every keystroke</td>
-#         <td>Live search, real-time validation, character count</td>
-#       </tr>
-#       <tr>
-#         <td><code>on-change</code></td>
-#         <td>On blur or Enter</td>
-#         <td>Form validation, save on change, final value</td>
-#       </tr>
-#     </table>
-#
-#     <h2>Basic on-input</h2>
-#
-#     <p>Respond to every keystroke:</p>
-#     <pre><code>
-#     import 'vista!
-#
-#     searchText: ""
-#     resultCount: 0
-#
-#     view [
-#         label "Search:"
-#         field searchText
-#             .on-input:[
-#                 resultCount: length searchText
-#                 print ["Typing: " searchText]
-#             ]
-#
-#         text ["Characters: " resultCount]
-#     ]
-#     </code></pre>
-#
-#     <h2>Basic on-change</h2>
-#
-#     <p>Respond when value is committed:</p>
-#     <pre><code>
-#     email: ""
-#     isValid: false
-#
-#     view [
-#         label "Email:"
-#         field email
-#             .on-change:[
-#                 isValid: contains? email "@"
-#                 print ["Email changed to: " email]
-#             ]
-#
-#         text ["Valid: " isValid]
-#     ]
-#     </code></pre>
-#
-#     <h2>Real-Time Validation</h2>
-#
-#     <p>Combine both events for comprehensive handling:</p>
-#     <pre><code>
-#     password: ""
-#     strength: 0
-#     isValid: false
-#
-#     view [
-#         label "Password:"
-#         input .type:"password" password
-#             .on-input:[
-#                 strength: calculateStrength password
-#                 updateStrengthMeter
-#             ]
-#             .on-change:[
-#                 isValid: greater? strength 80
-#                 if isValid [
-#                     savePassword
-#                 ]
-#             ]
-#     ]
-#     </code></pre>
-#
-#     <h2>Drop-list and Select</h2>
-#
-#     <p>Use on-change for selection changes:</p>
-#     <pre><code>
-#     choice: "Red"
-#
-#     view [
-#         label "Color:"
-#         drop-list choice ["Red" "Green" "Blue"]
-#             .on-change:[
-#                 print ["Selected: " choice]
-#                 updatePreview
-#             ]
-#     ]
-#     </code></pre>
-#
-#     <h2>Radio Group</h2>
-#
-#     <p>Handle radio selection changes:</p>
-#     <pre><code>
-#     color: "red"
-#
-#     view [
-#         radio color ["red" "green" "blue"]
-#             .on-change:[
-#                 print ["Color: " color]
-#                 updateTheme
-#             ]
-#     ]
-#     </code></pre>
-#
-#     <h2>Slider and Range</h2>
-#
-#     <p>Track slider value changes:</p>
-#     <pre><code>
-#     volume: 50
-#
-#     view [
-#         label ["Volume: " volume]
-#         slider volume .min:0 .max:100
-#             .on-input:[
-#                 updateVolumeLevel
-#             ]
-#             .on-change:[
-#                 saveVolumeSetting
-#             ]
-#     ]
-#     </code></pre>
-#
-#     <h2>Checkbox and Toggle</h2>
-#
-#     <p>Handle boolean state changes:</p>
-#     <pre><code>
-#     darkMode: false
-#
-#     view [
-#         toggle darkMode "Dark Mode"
-#             .on-change:[
-#                 if darkMode [
-#                     enableDarkTheme
-#                 ] [
-#                     disableDarkTheme
-#                 ]
-#             ]
-#     ]
-#     </code></pre>
-#
-#     <h2>Textarea</h2>
-#
-#     <p>Handle multi-line input:</p>
-#     <pre><code>
-#     comment: ""
-#     charCount: 0
-#
-#     view [
-#         label "Comment:"
-#         textarea comment .rows:4
-#             .on-input:[
-#                 charCount: length comment
-#             ]
-#             .on-change:[
-#                 saveComment
-#                 print ["Saved: " charCount " characters"]
-#             ]
-#     ]
-#     </code></pre>
-#
-#     <h2>Form Example</h2>
-#
-#     <pre><code>
-#     formData: #[
-#         name: ""
-#         email: ""
-#         newsletter: false
-#     ]
-#
-#     view [
-#         form .on-submit:[submitForm] [
-#             input .type:"text" formData\name
-#                 .on-change:[validateName]
-#
-#             input .type:"email" formData\email
-#                 .on-change:[validateEmail]
-#
-#             checkbox formData\newsletter "Subscribe to newsletter"
-#
-#             button "Submit" [submitForm]
-#         ]
-#     ]
-#     </code></pre>
-#
-#     <h2>Best Practices</h2>
-#
-#     <ul>
-#       <li>Use <code>on-input</code> for immediate feedback</li>
-#       <li>Use <code>on-change</code> for validation and saving</li>
-#       <li>Consider performance - avoid expensive operations on <code>on-input</code></li>
-#       <li>Use <code>on-change</code> for <code>drop-list</code>, <code>radio</code>, and <code>slider</code></li>
-#     </ul>
-#
-#     <h2>See Also</h2>
-#     <ul>
-#       <li><a href="/wiki/core/events/event-overview/">Event Overview</a> - Complete event reference</li>
-#       <li><a href="/wiki/core/events/click-events/">Click Events</a> - Click handling</li>
-#       <li><a href="/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Input binding</li>
-#     </ul>
-#   }
-# ]
+#[
+  "title": "Input Events"
+  "layout": "docpage"
+  "category": "Core > Events"
+  "tags": ["input", "events", "change", "on-input", "on-change", "core"]
+  "body": {
+    <h1>Input Events</h1>
+
+    <p>Input events handle changes to form fields and selection controls. Vista provides two primary input events: <code>on-input</code> for real-time changes and <code>on-change</code> for committed changes.</p>
+
+    <h2>on-input vs on-change</h2>
+
+    <table>
+      <tr>
+        <th>Event</th>
+        <th>When It Fires</th>
+        <th>Use Case</th>
+      </tr>
+      <tr>
+        <td><code>on-input</code></td>
+        <td>Every keystroke</td>
+        <td>Live search, real-time validation, character count</td>
+      </tr>
+      <tr>
+        <td><code>on-change</code></td>
+        <td>On blur or Enter</td>
+        <td>Form validation, save on change, final value</td>
+      </tr>
+    </table>
+
+    <h2>Basic on-input</h2>
+
+    <p>Respond to every keystroke:</p>
+    <pre><code>
+    import 'vista!
+
+    searchText: ""
+    resultCount: 0
+
+    view [
+        label "Search:"
+        field searchText
+            .on-input:[
+                resultCount: length searchText
+                print ["Typing: " searchText]
+            ]
+
+        text ["Characters: " resultCount]
+    ]
+    </code></pre>
+
+    <h2>Basic on-change</h2>
+
+    <p>Respond when value is committed:</p>
+    <pre><code>
+    email: ""
+    isValid: false
+
+    view [
+        label "Email:"
+        field email
+            .on-change:[
+                isValid: contains? email "@"
+                print ["Email changed to: " email]
+            ]
+
+        text ["Valid: " isValid]
+    ]
+    </code></pre>
+
+    <h2>Real-Time Validation</h2>
+
+    <p>Combine both events for comprehensive handling:</p>
+    <pre><code>
+    password: ""
+    strength: 0
+    isValid: false
+
+    view [
+        label "Password:"
+        input .type:"password" password
+            .on-input:[
+                strength: calculateStrength password
+                updateStrengthMeter
+            ]
+            .on-change:[
+                isValid: greater? strength 80
+                if isValid [
+                    savePassword
+                ]
+            ]
+    ]
+    </code></pre>
+
+    <h2>Drop-list and Select</h2>
+
+    <p>Use on-change for selection changes:</p>
+    <pre><code>
+    choice: "Red"
+
+    view [
+        label "Color:"
+        drop-list choice ["Red" "Green" "Blue"]
+            .on-change:[
+                print ["Selected: " choice]
+                updatePreview
+            ]
+    ]
+    </code></pre>
+
+    <h2>Radio Group</h2>
+
+    <p>Handle radio selection changes:</p>
+    <pre><code>
+    color: "red"
+
+    view [
+        radio color ["red" "green" "blue"]
+            .on-change:[
+                print ["Color: " color]
+                updateTheme
+            ]
+    ]
+    </code></pre>
+
+    <h2>Slider and Range</h2>
+
+    <p>Track slider value changes:</p>
+    <pre><code>
+    volume: 50
+
+    view [
+        label ["Volume: " volume]
+        slider volume .min:0 .max:100
+            .on-input:[
+                updateVolumeLevel
+            ]
+            .on-change:[
+                saveVolumeSetting
+            ]
+    ]
+    </code></pre>
+
+    <h2>Checkbox and Toggle</h2>
+
+    <p>Handle boolean state changes:</p>
+    <pre><code>
+    darkMode: false
+
+    view [
+        toggle darkMode "Dark Mode"
+            .on-change:[
+                if darkMode [
+                    enableDarkTheme
+                ] [
+                    disableDarkTheme
+                ]
+            ]
+    ]
+    </code></pre>
+
+    <h2>Textarea</h2>
+
+    <p>Handle multi-line input:</p>
+    <pre><code>
+    comment: ""
+    charCount: 0
+
+    view [
+        label "Comment:"
+        textarea comment .rows:4
+            .on-input:[
+                charCount: length comment
+            ]
+            .on-change:[
+                saveComment
+                print ["Saved: " charCount " characters"]
+            ]
+    ]
+    </code></pre>
+
+    <h2>Form Example</h2>
+
+    <pre><code>
+    formData: #[
+        name: ""
+        email: ""
+        newsletter: false
+    ]
+
+    view [
+        form .on-submit:[submitForm] [
+            input .type:"text" formData\name
+                .on-change:[validateName]
+
+            input .type:"email" formData\email
+                .on-change:[validateEmail]
+
+            checkbox formData\newsletter "Subscribe to newsletter"
+
+            button "Submit" [submitForm]
+        ]
+    ]
+    </code></pre>
+
+    <h2>Best Practices</h2>
+
+    <ul>
+      <li>Use <code>on-input</code> for immediate feedback</li>
+      <li>Use <code>on-change</code> for validation and saving</li>
+      <li>Consider performance - avoid expensive operations on <code>on-input</code></li>
+      <li>Use <code>on-change</code> for <code>drop-list</code>, <code>radio</code>, and <code>slider</code></li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/events/event-overview/">Event Overview</a> - Complete event reference</li>
+      <li><a href="/wiki/core/events/click-events/">Click Events</a> - Click handling</li>
+      <li><a href="/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Input binding</li>
+    </ul>
+  }
+#]

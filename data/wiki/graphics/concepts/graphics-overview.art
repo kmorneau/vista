@@ -1,99 +1,99 @@
-# [
-#   "title": "Vista Graphics Overview"
-#   "layout": "docpage"
-#   "category": "Graphics"
-#   "tags": ["graphics", "canvas", "drawing", "overview"]
-#   "body": {
-#     <h1>Vista Graphics Overview</h1>
-#
-#     <p>Vista Graphics provides a declarative way to draw 2D graphics on HTML5 Canvas, inspired by the Rebol/View Draw dialect.</p>
-#
-#     <h2>Key Concepts</h2>
-#     <ul>
-#       <li><strong>Draw Block</strong>: A block of drawing commands</li>
-#       <li><strong>Pen</strong>: The outline color/styling</li>
-#       <li><strong>Fill Pen</strong>: The fill color/styling</li>
-#       <li><strong>Canvas</strong>: The HTML5 canvas element</li>
-#     </ul>
-#
-#     <h2>Basic Drawing</h2>
-#     <pre><code>
-#     view .html [
-#         canvas #myCanvas [
-#             draw [
-#                 pen red
-#                 fill-pen blue
-#                 box 10 10 100 100
-#             ]
-#         ]
-#     ]
-#     </code></pre>
-#
-#     <h2>Drawing Commands</h2>
-#     <ul>
-#       <li><code>line</code> - Draw a line between two points</li>
-#       <li><code>box</code> - Draw a rectangle</li>
-#       <li><code>circle</code> - Draw a circle</li>
-#       <li><code>ellipse</code> - Draw an ellipse</li>
-#       <li><code>polygon</code> - Draw a polygon</li>
-#       <li><code>text</code> - Draw text</li>
-#       <li><code>image</code> - Draw an image</li>
-#     </ul>
-#
-#     <h2>Color and Styling</h2>
-#     <pre><code>
-#     view .html [
-#         canvas [
-#             draw [
-#                 ; Named colors
-#                 pen red
-#                 fill-pen green
-#
-#                 ; RGB colors
-#                 fill-pen 255 128 0
-#
-#                 ; RGBA colors
-#                 fill-pen 255 0 0 0.5
-#
-#                 ; Gradients
-#                 fill-pen linear-gradient 0 0 100 100
-#                     0.0 yellow
-#                     1.0 red
-#
-#                 box 10 10 100 100
-#             ]
-#         ]
-#     ]
-#     </code></pre>
-#
-#     <h2>Transformations</h2>
-#     <pre><code>
-#     view .html [
-#         canvas [
-#             draw [
-#                 translate 50 50
-#                 rotate 45
-#                 scale 2 2
-#                 pen blue
-#                 box 0 0 100 100
-#             ]
-#         ]
-#     ]
-#     </code></pre>
-#
-#     <h2>Coordinate Systems</h2>
-#     <p>Vista Graphics supports multiple coordinate systems:</p>
-#     <ul>
-#       <li><strong>VID (default)</strong>: Top-left origin, Y down</li>
-#       <li><strong>Math</strong>: Bottom-left origin, Y up</li>
-#       <li><strong>Center</strong>: Origin at canvas center</li>
-#     </ul>
-#
-#     <h2>See Also</h2>
-#     <ul>
-#       <li><a href="/wiki/graphics/drawing/primitives/">Drawing Primitives</a> - Lines and shapes</li>
-#       <li><a href="/wiki/graphics/transforms/transform-overview/">Transformations</a> - Rotate, scale, translate</li>
-#       <li><a href="/wiki/graphics/colors/color-overview/">Colors</a> - Color and gradient reference</li>
-#     </ul>
-#   }
-# ]
+#[
+  "title": "Vista Graphics Overview"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["graphics", "canvas", "drawing", "overview"]
+  "body": {
+    <h1>Vista Graphics Overview</h1>
+
+    <p>Vista Graphics provides a declarative way to draw 2D graphics on HTML5 Canvas, inspired by the Rebol/View Draw dialect.</p>
+
+    <h2>Key Concepts</h2>
+    <ul>
+      <li><strong>Draw Block</strong>: A block of drawing commands</li>
+      <li><strong>Pen</strong>: The outline color/styling</li>
+      <li><strong>Fill Pen</strong>: The fill color/styling</li>
+      <li><strong>Canvas</strong>: The HTML5 canvas element</li>
+    </ul>
+
+    <h2>Basic Drawing</h2>
+    <pre><code>
+    view .html [
+        canvas #myCanvas [
+            draw [
+                pen red
+                fill-pen blue
+                box 10 10 100 100
+            ]
+        ]
+    ]
+    </code></pre>
+
+    <h2>Drawing Commands</h2>
+    <ul>
+      <li><code>line</code> - Draw a line between two points</li>
+      <li><code>box</code> - Draw a rectangle</li>
+      <li><code>circle</code> - Draw a circle</li>
+      <li><code>ellipse</code> - Draw an ellipse</li>
+      <li><code>polygon</code> - Draw a polygon</li>
+      <li><code>text</code> - Draw text</li>
+      <li><code>image</code> - Draw an image</li>
+    </ul>
+
+    <h2>Color and Styling</h2>
+    <pre><code>
+    view .html [
+        canvas [
+            draw [
+                ; Named colors
+                pen red
+                fill-pen green
+
+                ; RGB colors
+                fill-pen 255 128 0
+
+                ; RGBA colors
+                fill-pen 255 0 0 0.5
+
+                ; Gradients
+                fill-pen linear-gradient 0 0 100 100
+                    0.0 yellow
+                    1.0 red
+
+                box 10 10 100 100
+            ]
+        ]
+    ]
+    </code></pre>
+
+    <h2>Transformations</h2>
+    <pre><code>
+    view .html [
+        canvas [
+            draw [
+                translate 50 50
+                rotate 45
+                scale 2 2
+                pen blue
+                box 0 0 100 100
+            ]
+        ]
+    ]
+    </code></pre>
+
+    <h2>Coordinate Systems</h2>
+    <p>Vista Graphics supports multiple coordinate systems:</p>
+    <ul>
+      <li><strong>VID (default)</strong>: Top-left origin, Y down</li>
+      <li><strong>Math</strong>: Bottom-left origin, Y up</li>
+      <li><strong>Center</strong>: Origin at canvas center</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/drawing/primitives/">Drawing Primitives</a> - Lines and shapes</li>
+      <li><a href="/wiki/graphics/transforms/transform-overview/">Transformations</a> - Rotate, scale, translate</li>
+      <li><a href="/wiki/graphics/colors/color-overview/">Colors</a> - Color and gradient reference</li>
+    </ul>
+  }
+#]

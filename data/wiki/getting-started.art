@@ -1,31 +1,31 @@
-# [
-#   "title": "Getting Started"
-#   "layout": "docpage"
-#   "category": "Getting Started"
-#   "tags": ["quickstart", "tutorial", "basics"]
-#   "body": {
-#     <h1>Getting Started</h1>
-#
-#     <p>This wiki is a work-in-progress reference for the Vista UI layer.</p>
-#
-#     <h2>Quick Start</h2>
-#     <pre><code>
-#     import 'vista!
-#
-#     view .html [
-#         text "Hello"
-#         button "OK" [print "ok"]
-#     ]
-#     </code></pre>
-#
-#     <h2>Build the Docs</h2>
-#     <pre><code>
-#     arturo tools/build.art
-#     </code></pre>
-#
-#     <h2>See Also</h2>
-#     <ul>
-#       <li><a href="/wiki/vid-overview/">VID Overview</a> - Learn about the VID dialect</li>
-#     </ul>
-#   }
-# ]
+#[
+  "title": "Getting Started"
+  "layout": "docpage"
+  "category": "Getting Started"
+  "tags": ["quickstart", "tutorial", "basics"]
+  "body": {
+    <h1>Getting Started</h1>
+
+    <p>This wiki is a work-in-progress reference for the Vista UI layer.</p>
+
+    <h2>Quick Start</h2>
+    <pre><code>
+    import 'vista!
+
+    view .html [
+        text "Hello"
+        button "OK" [print "ok"]
+    ]
+    </code></pre>
+
+    <h2>Build the Docs</h2>
+    <pre><code>
+    arturo tools/build.art
+    </code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/vid-overview/">VID Overview</a> - Learn about the VID dialect</li>
+    </ul>
+  }
+#]

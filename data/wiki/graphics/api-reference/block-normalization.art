@@ -1,84 +1,84 @@
-# [
-#   "title": "Block Normalization"
-#   "layout": "docpage"
-#   "category": "API Reference"
-#   "tags": ["parsing", "normalize", "block", "graphics", "draw"]
-#   "body": {
-#     <h1>Block Normalization</h1>
-#
-#     <p>Block normalization handles the parsing and normalization of draw blocks, ensuring that compound keywords like <code>fill-pen</code> and <code>line-width</code> survive Arturo tokenization correctly.</p>
-#
-#     <h2>Overview</h2>
-#     <p>When Arturo tokenizes code, compound words with hyphens may be split into separate tokens. The normalization process recombines these tokens to restore the intended keywords.</p>
-#
-#     <h2>vg_normalize_block</h2>
-#     <p>Normalizes a draw block by recombining hyphenated keywords.</p>
-#     <pre><code>
-#     normalized: vg_normalize_block block
-#     </code></pre>
-#
-#     <h3>Parameters</h3>
-#     <ul>
-#       <li><code>block</code> - The draw block to normalize</li>
-#     </ul>
-#
-#     <h3>Returns</h3>
-#     <p>A new block with compound keywords properly combined.</p>
-#
-#     <h2>How It Works</h2>
-#     <p>The function scans the block for patterns like:</p>
-#     <pre><code>
-#     [fill - pen box 0 0 100 100]
-#     </code></pre>
-#     <p>And combines them into:</p>
-#     <pre><code>
-#     [fill-pen box 0 0 100 100]
-#     </code></pre>
-#
-#     <h2>Supported Compound Keywords</h2>
-#     <ul>
-#       <li><code>fill-pen</code> - Fill color/gradient</li>
-#       <li><code>line-width</code> - Stroke width</li>
-#       <li><code>line-cap</code> - Line end style</li>
-#       <li><code>line-join</code> - Line corner style</li>
-#       <li><code>text-align</code> - Text alignment</li>
-#       <li><code>text-baseline</code> - Text baseline</li>
-#       <li><code>coord-system</code> - Coordinate system</li>
-#       <li><code>anti-aliased</code> - Anti-aliasing toggle</li>
-#     </ul>
-#
-#     <h2>Example</h2>
-#     <pre><code>
-#     ; Input block (after tokenization)
-#     rawBlock: [fill - pen red line - width 2 box 0 0 100 100]
-#
-#     ; Normalized block
-#     normalized: vg_normalize_block rawBlock
-#     ; Result: [fill-pen red line-width 2 box 0 0 100 100]
-#     </code></pre>
-#
-#     <h2>When Normalization Happens</h2>
-#     <p>Block normalization is typically applied automatically when:</p>
-#     <ul>
-#       <li>Parsing draw blocks for canvas rendering</li>
-#       <li>Processing VID style specifications</li>
-#       <li>Handling inline draw dialect code</li>
-#     </ul>
-#
-#     <h2>Implementation Details</h2>
-#     <p>The function:</p>
-#     <ol>
-#       <li>Iterates through block tokens</li>
-#       <li>Identifies word/symbol/word patterns with hyphens</li>
-#       <li>Combines matched patterns into single words</li>
-#       <li>Preserves attribute labels correctly</li>
-#       <li>Returns a new normalized block</li>
-#     </ol>
-#
-#     <h2>See Also</h2>
-#     <ul>
-#       <li><a href="/wiki/graphics/concepts/draw-model/">Draw Model</a> - Draw dialect concepts</li>
-#       <li><a href="/wiki/graphics/api-reference/draw-commands/">Draw Commands</a> - Drawing API</li>
-#     </ul>
-#   }
-# ]
+#[
+  "title": "Block Normalization"
+  "layout": "docpage"
+  "category": "API Reference"
+  "tags": ["parsing", "normalize", "block", "graphics", "draw"]
+  "body": {
+    <h1>Block Normalization</h1>
+
+    <p>Block normalization handles the parsing and normalization of draw blocks, ensuring that compound keywords like <code>fill-pen</code> and <code>line-width</code> survive Arturo tokenization correctly.</p>
+
+    <h2>Overview</h2>
+    <p>When Arturo tokenizes code, compound words with hyphens may be split into separate tokens. The normalization process recombines these tokens to restore the intended keywords.</p>
+
+    <h2>vg_normalize_block</h2>
+    <p>Normalizes a draw block by recombining hyphenated keywords.</p>
+    <pre><code>
+    normalized: vg_normalize_block block
+    </code></pre>
+
+    <h3>Parameters</h3>
+    <ul>
+      <li><code>block</code> - The draw block to normalize</li>
+    </ul>
+
+    <h3>Returns</h3>
+    <p>A new block with compound keywords properly combined.</p>
+
+    <h2>How It Works</h2>
+    <p>The function scans the block for patterns like:</p>
+    <pre><code>
+    [fill - pen box 0 0 100 100]
+    </code></pre>
+    <p>And combines them into:</p>
+    <pre><code>
+    [fill-pen box 0 0 100 100]
+    </code></pre>
+
+    <h2>Supported Compound Keywords</h2>
+    <ul>
+      <li><code>fill-pen</code> - Fill color/gradient</li>
+      <li><code>line-width</code> - Stroke width</li>
+      <li><code>line-cap</code> - Line end style</li>
+      <li><code>line-join</code> - Line corner style</li>
+      <li><code>text-align</code> - Text alignment</li>
+      <li><code>text-baseline</code> - Text baseline</li>
+      <li><code>coord-system</code> - Coordinate system</li>
+      <li><code>anti-aliased</code> - Anti-aliasing toggle</li>
+    </ul>
+
+    <h2>Example</h2>
+    <pre><code>
+    ; Input block (after tokenization)
+    rawBlock: [fill - pen red line - width 2 box 0 0 100 100]
+
+    ; Normalized block
+    normalized: vg_normalize_block rawBlock
+    ; Result: [fill-pen red line-width 2 box 0 0 100 100]
+    </code></pre>
+
+    <h2>When Normalization Happens</h2>
+    <p>Block normalization is typically applied automatically when:</p>
+    <ul>
+      <li>Parsing draw blocks for canvas rendering</li>
+      <li>Processing VID style specifications</li>
+      <li>Handling inline draw dialect code</li>
+    </ul>
+
+    <h2>Implementation Details</h2>
+    <p>The function:</p>
+    <ol>
+      <li>Iterates through block tokens</li>
+      <li>Identifies word/symbol/word patterns with hyphens</li>
+      <li>Combines matched patterns into single words</li>
+      <li>Preserves attribute labels correctly</li>
+      <li>Returns a new normalized block</li>
+    </ol>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/concepts/draw-model/">Draw Model</a> - Draw dialect concepts</li>
+      <li><a href="/wiki/graphics/api-reference/draw-commands/">Draw Commands</a> - Drawing API</li>
+    </ul>
+  }
+#]

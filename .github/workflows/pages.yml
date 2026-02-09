@@ -23,8 +23,8 @@ jobs:
       - name: Build site
         run: |
           set -euxo pipefail
-          chmod +x tools/build.sh
-          bash tools/build.sh
+          chmod +x tools/build.art
+          bash tools/build.art
           test -f dist/index.html
 
       - name: Configure Pages

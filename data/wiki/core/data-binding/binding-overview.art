@@ -1,123 +1,123 @@
-# [
-#   "title": "Data Binding Overview"
-#   "layout": "docpage"
-#   "category": "Core > Data Binding"
-#   "tags": ["binding", "data", "state", "core"]
-#   "body": {
-#     <h1>Data Binding Overview</h1>
-#
-#     <p>Vista's data binding system connects your application's state to UI components, enabling automatic synchronization between data and presentation. This follows the REBOL/View tradition of declarative face binding.</p>
-#
-#     <h2>How Data Binding Works</h2>
-#
-#     <p>When you pass a word to a UI component, Vista automatically:</p>
-#     <ul>
-#       <li>Creates a binding between the word and the component</li>
-#       <li>Generates a state entry in JavaScript</li>
-#       <li>Sets up reactive updates when state changes</li>
-#     </ul>
-#
-#     <pre><code>
-#     import 'vista!
-#
-#     ; Define state
-#     counter: 0
-#     name: "World"
-#
-#     view [
-#         ; Text automatically updates when counter changes
-#         text counter
-#
-#         ; Field is bound to name - edits update state
-#         field name
-#
-#         ; Button action modifies state
-#         button "Increment" [counter: counter + 1]
-#     ]
-#     </code></pre>
-#
-#     <h2>Binding Types</h2>
-#
-#     <h3>Text Binding</h3>
-#     <p>Text components display bound values that update automatically:</p>
-#     <pre><code>
-#     text counter
-#     text ["Hello " name]
-#     </code></pre>
-#
-#     <h3>Input Binding (Two-Way)</h3>
-#     <p>Field and input components support two-way binding:</p>
-#     <pre><code>
-#     field username        ; Bound to 'username
-#     input .type:"email" email
-#     textarea notes
-#     </code></pre>
-#
-#     <h3>Selection Binding</h3>
-#     <p>List and selection components bind to selection state:</p>
-#     <pre><code>
-#     list choice ["Red" "Green" "Blue"]
-#     radio color ["red" "green" "blue"]
-#     drop-list selection ["A" "B" "C"]
-#     </code></pre>
-#
-#     <h3>Boolean Binding</h3>
-#     <p>Checkbox and toggle components bind to boolean state:</p>
-#     <pre><code>
-#     checkbox accepted "Accept terms"
-#     toggle darkMode "Dark Mode"
-#     </code></pre>
-#
-#     <h2>State Synchronization</h2>
-#
-#     <p>Vista provides several mechanisms for state synchronization:</p>
-#
-#     <h3>Automatic Sync (Recommended)</h3>
-#     <pre><code>
-#     ; Enable automatic periodic sync
-#     webview_state_sync_ms: 500
-#
-#     ; Then state syncs automatically every 500ms
-#     counter: counter + 1
-#     </code></pre>
-#
-#     <h3>Manual Sync</h3>
-#     <pre><code>
-#     ; Call sync_state after modifications
-#     counter: counter + 1
-#     sync_state
-#     </code></pre>
-#
-#     <h3>Programmatic Updates</h3>
-#     <pre><code>
-#     ; Set state directly
-#     set_state "counter" 42
-#     </code></pre>
-#
-#     <h2>Binding Expressions</h2>
-#
-#     <p>You can use expressions in bindings:</p>
-#     <pre><code>
-#     text ["Count: " counter]
-#     text ["Total: " price * quantity]
-#     text ["Valid: " if valid ["Yes"] else ["No"]]
-#     </code></pre>
-#
-#     <h2>Component State</h2>
-#
-#     <p>Some components have their own internal state:</p>
-#     <pre><code>
-#     tabs .selected:1 [
-#         tab "One" [text "First panel"]
-#         tab "Two" [text "Second panel"]
-#     ]
-#     </code></pre>
-#
-#     <h2>See Also</h2>
-#     <ul>
-#       <li><a href="/wiki/core/data-binding/state-model/">State Model</a> - Understanding Vista's state system</li>
-#       <li><a href="/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Input binding details</li>
-#       <li><a href="/wiki/core/concepts/state-management/">State Management</a> - Managing application state</li>
-#     </ul>
-#   }
-# ]
+#[
+  "title": "Data Binding Overview"
+  "layout": "docpage"
+  "category": "Core > Data Binding"
+  "tags": ["binding", "data", "state", "core"]
+  "body": {
+    <h1>Data Binding Overview</h1>
+
+    <p>Vista's data binding system connects your application state to UI components, enabling automatic synchronization between data and presentation. This follows the REBOL/View tradition of declarative face binding.</p>
+
+    <h2>How Data Binding Works</h2>
+
+    <p>When you pass a word to a UI component, Vista automatically:</p>
+    <ul>
+      <li>Creates a binding between the word and the component</li>
+      <li>Generates a state entry in JavaScript</li>
+      <li>Sets up reactive updates when state changes</li>
+    </ul>
+
+    <pre><code>
+    import 'vista!
+
+    ; Define state
+    counter: 0
+    name: "World"
+
+    view [
+        ; Text automatically updates when counter changes
+        text counter
+
+        ; Field is bound to name - edits update state
+        field name
+
+        ; Button action modifies state
+        button "Increment" [counter: counter + 1]
+    ]
+    </code></pre>
+
+    <h2>Binding Types</h2>
+
+    <h3>Text Binding</h3>
+    <p>Text components display bound values that update automatically:</p>
+    <pre><code>
+    text counter
+    text ["Hello " name]
+    </code></pre>
+
+    <h3>Input Binding (Two-Way)</h3>
+    <p>Field and input components support two-way binding:</p>
+    <pre><code>
+    field username        ; Bound to 'username
+    input .type:"email" email
+    textarea notes
+    </code></pre>
+
+    <h3>Selection Binding</h3>
+    <p>List and selection components bind to selection state:</p>
+    <pre><code>
+    list choice ["Red" "Green" "Blue"]
+    radio color ["red" "green" "blue"]
+    drop-list selection ["A" "B" "C"]
+    </code></pre>
+
+    <h3>Boolean Binding</h3>
+    <p>Checkbox and toggle components bind to boolean state:</p>
+    <pre><code>
+    checkbox accepted "Accept terms"
+    toggle darkMode "Dark Mode"
+    </code></pre>
+
+    <h2>State Synchronization</h2>
+
+    <p>Vista provides several mechanisms for state synchronization:</p>
+
+    <h3>Automatic Sync (Recommended)</h3>
+    <pre><code>
+    ; Enable automatic periodic sync
+    webview_state_sync_ms: 500
+
+    ; Then state syncs automatically every 500ms
+    counter: counter + 1
+    </code></pre>
+
+    <h3>Manual Sync</h3>
+    <pre><code>
+    ; Call sync_state after modifications
+    counter: counter + 1
+    sync_state
+    </code></pre>
+
+    <h3>Programmatic Updates</h3>
+    <pre><code>
+    ; Set state directly
+    set_state "counter" 42
+    </code></pre>
+
+    <h2>Binding Expressions</h2>
+
+    <p>You can use expressions in bindings:</p>
+    <pre><code>
+    text ["Count: " counter]
+    text ["Total: " price * quantity]
+    text ["Valid: " if valid ["Yes"] else ["No"]]
+    </code></pre>
+
+    <h2>Component State</h2>
+
+    <p>Some components have their own internal state:</p>
+    <pre><code>
+    tabs .selected:1 [
+        tab "One" [text "First panel"]
+        tab "Two" [text "Second panel"]
+    ]
+    </code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/data-binding/state-model/">State Model</a> - Understanding Vista's state system</li>
+      <li><a href="/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Input binding details</li>
+      <li><a href="/wiki/core/concepts/state-management/">State Management</a> - Managing application state</li>
+    </ul>
+  }
+#]
