@@ -28,8 +28,12 @@ jobs:
       - name: Validate Dist Output
         run: |
           set -euxo pipefail
-          test -f dist/index.html
-          touch dist/.nojekyll
+          test -d dist/wiki
+          if [ ! -f dist/wiki/index.html ] && [ -f dist/wiki/README.html ]; then
+            cp dist/wiki/README.html dist/wiki/index.html
+          fi
+          test -f dist/wiki/index.html
+          touch dist/wiki/.nojekyll
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -37,7 +41,7 @@ jobs:
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: dist/wiki
 
       - name: Deploy to GitHub Pages
         id: deployment
