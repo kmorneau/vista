@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/concepts/canvas-basics.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/graphics/concepts/canvas-basics.md</h1>
+    <div class="markdown-body">
+    
+# Canvas Basics
+
+Learn the basics of setting up and using canvas elements for custom graphics.
+
+## Creating a Canvas
+`view .html [
+canvas 800x600
+]`
+
+## Canvas with Drawing
+`view .html [
+canvas 800x600 [
+draw [
+pen red
+fill blue
+circle 400 300 100
+]
+]
+]`
+
+## Canvas Attributes
+
+- **width**: Canvas width in pixels
+
+- **height**: Canvas height in pixels
+
+- **draw**: Initial drawing commands
+
+## Dynamic Canvas
+`view .html [
+canvas 800x600 [
+on-draw: function [] [
+drawScene
+]
+]
+]`
+
+## Best Practices
+
+- Use appropriate canvas size for your content
+
+- Consider using on-draw for dynamic content
+
+- Optimize drawing operations for performance
+
+## See Also
+
+- [Graphics Overview](/wiki/graphics/concepts/graphics-overview/) - Introduction
+
+- [Drawing](/wiki/graphics/drawing/) - Drawing reference
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

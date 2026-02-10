@@ -1,0 +1,152 @@
+import "api/db/grafito.art"!
+
+clean_user_record: function [raw] [
+    if notEqual? (type raw) :dictionary [
+        return null
+    ]
+    if not? key? raw "properties" [
+        return null
+    ]
+    props: raw\properties
+    if notEqual? (type props) :dictionary [
+        return null
+    ]
+    if not? key? props "user_id" [
+        return null
+    ]
+    #[
+        id: to :integer props\user_id
+        name: to :string props\full_name
+        email: to :string props\email_addr
+    ]
+]
+
+repo_next_user_id: function [users] [
+    maxId: 0
+    i: 0
+    blen: size users
+    while [less? i blen] [
+        item: get users i
+        if all? @[equal? (type item) :dictionary key? item "id"] [
+            uid: to :integer item\id
+            if greater? uid maxId [
+                maxId: uid
+            ]
+        ]
+        i: i + 1
+    ]
+    maxId + 1
+]
+
+repo_find_user_by_id: function [id] [
+    needle: to :integer id
+    users: repo_list_users
+    i: 0
+    blen: size users
+    while [less? i blen] [
+        item: get users i
+        if all? @[equal? (type item) :dictionary key? item "id" equal? (to :integer item\id) needle] [
+            return item
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+repo_insert_user: function [fullName emailAddr] [
+    users: repo_list_users
+    newId: repo_next_user_id users
+    fullNameVal: to :string fullName
+    emailVal: to :string emailAddr
+    with_api_db [
+        put 'user [user_id: newId full_name: fullNameVal email_addr: emailVal]
+    ]
+    repo_find_user_by_id newId
+]
+
+repo_list_users: function [] [
+    rows: with_api_db [
+        fetch 'user ø
+    ]
+    out: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        item: clean_user_record (get rows i)
+        if notEqual? item null [
+            out: out ++ @[item]
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+repo_update_user: function [id fullName emailAddr] [
+    needle: to :integer id
+    fullNameVal: to :string fullName
+    emailVal: to :string emailAddr
+    rows: with_api_db [
+        fetch 'user ø
+    ]
+    keepRows: []
+    found: false
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        cleaned: clean_user_record row
+        if all? @[
+            notEqual? cleaned null
+            equal? (to :integer cleaned\id) needle
+        ] [
+            found: true
+            if key? row "id" [
+                with_api_db [
+                    unput to :integer row\id
+                ]
+            ]
+        ]
+        i: i + 1
+    ]
+    if not? found [
+        return null
+    ]
+    with_api_db [
+        put 'user [user_id: needle full_name: fullNameVal email_addr: emailVal]
+    ]
+    repo_find_user_by_id needle
+]
+
+repo_delete_user: function [id] [
+    needle: to :integer id
+    rows: with_api_db [
+        fetch 'user ø
+    ]
+    removeNodeIds: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        cleaned: clean_user_record row
+        if all? @[
+            notEqual? cleaned null
+            equal? (to :integer cleaned\id) needle
+            key? row "id"
+        ] [
+            removeNodeIds: removeNodeIds ++ @[to :integer row\id]
+        ]
+        i: i + 1
+    ]
+    if equal? (size removeNodeIds) 0 [
+        return false
+    ]
+    with_api_db [
+        i: 0
+        blen: size removeNodeIds
+        while [less? i blen] [
+            unput (get removeNodeIds i)
+            i: i + 1
+        ]
+    ]
+    true
+]

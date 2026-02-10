@@ -1,0 +1,28 @@
+import "api/services/ai_chat_service.art"!
+import "api/http/responses.art"!
+
+ai_providers_handler: function [] [
+    result: service_list_ai_providers
+    ok result\data
+]
+
+ai_chat_handler: function [provider model temperature prompt] [
+    result: service_ai_chat provider model prompt temperature
+    if result\ok [
+        return ok result\data
+    ]
+    code: result\code
+    if equal? code "bad_request" [
+        return bad_request result\message result\details
+    ]
+    if equal? code "unsupported_provider" [
+        return bad_request result\message result\details
+    ]
+    if equal? code "missing_api_key" [
+        return bad_request result\message result\details
+    ]
+    if equal? code "missing_provider_url" [
+        return bad_request result\message result\details
+    ]
+    server_error result\message result\details
+]

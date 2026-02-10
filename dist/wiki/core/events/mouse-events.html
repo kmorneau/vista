@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/events/mouse-events.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/core/events/mouse-events.md</h1>
+    <div class="markdown-body">
+    
+# Mouse Events
+
+Mouse events are triggered when users interact with elements using the mouse pointer.
+
+## Event Types
+
+- **on-over**: Triggered when mouse enters the element
+
+- **on-out**: Triggered when mouse leaves the element
+
+- **on-down**: Triggered when mouse button is pressed
+
+- **on-up**: Triggered when mouse button is released
+
+## Example
+`view .html [
+box red 200x200 [
+on-over [print "Mouse entered"]
+on-out [print "Mouse left"]
+on-down [print "Mouse down"]
+on-up [print "Mouse up"]
+]
+]`
+
+## Components Supporting Mouse Events
+
+- All visual components
+
+- box
+
+- panel
+
+- canvas
+
+## See Also
+
+- [Event Overview](/wiki/core/events/event-overview/) - Introduction to events
+
+- [Click Events](/wiki/core/events/click-events/) - Click event handling
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

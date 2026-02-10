@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/shared/migration/vid-compatibility.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/shared/migration/vid-compatibility.md</h1>
+    <div class="markdown-body">
+    
+# VID Compatibility
+
+Vista maintains backward compatibility with VID (View It Desktop) syntax.
+
+## Supported VID Features
+
+- **Face definitions**: All VID face types are supported
+
+- **Layout keywords**: across, below, pad, space
+
+- **Styling**: colors, fonts, sizes
+
+- **Actions**: on-click, on-change, etc.
+
+## Automatic Conversion
+; VID syntax (automatically converted)
+view [
+  button "Hello" [ print "Hi" ]
+  field "Enter text"
+]
+
+## Deprecated Features
+
+Feature
+Status
+Alternative
+
+vid: dialect
+Deprecated
+Use view directly
+
+feel: object
+Deprecated
+Use on: events
+
+facets: [...]
+Deprecated
+Use attribute: syntax
+
+actor: [...]
+Deprecated
+Use on: events
+
+## Compatibility Mode
+; Enable full VID compatibility
+useVIDCompatibility []
+
+view/legacy [
+  button "Old style" [ print "works" ]
+]
+
+## Known Differences
+
+- Event handler syntax is more flexible in Vista
+
+- State binding is automatic in Vista
+
+- Layout system uses flexbox by default
+
+## Migration Checklist
+
+- ☐ Replace feel: with on: events
+
+- ☐ Update actor: to on: handlers
+
+- ☐ Remove vid: dialect wrapper
+
+- ☐ Add state bindings where needed
+
+## See Also
+
+- [VID Parity](/wiki/shared/migration/vid-parity/) - Full feature comparison
+
+- [From Rebol/View](/wiki/shared/migration/from-rebol-view/) - Migration from Rebol
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

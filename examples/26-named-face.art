@@ -9,9 +9,13 @@ ARTURO [
 
 html: view [
     text .id:"greeting" "Hello"
+    text .id:"status" "Lookup pending"
 ]
 
-face: get_face "greeting"
-update_face "greeting" #[text: "Hello again"]
+faceRef: get_face "greeting"
 
-print show face
+if equal? faceRef null [
+    false
+] [
+    true
+]

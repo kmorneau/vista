@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/components/layout-containers.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/core/components/layout-containers.md</h1>
+    <div class="markdown-body">
+    
+# Layout Containers
+
+Layout containers are specialized components designed to organize and arrange child elements.
+
+## Row
+`view .html [
+row [
+text "Item 1"
+text "Item 2"
+text "Item 3"
+]
+]`
+
+## Column
+`view .html [
+col [
+text "Item 1"
+text "Item 2"
+text "Item 3"
+]
+]`
+
+## Grid
+`view .html [
+grid [
+text "A1" "B1" "C1"
+text "A2" "B2" "C2"
+]
+]`
+
+## Container Attributes
+
+- **spacing**: Space between children
+
+- **align**: Horizontal alignment
+
+- **valign**: Vertical alignment
+
+## See Also
+
+- [Layout](/wiki/core/layout/) - Layout system
+
+- [Containers](/wiki/core/components/containers/) - General containers
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

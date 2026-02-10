@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/tutorials/gradients-fills.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/graphics/tutorials/gradients-fills.md</h1>
+    <div class="markdown-body">
+    
+# Gradients & Fills
+
+Learn how to create and apply gradients and fill styles to your graphics.
+
+## Linear Gradients
+`draw canvas [
+fill linear 0 0 200 0 red orange yellow
+box 0 0 200 100
+]`
+
+## Radial Gradients
+`draw canvas [
+fill radial 100 100 100 white blue
+circle 100 100 100
+]`
+
+## Solid Fills
+`draw canvas [
+fill red
+circle 100 100 50
+]`
+
+## Gradient Parameters
+
+- **Linear**: x1 y1 x2 y2 color1 color2 ...
+
+- **Radial**: x y r color1 color2 ...
+
+## See Also
+
+- [Colors](/wiki/graphics/colors/) - Color reference
+
+- [Primitives](/wiki/graphics/drawing/primitives/) - Drawing primitives
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

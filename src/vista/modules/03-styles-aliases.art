@@ -755,7 +755,7 @@ is_keyword: function [item block] [
                 ]
                 return true
             ]
-            in? name ["across" "below" "return" "end" "pad" "space" "align" "valign" "size" "origin" "offset" "indent" "guide" "do" "scope" "raw" "style" "styles" "stylize" "at" "backcolor" "text" "title" "subtitle" "field" "info" "button" "key" "label" "box" "panel" "text-list" "text_list" "list" "row" "col" "grid" "spacer" "group" "form" "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select" "drop-list" "drop_list" "radio" "radio-group" "radio_group" "tabs" "tab" "image" "icon" "anim" "progress" "table" "table-row" "table_row" "table-cell" "table_cell" "table-header" "table_header" "table-head" "table_head" "table-body" "table_body" "table-foot" "table_foot" "toolbar" "menubar" "tool-group" "tool_group" "canvas" "divider" "split" "sensor" "pen" "fill-pen" "line-width" "line-cap" "line-join" "line-pattern" "line" "box" "circle" "arc" "ellipse" "polygon" "curve" "flood" "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew" "smooth" "coord-system" "text-baseline" "text-align" "linear-gradient" "radial-gradient"]
+            in? name ["across" "below" "return" "end" "pad" "space" "align" "valign" "size" "origin" "offset" "indent" "guide" "do" "scope" "raw" "style" "styles" "stylize" "at" "backcolor" "text" "title" "subtitle" "field" "info" "button" "key" "label" "box" "panel" "text-list" "text_list" "list" "row" "col" "grid" "spacer" "group" "form" "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select" "drop-list" "drop_list" "radio" "radio-group" "radio_group" "tabs" "tab" "image" "icon" "anim" "progress" "table" "table-row" "table_row" "table-cell" "table_cell" "table-header" "table_header" "table-head" "table_head" "table-body" "table_body" "table-foot" "table_foot" "toolbar" "menubar" "tool-group" "tool_group" "canvas" "divider" "split" "sensor" "pen" "fill-pen" "line-width" "line-cap" "line-join" "line-pattern" "line" "box" "circle" "arc" "ellipse" "polygon" "curve" "flood" "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew" "smooth" "coord-system" "text-baseline" "text-align" "linear-gradient" "radial-gradient" "anti-alias" "clip" "fill-rule" "gamma" "grad-pen" "matrix" "invert-matrix" "reset-matrix" "transform" "arrow" "shape" "triangle" "spline"]
         ][
             ; Also check for compound keywords like "-width" from "line-width" tokenized as "line - width"
             switch equal? item_type :symbol [
@@ -787,7 +787,7 @@ is_keyword: function [item block] [
                         tailName: to :string tail
                         ; Check if "-" + tailName forms a known compound keyword suffix
                         compoundSuf: "-" ++ tailName
-                        suffixes: ["-width" "-pen" "-cap" "-join" "-pattern" "-system" "-baseline" "-align" "-gradient"]
+                    suffixes: ["-width" "-pen" "-cap" "-join" "-pattern" "-system" "-baseline" "-align" "-gradient" "-rule" "-alias" "-matrix"]
                         in? compoundSuf suffixes
                     ] [
                         false
@@ -1183,6 +1183,32 @@ apply_facet_attrs: function [attrs] [
             style: apply_effect_attrs style attrs\effect
             attrs: attrs_without attrs "effect"
         ]
+        if key? attrs "options" [
+            attrs\["data-options"]: to :string attrs\options
+            attrs: attrs_without attrs "options"
+        ]
+        if key? attrs "rate" [
+            attrs\["data-rate"]: to :string attrs\rate
+            attrs: attrs_without attrs "rate"
+        ]
+        if key? attrs "feel" [
+            feelVal: attrs\feel
+            if equal? (type feelVal) :dictionary [
+                if key? feelVal "hover" [ attrs\["on-over"]: feelVal\hover ]
+                if key? feelVal "away" [ attrs\["on-out"]: feelVal\away ]
+                if key? feelVal "click" [ attrs\["on-click"]: feelVal\click ]
+                if key? feelVal "down" [ attrs\["on-down"]: feelVal\down ]
+                if key? feelVal "up" [ attrs\["on-up"]: feelVal\up ]
+                if key? feelVal "move" [ attrs\["on-move"]: feelVal\move ]
+                if key? feelVal "input" [ attrs\["on-input"]: feelVal\input ]
+                if key? feelVal "change" [ attrs\["on-change"]: feelVal\change ]
+                if key? feelVal "focus" [ attrs\["on-focus"]: feelVal\focus ]
+                if key? feelVal "blur" [ attrs\["on-blur"]: feelVal\blur ]
+                if key? feelVal "key" [ attrs\["on-key"]: feelVal\key ]
+                if key? feelVal "drag" [ attrs\["data-feel-drag"]: to :string feelVal\drag ]
+            ]
+            attrs: attrs_without attrs "feel"
+        ]
         if notEqual? style "" [
             attrs\style: style
         ]
@@ -1496,6 +1522,32 @@ apply_event_attrs: function [attrs bindings] [
                 res\oninput: to :string val
             ]
         ]
+        if key? res "on-move" [
+            val: res\["on-move"]
+            res: attrs_without res "on-move"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onmousemove: compile_action val bindings
+            ][
+                res\onmousemove: to :string val
+            ]
+        ]
+        if key? res "on-tick" [
+            val: res\["on-tick"]
+            res: attrs_without res "on-tick"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-rate-on-tick"]: compile_action val bindings
+            ][
+                res\["data-rate-on-tick"]: to :string val
+            ]
+        ]
         res
 ]
 
@@ -1749,6 +1801,10 @@ table_script: function [] [
         "<script>document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('table[data-row-select]').forEach(table=>{table.querySelectorAll('tbody tr').forEach(row=>{row.addEventListener('click',()=>{table.querySelectorAll('tbody tr').forEach(r=>r.classList.remove('is-selected'));row.classList.add('is-selected');table.dataset.selectedText=row.textContent.trim();});});});});</script>"
 ]
 
+rate_feel_script: function [] [
+        "<script>document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('[data-rate]').forEach(el=>{const ms=parseInt(el.getAttribute('data-rate')||'0',10);if(!(ms>0)){return;}const tickCode=el.getAttribute('data-rate-on-tick')||'';setInterval(()=>{try{if(tickCode){(new Function('event','value',tickCode)).call(el,null,('value' in el)?el.value:el.textContent);}}catch(_e){}try{el.dispatchEvent(new CustomEvent('vista-rate-tick'));}catch(_e2){}},ms);});document.querySelectorAll('[data-feel-drag]').forEach(el=>{let down=false,sx=0,sy=0;const code=el.getAttribute('data-feel-drag')||'';let fn=null;try{if(code){fn=new Function('dx','dy','event',code);}}catch(_e){}el.addEventListener('mousedown',e=>{down=true;sx=e.clientX;sy=e.clientY;});window.addEventListener('mousemove',e=>{if(!down||!fn){return;}try{fn.call(el,e.clientX-sx,e.clientY-sy,e);}catch(_e3){}});window.addEventListener('mouseup',()=>{down=false;});});});</script>"
+]
+
 auto_reload_script: function [] [
         if webview_auto_reload [
             return "<script>setInterval(()=>{location.reload();}," ++ (to :string webview_reload_ms) ++ ");</script>"
@@ -1766,4 +1822,3 @@ merge_bindings: function [dest src] [
             i: i + 1
         ]
 ]
-

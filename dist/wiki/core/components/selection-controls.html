@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/components/selection-controls.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/core/components/selection-controls.md</h1>
+    <div class="markdown-body">
+    
+# Selection Controls
+
+Selection controls allow users to choose from predefined options. Vista provides checkbox, toggle, and radio components for different selection scenarios.
+
+## Checkbox
+
+Checkboxes represent boolean on/off states.
+
+### Basic Checkbox
+`
+import 'vista!
+
+accepted: false
+
+view [
+checkbox accepted "I accept the terms"
+
+button "Submit" [
+if accepted [
+print "Proceeding..."
+]
+]
+]
+`
+
+### Checkbox with Block Label
+Use block labels for rich content:
+
+`
+checkbox accepted [
+text "I agree to the "
+label .style:"text-decoration:underline" "terms and conditions"
+]
+`
+
+### Multiple Checkboxes
+`
+options: #[
+news: false
+updates: true
+offers: false
+]
+
+view [
+checkbox options\news "Subscribe to newsletter"
+checkbox options\updates "Get product updates"
+checkbox options\offers "Receive special offers"
+]
+`
+
+## Toggle
+
+Toggles are stylized checkboxes for on/off settings.
+
+### Basic Toggle
+`
+darkMode: false
+
+view [
+toggle darkMode "Dark Mode"
+
+button "Apply" [
+if darkMode [
+enableDarkTheme
+]
+]
+]
+`
+
+### Toggles for Settings
+`
+settings: #[
+notifications: true
+autoSave: false
+compactView: true
+]
+
+view [
+toggle settings\notifications "Enable notifications"
+toggle settings\autoSave "Auto-save changes"
+toggle settings\compactView "Compact view mode"
+]
+`
+
+### Toggle with on-change
+Respond to toggle changes:
+
+`
+enabled: false
+
+view [
+toggle enabled "Feature Enabled"
+.on-change:[
+if enabled [
+activateFeature
+] [
+deactivateFeature
+]
+]
+]
+`
+
+## Radio
+
+Radio buttons allow selecting one option from a group.
+
+### Basic Radio Group
+`
+color: "red"
+
+view [
+label "Choose color:"
+radio color ["red" "green" "blue"]
+]
+`
+
+### Radio with on-change
+Respond to selection changes:
+
+`
+size: "medium"
+
+view [
+radio size ["small" "medium" "large"]
+.on-change:[
+print ["Selected: " size]
+updatePreview
+]
+]
+`
+
+### Radio with Value-Label Pairs
+`
+priority: 1
+
+view [
+radio priority [
+[1 "Low"]
+[2 "Medium"]
+[3 "High"]
+]
+]
+`
+
+### Block Labels for Radio
+Rich content in radio labels:
+
+`
+color: "red"
+
+radio color [
+["red" [
+text "● "
+label .style:"color:red" "Red"
+]]
+["blue" [
+text "● "
+label .style:"color:blue" "Blue"
+]]
+]
+`
+
+### Radio with Option Attributes
+Disable individual options:
+
+`
+choice: "a"
+
+radio choice [
+["a" "Option A" #[]]
+["b" "Option B" #[disabled: true]]  ; Disabled
+["c" "Option C" #[]]
+]
+`
+
+## Selection Controls Comparison
+
+Component
+Use Case
+State Type
+
+`checkbox`
+Boolean on/off
+Boolean
+
+`toggle`
+Settings on/off
+Boolean
+
+`radio`
+One of many
+String/Number
+
+## Complete Example
+
+`
+import 'vista!
+
+formData: #[
+newsletter: false
+notifications: true
+theme: "light"
+]
+
+view [
+text "Preferences"
+box [
+checkbox formData\newsletter "Subscribe to newsletter"
+toggle formData\notifications "Push notifications"
+]
+
+text "Theme"
+radio formData\theme ["light" "dark" "system"]
+
+button "Save" [
+savePreferences
+]
+]
+`
+
+## Best Practices
+
+- Use `checkbox` for independent boolean choices
+
+- Use `toggle` for settings and preferences
+
+- Use `radio` for mutually exclusive options
+
+- Provide clear labels for all selection controls
+
+- Use `on-change` for immediate feedback
+
+## See Also
+
+- [Sliders & Choice](/wiki/core/components/sliders-choice/) - Slider and drop-list components
+
+- [Input Fields](/wiki/core/components/input-fields/) - Text input components
+
+- [Input Events](/wiki/core/events/input-events/) - Event handling for selections
+
+</ul
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

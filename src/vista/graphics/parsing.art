@@ -1,6 +1,7 @@
 ; Vista Graphics Parsing
 
-; Normalize draw blocks so `fill-pen` and `line-width` survive Arturo tokenization
+; Normalize draw blocks so compound commands survive Arturo tokenization,
+; e.g. `fill - pen` -> `fill-pen`, `line _ width` handled later in drawing.
 vg_normalize_block: function [block] [
     if notEqual? (type block) :block [
         return block
@@ -12,23 +13,40 @@ vg_normalize_block: function [block] [
         tok: get block i
         tok_type: type tok
         did_combine: false
-        if any? @[equal? tok_type :word equal? tok_type :attributeLabel] [
+        if any? @[equal? tok_type :word equal? tok_type :attributeLabel equal? tok_type :attribute] [
             combinedStr: to :string tok
             j: i
+            saw_label: equal? tok_type :attributeLabel
             while [less? (j + 2) blen] [
                 mid: get block (j + 1)
                 tail: get block (j + 2)
-                if not? all? @[equal? (type mid) :symbol equal? (to :string mid) "-" any? @[equal? (type tail) :word equal? (type tail) :label]] [
+                tail_type: type tail
+                if not? all? @[
+                    equal? (type mid) :symbol
+                    equal? (to :string mid) "-"
+                    any? @[equal? tail_type :word equal? tail_type :label]
+                ] [
                     break
                 ]
                 combinedStr: combinedStr ++ "-" ++ (to :string tail)
+                if equal? tail_type :label [
+                    saw_label: true
+                ]
                 j: j + 2
             ]
             if greater? j i [
-                switch equal? tok_type :attributeLabel [
-                    out: out ++ @[to :attributeLabel combinedStr]
+                switch equal? tok_type :attribute [
+                    switch saw_label [
+                        out: out ++ @[to :attributeLabel combinedStr]
+                    ][
+                        out: out ++ @[to :attribute combinedStr]
+                    ]
                 ][
-                    out: out ++ @[to :word combinedStr]
+                    switch equal? tok_type :attributeLabel [
+                        out: out ++ @[to :attributeLabel combinedStr]
+                    ][
+                        out: out ++ @[to :word combinedStr]
+                    ]
                 ]
                 i: j + 1
                 did_combine: true

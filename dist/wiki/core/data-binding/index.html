@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/data-binding/index.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/core/data-binding/index.md</h1>
+    <div class="markdown-body">
+    
+# Data Binding
+
+Vista's data binding system enables automatic synchronization between your application state and the UI.
+
+## Data Binding Topics
+
+- [Binding Overview](/wiki/core/data-binding/binding-overview/) - Introduction to data binding
+
+- [State Model](/wiki/core/data-binding/state-model/) - Managing application state
+
+- [Two-Way Binding](/wiki/core/data-binding/two-way-binding/) - Bidirectional data flow
+
+- Sync State - Manual state synchronization
+
+- Auto Sync - Automatic synchronization
+
+- Face Updates - Updating faces dynamically
+
+## Basic Binding Example
+`name: "World"
+view .html [
+text "Hello, "
+text :name
+field :name
+]`
+
+## See Also
+
+- [State Management](/wiki/core/concepts/state-management/) - State concepts
+
+- [Input Fields](/wiki/core/components/input-fields/) - Input components
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

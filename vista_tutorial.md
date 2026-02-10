@@ -345,7 +345,7 @@ canvas .id:"demo" .width: 240 .height: 140 [
 ]
 ```
 
-Draw is implemented in [`vista-graphics.art`](vista-graphics.art:1) and runs client-side.
+Draw is implemented in `src/vista/graphics/vista-graphics.art` and runs client-side.
 
 #### divider
 
@@ -782,15 +782,15 @@ Example:
 ```arturo
 ARTURO [
     Title: "Digital Clock"
-    Version: 1.3.3
-    Author: "Keith Morneau"
-    Purpose: "Display a simple digital clock on screen."
+    Logo: "arturo-vista.png"
     Width: 480
     Height: 320
 ]
 ```
 
-Vista will use `Title` for the window title, and `Width`/`Height` if provided.
+Vista uses `Title` for the window title, `Logo` for the app header image, and `Width`/`Height` for the window size.
+The generated HTML header always includes the `ARTURO/VISTA` mark and the logo (default: `arturo-vista.png`).
+If `Title` is exactly `ARTURO/VISTA`, the extra title label is hidden to avoid duplicate text.
 
 ## Release & Migration
 

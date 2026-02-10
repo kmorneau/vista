@@ -2,12 +2,21 @@
 
 Vista provides a Rebol/View-inspired UI layer for Arturo, rendered to HTML/WebView.
 
+## Architecture
+
+Vista now uses a modular implementation:
+
+- Public entrypoint: `vista.art` (root wrapper)
+- Canonical entrypoint: `src/vista/vista.art`
+- Core modules: `src/vista/modules/*.art`
+- Graphics modules: `src/vista/graphics/*.art`
+
 ## Quick Start
 
 ```arturo
-import 'vista!
+import "vista.art"!
 
-view .html [
+view [
     text "Hello"
     button "OK" [print "ok"]
 ]
@@ -26,7 +35,7 @@ import "vista.art"!
 Use the `ARTURO [...]` header and `run_app` helper:
 
 ```arturo
-import 'vista!
+import "vista.art"!
 
 ARTURO [
     Title: "ARTURO/VISTA"
@@ -44,7 +53,13 @@ The `Logo` field controls the ARTURO header logo. If omitted, the default
 is `arturo-vista.png` in the project root. You can also pass a data URL
 to embed the image directly.
 
+### HTML Output Header
 
+`view` always generates the same application header used by the examples:
+
+- `ARTURO/VISTA` brand mark
+- Optional app title (from `ARTURO [Title: ...]`, hidden when equal to `ARTURO/VISTA`)
+- Logo image (from `ARTURO [Logo: ...]`, default `arturo-vista.png`)
 
 ## Tests
 
@@ -73,6 +88,9 @@ tests/run_behavior.sh
 - `VID_COMPAT.md`
 - `VID_PARITY.md`
 - `RELEASE_NOTES.md`
+- `TEST_COVERAGE.md`
+- `docs/coverage/rebol_view_vid_coverage.csv`
+- `docs/coverage/rebol_draw_coverage.csv`
 - `ARTURO_GUIDE.md`
 - `data/wiki/` (WIP wiki markdown sources)
 
@@ -80,7 +98,7 @@ See `vista_tutorial.md` for the Rebol/View translation guide and state/event bes
 
 ## Draw (HTML5 Canvas)
 
-Vista includes a Rebol/View Draw-style helper module in [`vista-graphics.art`](vista-graphics.art:1). The `canvas` face accepts a Draw block as its first argument and renders it to HTML5 Canvas at runtime.
+Vista includes a Rebol/View Draw-style helper module in `src/vista/graphics/vista-graphics.art`. The `canvas` face accepts a Draw block as its first argument and renders it to HTML5 Canvas at runtime.
 
 ```arturo
 import "vista.art"!

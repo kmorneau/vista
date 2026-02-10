@@ -1,0 +1,86 @@
+import "api/repositories/users_repo.art"!
+import "api/http/validation.art"!
+
+service_list_users: function [] [
+    #[
+        ok: true
+        data: repo_list_users
+    ]
+]
+
+service_get_user: function [id] [
+    user: repo_find_user_by_id id
+    if equal? user null [
+        return #[
+            ok: false
+            code: "not_found"
+            message: "User not found"
+            details: #[id: id]
+        ]
+    ]
+    #[
+        ok: true
+        data: user
+    ]
+]
+
+service_create_user: function [name email] [
+    valid: validate_user_payload name email
+    if not? valid\ok [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "Validation failed"
+            details: valid\errors
+        ]
+    ]
+    clean: valid\data
+    user: repo_insert_user clean\name clean\email
+    #[
+        ok: true
+        created: true
+        data: user
+    ]
+]
+
+service_update_user: function [id name email] [
+    valid: validate_user_payload name email
+    if not? valid\ok [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "Validation failed"
+            details: valid\errors
+        ]
+    ]
+    clean: valid\data
+    user: repo_update_user id clean\name clean\email
+    if equal? user null [
+        return #[
+            ok: false
+            code: "not_found"
+            message: "User not found"
+            details: #[id: id]
+        ]
+    ]
+    #[
+        ok: true
+        data: user
+    ]
+]
+
+service_delete_user: function [id] [
+    removed: repo_delete_user id
+    if not? removed [
+        return #[
+            ok: false
+            code: "not_found"
+            message: "User not found"
+            details: #[id: id]
+        ]
+    ]
+    #[
+        ok: true
+        data: #[deleted: true id: to :integer id]
+    ]
+]

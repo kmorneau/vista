@@ -1,0 +1,54 @@
+; HTTP response helpers (string JSON envelopes)
+
+json_body: function [value] [
+    write.json value ø
+]
+
+ok: function [data] [
+    json_body #[
+        ok: true
+        data: data
+    ]
+]
+
+created: function [data] [
+    json_body #[
+        ok: true
+        created: true
+        data: data
+    ]
+]
+
+no_content: function [] [
+    json_body #[
+        ok: true
+        data: null
+    ]
+]
+
+error_response: function [code message details] [
+    json_body #[
+        ok: false
+        error: #[
+            code: code
+            message: message
+            details: details
+        ]
+    ]
+]
+
+bad_request: function [message details] [
+    error_response "bad_request" message details
+]
+
+not_found: function [message details] [
+    error_response "not_found" message details
+]
+
+conflict: function [message details] [
+    error_response "conflict" message details
+]
+
+server_error: function [message details] [
+    error_response "server_error" message details
+]

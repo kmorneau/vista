@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/animation/transition-effects.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/graphics/animation/transition-effects.md</h1>
+    <div class="markdown-body">
+    
+# Transition Effects
+
+Vista Graphics supports smooth transition effects for UI and graphics.
+
+## Easing Functions
+
+- **linear**: Constant speed
+
+- **ease-in**: Accelerate
+
+- **ease-out**: Decelerate
+
+- **ease-in-out**: Accelerate then decelerate
+
+- **bounce**: Bounce effect
+
+## Basic Transition
+`animate [
+position: lerp start end t ease-out
+drawObject position
+]`
+
+## Color Transition
+`animate [
+color: lerpColor red blue t
+fill color
+]`
+
+## See Also
+
+- [Animation Basics](/wiki/graphics/animation/animation-basics/) - Fundamentals
+
+- [Particle Systems](/wiki/graphics/animation/particle-systems/) - Particle effects
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

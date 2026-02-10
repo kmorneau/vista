@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/components/button-controls.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/core/components/button-controls.md</h1>
+    <div class="markdown-body">
+    
+# Button Controls
+
+Button controls trigger actions when clicked.
+
+## Basic Button
+`
+button "Click Me" [
+print "Button clicked!"
+]
+`
+
+## Button with Binding
+`
+button "Submit" .bind: 'submitAction [
+do submitAction
+]
+`
+
+## Key Button
+Button styled as a keyboard key:
+
+`
+key_button "Enter"
+`
+
+## Button with Label Class
+`
+button "Click Me"
+.label-class: "button-label"
+[
+print "clicked"
+]
+`
+
+## Styling
+`
+button "Styled"
+.color: blue
+.size: 150
+[
+print "styled click"
+]
+`
+
+## Example
+`
+view .html [
+panel "Buttons" [
+button "Primary" [print "Primary clicked"]
+button "Secondary" [print "Secondary clicked"]
+key_button "Space" [print "Space pressed"]
+]
+]
+`
+
+## See Also
+
+- [Click Events](/wiki/core/events/click-events/) - Event handling
+
+- [Keyboard Events](/wiki/core/events/keyboard-events/) - Key bindings
+
+</ul
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

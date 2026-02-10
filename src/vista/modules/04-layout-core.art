@@ -2261,6 +2261,7 @@ build_full_html: function [layoutBlock] [
     tabsScript: tabs_script
     menuScript: menubar_script
     tableScript: table_script
+    rateFeelScript: rate_feel_script
     reloadScript: auto_reload_script
     bodyOpen: "<body>"
     if vista_vid_mode [
@@ -2302,6 +2303,7 @@ build_full_html: function [layoutBlock] [
     html: html ++ tabsScript
     html: html ++ menuScript
     html: html ++ tableScript
+    html: html ++ rateFeelScript
     html: html ++ canvasScript
     html: html ++ reloadScript
     html: html ++ "</body></html>"
@@ -2642,4 +2644,3 @@ update_face: function [id updates] [
     ]
     face
 ]
-

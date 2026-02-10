@@ -1,3 +1,610 @@
-test_draw_works: function [] [
-    print "drawing module test"
+; Vista Graphics Drawing Engine
+
+draw_gradient_stops: function [stops varName] [
+    if notEqual? (type stops) :block [
+        return ""
+    ]
+    out: ""
+    slen: size stops
+    si: 0
+    while [less? si slen][
+        stop: get stops si
+        if equal? (type stop) :block [
+            if equal? (size stop) 2 [
+                pos: get stop 0
+                col: get stop 1
+                out: out ++ varName ++ ".addColorStop(" ++ (to :string pos) ++ ", " ++ (vg_color_value col) ++ ");"
+            ]
+        ]
+        si: si + 1
+    ]
+    out
+]
+
+draw_matrix_values: function [val] [
+    if notEqual? (type val) :block [
+        return null
+    ]
+    if notEqual? (size val) 6 [
+        return null
+    ]
+    #[
+        a: get val 0
+        b: get val 1
+        c: get val 2
+        d: get val 3
+        e: get val 4
+        f: get val 5
+    ]
+]
+
+draw_to_canvas: function [canvasId drawBlock] [
+    if notEqual? (type drawBlock) :block [
+        return ""
+    ]
+    js: "var c=document.getElementById('" ++ vg_js_escape_single canvasId ++ "');if(!c){return;}var ctx=c.getContext('2d');ctx.__vistaFillRule='nonzero';"
+    i: 0
+    blen: size drawBlock
+    gradCount: 0
+    while [less? i blen][
+        if greaterOrEqual? i blen [
+            break
+        ]
+        tok: get drawBlock i
+        if equal? (type tok) :word [
+            cmd: replace (to :string tok) "_" "-"
+            do case cmd [
+                "pen" -> [
+                    if less? (i + 1) blen [
+                        colorVal: get drawBlock (i + 1)
+                        js: js ++ "ctx.strokeStyle=" ++ (vg_color_value colorVal) ++ ";"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "fill-pen" -> [
+                    if less? (i + 1) blen [
+                        colorVal: get drawBlock (i + 1)
+                        js: js ++ "ctx.fillStyle=" ++ (vg_color_value colorVal) ++ ";"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "line-width" -> [
+                    if less? (i + 1) blen [
+                        w: get drawBlock (i + 1)
+                        js: js ++ "ctx.lineWidth=" ++ (to :string w) ++ ";"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "line-cap" -> [
+                    if less? (i + 1) blen [
+                        v: get drawBlock (i + 1)
+                        js: js ++ "ctx.lineCap=" ++ (draw_js_token v) ++ ";"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "line-join" -> [
+                    if less? (i + 1) blen [
+                        v: get drawBlock (i + 1)
+                        js: js ++ "ctx.lineJoin=" ++ (draw_js_token v) ++ ";"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "line-pattern" -> [
+                    if less? (i + 1) blen [
+                        patt: get drawBlock (i + 1)
+                        if equal? (type patt) :block [
+                            dashStr: ""
+                            plen: size patt
+                            pi: 0
+                            while [less? pi plen][
+                                if not? equal? dashStr "" [
+                                    dashStr: dashStr ++ ","
+                                ]
+                                dashStr: dashStr ++ to :string (get patt pi)
+                                pi: pi + 1
+                            ]
+                            js: js ++ "ctx.setLineDash([" ++ dashStr ++ "]);"
+                            i: i + 2
+                            continue
+                        ]
+                    ]
+                ]
+                "font" -> [
+                    if less? (i + 1) blen [
+                        v: get drawBlock (i + 1)
+                        js: js ++ "ctx.font=" ++ (draw_js_token v) ++ ";"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "text-align" -> [
+                    if less? (i + 1) blen [
+                        v: get drawBlock (i + 1)
+                        js: js ++ "ctx.textAlign=" ++ (draw_js_token v) ++ ";"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "text-baseline" -> [
+                    if less? (i + 1) blen [
+                        v: get drawBlock (i + 1)
+                        js: js ++ "ctx.textBaseline=" ++ (draw_js_token v) ++ ";"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "smooth" -> [
+                    if less? (i + 1) blen [
+                        v: get drawBlock (i + 1)
+                        js: js ++ "ctx.imageSmoothingEnabled=" ++ (to :string v) ++ ";"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "anti-alias" -> [
+                    if less? (i + 1) blen [
+                        v: get drawBlock (i + 1)
+                        js: js ++ "ctx.imageSmoothingEnabled=" ++ (to :string v) ++ ";"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "fill-rule" -> [
+                    if less? (i + 1) blen [
+                        v: get drawBlock (i + 1)
+                        js: js ++ "ctx.__vistaFillRule=" ++ (draw_js_token v) ++ ";"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "gamma" -> [
+                    ; Canvas has no direct gamma control. Keep command accepted as no-op.
+                    if less? (i + 1) blen [
+                        i: i + 2
+                    ] [
+                        i: i + 1
+                    ]
+                    continue
+                ]
+                "push" -> [
+                    js: js ++ "ctx.save();"
+                    i: i + 1
+                    continue
+                ]
+                "pop" -> [
+                    js: js ++ "ctx.restore();"
+                    i: i + 1
+                    continue
+                ]
+                "translate" -> [
+                    if less? (i + 2) blen [
+                        xVal: get drawBlock (i + 1)
+                        yVal: get drawBlock (i + 2)
+                        js: js ++ "ctx.translate(" ++ (to :string xVal) ++ "," ++ (to :string yVal) ++ ");"
+                        i: i + 3
+                        continue
+                    ]
+                ]
+                "rotate" -> [
+                    if less? (i + 1) blen [
+                        v: get drawBlock (i + 1)
+                        js: js ++ "ctx.rotate((" ++ (to :string v) ++ ")*Math.PI/180);"
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "scale" -> [
+                    if less? (i + 2) blen [
+                        sx: get drawBlock (i + 1)
+                        sy: get drawBlock (i + 2)
+                        js: js ++ "ctx.scale(" ++ (to :string sx) ++ "," ++ (to :string sy) ++ ");"
+                        i: i + 3
+                        continue
+                    ]
+                ]
+                "skew" -> [
+                    if less? (i + 2) blen [
+                        sx: get drawBlock (i + 1)
+                        sy: get drawBlock (i + 2)
+                        js: js ++ "ctx.transform(1,Math.tan((" ++ (to :string sy) ++ ")*Math.PI/180),Math.tan((" ++ (to :string sx) ++ ")*Math.PI/180),1,0,0);"
+                        i: i + 3
+                        continue
+                    ]
+                ]
+                "coord-system" -> [
+                    ; Placeholder; currently accepted for compatibility.
+                    if less? (i + 1) blen [
+                        i: i + 2
+                    ] [
+                        i: i + 1
+                    ]
+                    continue
+                ]
+                "matrix" -> [
+                    if less? (i + 1) blen [
+                        m: draw_matrix_values (get drawBlock (i + 1))
+                        if notEqual? m null [
+                            js: js ++ "ctx.setTransform(" ++ (to :string m\a) ++ "," ++ (to :string m\b) ++ "," ++ (to :string m\c) ++ "," ++ (to :string m\d) ++ "," ++ (to :string m\e) ++ "," ++ (to :string m\f) ++ ");"
+                            i: i + 2
+                            continue
+                        ]
+                    ]
+                ]
+                "transform" -> [
+                    if less? (i + 1) blen [
+                        m: draw_matrix_values (get drawBlock (i + 1))
+                        if notEqual? m null [
+                            js: js ++ "ctx.transform(" ++ (to :string m\a) ++ "," ++ (to :string m\b) ++ "," ++ (to :string m\c) ++ "," ++ (to :string m\d) ++ "," ++ (to :string m\e) ++ "," ++ (to :string m\f) ++ ");"
+                            i: i + 2
+                            continue
+                        ]
+                    ]
+                ]
+                "reset-matrix" -> [
+                    js: js ++ "ctx.setTransform(1,0,0,1,0,0);"
+                    i: i + 1
+                    continue
+                ]
+                "invert-matrix" -> [
+                    js: js ++ "try{var __m=ctx.getTransform();var __i=__m.inverse();ctx.setTransform(__i);}catch(__e){}"
+                    i: i + 1
+                    continue
+                ]
+                "clip" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        p2: vg_point (get drawBlock (i + 2))
+                        if all? @[notEqual? p1 null notEqual? p2 null] [
+                            x: p1\x
+                            y: p1\y
+                            w: p2\x - p1\x
+                            h: p2\y - p1\y
+                            js: js ++ "ctx.beginPath();ctx.rect(" ++ (to :string x) ++ "," ++ (to :string y) ++ "," ++ (to :string w) ++ "," ++ (to :string h) ++ ");ctx.clip();"
+                            i: i + 3
+                            continue
+                        ]
+                    ]
+                ]
+                "line" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        p2: vg_point (get drawBlock (i + 2))
+                        if notEqual? p1 null [
+                            if notEqual? p2 null [
+                                js: js ++ "ctx.beginPath();ctx.moveTo(" ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ ");ctx.lineTo(" ++ (to :string p2\x) ++ "," ++ (to :string p2\y) ++ ");ctx.stroke();"
+                                i: i + 3
+                                continue
+                            ]
+                        ]
+                    ]
+                ]
+                "arrow" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        p2: vg_point (get drawBlock (i + 2))
+                        if all? @[notEqual? p1 null notEqual? p2 null] [
+                            js: js ++ "(function(){var x1=" ++ (to :string p1\x) ++ ",y1=" ++ (to :string p1\y) ++ ",x2=" ++ (to :string p2\x) ++ ",y2=" ++ (to :string p2\y) ++ ";var a=Math.atan2(y2-y1,x2-x1),h=10;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a-Math.PI/6),y2-h*Math.sin(a-Math.PI/6));ctx.lineTo(x2-h*Math.cos(a+Math.PI/6),y2-h*Math.sin(a+Math.PI/6));ctx.closePath();ctx.fill();ctx.stroke();})();"
+                            i: i + 3
+                            continue
+                        ]
+                    ]
+                ]
+                "box" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        p2: vg_point (get drawBlock (i + 2))
+                        if notEqual? p1 null [
+                            if notEqual? p2 null [
+                                x: p1\x
+                                y: p1\y
+                                w: p2\x - p1\x
+                                h: p2\y - p1\y
+                                js: js ++ "ctx.fillRect(" ++ (to :string x) ++ "," ++ (to :string y) ++ "," ++ (to :string w) ++ "," ++ (to :string h) ++ ");ctx.strokeRect(" ++ (to :string x) ++ "," ++ (to :string y) ++ "," ++ (to :string w) ++ "," ++ (to :string h) ++ ");"
+                                i: i + 3
+                                continue
+                            ]
+                        ]
+                    ]
+                ]
+                "circle" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        r: get drawBlock (i + 2)
+                        if notEqual? p1 null [
+                            js: js ++ "ctx.beginPath();ctx.arc(" ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ "," ++ (to :string r) ++ ",0,Math.PI*2);ctx.fill(ctx.__vistaFillRule);ctx.stroke();"
+                            i: i + 3
+                            continue
+                        ]
+                    ]
+                ]
+                "arc" -> [
+                    if less? (i + 3) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        r: get drawBlock (i + 2)
+                        ang: get drawBlock (i + 3)
+                        if notEqual? p1 null [
+                            startDeg: 0
+                            endDeg: 360
+                            switch equal? (type ang) :block [
+                                if greaterOrEqual? (size ang) 2 [
+                                    startDeg: get ang 0
+                                    endDeg: get ang 1
+                                ]
+                            ][
+                                endDeg: ang
+                            ]
+                            js: js ++ "ctx.beginPath();ctx.arc(" ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ "," ++ (to :string r) ++ ",(" ++ (to :string startDeg) ++ ")*Math.PI/180,(" ++ (to :string endDeg) ++ ")*Math.PI/180);ctx.stroke();"
+                            i: i + 4
+                            continue
+                        ]
+                    ]
+                ]
+                "ellipse" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        p2: vg_point (get drawBlock (i + 2))
+                        if notEqual? p1 null [
+                            if notEqual? p2 null [
+                                rx: p2\x
+                                ry: p2\y
+                                js: js ++ "ctx.beginPath();ctx.ellipse(" ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ "," ++ (to :string rx) ++ "," ++ (to :string ry) ++ ",0,0,Math.PI*2);ctx.fill(ctx.__vistaFillRule);ctx.stroke();"
+                                i: i + 3
+                                continue
+                            ]
+                        ]
+                    ]
+                ]
+                "polygon" -> [
+                    if less? (i + 1) blen [
+                        pts: get drawBlock (i + 1)
+                        if equal? (type pts) :block [
+                            plen: size pts
+                            if greater? plen 0 [
+                                first: vg_point (get pts 0)
+                                if notEqual? first null [
+                                    js: js ++ "ctx.beginPath();ctx.moveTo(" ++ (to :string first\x) ++ "," ++ (to :string first\y) ++ ");"
+                                    pi: 1
+                                    while [less? pi plen][
+                                        p: vg_point (get pts pi)
+                                        if notEqual? p null [
+                                            js: js ++ "ctx.lineTo(" ++ (to :string p\x) ++ "," ++ (to :string p\y) ++ ");"
+                                        ]
+                                        pi: pi + 1
+                                    ]
+                                    js: js ++ "ctx.closePath();ctx.fill(ctx.__vistaFillRule);ctx.stroke();"
+                                    i: i + 2
+                                    continue
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+                "triangle" -> [
+                    if less? (i + 3) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        p2: vg_point (get drawBlock (i + 2))
+                        p3: vg_point (get drawBlock (i + 3))
+                        if all? @[notEqual? p1 null notEqual? p2 null notEqual? p3 null] [
+                            js: js ++ "ctx.beginPath();ctx.moveTo(" ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ ");ctx.lineTo(" ++ (to :string p2\x) ++ "," ++ (to :string p2\y) ++ ");ctx.lineTo(" ++ (to :string p3\x) ++ "," ++ (to :string p3\y) ++ ");ctx.closePath();ctx.fill(ctx.__vistaFillRule);ctx.stroke();"
+                            i: i + 4
+                            continue
+                        ]
+                    ]
+                ]
+                "shape" -> [
+                    if less? (i + 1) blen [
+                        shp: get drawBlock (i + 1)
+                        if equal? (type shp) :string [
+                            js: js ++ "try{var __p=new Path2D(" ++ (draw_js_token shp) ++ ");ctx.fill(__p,ctx.__vistaFillRule);ctx.stroke(__p);}catch(__e){}"
+                            i: i + 2
+                            continue
+                        ]
+                        if equal? (type shp) :block [
+                            plen: size shp
+                            if greater? plen 0 [
+                                first: vg_point (get shp 0)
+                                if notEqual? first null [
+                                    js: js ++ "ctx.beginPath();ctx.moveTo(" ++ (to :string first\x) ++ "," ++ (to :string first\y) ++ ");"
+                                    pi: 1
+                                    while [less? pi plen] [
+                                        p: vg_point (get shp pi)
+                                        if notEqual? p null [
+                                            js: js ++ "ctx.lineTo(" ++ (to :string p\x) ++ "," ++ (to :string p\y) ++ ");"
+                                        ]
+                                        pi: pi + 1
+                                    ]
+                                    js: js ++ "ctx.closePath();ctx.fill(ctx.__vistaFillRule);ctx.stroke();"
+                                    i: i + 2
+                                    continue
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+                "curve" -> [
+                    if less? (i + 3) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        c: vg_point (get drawBlock (i + 2))
+                        p2: vg_point (get drawBlock (i + 3))
+                        if all? @[notEqual? p1 null notEqual? c null notEqual? p2 null] [
+                            js: js ++ "ctx.beginPath();ctx.moveTo(" ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ ");ctx.quadraticCurveTo(" ++ (to :string c\x) ++ "," ++ (to :string c\y) ++ "," ++ (to :string p2\x) ++ "," ++ (to :string p2\y) ++ ");ctx.stroke();"
+                            i: i + 4
+                            continue
+                        ]
+                    ]
+                    if less? (i + 4) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        c1: vg_point (get drawBlock (i + 2))
+                        c2: vg_point (get drawBlock (i + 3))
+                        p2: vg_point (get drawBlock (i + 4))
+                        if all? @[notEqual? p1 null notEqual? c1 null notEqual? c2 null notEqual? p2 null] [
+                            js: js ++ "ctx.beginPath();ctx.moveTo(" ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ ");ctx.bezierCurveTo(" ++ (to :string c1\x) ++ "," ++ (to :string c1\y) ++ "," ++ (to :string c2\x) ++ "," ++ (to :string c2\y) ++ "," ++ (to :string p2\x) ++ "," ++ (to :string p2\y) ++ ");ctx.stroke();"
+                            i: i + 5
+                            continue
+                        ]
+                    ]
+                ]
+                "spline" -> [
+                    if less? (i + 1) blen [
+                        pts: get drawBlock (i + 1)
+                        if equal? (type pts) :block [
+                            plen: size pts
+                            if greaterOrEqual? plen 2 [
+                                p0: vg_point (get pts 0)
+                                if notEqual? p0 null [
+                                    js: js ++ "ctx.beginPath();ctx.moveTo(" ++ (to :string p0\x) ++ "," ++ (to :string p0\y) ++ ");"
+                                    pi: 1
+                                    while [less? pi plen] [
+                                        p: vg_point (get pts pi)
+                                        if notEqual? p null [
+                                            if less? (pi + 1) plen [
+                                                pnext: vg_point (get pts (pi + 1))
+                                                if notEqual? pnext null [
+                                                    mx: (p\x + pnext\x) / 2
+                                                    my: (p\y + pnext\y) / 2
+                                                    js: js ++ "ctx.quadraticCurveTo(" ++ (to :string p\x) ++ "," ++ (to :string p\y) ++ "," ++ (to :string mx) ++ "," ++ (to :string my) ++ ");"
+                                                ] [
+                                                    js: js ++ "ctx.lineTo(" ++ (to :string p\x) ++ "," ++ (to :string p\y) ++ ");"
+                                                ]
+                                            ] [
+                                                js: js ++ "ctx.lineTo(" ++ (to :string p\x) ++ "," ++ (to :string p\y) ++ ");"
+                                            ]
+                                        ]
+                                        pi: pi + 1
+                                    ]
+                                    js: js ++ "ctx.stroke();"
+                                    i: i + 2
+                                    continue
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+                "text" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        tval: get drawBlock (i + 2)
+                        if notEqual? p1 null [
+                            js: js ++ "ctx.fillText(" ++ (draw_js_token tval) ++ "," ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ ");"
+                            i: i + 3
+                            continue
+                        ]
+                    ]
+                ]
+                "image" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        src: get drawBlock (i + 2)
+                        sizeVal: null
+                        if less? (i + 3) blen [
+                            sizeVal: get drawBlock (i + 3)
+                        ]
+                        if notEqual? p1 null [
+                            js: js ++ "var img=new Image();img.onload=function(){"
+                            if equal? (type sizeVal) :block [
+                                if equal? (size sizeVal) 2 [
+                                    w: get sizeVal 0
+                                    h: get sizeVal 1
+                                    js: js ++ "ctx.drawImage(img," ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ "," ++ (to :string w) ++ "," ++ (to :string h) ++ ");"
+                                    js: js ++ "};img.src=" ++ (draw_js_token src) ++ ";"
+                                    i: i + 4
+                                    continue
+                                ]
+                            ]
+                            js: js ++ "ctx.drawImage(img," ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ ");"
+                            js: js ++ "};img.src=" ++ (draw_js_token src) ++ ";"
+                            i: i + 3
+                            continue
+                        ]
+                    ]
+                ]
+                "linear-gradient" -> [
+                    if less? (i + 3) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        p2: vg_point (get drawBlock (i + 2))
+                        stops: get drawBlock (i + 3)
+                        if all? @[notEqual? p1 null notEqual? p2 null] [
+                            gradCount: gradCount + 1
+                            gname: "g" ++ to :string gradCount
+                            js: js ++ "var " ++ gname ++ "=ctx.createLinearGradient(" ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ "," ++ (to :string p2\x) ++ "," ++ (to :string p2\y) ++ ");"
+                            js: js ++ draw_gradient_stops stops gname
+                            js: js ++ "ctx.fillStyle=" ++ gname ++ ";"
+                            i: i + 4
+                            continue
+                        ]
+                    ]
+                ]
+                "radial-gradient" -> [
+                    if less? (i + 4) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        r1: get drawBlock (i + 2)
+                        p2: vg_point (get drawBlock (i + 3))
+                        r2: get drawBlock (i + 4)
+                        stops: null
+                        if less? (i + 5) blen [
+                            stops: get drawBlock (i + 5)
+                        ]
+                        if all? @[notEqual? p1 null notEqual? p2 null notEqual? stops null] [
+                            gradCount: gradCount + 1
+                            gname: "g" ++ to :string gradCount
+                            js: js ++ "var " ++ gname ++ "=ctx.createRadialGradient(" ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ "," ++ (to :string r1) ++ "," ++ (to :string p2\x) ++ "," ++ (to :string p2\y) ++ "," ++ (to :string r2) ++ ");"
+                            js: js ++ draw_gradient_stops stops gname
+                            js: js ++ "ctx.fillStyle=" ++ gname ++ ";"
+                            i: i + 6
+                            continue
+                        ]
+                    ]
+                ]
+                "grad-pen" -> [
+                    if less? (i + 3) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        p2: vg_point (get drawBlock (i + 2))
+                        stops: get drawBlock (i + 3)
+                        if all? @[notEqual? p1 null notEqual? p2 null] [
+                            gradCount: gradCount + 1
+                            gname: "g" ++ to :string gradCount
+                            js: js ++ "var " ++ gname ++ "=ctx.createLinearGradient(" ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ "," ++ (to :string p2\x) ++ "," ++ (to :string p2\y) ++ ");"
+                            js: js ++ draw_gradient_stops stops gname
+                            js: js ++ "ctx.strokeStyle=" ++ gname ++ ";"
+                            i: i + 4
+                            continue
+                        ]
+                    ]
+                ]
+                "flood" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        col: get drawBlock (i + 2)
+                        if notEqual? p1 null [
+                            js: js ++ "ctx.save();ctx.fillStyle=" ++ (vg_color_value col) ++ ";ctx.fillRect(0,0,c.width,c.height);ctx.restore();"
+                            i: i + 3
+                            continue
+                        ]
+                    ]
+                ]
+                any -> [
+                ]
+            ]
+        ]
+        i: i + 1
+    ]
+    js
+]
+
+draw: function [block] [
+    block: vg_normalize_block block
+    draw_to_canvas "canvas" block
+]
+
+draw_script: function [canvasId drawBlock] [
+    js: draw_to_canvas canvasId drawBlock
+    if equal? js "" [
+        return ""
+    ]
+    "<script>document.addEventListener('DOMContentLoaded',()=>{" ++ js ++ "});</script>"
 ]

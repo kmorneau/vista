@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/layout/scope-nesting.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/core/layout/scope-nesting.md</h1>
+    <div class="markdown-body">
+    
+# Scope & Nesting
+
+Understand how to properly nest and scope layouts for complex UI structures.
+
+## Nesting Basics
+`view .html [
+panel [
+across [
+text "Left"
+below [
+text "Top"
+text "Bottom"
+]
+text "Right"
+]
+]
+]`
+
+## Scope
+`view .html [
+scope [
+across [
+text "Scoped 1"
+text "Scoped 2"
+]
+]
+]`
+
+## Nesting Best Practices
+
+- Keep nesting depth reasonable (3-4 levels max)
+
+- Use scope to isolate layout contexts
+
+- Group related components together
+
+- Consider using named faces for complex hierarchies
+
+## See Also
+
+- [Across & Below](/wiki/core/layout/across-below/) - Basic layout
+
+- [Containers](/wiki/core/components/containers/) - Container components
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

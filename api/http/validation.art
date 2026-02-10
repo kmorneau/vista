@@ -1,0 +1,103 @@
+; Lightweight validation helpers
+
+ensure_text: function [value fieldName] [
+    if any? @[equal? value null equal? value ""] [
+        return #[
+            ok: false
+            field: fieldName
+            message: fieldName ++ " is required"
+        ]
+    ]
+    #[
+        ok: true
+        field: fieldName
+        value: to :string value
+    ]
+]
+
+ensure_email: function [value fieldName] [
+    check: ensure_text value fieldName
+    if not? check\ok [
+        return check
+    ]
+    textVal: lower check\value
+    if not? all? @[contains? textVal "@" contains? textVal "."] [
+        return #[
+            ok: false
+            field: fieldName
+            message: fieldName ++ " must be a valid email address"
+        ]
+    ]
+    #[
+        ok: true
+        field: fieldName
+        value: textVal
+    ]
+]
+
+validate_user_payload: function [name email] [
+    nameCheck: ensure_text name "name"
+    emailCheck: ensure_email email "email"
+
+    errors: []
+    if not? nameCheck\ok [
+        errors: errors ++ @[nameCheck]
+    ]
+    if not? emailCheck\ok [
+        errors: errors ++ @[emailCheck]
+    ]
+
+    if greater? (size errors) 0 [
+        return #[
+            ok: false
+            errors: errors
+        ]
+    ]
+
+    #[
+        ok: true
+        data: #[
+            name: nameCheck\value
+            email: emailCheck\value
+        ]
+    ]
+]
+
+validate_ai_chat_payload: function [provider model prompt temperature] [
+    pCheck: ensure_text provider "provider"
+    mCheck: ensure_text model "model"
+    qCheck: ensure_text prompt "prompt"
+
+    errors: []
+    if not? pCheck\ok [ errors: errors ++ @[pCheck] ]
+    if not? mCheck\ok [ errors: errors ++ @[mCheck] ]
+    if not? qCheck\ok [ errors: errors ++ @[qCheck] ]
+
+    tempNum: to :floating temperature
+    if any? @[less? tempNum 0.0 greater? tempNum 2.0] [
+        errors: errors ++ @[
+            #[
+                ok: false
+                field: "temperature"
+                message: "temperature must be between 0.0 and 2.0"
+            ]
+        ]
+    ]
+
+    if greater? (size errors) 0 [
+        return #[
+            ok: false
+            errors: errors
+        ]
+    ]
+
+    #[
+        ok: true
+        data: #[
+            provider: lower pCheck\value
+            model: mCheck\value
+            prompt: qCheck\value
+            temperature: tempNum
+        ]
+    ]
+]

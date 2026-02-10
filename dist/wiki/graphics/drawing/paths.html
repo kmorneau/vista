@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/drawing/paths.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/graphics/drawing/paths.md</h1>
+    <div class="markdown-body">
+    
+# Paths
+
+Reference for Vista Graphics path operations.
+
+## Path Commands
+
+- **move**: Move to position without drawing
+
+- **line**: Draw line to position
+
+- **curve**: Draw quadratic curve
+
+- **arc**: Draw arc
+
+- **close**: Close path
+
+## Basic Path
+`draw canvas [
+path [
+move 100 100
+line 200 100
+line 150 200
+close
+]
+]`
+
+## Curved Path
+`draw canvas [
+path [
+move 100 200
+curve 100 100 200 100 200 200
+]
+]`
+
+## Path with Stroke
+`draw canvas [
+pen red
+path [
+move 100 100
+line 200 100
+line 150 200
+close
+]
+]`
+
+## See Also
+
+- [Polygons](/wiki/graphics/drawing/polygons/) - Polygon drawing
+
+- [Pen & Fill](/wiki/graphics/drawing/pen-fill/) - Styling
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/images/image-drawing.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/graphics/images/image-drawing.md</h1>
+    <div class="markdown-body">
+    
+# Image Drawing
+
+Reference for Vista Graphics image drawing commands.
+
+## Basic Image Drawing
+`draw canvas [
+image "photo.jpg" 100 100
+]`
+
+## Image with Size
+`draw canvas [
+image "photo.jpg" 100 100 200 150
+]`
+
+## Image Commands
+
+- **image**: Draw image at position
+
+- **image-size**: Get image dimensions
+
+- **crop**: Draw portion of image
+
+## Cropped Image
+`draw canvas [
+crop "photo.jpg" 0 0 100 100 200 200
+]`
+
+## Supported Formats
+
+- PNG (recommended for graphics)
+
+- JPEG (for photographs)
+
+- GIF (animated images supported)
+
+- SVG (vector images)
+
+## See Also
+
+- [Image Scaling](/wiki/graphics/images/image-scaling/) - Scaling images
+
+- [Sprite Sheets](/wiki/graphics/images/sprite-sheets/) - Sprite animation
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

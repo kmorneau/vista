@@ -1,0 +1,43 @@
+category,feature,official_source,implemented,status,repo_reference,notes
+shape,line,https://www.rebol.com/docs/draw.html,yes,yes,src/vista/graphics/drawing.art,Supported
+shape,box,https://www.rebol.com/docs/draw.html,yes,yes,src/vista/graphics/drawing.art,Supported
+shape,circle,https://www.rebol.com/docs/draw.html,yes,yes,src/vista/graphics/drawing.art,Supported
+shape,ellipse,https://www.rebol.com/r3/docs/view/draw-curves.html,yes,yes,src/vista/graphics/drawing.art,Supported
+shape,polygon,https://www.rebol.com/docs/draw.html,yes,yes,src/vista/graphics/drawing.art,Supported
+shape,arc,https://www.rebol.com/r3/docs/view/draw-curves.html,yes,yes,src/vista/graphics/drawing.art,Supported
+shape,curve_quadratic_bezier,https://www.rebol.com/r3/docs/view/draw-curves.html,yes,yes,src/vista/graphics/drawing.art,Supported
+shape,text,https://www.rebol.com/docs/draw.html,yes,yes,src/vista/graphics/drawing.art,Supported
+shape,image,https://www.rebol.com/docs/draw.html,yes,yes,src/vista/graphics/drawing.art,Supported
+shape,triangle,https://www.rebol.com/r3/docs/view/draw-lines.html,yes,yes,src/vista/graphics/drawing.art,Supported
+shape,spline,https://www.rebol.com/r3/docs/view/draw-curves.html,yes,yes,src/vista/graphics/drawing.art,Supported via quadratic midpoint approximation
+shape,shape_sub_dialect,https://www.rebol.com/docs/draw-ref.html,yes,partial,src/vista/graphics/drawing.art,Supports simple point-block and Path2D-string forms
+shape,arrow,https://www.rebol.com/r3/docs/view/draw-lines.html,yes,yes,src/vista/graphics/drawing.art,Supported
+fill,flood,https://www.rebol.com/docs/draw.html,yes,yes,src/vista/graphics/drawing.art,Implemented as full-canvas fill style operation
+state,pen,https://www.rebol.com/docs/draw.html,yes,yes,src/vista/graphics/drawing.art,Supported
+state,fill_pen,https://www.rebol.com/docs/draw.html,yes,yes,src/vista/graphics/drawing.art,Supported
+state,line_width,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+state,line_cap,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+state,line_join,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+state,line_pattern,https://www.rebol.com/docs/draw.html,yes,yes,src/vista/graphics/drawing.art,Supported
+state,font,https://www.rebol.com/docs/draw.html,yes,yes,src/vista/graphics/drawing.art,Supported
+state,text_align,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+state,text_baseline,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+state,smooth,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Mapped to imageSmoothingEnabled
+setup,anti_alias,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Mapped to imageSmoothingEnabled
+setup,clip,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,partial,src/vista/graphics/drawing.art,Current implementation clips rectangular region from two points
+setup,fill_rule,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported through internal fill rule state
+setup,gamma,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,partial,src/vista/graphics/drawing.art,Accepted as no-op due Canvas API limitations
+setup,grad_pen,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported as linear gradient stroke style
+setup,matrix,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported (setTransform)
+setup,invert_matrix,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported using getTransform().inverse()
+setup,reset_matrix,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+setup,transform_matrix,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported (transform)
+transform,push,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+transform,pop,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+transform,translate,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+transform,rotate,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+transform,scale,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+transform,skew,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+transform,coord_system,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,partial,src/vista/graphics/drawing.art,Recognized as placeholder
+gradient,linear_gradient,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
+gradient,radial_gradient,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported

@@ -3,6 +3,8 @@
 
 import "src/vista/modules/01-faces.art"!
 import "src/vista/modules/02-runtime-helpers.art"!
+; Ensure canonical graphics implementation overrides legacy helpers.
+import "src/vista/graphics/vista-graphics.art"!
 import "src/vista/modules/03-styles-aliases.art"!
 import "src/vista/modules/04-layout-core.art"!
 import "src/vista/modules/05-view-entry.art"!

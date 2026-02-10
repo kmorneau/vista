@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/animation/animation-basics.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/graphics/animation/animation-basics.md</h1>
+    <div class="markdown-body">
+    
+# Animation Basics
+
+Learn the fundamentals of creating animations in Vista Graphics.
+
+## Animation Loop
+`draw canvas [
+on-frame [
+frame: frame + 1
+drawScene
+]
+]`
+
+## Animation Principles
+
+- **Frame Rate**: Control animation smoothness
+
+- **Timing**: Use delta time for consistent speed
+
+- **Easing**: Apply easing functions for natural motion
+
+## Simple Animation
+`draw canvas [
+animate [
+rotate: angle
+drawCircle
+]
+]`
+
+## Best Practices
+
+- Use requestAnimationFrame for smooth animations
+
+- Calculate positions based on time, not frame count
+
+- Optimize redraw operations
+
+## See Also
+
+- [Frame Animation](/wiki/graphics/animation/frame-animation/) - Frame-based animation
+
+- [Transition Effects](/wiki/graphics/animation/transition-effects/) - Transitions
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

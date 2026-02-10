@@ -1,0 +1,67 @@
+import "api/routes/users.art"!
+import "api/routes/ai_chat.art"!
+
+api_port: 18969
+
+if key? env "API_PORT" [
+    api_port: to :integer env\API_PORT
+]
+
+serve.verbose .port:api_port [
+    GET "/" [
+        write.json #[
+            ok: true
+            service: "vista-api"
+            version: "v1"
+            routes: [
+                "GET /api/health"
+                "GET /api/users"
+                "GET /api/users/:id"
+                "POST /api/users/:name/:email"
+                "PUT /api/users/:id/:name/:email"
+                "DELETE /api/users/:id"
+                "GET /api/ai/providers"
+                "POST /api/ai/chat/:provider/:model/:temperature/:prompt"
+            ]
+            note: "POST/PUT use path params in this starter scaffold; switch to JSON body parsing in production."
+        ] ø
+    ]
+
+    GET "/api/health" [
+        write.json #[
+            ok: true
+            data: #[
+                status: "up"
+                service: "vista-api"
+            ]
+        ] ø
+    ]
+
+    GET "/api/users" [
+        users_index_handler
+    ]
+
+    GET "/api/users/(?<id>.+)" $[id][
+        users_show_handler id
+    ]
+
+    POST "/api/users/(?<name>[^/]+)/(?<email>.+)" $[name email][
+        users_create_handler name email
+    ]
+
+    PUT "/api/users/(?<id>[^/]+)/(?<name>[^/]+)/(?<email>.+)" $[id name email][
+        users_update_handler id name email
+    ]
+
+    DELETE "/api/users/(?<id>.+)" $[id][
+        users_delete_handler id
+    ]
+
+    GET "/api/ai/providers" [
+        ai_providers_handler
+    ]
+
+    POST "/api/ai/chat/(?<provider>[^/]+)/(?<model>[^/]+)/(?<temperature>[0-9.]+)/(?<prompt>.+)" $[provider model temperature prompt][
+        ai_chat_handler provider model temperature prompt
+    ]
+]

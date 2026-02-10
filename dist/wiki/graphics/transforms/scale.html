@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/transforms/scale.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/graphics/transforms/scale.md</h1>
+    <div class="markdown-body">
+    
+# Scale
+
+Scale subsequent drawing operations.
+
+## Basic Scaling
+`draw canvas [
+scale 2 2
+box 0 0 50 50
+]`
+
+## Parameters
+
+- **x-scale**: Horizontal scale factor
+
+- **y-scale**: Vertical scale factor
+
+## Uniform Scaling
+`draw canvas [
+scale 1.5
+circle 100 100 50
+]`
+
+## Negative Scale (Flip)
+`draw canvas [
+scale -1 1
+text "Flipped" 100 100
+]`
+
+## See Also
+
+- [Transforms](/wiki/graphics/transforms/) - Transform overview
+
+- [Rotate](/wiki/graphics/transforms/rotate/) - Rotation transforms
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

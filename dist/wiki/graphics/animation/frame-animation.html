@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/animation/frame-animation.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/graphics/animation/frame-animation.md</h1>
+    <div class="markdown-body">
+    
+# Frame Animation
+
+Vista Graphics supports frame-based animation for sprites and sequences.
+
+## Frame Counter
+`draw canvas [
+frame: frame + 1
+sprite "animation.png" (frame % 4 * 32) 0 32 32 100 100
+]`
+
+## Animation Speed
+`draw canvas [
+frame: frame + 1
+sprite "walk.png" ((frame / 5) % 4 * 32) 0 32 32 100 100
+]`
+
+## Frame Control
+
+- **frame**: Current frame counter
+
+- **fps**: Frames per second
+
+- **frame-time**: Time since last frame
+
+## See Also
+
+- [Animation Basics](/wiki/graphics/animation/animation-basics/) - Fundamentals
+
+- [Sprite Sheets](/wiki/graphics/images/sprite-sheets/) - Sprite animation
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

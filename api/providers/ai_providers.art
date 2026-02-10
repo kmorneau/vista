@@ -1,0 +1,308 @@
+; Generic AI provider adapters (OpenAI, Gemini, Kilo, Echo)
+
+url_decode_basic: function [value] [
+    out: to :string value
+    out: replace out "+" " "
+    out: replace out "%20" " "
+    out: replace out "%2F" "/"
+    out: replace out "%3A" ":"
+    out: replace out "%3F" "?"
+    out: replace out "%26" "&"
+    out: replace out "%3D" "="
+    out
+]
+
+provider_catalog: function [] [
+    #[
+        openai: #[requiresKey: true modelHint: "gpt-4o-mini"]
+        gemini: #[requiresKey: true modelHint: "gemini-1.5-flash"]
+        kilo: #[requiresKey: true modelHint: "kilo-chat-1"]
+        echo: #[requiresKey: false modelHint: "echo-v1"]
+    ]
+]
+
+provider_names: function [] [
+    ["openai" "gemini" "kilo" "echo"]
+]
+
+provider_supported?: function [provider] [
+    in? (lower (to :string provider)) provider_names
+]
+
+provider_missing_key: function [provider] [
+    #[
+        ok: false
+        code: "missing_api_key"
+        message: "Missing API key for provider"
+        details: #[provider: provider]
+    ]
+]
+
+extract_openai_text: function [resp] [
+    if notEqual? (type resp) :dictionary [
+        return ""
+    ]
+    if not? key? resp "choices" [
+        return ""
+    ]
+    choices: resp\choices
+    if notEqual? (type choices) :block [
+        return ""
+    ]
+    if equal? (size choices) 0 [
+        return ""
+    ]
+    ch0: get choices 0
+    if notEqual? (type ch0) :dictionary [
+        return ""
+    ]
+    if not? key? ch0 "message" [
+        return ""
+    ]
+    msg: ch0\message
+    if notEqual? (type msg) :dictionary [
+        return ""
+    ]
+    if not? key? msg "content" [
+        return ""
+    ]
+    to :string msg\content
+]
+
+extract_gemini_text: function [resp] [
+    if notEqual? (type resp) :dictionary [
+        return ""
+    ]
+    if not? key? resp "candidates" [
+        return ""
+    ]
+    cand: resp\candidates
+    if notEqual? (type cand) :block [
+        return ""
+    ]
+    if equal? (size cand) 0 [
+        return ""
+    ]
+    c0: get cand 0
+    if notEqual? (type c0) :dictionary [
+        return ""
+    ]
+    if not? key? c0 "content" [
+        return ""
+    ]
+    content: c0\content
+    if notEqual? (type content) :dictionary [
+        return ""
+    ]
+    if not? key? content "parts" [
+        return ""
+    ]
+    parts: content\parts
+    if notEqual? (type parts) :block [
+        return ""
+    ]
+    if equal? (size parts) 0 [
+        return ""
+    ]
+    p0: get parts 0
+    if notEqual? (type p0) :dictionary [
+        return ""
+    ]
+    if not? key? p0 "text" [
+        return ""
+    ]
+    to :string p0\text
+]
+
+extract_kilo_text: function [resp] [
+    if notEqual? (type resp) :dictionary [
+        return ""
+    ]
+    if key? resp "text" [
+        return to :string resp\text
+    ]
+    if key? resp "output" [
+        return to :string resp\output
+    ]
+    if key? resp "message" [
+        return to :string resp\message
+    ]
+    extract_openai_text resp
+]
+
+call_openai: function [model prompt temperature] [
+    apiKey: ""
+    if key? env "OPENAI_API_KEY" [
+        apiKey: to :string env\OPENAI_API_KEY
+    ]
+    if equal? apiKey "" [
+        return provider_missing_key "openai"
+    ]
+    url: "https://api.openai.com/v1/chat/completions"
+    if key? env "AI_OPENAI_URL" [
+        url: to :string env\AI_OPENAI_URL
+    ]
+    payload: #[
+        model: model
+        messages: [
+            #[role: "user" content: prompt]
+        ]
+        temperature: temperature
+    ]
+    resp: request.post.json url .headers:#[
+        authorization: "Bearer " ++ apiKey
+        content-type: "application/json"
+    ] payload
+    if notEqual? (type resp) :dictionary [
+        return #[
+            ok: false
+            code: "provider_error"
+            message: "OpenAI request failed"
+            details: #[provider: "openai"]
+        ]
+    ]
+    text: extract_openai_text resp
+    #[
+        ok: true
+        data: #[
+            provider: "openai"
+            model: model
+            text: text
+            raw: resp
+        ]
+    ]
+]
+
+call_gemini: function [model prompt temperature] [
+    apiKey: ""
+    if key? env "GEMINI_API_KEY" [
+        apiKey: to :string env\GEMINI_API_KEY
+    ]
+    if equal? apiKey "" [
+        return provider_missing_key "gemini"
+    ]
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta/models/"
+    if key? env "AI_GEMINI_URL" [
+        baseUrl: to :string env\AI_GEMINI_URL
+    ]
+    url: baseUrl ++ model ++ ":generateContent?key=" ++ apiKey
+    payload: #[
+        contents: [
+            #[
+                parts: [#[text: prompt]]
+            ]
+        ]
+        generationConfig: #[
+            temperature: temperature
+        ]
+    ]
+    resp: request.post.json url .headers:#[
+        content-type: "application/json"
+    ] payload
+    if notEqual? (type resp) :dictionary [
+        return #[
+            ok: false
+            code: "provider_error"
+            message: "Gemini request failed"
+            details: #[provider: "gemini"]
+        ]
+    ]
+    text: extract_gemini_text resp
+    #[
+        ok: true
+        data: #[
+            provider: "gemini"
+            model: model
+            text: text
+            raw: resp
+        ]
+    ]
+]
+
+call_kilo: function [model prompt temperature] [
+    apiKey: ""
+    if key? env "KILO_API_KEY" [
+        apiKey: to :string env\KILO_API_KEY
+    ]
+    if equal? apiKey "" [
+        return provider_missing_key "kilo"
+    ]
+    url: ""
+    if key? env "AI_KILO_URL" [
+        url: to :string env\AI_KILO_URL
+    ]
+    if equal? url "" [
+        return #[
+            ok: false
+            code: "missing_provider_url"
+            message: "Set AI_KILO_URL for kilo provider"
+            details: #[provider: "kilo"]
+        ]
+    ]
+    payload: #[
+        model: model
+        messages: [
+            #[role: "user" content: prompt]
+        ]
+        temperature: temperature
+    ]
+    resp: request.post.json url .headers:#[
+        authorization: "Bearer " ++ apiKey
+        content-type: "application/json"
+    ] payload
+    if notEqual? (type resp) :dictionary [
+        return #[
+            ok: false
+            code: "provider_error"
+            message: "Kilo request failed"
+            details: #[provider: "kilo"]
+        ]
+    ]
+    text: extract_kilo_text resp
+    #[
+        ok: true
+        data: #[
+            provider: "kilo"
+            model: model
+            text: text
+            raw: resp
+        ]
+    ]
+]
+
+call_echo: function [model prompt temperature] [
+    #[
+        ok: true
+        data: #[
+            provider: "echo"
+            model: model
+            text: "echo: " ++ prompt
+            raw: #[
+                temperature: temperature
+                provider: "echo"
+            ]
+        ]
+    ]
+]
+
+call_ai_provider: function [provider model prompt temperature] [
+    p: lower (to :string provider)
+    if equal? p "openai" [
+        return call_openai model prompt temperature
+    ]
+    if equal? p "gemini" [
+        return call_gemini model prompt temperature
+    ]
+    if equal? p "kilo" [
+        return call_kilo model prompt temperature
+    ]
+    if equal? p "echo" [
+        return call_echo model prompt temperature
+    ]
+    #[
+        ok: false
+        code: "unsupported_provider"
+        message: "Unsupported provider"
+        details: #[provider: provider]
+    ]
+]

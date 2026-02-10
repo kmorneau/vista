@@ -1,0 +1,43 @@
+import "api/services/users_service.art"!
+import "api/http/responses.art"!
+
+users_index_handler: function [] [
+    result: service_list_users
+    ok result\data
+]
+
+users_show_handler: function [id] [
+    result: service_get_user id
+    if result\ok [
+        return ok result\data
+    ]
+    not_found result\message result\details
+]
+
+users_create_handler: function [name email] [
+    result: service_create_user name email
+    if result\ok [
+        return created result\data
+    ]
+    bad_request result\message result\details
+]
+
+users_update_handler: function [id name email] [
+    result: service_update_user id name email
+    if result\ok [
+        return ok result\data
+    ]
+    switch equal? result\code "bad_request" [
+        bad_request result\message result\details
+    ][
+        not_found result\message result\details
+    ]
+]
+
+users_delete_handler: function [id] [
+    result: service_delete_user id
+    if result\ok [
+        return no_content
+    ]
+    not_found result\message result\details
+]

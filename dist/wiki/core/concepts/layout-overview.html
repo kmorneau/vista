@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/concepts/layout-overview.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/core/concepts/layout-overview.md</h1>
+    <div class="markdown-body">
+    
+# Layout System
+
+Vista's layout system provides a declarative way to arrange UI elements using a simple, intuitive syntax.
+
+## Layout Philosophy
+Vista uses a flow-based layout system where elements are positioned sequentially. Key layout keywords include:
+
+- `across`: Arrange items in a horizontal row
+
+- `below`: Arrange items in a vertical column
+
+- `return`: Break to next line in current layout
+
+- `end`: Close current layout context
+
+## Across Layout
+`
+view .html [
+across [
+button "Yes" []
+button "No" []
+button "Maybe" []
+]
+]
+`
+
+## Below Layout
+`
+view .html [
+below [
+text "First item"
+text "Second item"
+text "Third item"
+]
+]
+`
+
+## Nested Layouts
+Layouts can be nested for complex arrangements:
+
+`
+view .html [
+panel "Form" [
+across [
+text "Name:"
+field "John Doe"
+]
+return
+across [
+text "Email:"
+field "john@example.com"
+]
+]
+]
+`
+
+## Layout Keywords
+
+- `pad`: Add padding around elements
+
+- `space`: Set gap between elements
+
+- `align`: Align items horizontally
+
+- `valign`: Align items vertically
+
+- `origin`: Set origin position
+
+- `offset`: Offset element position
+
+- `indent`: Add indentation
+
+## Grid Layout
+The `grid` face creates a grid layout:
+
+`
+view .html [
+grid 2 [
+text "A1" text "A2"
+text "B1" text "B2"
+]
+]
+`
+
+## Row and Column Faces
+Use row and col faces for explicit container layouts:
+
+`
+view .html [
+row [
+button "Left"
+button "Right"
+]
+col [
+text "Top"
+text "Bottom"
+]
+]
+`
+
+## See Also
+
+- [Across and Below](/wiki/core/layout/across-below/) - Basic layout commands
+
+- [Grid System](/wiki/core/layout/grid-system/) - Grid layout
+
+- [Spacing and Padding](/wiki/core/layout/spacing-pad/) - Space and pad keywords
+
+</ul
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

@@ -86,54 +86,41 @@ getValue: function [dict, key, default][
 ; Helper: Parse markdown file
 parseMarkdown: function [filePath][
     lines: read.lines filePath
-    
-    ; Only treat --- as frontmatter if it starts the file
-    hasFrontmatter: false
-    if (size lines) > 0 [
-        if (strip lines\0) = "---" [
-            hasFrontmatter: true
-        ]
-    ]
-    
-    inFrontmatter: false
+
     frontmatter: #[]
     bodyLines: []
-    
+
+    lineCount: size lines
+    hasFrontmatter: all? @[greater? lineCount 0 equal? (strip lines\0) "---"]
+
     if hasFrontmatter [
-        inFrontmatter: true
-    ]
-    
-    loop lines 'line [
-        trimmed: strip line
-        prevInFrontmatter: inFrontmatter
-        
-        if trimmed = "---" [
-            if not? prevInFrontmatter [
-                inFrontmatter: true
+        i: 1
+        while [less? i lineCount] [
+            line: lines\[i]
+            trimmed: strip line
+            if equal? trimmed "---" [
+                i: i + 1
+                break
             ]
-            if prevInFrontmatter [
-                inFrontmatter: false
+            colonPos: index trimmed ":"
+            if not? null? colonPos [
+                key: strip (slice trimmed 0 colonPos)
+                value: strip (slice trimmed (add colonPos 1) (size trimmed))
+                frontmatter\[key]: value
             ]
+            i: i + 1
         ]
-        
-        if prevInFrontmatter [
-            if trimmed <> "---" [
-                colonPos: index trimmed ":"
-                if not? null? colonPos [
-                    key: strip (slice trimmed 0 colonPos)
-                    value: strip (slice trimmed (add colonPos 1) (size trimmed))
-                    frontmatter\[key]: value
-                ]
-            ]
-        ]
-        
-        if not? inFrontmatter [
-            if trimmed <> "---" [
-                'bodyLines ++ line
-            ]
+
+        while [less? i lineCount] [
+            bodyLines: bodyLines ++ @[lines\[i]]
+            i: i + 1
         ]
     ]
-    
+
+    if not? hasFrontmatter [
+        bodyLines: lines
+    ]
+
     body: join.with:"\n" bodyLines
     return #[
         frontmatter: frontmatter
@@ -155,8 +142,8 @@ execute "mkdir -p dist/guide"
 
 guideContent: parseMarkdown "ARTURO_GUIDE.md"
 guideTitle: getTitle guideContent\frontmatter "Arturo Guide"
-print "Title:" guideTitle
-print "Body length:" (size guideContent\body)
+print ["Title:" guideTitle]
+print ["Body length:" (to :string (size guideContent\body))]
 
 guideBody: guideContent\body
 
@@ -172,8 +159,12 @@ processWikiFiles: function [dir, baseOutputDir][
     rawFiles: list dir
     
     ; Ensure files is a block
-    files: if block? rawFiles [rawFiles] [
-        if string? rawFiles [[rawFiles]] [[]]
+    files: []
+    if block? rawFiles [
+        files: rawFiles
+    ]
+    if all? @[equal? (size files) 0 string? rawFiles] [
+        files: [rawFiles]
     ]
     
     loop files 'item [

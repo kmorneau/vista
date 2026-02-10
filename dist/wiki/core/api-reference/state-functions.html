@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/api-reference/state-functions.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/core/api-reference/state-functions.md</h1>
+    <div class="markdown-body">
+    
+# State Functions
+
+Complete reference for Vista's state management functions.
+
+## State Management
+
+- **set-state**: Set component state value
+
+- **get-state**: Get component state value
+
+- **observe**: Observe state changes
+
+- **unobserve**: Stop observing state changes
+
+## Data Binding
+
+- **bind**: Bind data to component
+
+- **unbind**: Unbind data from component
+
+- **sync**: Synchronize bound data
+
+- **auto-sync**: Enable automatic synchronization
+
+## State Helpers
+
+- **computed**: Create computed value
+
+- **derived**: Create derived state
+
+- **watch**: Watch for state changes
+
+## Example
+`name: "World"
+view .html [
+text "Hello, "
+text :name
+field :name
+]`
+
+## See Also
+
+- [Data Binding](/wiki/core/data-binding/) - Data binding documentation
+
+- [Face Functions](/wiki/core/api-reference/face-functions/) - Face manipulation
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

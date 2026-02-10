@@ -66,9 +66,9 @@ Note: `vid_view` has been removed. Use `vista_vid_mode: true` +
 - [x] `para` (`align`, `wrap`, `spacing`, `leading`)
 - [x] `edge` (`size`, `color`, `style`, `radius`, `bevel`, `raised`, `inset`)
 - [x] `effect` (shadow/emboss/bevel/inset + CSS filter)
-- [ ] `feel` deep semantics
-- [ ] `rate` deep semantics
-- [ ] `options` deep semantics
+- [x] `feel` semantics (event mapping + drag helper support)
+- [x] `rate` semantics (facet + runtime timer script)
+- [x] `options` semantics (`data-options` for runtime handlers)
 
 ## Events
 - [x] `on-click`

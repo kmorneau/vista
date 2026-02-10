@@ -1,0 +1,16 @@
+import "grafito"!
+
+api_db_name: "vista_api"
+api_db_file: api_db_name ++ ".graf"
+
+with_api_db: function [blk] [
+    switch not? exists? api_db_file [
+        initBlk: [
+            updateMeta 'colors Grafito\nodeColors
+            updateMeta 'palette Grafito\Palette
+        ] ++ blk
+        graph .create api_db_name initBlk
+    ][
+        graph api_db_name blk
+    ]
+]

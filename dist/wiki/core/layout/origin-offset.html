@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/layout/origin-offset.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/core/layout/origin-offset.md</h1>
+    <div class="markdown-body">
+    
+# Origin & Offset
+
+Control the precise positioning of components using origin and offset attributes.
+
+## Origin
+`view .html [
+box red 100x100 [
+origin: 10x10
+]
+]`
+
+## Offset
+`view .html [
+box blue 100x100 [
+offset: 50x50
+]
+]`
+
+## Combined Usage
+`view .html [
+panel [
+origin: 20x20
+offset: 10x10
+text "Positioned content"
+]
+]`
+
+## Use Cases
+
+- Precise component positioning
+
+- Creating custom layouts
+
+- Implementing drag-and-drop
+
+- Building overlay systems
+
+## See Also
+
+- [Alignment](/wiki/core/layout/alignment-valign/) - Alignment options
+
+- [Scope & Nesting](/wiki/core/layout/scope-nesting/) - Scoped layouts
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

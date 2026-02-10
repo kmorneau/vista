@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/tutorials/transformations.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/graphics/tutorials/transformations.md</h1>
+    <div class="markdown-body">
+    
+# Transformations
+
+Learn how to apply geometric transformations to your graphics.
+
+## Translation
+`draw canvas [
+translate 50 50
+box 0 0 100 100
+]`
+
+## Rotation
+`draw canvas [
+rotate 45
+box 0 0 100 100
+]`
+
+## Scaling
+`draw canvas [
+scale 2 2
+box 0 0 50 50
+]`
+
+## Combined Transforms
+`draw canvas [
+translate 100 100
+rotate 30
+scale 1.5 1.5
+circle 0 0 50
+]`
+
+## Transform Order
+Transformations are applied in reverse order of declaration.
+
+## See Also
+
+- [Transforms](/wiki/graphics/transforms/) - Transform reference
+
+- [Coordinate Systems](/wiki/graphics/concepts/coordinate-systems/) - Coordinates
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

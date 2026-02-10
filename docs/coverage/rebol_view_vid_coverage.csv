@@ -1,0 +1,56 @@
+category,feature,official_source,implemented,status,repo_reference,notes
+layout_keyword,across,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword and layout behavior
+layout_keyword,below,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword and layout behavior
+layout_keyword,return,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword and layout behavior
+layout_keyword,end,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword
+layout_keyword,pad,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword
+layout_keyword,space,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword
+layout_keyword,align,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword
+layout_keyword,valign,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword
+layout_keyword,size,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword
+layout_keyword,origin,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword
+layout_keyword,offset,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword
+layout_keyword,at,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758,Keyword recognized
+layout_keyword,indent,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword
+layout_keyword,guide,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Supported keyword
+layout_keyword,do,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/04-layout-core.art,Executed during layout build
+layout_keyword,style,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/03-styles-aliases.art,Supported
+layout_keyword,styles,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/03-styles-aliases.art,Supported
+layout_keyword,stylize,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:758; src/vista/modules/03-styles-aliases.art,Supported
+layout_keyword,tabs_keyword,https://www.rebol.com/docs/view-guide.html,yes,partial,src/vista/modules/04-layout-core.art,Implemented as tabs widget behavior not classic tab-stop layout keyword semantics
+layout_keyword,tab_keyword,https://www.rebol.com/docs/view-guide.html,yes,partial,src/vista/modules/04-layout-core.art,Implemented as tab panel item not classic tab-stop keyword
+layout_keyword,backcolor,https://www.rebol.com/docs/view-guide.html,yes,partial,src/vista/modules/03-styles-aliases.art:758,Recognized and mapped but not full native face parity
+widget,text,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,label,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,button,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,field,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,info,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,area_textarea,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported via textarea and area alias
+widget,check_checkbox,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported via checkbox and check alias
+widget,toggle,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,radio,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,slider,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,rotary,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,choice_select_drop_list,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,list,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,text_list,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,image,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/01-faces.art,Supported
+widget,icon,https://www.rebol.com/docs/view-guide.html,yes,partial,src/vista/modules/03-styles-aliases.art,Alias supported no native icon pack parity
+widget,anim,https://www.rebol.com/docs/view-guide.html,yes,partial,src/vista/modules/03-styles-aliases.art,Basic alias support no timeline sprite semantics
+facet,font,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:1012,Family size weight style bold italic color
+facet,para,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:1049,Align wrap spacing leading
+facet,edge,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:1078,Border style radius with raised/bevel/inset mapping
+facet,effect,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art:1128,CSS-based mapping for common effects
+facet,feel,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art; src/vista/modules/05-view-entry.art,Facet-to-event mapping plus runtime apply/remove feel helpers
+facet,rate,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art; src/vista/modules/03-styles-aliases.art; src/vista/modules/05-view-entry.art,Rate facet data attributes plus timer script and set/get/clear helpers
+facet,options,https://www.rebol.com/docs/words/wlayout.html,yes,yes,src/vista/modules/03-styles-aliases.art,Options facet exported to data-options and available to runtime handlers
+event,on_click,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art; src/vista/modules/04-layout-core.art,Supported
+event,on_change,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art; src/vista/modules/04-layout-core.art,Supported
+event,on_input,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art; src/vista/modules/04-layout-core.art,Supported
+event,on_over,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art,Supported (mapped to mouseenter)
+event,on_out,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art,Supported (mapped to mouseleave)
+event,on_down,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art,Supported
+event,on_up,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art,Supported
+event,on_key,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art,Supported
+event,on_focus,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art,Supported
+event,on_blur,https://www.rebol.com/docs/view-guide.html,yes,yes,src/vista/modules/03-styles-aliases.art,Supported

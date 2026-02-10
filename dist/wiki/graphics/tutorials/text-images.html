@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/tutorials/text-images.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/graphics/tutorials/text-images.md</h1>
+    <div class="markdown-body">
+    
+# Text & Images
+
+Learn how to render text and images on canvas.
+
+## Basic Text
+`draw canvas [
+font "Arial" 16
+text "Hello, World!" 100 100
+]`
+
+## Image Drawing
+`draw canvas [
+image "logo.png" 100 100
+image "sprite.png" 200 100 64 64
+]`
+
+## Text with Styling
+`draw canvas [
+font "Arial" 24
+text-align 'center
+text "Centered Text" 200 100
+]`
+
+## Image Scaling
+`draw canvas [
+image "photo.jpg" 100 100 300 200
+]`
+
+## See Also
+
+- [Text & Fonts](/wiki/graphics/text-fonts/) - Text reference
+
+- [Images](/wiki/graphics/images/) - Image reference
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

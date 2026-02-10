@@ -1,40 +1,33 @@
 # Vista UI Framework - Test Coverage Report
 
-## Coverage Summary (After Enhancement)
+## Coverage Summary
 
-| Category | Total Features | Tested | Untested | Coverage |
-|----------|----------------|--------|----------|----------|
-| Face Types | 42 | 39 | 3 | 93% |
-| Layout Keywords | 18 | 18 | 0 | 100% |
-| Event Handlers | 10 | 9 | 1 | 90% |
-| Style Attributes | 8 | 8 | 0 | 100% |
-| Graphics Primitives | 6 | 6 | 0 | 100% |
-| Graphics Attributes | 6 | 4 | 2 | 67% |
-| Graphics Transforms | 6 | 6 | 0 | 100% | ← NEW |
-| Graphics Gradients | 2 | 2 | 0 | 100% |
-| State Management | 6 | 6 | 0 | 100% |
-| VID Mode | 2 | 2 | 0 | 100% |
-| Helpers/Debug | 4 | 4 | 0 | 100% |
+This project uses snapshot tests plus behavior smoke tests.
 
-## Recently Added Tests
+- Snapshot generator input list: `tests/run_tests.art`
+- Snapshot output: `tests/snapshots/snapshots/*.html`
+- Snapshot manifest: `tests/snapshots/manifest.json`
+- Current snapshot suite size: `57` scripts (explicit file list in `tests/run_tests.art`)
+- Rebol/View/VID feature matrix: `docs/coverage/rebol_view_vid_coverage.csv`
+- Rebol Draw feature matrix: `docs/coverage/rebol_draw_coverage.csv`
 
-### Graphics Transforms (NEW - 100% Coverage)
-- `tests/52-draw-transforms.art` - Tests push/pop, translate, rotate, scale, skew
+The two CSVs are the authoritative feature-coverage trackers for parity work.
 
-### Canvas Styles (NEW - 67% Coverage)
-- `tests/53-canvas-styles.art` - Tests line-cap, line-join
+## Key Snapshot Areas
 
-### Mouse Events (NEW - 90% Coverage)
-- `tests/41-mouse-events.art` - Tests on-down, on-up event handlers
-
-### Inspector Functions (NEW - 100% Coverage)
-- `tests/52-face-inspector.art` - Tests face tree functions
+- Layout words and containers (`across`, `below`, `return`, `grid`, `panel`, `split`)
+- Widget coverage (`field`, `radio`, `list`, `tabs`, `table`, `toolbar`, `menubar`, `canvas`)
+- Event mapping (`on-click`, `on-change`, `on-input`, `on-over`, `on-out`, `on-down`, `on-up`)
+- Runtime helpers and registry tooling (`face-tree`, overlay inspector, named face lookup)
+- App header rendering (`tests/47-app-header.art`)
+- Draw/graphics (`tests/49-draw-primitives.art` through `tests/54-draw-arc-curve-flood.art`)
+- VID mode and style/facet mapping (`tests/26-vid-phase1.art`, `tests/28-vid-mode.art`, `tests/39-edge-facets.art`)
 
 ## Test Commands
 
 ```bash
 # Run all snapshot tests
-arturo tests/run_tests.art
+NO_WEBVIEW=1 arturo tests/run_tests.art
 
 # Check for regressions
 arturo tests/check_snapshots.art
@@ -48,4 +41,4 @@ arturo tests/check_snapshots.art
 All tests should pass. If tests fail:
 1. Check that Arturo is installed
 2. Ensure jsdom is installed: `npm install --save-dev jsdom`
-3. Run with NO_WEBVIEW=1 for headless testing
+3. Run snapshot generation with `NO_WEBVIEW=1` for headless testing

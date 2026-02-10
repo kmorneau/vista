@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/components/text-components.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/core/components/text-components.md</h1>
+    <div class="markdown-body">
+    
+# Text Components
+
+Text components display textual content with appropriate semantic HTML elements and styling.
+
+## Text
+Basic inline text wrapped in a `` element:
+
+`
+text "Hello, World!"
+`
+HTML content is automatically escaped for safety.
+
+## Title
+Creates a main heading with `` and `vista-title` class:
+
+`
+title "Application Title"
+`
+With custom attributes:
+
+`
+title "Welcome" .class: "custom-title"
+`
+
+## Subtitle
+Creates a secondary heading with `## ` and `vista-subtitle` class:
+
+`
+subtitle "Section Heading"
+`
+
+Label
+Creates a form label with `` element:
+
+`
+label "Username:"
+`
+Use labels with input fields for proper form accessibility.
+
+## Example
+`
+view .html [
+title "My Application"
+subtitle "User Profile"
+
+panel "Details" [
+label "Name:"
+text "John Doe"
+
+label "Email:"
+text "john@example.com"
+]
+]
+`
+
+## CSS Classes
+
+- `vista-title` - Applied to title components
+
+- `vista-subtitle` - Applied to subtitle components
+
+## See Also
+
+- [Input Fields](/wiki/core/components/input-fields/) - Form inputs
+
+- [Text Rendering](/wiki/graphics/text-fonts/text-rendering/) - Canvas text drawing
+
+</ul
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

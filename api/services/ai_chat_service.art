@@ -1,0 +1,41 @@
+import "api/providers/ai_providers.art"!
+import "api/http/validation.art"!
+
+service_list_ai_providers: function [] [
+    #[
+        ok: true
+        data: provider_catalog
+    ]
+]
+
+service_ai_chat: function [provider model prompt temperature] [
+    valid: validate_ai_chat_payload provider model prompt temperature
+    if not? valid\ok [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "Validation failed"
+            details: valid\errors
+        ]
+    ]
+    clean: valid\data
+
+    if not? provider_supported? clean\provider [
+        return #[
+            ok: false
+            code: "unsupported_provider"
+            message: "Unsupported provider"
+            details: #[
+                provider: clean\provider
+                supported: provider_names
+            ]
+        ]
+    ]
+
+    promptText: url_decode_basic clean\prompt
+    providerResult: call_ai_provider clean\provider clean\model promptText clean\temperature
+    if not? providerResult\ok [
+        return providerResult
+    ]
+    providerResult
+]

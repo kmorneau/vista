@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/colors/gradient-fills.md - Vista</title>
+  <link rel="stylesheet" href="/assets/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="/" class="site-title">Vista</a>
+      <a href="/guide/">Guide</a>
+      <a href="/wiki/">Wiki</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>data/wiki/graphics/colors/gradient-fills.md</h1>
+    <div class="markdown-body">
+    
+# Gradient Fills
+
+Vista Graphics supports linear and radial gradient fills.
+
+## Linear Gradient
+`draw canvas [
+fill linear 0 0 200 0 red orange yellow green
+box 0 0 200 100
+]`
+
+## Radial Gradient
+`draw canvas [
+fill radial 100 100 80 white blue purple
+circle 100 100 80
+]`
+
+## Parameters
+
+- **Linear**: x1 y1 x2 y2 color1 color2 ...
+
+- **Radial**: x y r color1 color2 ...
+
+## Multiple Color Stops
+`draw canvas [
+fill linear 0 0 200 0 red orange yellow green blue purple
+box 0 0 200 100
+]`
+
+## See Also
+
+- [Color Overview](/wiki/graphics/colors/color-overview/) - Color introduction
+
+- [Gradients Tutorial](/wiki/graphics/tutorials/gradients-fills/) - Learning guide
+
+    </div>
+  </main>
+  <script src="/assets/main.js"></script>
+</body>
+</html>
