@@ -1,20 +1,23 @@
 
-[0;31m══╡ [1;31mSyntax Error[0;31m ╞══════════════════════════════════════════════════ <script> ══[0m
+[0;31m══╡ [1;31mType Error[0;31m ╞════════════════════════════════════════════════════ <script> ══[0m
 
-  Unable to parse input code[0m
+  Erroneous type found[0m
 
-  Issue found when trying to parse:
-      Block
+  Cannot call function:
+      [1mif[0m condition action[0;31m ◄[0m
   
-  Missing:
-      closing square bracket (`]`)
+  Wrong argument (at position 2): 
+      [1;32mtrue[0;90m :logical[0m
+  
+  Expected: 
+      :block, :bytecode
 
   [0;90m┃ [1;90mFile: [0;90mvista.art
-  [0;90m┃ [1;90mLine: [0;90m4060
+  [0;90m┃ [1;90mLine: [0;90m100
   [0;90m┃ [0m
-  [0;90m┃ 4058 ║                                          ][0m
-  [0;90m┃ 4059 ║                                  ][0m
-  [0;90m┃ [1;90m4060[0;90m ║[0;31m►[0;90m [1;90m                                "drop_list" -> [[0;90m[0m
-  [0;90m┃ 4061 ║                                          info: parse_args_from block (i + 1)[0m
-  [0;90m┃ 4062 ║                                          i: info\next[0m
+  [0;90m┃   98 ║          if titleHtml notEqual? "" [[0m
+  [0;90m┃   99 ║              html: html ++ "<div class='vista-panel-title'>" ++ titleHtml ++ "</div>"[0m
+  [0;90m┃ [1;90m 100[0;90m ║[0;31m►[0;90m [1;90m        ][0;90m[0m
+  [0;90m┃  101 ║          html: html ++ "<div class='vista-panel-body'>" ++ bodyHtml ++ "</div></div>"[0m
+  [0;90m┃  102 ║          html[0m
 
