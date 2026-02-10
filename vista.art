@@ -650,6 +650,393 @@ js_escape_single: function [s] [
         s
 ]
 
+draw_js_token: function [token] [
+        t: type token
+        if equal? t :integer [
+                return to :string token
+        ]
+        if equal? t :floating [
+                return to :string token
+        ]
+        if equal? t :logical [
+                return to :string token
+        ]
+        if equal? t :null [
+                return "null"
+        ]
+        return {"} ++ js_escape_single (to :string token) ++ {"}
+]
+
+draw_point: function [val] [
+        if equal? (type val) :block [
+                if equal? (size val) 2 [
+                        return #[x: get val 0 y: get val 1]
+                ]
+        ]
+        null
+]
+
+draw_read_number: function [val] [
+        t: type val
+        if equal? t :integer [
+                return val
+        ]
+        if equal? t :floating [
+                return val
+        ]
+        if equal? t :string [
+                return to :integer val
+        ]
+        null
+]
+
+draw_gradient_stops: function [stops varName] [
+        if notEqual? (type stops) :block [
+                return ""
+        ]
+        out: ""
+        slen: size stops
+        si: 0
+        while [less? si slen][
+                stop: get stops si
+                if equal? (type stop) :block [
+                        if equal? (size stop) 2 [
+                                pos: get stop 0
+                                col: get stop 1
+                                out: out ++ varName ++ ".addColorStop(" ++ to :string pos ++ ", " ++ draw_js_token col ++ ");"
+                        ]
+                ]
+                si: si + 1
+        ]
+        out
+]
+
+draw_to_canvas: function [canvasId drawBlock] [
+        if notEqual? (type drawBlock) :block [
+                return ""
+        ]
+        js: "var c=document.getElementById('" ++ js_escape_single canvasId ++ "');if(!c){return;}var ctx=c.getContext('2d');"
+        i: 0
+        blen: size drawBlock
+        gradCount: 0
+        while [less? i blen][
+                tok: get drawBlock i
+                if equal? (type tok) :word [
+                        cmd: to :string tok
+                        switch cmd [
+                                "pen" [
+                                        if less? (i + 1) blen [
+                                                colorVal: get drawBlock (i + 1)
+                                                js: js ++ "ctx.strokeStyle=" ++ draw_js_token colorVal ++ ";"
+                                                i: i + 2
+                                                continue
+                                        ]
+                                ]
+                                "fill-pen" [
+                                        if less? (i + 1) blen [
+                                                colorVal: get drawBlock (i + 1)
+                                                js: js ++ "ctx.fillStyle=" ++ draw_js_token colorVal ++ ";"
+                                                i: i + 2
+                                                continue
+                                        ]
+                                ]
+                                "line-width" [
+                                        if less? (i + 1) blen [
+                                                w: get drawBlock (i + 1)
+                                                js: js ++ "ctx.lineWidth=" ++ to :string w ++ ";"
+                                                i: i + 2
+                                                continue
+                                        ]
+                                ]
+                                "line-cap" [
+                                        if less? (i + 1) blen [
+                                                v: get drawBlock (i + 1)
+                                                js: js ++ "ctx.lineCap=" ++ draw_js_token v ++ ";"
+                                                i: i + 2
+                                                continue
+                                        ]
+                                ]
+                                "line-join" [
+                                        if less? (i + 1) blen [
+                                                v: get drawBlock (i + 1)
+                                                js: js ++ "ctx.lineJoin=" ++ draw_js_token v ++ ";"
+                                                i: i + 2
+                                                continue
+                                        ]
+                                ]
+                                "line-pattern" [
+                                        if less? (i + 1) blen [
+                                                patt: get drawBlock (i + 1)
+                                                if equal? (type patt) :block [
+                                                        dashStr: ""
+                                                        plen: size patt
+                                                        pi: 0
+                                                        while [less? pi plen][
+                                                                if not? equal? dashStr "" [
+                                                                        dashStr: dashStr ++ ","
+                                                                ]
+                                                                dashStr: dashStr ++ to :string (get patt pi)
+                                                                pi: pi + 1
+                                                        ]
+                                                        js: js ++ "ctx.setLineDash([" ++ dashStr ++ "]);"
+                                                        i: i + 2
+                                                        continue
+                                                ]
+                                        ]
+                                ]
+                                "font" [
+                                        if less? (i + 1) blen [
+                                                v: get drawBlock (i + 1)
+                                                js: js ++ "ctx.font=" ++ draw_js_token v ++ ";"
+                                                i: i + 2
+                                                continue
+                                        ]
+                                ]
+                                "text-align" [
+                                        if less? (i + 1) blen [
+                                                v: get drawBlock (i + 1)
+                                                js: js ++ "ctx.textAlign=" ++ draw_js_token v ++ ";"
+                                                i: i + 2
+                                                continue
+                                        ]
+                                ]
+                                "text-baseline" [
+                                        if less? (i + 1) blen [
+                                                v: get drawBlock (i + 1)
+                                                js: js ++ "ctx.textBaseline=" ++ draw_js_token v ++ ";"
+                                                i: i + 2
+                                                continue
+                                        ]
+                                ]
+                                "smooth" [
+                                        if less? (i + 1) blen [
+                                                v: get drawBlock (i + 1)
+                                                js: js ++ "ctx.imageSmoothingEnabled=" ++ to :string v ++ ";"
+                                                i: i + 2
+                                                continue
+                                        ]
+                                ]
+                                "push" [
+                                        js: js ++ "ctx.save();"
+                                        i: i + 1
+                                        continue
+                                ]
+                                "pop" [
+                                        js: js ++ "ctx.restore();"
+                                        i: i + 1
+                                        continue
+                                ]
+                                "translate" [
+                                        if less? (i + 2) blen [
+                                                xVal: get drawBlock (i + 1)
+                                                yVal: get drawBlock (i + 2)
+                                                js: js ++ "ctx.translate(" ++ to :string xVal ++ "," ++ to :string yVal ++ ");"
+                                                i: i + 3
+                                                continue
+                                        ]
+                                ]
+                                "rotate" [
+                                        if less? (i + 1) blen [
+                                                v: get drawBlock (i + 1)
+                                                js: js ++ "ctx.rotate((" ++ to :string v ++ ")*Math.PI/180);"
+                                                i: i + 2
+                                                continue
+                                        ]
+                                ]
+                                "scale" [
+                                        if less? (i + 2) blen [
+                                                sx: get drawBlock (i + 1)
+                                                sy: get drawBlock (i + 2)
+                                                js: js ++ "ctx.scale(" ++ to :string sx ++ "," ++ to :string sy ++ ");"
+                                                i: i + 3
+                                                continue
+                                        ]
+                                ]
+                                "skew" [
+                                        if less? (i + 2) blen [
+                                                sx: get drawBlock (i + 1)
+                                                sy: get drawBlock (i + 2)
+                                                js: js ++ "ctx.transform(1,Math.tan((" ++ to :string sy ++ ")*Math.PI/180),Math.tan((" ++ to :string sx ++ ")*Math.PI/180),1,0,0);"
+                                                i: i + 3
+                                                continue
+                                        ]
+                                ]
+                                "coord-system" [
+                                        ; no-op placeholder for now
+                                        i: i + 1
+                                        continue
+                                ]
+                                "line" [
+                                        if less? (i + 2) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                p2: draw_point (get drawBlock (i + 2))
+                                                if notEqual? p1 null [
+                                                        if notEqual? p2 null [
+                                                                js: js ++ "ctx.beginPath();ctx.moveTo(" ++ to :string p1\x ++ "," ++ to :string p1\y ++ ");ctx.lineTo(" ++ to :string p2\x ++ "," ++ to :string p2\y ++ ");ctx.stroke();"
+                                                                i: i + 3
+                                                                continue
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                                "box" [
+                                        if less? (i + 2) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                p2: draw_point (get drawBlock (i + 2))
+                                                if notEqual? p1 null [
+                                                        if notEqual? p2 null [
+                                                                x: p1\x
+                                                                y: p1\y
+                                                                w: p2\x - p1\x
+                                                                h: p2\y - p1\y
+                                                                js: js ++ "ctx.fillRect(" ++ to :string x ++ "," ++ to :string y ++ "," ++ to :string w ++ "," ++ to :string h ++ ");ctx.strokeRect(" ++ to :string x ++ "," ++ to :string y ++ "," ++ to :string w ++ "," ++ to :string h ++ ");"
+                                                                i: i + 3
+                                                                continue
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                                "circle" [
+                                        if less? (i + 2) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                r: get drawBlock (i + 2)
+                                                if notEqual? p1 null [
+                                                        js: js ++ "ctx.beginPath();ctx.arc(" ++ to :string p1\x ++ "," ++ to :string p1\y ++ "," ++ to :string r ++ ",0,Math.PI*2);ctx.fill();ctx.stroke();"
+                                                        i: i + 3
+                                                        continue
+                                                ]
+                                        ]
+                                ]
+                                "ellipse" [
+                                        if less? (i + 2) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                p2: draw_point (get drawBlock (i + 2))
+                                                if notEqual? p1 null [
+                                                        if notEqual? p2 null [
+                                                                rx: p2\x
+                                                                ry: p2\y
+                                                                js: js ++ "ctx.beginPath();ctx.ellipse(" ++ to :string p1\x ++ "," ++ to :string p1\y ++ "," ++ to :string rx ++ "," ++ to :string ry ++ ",0,0,Math.PI*2);ctx.fill();ctx.stroke();"
+                                                                i: i + 3
+                                                                continue
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                                "polygon" [
+                                        if less? (i + 1) blen [
+                                                pts: get drawBlock (i + 1)
+                                                if equal? (type pts) :block [
+                                                        plen: size pts
+                                                        if greater? plen 0 [
+                                                                first: draw_point (get pts 0)
+                                                                if notEqual? first null [
+                                                                        js: js ++ "ctx.beginPath();ctx.moveTo(" ++ to :string first\x ++ "," ++ to :string first\y ++ ");"
+                                                                        pi: 1
+                                                                        while [less? pi plen][
+                                                                                p: draw_point (get pts pi)
+                                                                                if notEqual? p null [
+                                                                                        js: js ++ "ctx.lineTo(" ++ to :string p\x ++ "," ++ to :string p\y ++ ");"
+                                                                                ]
+                                                                                pi: pi + 1
+                                                                        ]
+                                                                        js: js ++ "ctx.closePath();ctx.fill();ctx.stroke();"
+                                                                        i: i + 2
+                                                                        continue
+                                                                ]
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                                "text" [
+                                        if less? (i + 2) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                tval: get drawBlock (i + 2)
+                                                if notEqual? p1 null [
+                                                        js: js ++ "ctx.fillText(" ++ draw_js_token tval ++ "," ++ to :string p1\x ++ "," ++ to :string p1\y ++ ");"
+                                                        i: i + 3
+                                                        continue
+                                                ]
+                                        ]
+                                ]
+                                "image" [
+                                        if less? (i + 2) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                src: get drawBlock (i + 2)
+                                                sizeVal: null
+                                                if less? (i + 3) blen [
+                                                        sizeVal: get drawBlock (i + 3)
+                                                ]
+                                                if notEqual? p1 null [
+                                                        js: js ++ "var img=new Image();img.onload=function(){"
+                                                        if equal? (type sizeVal) :block [
+                                                                if equal? (size sizeVal) 2 [
+                                                                        w: get sizeVal 0
+                                                                        h: get sizeVal 1
+                                                                        js: js ++ "ctx.drawImage(img," ++ to :string p1\x ++ "," ++ to :string p1\y ++ "," ++ to :string w ++ "," ++ to :string h ++ ");"
+                                                                        js: js ++ "};img.src=" ++ draw_js_token src ++ ";"
+                                                                        i: i + 4
+                                                                        continue
+                                                                ]
+                                                        ]
+                                                        js: js ++ "ctx.drawImage(img," ++ to :string p1\x ++ "," ++ to :string p1\y ++ ");"
+                                                        js: js ++ "};img.src=" ++ draw_js_token src ++ ";"
+                                                        i: i + 3
+                                                        continue
+                                                ]
+                                        ]
+                                ]
+                                "linear-gradient" [
+                                        if less? (i + 3) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                p2: draw_point (get drawBlock (i + 2))
+                                                stops: get drawBlock (i + 3)
+                                                if all? @[notEqual? p1 null notEqual? p2 null] [
+                                                        gradCount: gradCount + 1
+                                                        gname: "g" ++ to :string gradCount
+                                                        js: js ++ "var " ++ gname ++ "=ctx.createLinearGradient(" ++ to :string p1\x ++ "," ++ to :string p1\y ++ "," ++ to :string p2\x ++ "," ++ to :string p2\y ++ ");"
+                                                        js: js ++ draw_gradient_stops stops gname
+                                                        js: js ++ "ctx.fillStyle=" ++ gname ++ ";"
+                                                        i: i + 4
+                                                        continue
+                                                ]
+                                        ]
+                                ]
+                                "radial-gradient" [
+                                        if less? (i + 4) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                r1: get drawBlock (i + 2)
+                                                p2: draw_point (get drawBlock (i + 3))
+                                                r2: get drawBlock (i + 4)
+                                                stops: null
+                                                if less? (i + 5) blen [
+                                                        stops: get drawBlock (i + 5)
+                                                ]
+                                                if all? @[notEqual? p1 null notEqual? p2 null notEqual? stops null] [
+                                                        gradCount: gradCount + 1
+                                                        gname: "g" ++ to :string gradCount
+                                                        js: js ++ "var " ++ gname ++ "=ctx.createRadialGradient(" ++ to :string p1\x ++ "," ++ to :string p1\y ++ "," ++ to :string r1 ++ "," ++ to :string p2\x ++ "," ++ to :string p2\y ++ "," ++ to :string r2 ++ ");"
+                                                        js: js ++ draw_gradient_stops stops gname
+                                                        js: js ++ "ctx.fillStyle=" ++ gname ++ ";"
+                                                        i: i + 6
+                                                        continue
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ]
+                i: i + 1
+        ]
+        js
+]
+
+draw_script: function [canvasId drawBlock] [
+        js: draw_to_canvas canvasId drawBlock
+        if equal? js "" [
+                return ""
+        ]
+        "<script>document.addEventListener('DOMContentLoaded',()=>{" ++ js ++ "});</script>"
+]
+
 html_escape_attr: function [s] [
         s: replace s "&" "&amp;"
         s: replace s "<" "&lt;"
@@ -902,6 +1289,59 @@ append_children_from_root: function [faces parentId rootId] [
 style: function [name block] [
         nameStr: to :string name
         vista_styles\[nameStr]: block
+]
+
+clone_dict: function [src] [
+        dest: #[]
+        keysList: keys src
+        i: 0
+        keys_len: size keysList
+        while [less? i keys_len][
+                k: get keysList i
+                dest\[k]: src\[k]
+                i: i + 1
+        ]
+        dest
+]
+
+apply_stylesheet: function [sheet] [
+        keysList: keys sheet
+        i: 0
+        keys_len: size keysList
+        while [less? i keys_len][
+                k: get keysList i
+                vista_styles\[k]: sheet\[k]
+                i: i + 1
+        ]
+]
+
+stylize: function [blk] [
+        styles: #[]
+        if notEqual? (type blk) :block [
+                return styles
+        ]
+        blen: size blk
+        i: 0
+        while [less? i blen][
+                tok: get blk i
+                if equal? (type tok) :label [
+                        name: to :string tok
+                        i: i + 1
+                        spec: []
+                        while [less? i blen][
+                                nextTok: get blk i
+                                if equal? (type nextTok) :label [
+                                        break
+                                ]
+                                spec: append_value spec nextTok
+                                i: i + 1
+                        ]
+                        styles\[name]: spec
+                ][
+                        i: i + 1
+                ]
+        ]
+        styles
 ]
 
 ; Rebol/View style aliases (core set)
@@ -1620,7 +2060,7 @@ is_keyword: function [item block] [
                 ]
                 return true
             ]
-            in? name ["across" "below" "return" "end" "pad" "space" "align" "valign" "size" "origin" "offset" "indent" "guide" "do" "scope" "raw" "text" "title" "subtitle" "field" "info" "button" "key" "label" "box" "panel" "text-list" "text_list" "list" "row" "col" "grid" "spacer" "group" "form" "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select" "drop-list" "drop_list" "radio" "radio-group" "radio_group" "tabs" "tab" "image" "icon" "anim" "progress" "table" "table-row" "table_row" "table-cell" "table_cell" "table-header" "table_header" "table-head" "table_head" "table-body" "table_body" "table-foot" "table_foot" "toolbar" "menubar" "tool-group" "tool_group" "canvas" "divider" "split" "sensor" "pen" "fill-pen" "line-width" "line-cap" "line-join" "line" "box" "circle" "ellipse" "polygon" "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew" "smooth" "coord-system" "text-baseline" "text-align" "linear-gradient" "radial-gradient"]
+            in? name ["across" "below" "return" "end" "pad" "space" "align" "valign" "size" "origin" "offset" "indent" "guide" "do" "scope" "raw" "style" "styles" "stylize" "at" "backcolor" "text" "title" "subtitle" "field" "info" "button" "key" "label" "box" "panel" "text-list" "text_list" "list" "row" "col" "grid" "spacer" "group" "form" "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select" "drop-list" "drop_list" "radio" "radio-group" "radio_group" "tabs" "tab" "image" "icon" "anim" "progress" "table" "table-row" "table_row" "table-cell" "table_cell" "table-header" "table_header" "table-head" "table_head" "table-body" "table_body" "table-foot" "table_foot" "toolbar" "menubar" "tool-group" "tool_group" "canvas" "divider" "split" "sensor" "pen" "fill-pen" "line-width" "line-cap" "line-join" "line-pattern" "line" "box" "circle" "ellipse" "polygon" "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew" "smooth" "coord-system" "text-baseline" "text-align" "linear-gradient" "radial-gradient"]
         ][
             ; Also check for compound keywords like "-width" from "line-width" tokenized as "line - width"
             switch equal? item_type :symbol [
@@ -1652,7 +2092,7 @@ is_keyword: function [item block] [
                         tailName: to :string tail
                         ; Check if "-" + tailName forms a known compound keyword suffix
                         compoundSuf: "-" ++ tailName
-                        suffixes: ["-width" "-pen" "-cap" "-join" "-system" "-baseline" "-align" "-gradient"]
+                        suffixes: ["-width" "-pen" "-cap" "-join" "-pattern" "-system" "-baseline" "-align" "-gradient"]
                         in? compoundSuf suffixes
                     ] [
                         false
@@ -2655,6 +3095,28 @@ collect_args: function [block start] [
         ]
 ]
 
+collect_style_spec: function [block start] [
+        args: []
+        block_len: size block
+        i: start
+        first: true
+        while [less? i block_len][
+                tok: get block i
+                if not? first [
+                        if is_keyword tok block [
+                                break
+                        ]
+                ]
+                args: append_value args tok
+                i: i + 1
+                first: false
+        ]
+        #[
+                args: args
+                next: i
+        ]
+]
+
 parse_args_from: function [block start] [
         info: collect_args block start
         parsed: parse_attrs info\args
@@ -2692,6 +3154,8 @@ render_block_inner: function [value bindings faces parentId] [
 ; Layout function: parse block into HTML + bindings
 layout_state: function [block] [
         block: normalize_block block
+        prev_styles: vista_styles
+        vista_styles: clone_dict vista_styles
         prev_pending: vista_state\layout_pending_attrs
         vista_state\layout_pending_attrs: #[]
         prev_scope_stack: vista_state\layout_scope_stack
@@ -2794,6 +3258,15 @@ layout_state: function [block] [
                                                 i: i + 1
                                         ]
                                 ]
+                                "at" -> [
+                                        switch less? (i + 1) block_len [
+                                                v: get block (i + 1)
+                                                vista_state\layout_pending_attrs\offset: v
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
                                 "indent" -> [
                                         switch less? (i + 1) block_len [
                                                 v: get block (i + 1)
@@ -2811,10 +3284,50 @@ layout_state: function [block] [
                                         ]
                                         i: i + 1
                                 ]
+                                "backcolor" -> [
+                                        switch less? (i + 1) block_len [
+                                                v: get block (i + 1)
+                                                vista_state\layout_pending_attrs\color: v
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
                                 "do" -> [
                                         switch less? (i + 1) block_len [
                                                 val: get block (i + 1)
                                                 do val
+                                                i: i + 2
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
+                                "style" -> [
+                                        switch less? (i + 1) block_len [
+                                                styleName: get block (i + 1)
+                                                info: collect_style_spec block (i + 2)
+                                                styleBlock: info\args
+                                                style styleName styleBlock
+                                                i: info\next
+                                        ][
+                                                i: i + 1
+                                        ]
+                                ]
+                                "styles" -> [
+                                        switch less? (i + 1) block_len [
+                                                sheetVal: get block (i + 1)
+                                                if equal? (type sheetVal) :word [
+                                                        lit: to :literal sheetVal
+                                                        if set? lit [
+                                                                sheetVal: do to :string sheetVal
+                                                        ]
+                                                ]
+                                                if equal? (type sheetVal) :block [
+                                                        sheetVal: stylize sheetVal
+                                                ]
+                                                if equal? (type sheetVal) :dictionary [
+                                                        apply_stylesheet sheetVal
+                                                ]
                                                 i: i + 2
                                         ][
                                                 i: i + 1
@@ -4776,6 +5289,7 @@ layout_state: function [block] [
         set_face_html faces root_id html
         vista_state\layout_pending_attrs: prev_pending
         vista_state\layout_scope_stack: prev_scope_stack
+        vista_styles: prev_styles
         #[
                 html: html
                 bindings: bindings

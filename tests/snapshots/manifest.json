@@ -193,19 +193,19 @@
     },
     {
         "name": "48-smoke-app.html",
-        "size": 0
+        "size": 592
     },
     {
         "name": "49-draw-primitives.html",
-        "size": 727
+        "size": 722
     },
     {
         "name": "50-draw-gradients.html",
-        "size": 727
+        "size": 722
     },
     {
         "name": "51-draw-text-image.html",
-        "size": 727
+        "size": 722
     },
     {
         "name": "52-draw-transforms.html",
