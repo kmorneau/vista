@@ -1,0 +1,1769 @@
+; Rebol/View style aliases (core set)
+style "h1" [title .class:"vista-h1" arg0]
+style "h2" [title .class:"vista-h2" arg0]
+style "h3" [title .class:"vista-h3" arg0]
+style "h4" [title .class:"vista-h4" arg0]
+style "h5" [title .class:"vista-h5" arg0]
+style "vh1" [title .class:"vista-vh1" arg0]
+style "vh2" [title .class:"vista-vh2" arg0]
+style "vh3" [title .class:"vista-vh3" arg0]
+style "banner" [title .class:"vista-banner" arg0]
+style "info" [text .class:"vista-info" arg0]
+style "tt" [text .class:"vista-tt" arg0]
+style "code" [text .class:"vista-code" arg0]
+style "vtext" [text .class:"vista-vtext" arg0]
+style "area" [textarea .class:"vista-area" arg0]
+style "choice" [select .class:"vista-choice" arg0 arg1]
+style "check" [checkbox .class:"vista-check" arg0]
+style "icon" [image .class:"vista-icon" arg0]
+style "anim" [image .class:"vista-anim" arg0]
+style "arrow" [button .class:"vista-arrow" arg0]
+style "rotary" [slider .class:"vista-rotary" arg0]
+style "led" [text .class:"vista-led" arg0]
+style "sensor" [box .class:"vista-sensor" arg0]
+style "backdrop" [box .class:"vista-backdrop" arg0]
+style "backtile" [box .class:"vista-backtile" arg0]
+
+apply_style_args: function [blk args attrs] [
+        out: []
+        blen: size blk
+        i: 0
+        while [less? i blen][
+                item: get blk i
+                item_type: type item
+                switch equal? item_type :block [
+                        out: out ++ @[apply_style_args item args attrs]
+                ][
+                        switch equal? item_type :word [
+                                name: to :string item
+                                switch equal? name "args" [
+                                        out: out ++ @[args]
+                                ][
+                                        switch equal? name "attrs" [
+                                                out: out ++ @[attrs]
+                                        ][
+                                                replaced: false
+                                                j: 0
+                                                alen: size args
+                                                while [less? j alen][
+                                                        if equal? name ("arg" ++ to :string j) [
+                                                                out: out ++ @[get args j]
+                                                                replaced: true
+                                                                break
+                                                        ]
+                                                        j: j + 1
+                                                ]
+                                                if not? replaced [
+                                                        out: out ++ @[item]
+                                                ]
+                                        ]
+                                ]
+                        ][
+                                out: out ++ @[item]
+                        ]
+                ]
+                i: i + 1
+        ]
+        out
+]
+
+get_face_path: function [path] [
+    if equal? (type path) :string [
+        return get_face path
+    ]
+    if equal? (type path) :word [
+        return get_face path
+    ]
+    if notEqual? (type path) :block [
+        return null
+    ]
+    if equal? (size path) 0 [
+        return null
+    ]
+    idx: 0
+    current: null
+    first: get path 0
+    first_type: type first
+    switch any? @[equal? first_type :string equal? first_type :word] [
+        current: get_face first
+        switch equal? current null [
+            current: get_face vista_state\last_root
+            idx: 0
+        ][
+            idx: 1
+        ]
+    ][
+        current: get_face vista_state\last_root
+        idx: 0
+    ]
+    while [all? @[notEqual? current null less? idx (size path)]] [
+        tok: get path idx
+        tok_type: type tok
+        if any? @[equal? tok_type :string equal? tok_type :word] [
+            tname: to :string tok
+            resolvedById: false
+            if all? @[prefix? tname ".id:" greater? (size tname) 4] [
+                nameStr: slice tname 4 (size tname)
+                if key? vista_state\face_names nameStr [
+                    current: get_face nameStr
+                    resolvedById: true
+                ]
+            ]
+            if not? resolvedById [
+                index: 0
+                if less? idx + 1 (size path) [
+                    nextTok: get path (idx + 1)
+                    if equal? (type nextTok) :integer [
+                        index: nextTok
+                        idx: idx + 1
+                    ]
+                ]
+                children: current\children
+                found: null
+                count: 0
+                clen: size children
+                c: 0
+                while [less? c clen][
+                    cid: get children c
+                    child: vista_state\last_faces\[cid]
+                    if equal? child\type tname [
+                        if equal? count index [
+                            found: child
+                            break
+                        ]
+                        count: count + 1
+                    ]
+                    c: c + 1
+                ]
+                current: found
+            ]
+        ]
+        idx: idx + 1
+    ]
+    current
+]
+
+face_children_html: function [face] [
+    if not? key? face "children" [
+        return ""
+    ]
+    kids: face\children
+    out: ""
+    klen: size kids
+    i: 0
+    while [less? i klen][
+        cid: get kids i
+        if key? vista_state\last_faces cid [
+            out: out ++ vista_state\last_faces\[cid]\html
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+face_child_html: function [face index] [
+    if not? key? face "children" [
+        return ""
+    ]
+    kids: face\children
+    if less? index (size kids) [
+        cid: get kids index
+        if key? vista_state\last_faces cid [
+            return vista_state\last_faces\[cid]\html
+        ]
+    ]
+    ""
+]
+
+update_panel_body: function [panelId newBlock] [
+    panelFace: get_face panelId
+    if equal? panelFace null [
+        return null
+    ]
+    inner: layout_state newBlock
+    merge_faces vista_state\last_faces inner\faces
+    append_children_from_root vista_state\last_faces panelFace\id inner\root
+    titleHtml: ""
+    if key? panelFace "meta" [
+        if key? panelFace\meta "titleHtml" [
+            titleHtml: panelFace\meta\titleHtml
+        ]
+    ]
+    faceHtml: panel_face titleHtml inner\html panelFace\attrs
+    update_face panelFace\id #[html: faceHtml]
+]
+
+update_split_pane: function [splitId paneIndex newBlock] [
+    splitFace: get_face splitId
+    if equal? splitFace null [
+        return null
+    ]
+    if not? key? splitFace "children" [
+        return null
+    ]
+    if any? @[less? paneIndex 0 greaterOrEqual? paneIndex (size splitFace\children)] [
+        return null
+    ]
+    inner: layout_state newBlock
+    merge_faces vista_state\last_faces inner\faces
+    rootFace: inner\faces\[inner\root]
+    if not? key? rootFace "children" [
+        return null
+    ]
+    if equal? (size rootFace\children) 0 [
+        return null
+    ]
+    newPaneId: get rootFace\children 0
+    kids: splitFace\children
+    newKids: []
+    klen: size kids
+    i: 0
+    while [less? i klen][
+        switch equal? i paneIndex [
+            newKids: newKids ++ @[newPaneId]
+        ][
+            newKids: newKids ++ @[get kids i]
+        ]
+        i: i + 1
+    ]
+    splitFace\children: newKids
+    vista_state\last_faces\[splitFace\id]: splitFace
+    update_face splitFace\id #[html: render_face splitFace]
+]
+
+update_table_body: function [tableId newBlock] [
+    tableFace: get_face tableId
+    if equal? tableFace null [
+        return null
+    ]
+    inner: layout_state newBlock
+    merge_faces vista_state\last_faces inner\faces
+    append_children_from_root vista_state\last_faces tableFace\id inner\root
+    update_face tableFace\id #[html: render_face tableFace]
+]
+
+face_child_id: function [face index] [
+    if not? key? face "children" [
+        return null
+    ]
+    kids: face\children
+    if less? index (size kids) [
+        return get kids index
+    ]
+    null
+]
+
+tab_panel_id: function [tabsFace index] [
+    if not? key? tabsFace "children" [
+        return null
+    ]
+    kids: tabsFace\children
+    count: 0
+    i: 0
+    klen: size kids
+    while [less? i klen][
+        cid: get kids i
+        child: vista_state\last_faces\[cid]
+        if equal? child\type "tab-panel" [
+            if equal? count index [
+                return cid
+            ]
+            count: count + 1
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+update_face_path: function [path updates] [
+    face: get_face_path path
+    if equal? face null [
+        return null
+    ]
+    update_face face\id updates
+]
+
+update_tab_panel: function [tabsId index newBlock] [
+    tabsFace: get_face tabsId
+    if equal? tabsFace null [
+        return null
+    ]
+    panelId: tab_panel_id tabsFace index
+    if equal? panelId null [
+        return null
+    ]
+    inner: layout_state newBlock
+    merge_faces vista_state\last_faces inner\faces
+    append_children_from_root vista_state\last_faces panelId inner\root
+    indexStr: to :string index
+    panelAttrs: vista_state\last_faces\[panelId]\attrs
+    attrStr: attrs_to_html panelAttrs
+    panelHtml: "<div class='vista-tab-panel' data-tab='panel-" ++ indexStr ++ "'" ++ attrStr ++ ">" ++ inner\html ++ "</div>"
+    update_face panelId #[html: panelHtml]
+]
+
+show_path: function [path] [
+    face: get_face_path path
+    if equal? face null [
+        return null
+    ]
+    show face
+]
+
+set_state: function [key value] [
+    keyStr: to :string key
+    vista_state\last_bindings\[keyStr]: value
+    if all? @[webview_sync_state_updates vista_state\webview_open] [
+        valueStr: js_literal value
+        js: "state['" ++ keyStr ++ "']=" ++ valueStr ++ "; render();"
+        if webview_enabled [
+            env_vars: env
+            if not? any? @[key? env_vars "VISTA_NO_WEBVIEW" key? env_vars "NO_WEBVIEW"] [
+                webview .inject: js ""
+            ]
+        ]
+    ]
+]
+
+apply_state_from_ui: function [data] [
+    if equal? (type data) :dictionary [
+        keysList: keys data
+        i: 0
+        klen: size keysList
+        while [less? i klen][
+            k: get keysList i
+            v: data\[k]
+            vista_state\last_bindings\[k]: v
+            lit: to :literal k
+            if set? lit [
+                set lit v
+            ]
+            i: i + 1
+        ]
+    ]
+]
+
+sync_state: function [] [
+    keysList: keys vista_state\last_bindings
+    i: 0
+    keys_len: size keysList
+    while [less? i keys_len][
+        k: get keysList i
+        lit: to :literal k
+        if set? lit [
+            val: do k
+            if notEqual? val vista_state\last_bindings\[k] [
+                set_state k val
+            ]
+        ]
+        i: i + 1
+    ]
+]
+
+print_face_tree: function [] [
+    root: get_face vista_state\last_root
+    if equal? root null [
+        print "No face tree"
+        return
+    ]
+    walk_face_tree root 0
+]
+
+walk_face_tree: function [face depth] [
+    indent: ""
+    i: 0
+    while [less? i depth][
+        indent: indent ++ "  "
+        i: i + 1
+    ]
+    nameStr: ""
+    if key? face\attrs "id" [
+        nameStr: " #" ++ to :string face\attrs\id
+    ]
+    print (indent ++ face\id ++ " (" ++ face\type ++ ")" ++ nameStr)
+    if key? face "children" [
+        kids: face\children
+        klen: size kids
+        j: 0
+        while [less? j klen][
+            cid: get kids j
+            if key? vista_state\last_faces cid [
+                walk_face_tree vista_state\last_faces\[cid] (depth + 1)
+            ]
+            j: j + 1
+        ]
+    ]
+]
+
+find_faces: function [criteria] [
+    if notEqual? (type criteria) :dictionary [
+        return []
+    ]
+    results: []
+    keysList: keys vista_state\last_faces
+    klen: size keysList
+    i: 0
+    while [less? i klen][
+        fid: get keysList i
+        face: vista_state\last_faces\[fid]
+        match: true
+        if key? criteria "type" [
+            if notEqual? face\type criteria\type [
+                match: false
+            ]
+        ]
+        if key? criteria "id" [
+            idVal: criteria\["id"]
+            idValStr: to :string idVal
+            hasId: key? face\attrs "id"
+            if not? hasId [
+                match: false
+            ]
+            if hasId [
+                faceIdStr: to :string face\attrs\["id"]
+                if notEqual? faceIdStr idValStr [
+                    match: false
+                ]
+            ]
+        ]
+        if key? criteria "attr" [
+            attrName: criteria\attr
+            if not? key? face\attrs attrName [
+                match: false
+            ]
+        ]
+        if match [
+            results: results ++ @[face]
+        ]
+        i: i + 1
+    ]
+    results
+]
+
+find_face: function [criteria] [
+    results: find_faces criteria
+    if greater? (size results) 0 [
+        return get results 0
+    ]
+    null
+]
+
+face_info: function [face] [
+    if equal? face null [
+        return "null"
+    ]
+    nameStr: ""
+    if key? face\attrs "id" [
+        nameStr: " #" ++ to :string face\attrs\id
+    ]
+    face\id ++ " (" ++ face\type ++ ")" ++ nameStr
+]
+
+face_tree: function [] [
+    root: get_face vista_state\last_root
+    if equal? root null [
+        return []
+    ]
+    build_face_json root
+]
+
+json_escape: function [value] [
+    out: ""
+    s: to :string value
+    i: 0
+    len: size s
+    while [less? i len][
+        ch: get s i
+        escaped: false
+        if equal? ch "\\" [
+            out: out ++ "\\\\"
+            escaped: true
+        ]
+        if equal? ch "\"" [
+            out: out ++ "\\\""
+            escaped: true
+        ]
+        if equal? ch "\n" [
+            out: out ++ "\\n"
+            escaped: true
+        ]
+        if equal? ch "\r" [
+            out: out ++ "\\r"
+            escaped: true
+        ]
+        if equal? ch "\t" [
+            out: out ++ "\\t"
+            escaped: true
+        ]
+        if not? escaped [
+            out: out ++ ch
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+json_encode: function [value] [
+    t: type value
+    switch equal? t :string [
+        "\"" ++ json_escape value ++ "\""
+    ][
+        switch equal? t :integer [
+            to :string value
+        ][
+            switch equal? t :floating [
+                to :string value
+            ][
+                switch equal? t :logical [
+                    switch value [
+                        "true"
+                    ][
+                        "false"
+                    ]
+                ][
+                    switch equal? t :null [
+                        "null"
+                    ][
+                        switch equal? t :dictionary [
+                            keysList: keys value
+                            i: 0
+                            klen: size keysList
+                            out: "{"
+                            first: true
+                            while [less? i klen][
+                                k: get keysList i
+                                v: value\[k]
+                                if not? first [
+                                    out: out ++ ","
+                                ]
+                                out: out ++ "\"" ++ json_escape k ++ "\":" ++ json_encode v
+                                first: false
+                                i: i + 1
+                            ]
+                            out ++ "}"
+                        ][
+                            switch equal? t :block [
+                                i: 0
+                                blen: size value
+                                out: "["
+                                first: true
+                                while [less? i blen][
+                                    item: get value i
+                                    if not? first [
+                                        out: out ++ ","
+                                    ]
+                                    out: out ++ json_encode item
+                                    first: false
+                                    i: i + 1
+                                ]
+                                out ++ "]"
+                            ][
+                                "\"" ++ json_escape (to :string value) ++ "\""
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+]
+
+face_tree_json: function [] [
+    json_encode face_tree
+]
+
+json_pretty: function [json] [
+    indent: 0
+    inString: false
+    escapeNext: false
+    out: ""
+    len: size json
+    i: 0
+    while [less? i len][
+        ch: get json i
+        if escapeNext [
+            out: out ++ ch
+            escapeNext: false
+            i: i + 1
+            continue
+        ]
+        if equal? ch "\\" [
+            out: out ++ ch
+            if inString [ escapeNext: true ]
+            i: i + 1
+            continue
+        ]
+        if equal? ch "\"" [
+            inString: not inString
+            out: out ++ ch
+            i: i + 1
+            continue
+        ]
+        if inString [
+            out: out ++ ch
+            i: i + 1
+            continue
+        ]
+        if any? @[equal? ch "{" equal? ch "["] [
+            indent: indent + 1
+            out: out ++ ch ++ "\n" ++ repeat "  " indent
+            i: i + 1
+            continue
+        ]
+        if any? @[equal? ch "}" equal? ch "]"] [
+            indent: indent - 1
+            out: out ++ "\n" ++ repeat "  " indent ++ ch
+            i: i + 1
+            continue
+        ]
+        if equal? ch "," [
+            out: out ++ ch ++ "\n" ++ repeat "  " indent
+            i: i + 1
+            continue
+        ]
+        if equal? ch ":" [
+            out: out ++ ": "
+            i: i + 1
+            continue
+        ]
+        out: out ++ ch
+        i: i + 1
+    ]
+    out
+]
+
+face_tree_pretty: function [] [
+    json_pretty face_tree_json
+]
+
+face_tree_by_id: function [criteria] [
+    crit: criteria
+    if equal? (type criteria) :string [
+        crit: #[id: criteria]
+    ]
+    face: find_face crit
+    if equal? face null [
+        return []
+    ]
+    build_face_json face
+]
+
+face_tree_by_id_json: function [criteria] [
+    json_encode (face_tree_by_id criteria)
+]
+
+face_tree_overlay: function [] [
+    json: face_tree_json
+    raw (
+        "<div id='vista-face-overlay' style='position:fixed;right:8px;bottom:8px;max-width:42%;max-height:55%;overflow:auto;background:#111;color:#e6e6e6;border:1px solid #333;padding:8px 10px;font:12px/1.4 monospace;z-index:99999;'>" ++
+        "<div style='font-weight:bold;margin-bottom:6px;'>Vista Inspector</div>" ++
+        "<input id='vista-face-search' placeholder='Search faces...' style='width:100%;box-sizing:border-box;margin-bottom:6px;background:#1a1a1a;color:#e6e6e6;border:1px solid #333;padding:4px 6px;'>" ++
+        "<div id='vista-face-results' style='max-height:180px;overflow:auto;border:1px solid #333;padding:4px;'></div>" ++
+        "<div style='margin-top:6px;display:flex;gap:6px;align-items:center;'>" ++
+        "<button id='vista-face-refresh' style='background:#222;color:#e6e6e6;border:1px solid #333;padding:2px 6px;cursor:pointer;'>Refresh</button>" ++
+        "<span style='opacity:0.7;'>Click a face to highlight</span>" ++
+        "</div>" ++
+        "<div style='margin-top:6px;opacity:0.7;'>State</div>" ++
+        "<pre id='vista-state-pre' style='margin:4px 0 0 0;white-space:pre-wrap;max-height:140px;overflow:auto;background:#0f0f0f;border:1px solid #333;padding:4px;'></pre>" ++
+        "</div>" ++
+        "<script>" ++
+        "const vistaFaceTree=" ++ json ++ ";" ++
+        "const flatten=(node,arr)=>{if(!node){return;}arr.push(node);(node.children||[]).forEach(c=>flatten(c,arr));};" ++
+        "const list=[];flatten(vistaFaceTree,list);" ++
+        "const renderList=(q)=>{const wrap=document.getElementById('vista-face-results');if(!wrap){return;}const term=(q||'').toLowerCase();const items=list.filter(n=>{const name=(n.name||'');return (n.id||'').toLowerCase().includes(term)||name.toLowerCase().includes(term)||(n.type||'').toLowerCase().includes(term);});wrap.innerHTML=items.map(n=>`<div style='padding:2px 0;'><button data-id='${n.id}' style='background:#1b1b1b;color:#e6e6e6;border:1px solid #333;padding:1px 4px;cursor:pointer;'>${n.id}</buttongreater? <span style='opacity:0.7'>(${n.type}${n.name?(' #' + n.name):''})</span></div>`).join('');wrap.querySelectorAll('button[data-id]').forEach(btn=>{btn.addEventListener('click',()=>highlight(btn.dataset.id));});};" ++
+        "const highlight=(id)=>{document.querySelectorAll('[data-vista-highlight]').forEach(el=>{el.style.outline='';el.removeAttribute('data-vista-highlight');});const el=document.querySelector(`[data-face-id=\"${id}\"]`);if(!el){return;}el.setAttribute('data-vista-highlight','true');el.style.outline='2px solid #ffb347';el.scrollIntoView({block:'center',behavior:'smooth'});};" ++
+        "const renderState=()=>{const pre=document.getElementById('vista-state-pre');if(!pre){return;}if(window.state){pre.textContent=JSON.stringify(window.state,null,2);}else{pre.textContent='(state not ready)';}};" ++
+        "document.addEventListener('DOMContentLoaded',()=>{const input=document.getElementById('vista-face-search');if(input){input.addEventListener('input',e=>renderList(e.target.value));}const refresh=document.getElementById('vista-face-refresh');if(refresh){refresh.addEventListener('click',()=>renderState());}renderList('');setTimeout(renderState,50);});" ++
+        "</script>"
+    )
+]
+
+build_face_json: function [face] [
+    obj: #[
+        id: face\id
+        type: face\type
+    ]
+    if key? face\attrs "id" [
+        obj\name: to :string face\attrs\id
+    ]
+    kids: []
+    if key? face "children" [
+        clen: size face\children
+        i: 0
+        while [less? i clen][
+            cid: get face\children i
+            if key? vista_state\last_faces cid [
+                kids: kids ++ @[build_face_json vista_state\last_faces\[cid]]
+            ]
+            i: i + 1
+        ]
+    ]
+    obj\children: kids
+    obj
+]
+
+path_first: function [path] [
+    path_nth path 0
+]
+
+path_last: function [path] [
+    face: get_face_path path
+    if equal? face null [
+        return null
+    ]
+    if not? key? face "children" [
+        return null
+    ]
+    count: size face\children
+    if equal? count 0 [
+        return null
+    ]
+    path_nth path (count - 1)
+]
+
+path_nth: function [path index] [
+    if not? equal? (type path) :block [
+        return null
+    ]
+    face: get_face_path path
+    if equal? face null [
+        return null
+    ]
+    if not? key? face "children" [
+        return null
+    ]
+    if less? index 0 [
+        return null
+    ]
+    if greaterOrEqual? index (size face\children) [
+        return null
+    ]
+    cid: get face\children index
+    if key? vista_state\last_faces cid [
+        return vista_state\last_faces\[cid]
+    ]
+    null
+]
+
+is_keyword: function [item block] [
+        item_type: type item
+        switch equal? item_type :word [
+            name: to :string item
+            if key? vista_styles name [
+                if set? name [
+                    return false
+                ]
+                return true
+            ]
+            in? name ["across" "below" "return" "end" "pad" "space" "align" "valign" "size" "origin" "offset" "indent" "guide" "do" "scope" "raw" "style" "styles" "stylize" "at" "backcolor" "text" "title" "subtitle" "field" "info" "button" "key" "label" "box" "panel" "text-list" "text_list" "list" "row" "col" "grid" "spacer" "group" "form" "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select" "drop-list" "drop_list" "radio" "radio-group" "radio_group" "tabs" "tab" "image" "icon" "anim" "progress" "table" "table-row" "table_row" "table-cell" "table_cell" "table-header" "table_header" "table-head" "table_head" "table-body" "table_body" "table-foot" "table_foot" "toolbar" "menubar" "tool-group" "tool_group" "canvas" "divider" "split" "sensor" "pen" "fill-pen" "line-width" "line-cap" "line-join" "line-pattern" "line" "box" "circle" "arc" "ellipse" "polygon" "curve" "flood" "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew" "smooth" "coord-system" "text-baseline" "text-align" "linear-gradient" "radial-gradient"]
+        ][
+            ; Also check for compound keywords like "-width" from "line-width" tokenized as "line - width"
+            switch equal? item_type :symbol [
+                if not? block [
+                    return false
+                ]
+                name: to :string item
+                if not? equal? name "-" [
+                    return false
+                ]
+                ; This is a "-" symbol, check if next token is part of a compound keyword
+                blen: size block
+                found_idx: -1
+                j: 0
+                while [less? j blen] [
+                    if equal? (get block j) item [
+                        found_idx: j
+                        break
+                    ]
+                    j: j + 1
+                ]
+                if equal? found_idx -1 [
+                    return false
+                ]
+                if less? (found_idx + 2) blen [
+                    tail: get block (found_idx + 2)
+                    tail_type: type tail
+                    if any? @[equal? tail_type :word equal? tail_type :label] [
+                        tailName: to :string tail
+                        ; Check if "-" + tailName forms a known compound keyword suffix
+                        compoundSuf: "-" ++ tailName
+                        suffixes: ["-width" "-pen" "-cap" "-join" "-pattern" "-system" "-baseline" "-align" "-gradient"]
+                        in? compoundSuf suffixes
+                    ] [
+                        false
+                    ]
+                ] [
+                    false
+                ]
+            ][
+                false
+            ]
+        ]
+]
+
+append_value: function [lst val] [
+        lst ++ @[val]
+]
+
+parse_attrs: function [args] [
+        attrs: #[]
+        rest: []
+        i: 0
+        args_len: size args
+        while [less? i args_len][
+            tok: get args i
+            tok_type: type tok
+            switch any? @[equal? tok_type :attributeLabel equal? tok_type :label] [
+                name: to :string tok
+                advance: 1
+                if less? i + 2 args_len [
+                    mid: get args (i + 1)
+                    tail: get args (i + 2)
+                    if all? @[equal? (type mid) :symbol equal? (to :string mid) "-" any? @[equal? (type tail) :word equal? (type tail) :label]] [
+                        name: name ++ "-" ++ to :string tail
+                        advance: 3
+                    ]
+                ]
+                switch less? i + advance args_len [
+                    valIndex: i + advance
+                    val: get args valIndex
+                    if equal? (type val) :symbol [
+                        if equal? (to :string val) ":" [
+                            if less? (valIndex + 1) args_len [
+                                valIndex: valIndex + 1
+                                val: get args valIndex
+                            ]
+                        ]
+                    ]
+                    handled: false
+                    if equal? (type val) :symbol [
+                        if equal? (to :string val) "#" [
+                            if less? (valIndex + 1) args_len [
+                                nextVal: get args (valIndex + 1)
+                                if equal? (type nextVal) :block [
+                                    attrs\[name]: header_from_block nextVal
+                                    i: valIndex + 2
+                                    handled: true
+                                ]
+                            ]
+                        ]
+                    ]
+                    if not? handled [
+                        attrs\[name]: val
+                        i: valIndex + 1
+                    ]
+                ][
+                    i: i + 1
+                ]
+            ][
+                switch equal? tok_type :attribute [
+                    name: to :string tok
+                    if less? i + 2 args_len [
+                        mid: get args (i + 1)
+                        tail: get args (i + 2)
+                        if all? @[equal? (type mid) :symbol equal? (to :string mid) "-" any? @[equal? (type tail) :word equal? (type tail) :label]] [
+                            name: name ++ "-" ++ to :string tail
+                            i: i + 3
+                            attrs\[name]: true
+                            continue
+                        ]
+                    ]
+                    attrs\[name]: true
+                    i: i + 1
+                ][
+                    rest: append_value rest tok
+                    i: i + 1
+                ]
+            ]
+        ]
+        #[
+            attrs: attrs
+            args: rest
+        ]
+]
+
+attrs_to_html: function [attrs] [
+        keysList: keys attrs
+        keys_len: size keysList
+        if equal? keys_len 0 [
+            return ""
+        ]
+        html: ""
+        i: 0
+        while [less? i keys_len][
+            k: get keysList i
+            v: attrs\[k]
+            v_type: type v
+            switch equal? v_type :logical [
+                if v [
+                    html: html ++ " " ++ k
+                ]
+            ][
+                html: html ++ " " ++ k ++ "='"
+                html: html ++ html_escape_attr (to :string v)
+                html: html ++ "'"
+            ]
+            i: i + 1
+        ]
+        html
+]
+
+attrs_without: function [attrs key] [
+        filtered: #[]
+        keysList: keys attrs
+        i: 0
+        keys_len: size keysList
+        while [less? i keys_len][
+            k: get keysList i
+            if notEqual? k key [
+                filtered\[k]: attrs\[k]
+            ]
+            i: i + 1
+        ]
+        filtered
+]
+
+take_attr: function [attrs key] [
+        val: null
+        if key? attrs key [
+            val: attrs\[key]
+            attrs: attrs_without attrs key
+        ]
+        #[
+            value: val
+            attrs: attrs
+        ]
+]
+
+append_style: function [style fragment] [
+        switch equal? style "" [
+            fragment
+        ][
+            style ++ " " ++ fragment
+        ]
+]
+
+has_style_dim: function [attrs] [
+        if key? attrs "style" [
+            s: to :string attrs\style
+            if notEqual? (find s "width:") null [
+                return true
+            ]
+            if notEqual? (find s "height:") null [
+                return true
+            ]
+        ]
+        false
+]
+
+maybe_autosize_text_attrs: function [attrs] [
+        if key? attrs "data-auto-size" [
+            return attrs
+        ]
+        if has_style_dim attrs [
+            return attrs
+        ]
+        attrs\["data-auto-size"]: "text"
+        attrs
+]
+
+style_value: function [val] [
+        t: type val
+        switch equal? t :integer [
+            valStr: to :string val
+            valStr ++ "px"
+        ][
+            switch equal? t :floating [
+                valStr: to :string val
+                valStr ++ "px"
+            ][
+                to :string val
+            ]
+        ]
+]
+
+merge_pending_attrs: function [attrs pending] [
+        res: attrs
+        keysList: keys pending
+        klen: size keysList
+        i: 0
+        while [less? i klen][
+            k: get keysList i
+            switch key? res k [
+                if equal? k "class" [
+                    res\class: to :string res\class ++ " " ++ to :string pending\class
+                ]
+                if equal? k "style" [
+                    res\style: append_style (to :string res\style) (to :string pending\style)
+                ]
+            ][
+                res\[k]: pending\[k]
+            ]
+            i: i + 1
+        ]
+        res
+]
+
+merge_layout_scopes: function [attrs] [
+        res: attrs
+        stackLen: size vista_state\layout_scope_stack
+        i: 0
+        while [less? i stackLen][
+            res: merge_pending_attrs res (get vista_state\layout_scope_stack i)
+            i: i + 1
+        ]
+        res
+]
+
+apply_font_attrs: function [style fontVal] [
+        t: type fontVal
+        switch equal? t :dictionary [
+            if key? fontVal "family" [
+                style: append_style style ("font-family: " ++ (to :string fontVal\family) ++ ";")
+            ]
+            if key? fontVal "size" [
+                fontSize: style_value fontVal\size
+                style: append_style style ("font-size: " ++ fontSize ++ ";")
+            ]
+            if key? fontVal "color" [
+                style: append_style style ("color: " ++ (to :string fontVal\color) ++ ";")
+            ]
+            if key? fontVal "weight" [
+                style: append_style style ("font-weight: " ++ (to :string fontVal\weight) ++ ";")
+            ]
+            if key? fontVal "style" [
+                style: append_style style ("font-style: " ++ (to :string fontVal\style) ++ ";")
+            ]
+            if key? fontVal "bold" [
+                if fontVal\bold [
+                    style: append_style style "font-weight: 700;"
+                ]
+            ]
+            if key? fontVal "italic" [
+                if fontVal\italic [
+                    style: append_style style "font-style: italic;"
+                ]
+            ]
+            style
+        ][
+            style: append_style style ("font-family: " ++ (to :string fontVal) ++ ";")
+        ]
+]
+
+apply_para_attrs: function [style paraVal] [
+        t: type paraVal
+        switch equal? t :dictionary [
+            if key? paraVal "align" [
+                style: append_style style ("text-align: " ++ (to :string paraVal\align) ++ ";")
+            ]
+            if key? paraVal "wrap" [
+                if not? paraVal\wrap [
+                    style: append_style style "white-space: nowrap;"
+                ]
+            ]
+            if key? paraVal "spacing" [
+                spacingVal: style_value paraVal\spacing
+                style: append_style style ("letter-spacing: " ++ spacingVal ++ ";")
+            ]
+            if key? paraVal "leading" [
+                leadingVal: style_value paraVal\leading
+                style: append_style style ("line-height: " ++ leadingVal ++ ";")
+            ]
+            style
+        ][
+            style: append_style style ("text-align: " ++ (to :string paraVal) ++ ";")
+        ]
+]
+
+apply_edge_attrs: function [baseStyle edgeVal] [
+        out: ""
+        if notEqual? baseStyle null [
+            out: to :string baseStyle
+        ]
+        t: type edgeVal
+        switch equal? t :dictionary [
+            sizeVal: 1
+            colorVal: "#888"
+            styleVal: "solid"
+            if key? edgeVal "size" [ sizeVal: edgeVal\size ]
+            if key? edgeVal "color" [ colorVal: edgeVal\color ]
+            if key? edgeVal "style" [ styleVal: edgeVal\style ]
+            sizeStr: style_value sizeVal
+            switch any? @[equal? styleVal "bevel" equal? styleVal "raised" equal? styleVal "inset"] [
+                out: append_style out ("border: " ++ sizeStr ++ " solid " ++ (to :string colorVal) ++ ";")
+                if equal? styleVal "bevel" [
+                    out: append_style out "box-shadow: inset 1px 1px 0 rgba(255,255,255,0.7), inset -1px -1px 0 rgba(0,0,0,0.3);"
+                ]
+                if equal? styleVal "raised" [
+                    out: append_style out "box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.25);"
+                ]
+                if equal? styleVal "inset" [
+                    out: append_style out "box-shadow: inset 0 1px 3px rgba(0,0,0,0.35);"
+                ]
+            ][
+                out: append_style out ("border: " ++ sizeStr ++ " " ++ (to :string styleVal) ++ " " ++ (to :string colorVal) ++ ";")
+            ]
+            if key? edgeVal "radius" [
+                radiusStr: style_value edgeVal\radius
+                out: append_style out ("border-radius: " ++ radiusStr ++ ";")
+            ]
+        ][
+            out: append_style out ("border: 1px solid " ++ (to :string edgeVal) ++ ";")
+        ]
+        out
+]
+
+apply_effect_attrs: function [style effectVal] [
+        t: type effectVal
+        switch equal? t :dictionary [
+            if key? effectVal "shadow" [
+                return append_style style ("box-shadow: " ++ (to :string effectVal\shadow) ++ ";")
+            ]
+            if key? effectVal "filter" [
+                return append_style style ("filter: " ++ (to :string effectVal\filter) ++ ";")
+            ]
+            if key? effectVal "type" [
+                effectVal: effectVal\type
+            ]
+        ][
+            effectVal: effectVal
+        ]
+        valStr: to :string effectVal
+        switch equal? valStr "shadow" [
+            append_style style "box-shadow: 0 2px 8px rgba(0,0,0,0.18);"
+        ][
+            switch equal? valStr "inset" [
+                append_style style "box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);"
+            ][
+                switch equal? valStr "raised" [
+                    append_style style "box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 2px 4px rgba(0,0,0,0.25);"
+                ][
+                    switch equal? valStr "emboss" [
+                        append_style style "box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.3);"
+                    ][
+                        switch equal? valStr "bevel" [
+                            append_style style "box-shadow: inset 1px 1px 0 rgba(255,255,255,0.7), inset -1px -1px 0 rgba(0,0,0,0.3);"
+                        ][
+                            append_style style ("filter: " ++ valStr ++ ";")
+                        ]
+                    ]
+                ]
+            ]
+        ]
+]
+
+apply_facet_attrs: function [attrs] [
+        style: ""
+        if key? attrs "style" [
+            style: to :string attrs\style
+            attrs: attrs_without attrs "style"
+        ]
+        if key? attrs "color" [
+            style: append_style style ("background-color: " ++ (to :string attrs\color) ++ ";")
+            attrs: attrs_without attrs "color"
+        ]
+        if key? attrs "font" [
+            style: apply_font_attrs style attrs\font
+            attrs: attrs_without attrs "font"
+        ]
+        if key? attrs "para" [
+            style: apply_para_attrs style attrs\para
+            attrs: attrs_without attrs "para"
+        ]
+        if key? attrs "valign" [
+            style: append_style style ("justify-content: " ++ (to :string attrs\valign) ++ ";")
+            style: append_style style ("vertical-align: " ++ (to :string attrs\valign) ++ ";")
+            attrs: attrs_without attrs "valign"
+        ]
+        if key? attrs "edge" [
+            style: apply_edge_attrs style attrs\edge
+            attrs: attrs_without attrs "edge"
+        ]
+        if key? attrs "effect" [
+            style: apply_effect_attrs style attrs\effect
+            attrs: attrs_without attrs "effect"
+        ]
+        if notEqual? style "" [
+            attrs\style: style
+        ]
+        attrs
+]
+
+header_value: function [hdr key] [
+        keyStr: to :string key
+        if key? hdr keyStr [
+            return hdr\[keyStr]
+        ]
+        lowerKey: lower keyStr
+        if key? hdr lowerKey [
+            return hdr\[lowerKey]
+        ]
+        null
+]
+
+header_from_block: function [blk] [
+        hdr: #[]
+        if notEqual? (type blk) :block [
+            return hdr
+        ]
+        blen: size blk
+        i: 0
+        while [less? i blen][
+            k: get blk i
+            ktype: type k
+            handled: false
+            if equal? ktype :label [
+                keyStr: to :string k
+                if less? (i + 1) blen [
+                    hdr\[keyStr]: get blk (i + 1)
+                    i: i + 2
+                    handled: true
+                ]
+            ]
+            if not? handled [
+                i: i + 1
+            ]
+        ]
+        hdr
+]
+
+apply_header_values: function [hdr] [
+        titleVal: header_value hdr "Title"
+        if notEqual? titleVal null [
+            webview_title: to :string titleVal
+        ]
+        widthVal: header_value hdr "Width"
+        if notEqual? widthVal null [
+            webview_width: widthVal
+        ]
+        heightVal: header_value hdr "Height"
+        if notEqual? heightVal null [
+            webview_height: heightVal
+        ]
+        logoVal: header_value hdr "Logo"
+        if notEqual? logoVal null [
+            vista_app_logo_path: to :string logoVal
+        ]
+        hdr
+]
+
+ARTURO: function [hdrBlock] [
+        hdr: header_from_block hdrBlock
+        if greater? (size keys hdr) 0 [
+            vista_app_header: hdr
+            apply_header_values hdr
+        ]
+        hdr
+]
+
+apply_arturo_header: function [] [
+        if greater? (size keys vista_app_header) 0 [
+            return apply_header_values vista_app_header
+        ]
+        null
+]
+
+run_app: function [layoutBlock] [
+    apply_arturo_header
+    view layoutBlock
+]
+
+apply_layout_attrs: function [attrs] [
+        style: ""
+        if key? attrs "style" [
+            style: to :string attrs\style
+            attrs: attrs_without attrs "style"
+        ]
+        if key? attrs "pad" [
+            padVal: style_value attrs\pad
+            style: append_style style ("padding: " ++ padVal ++ ";")
+            attrs: attrs_without attrs "pad"
+        ]
+        if key? attrs "space" [
+            spaceVal: style_value attrs\space
+            style: append_style style ("gap: " ++ spaceVal ++ ";")
+            attrs: attrs_without attrs "space"
+        ]
+        if key? attrs "align" [
+            style: append_style style ("align-items: " ++ (to :string attrs\align) ++ ";")
+            attrs: attrs_without attrs "align"
+        ]
+        if key? attrs "indent" [
+            indentVal: style_value attrs\indent
+            style: append_style style ("margin-left: " ++ indentVal ++ ";")
+            attrs: attrs_without attrs "indent"
+        ]
+        if key? attrs "size" [
+            sizeVal: attrs\size
+            sizeType: type sizeVal
+            switch equal? sizeType :block [
+                if equal? (size sizeVal) 2 [
+                    w: get sizeVal 0
+                    h: get sizeVal 1
+                    widthVal: style_value w
+                    heightVal: style_value h
+                    style: append_style style ("width: " ++ widthVal ++ ";")
+                    style: append_style style ("height: " ++ heightVal ++ ";")
+                ]
+            ][
+                sizeStr: to :string sizeVal
+                parts: split sizeStr "x"
+                switch equal? (size parts) 2 [
+                    widthVal: style_value (get parts 0)
+                    heightVal: style_value (get parts 1)
+                    style: append_style style ("width: " ++ widthVal ++ ";")
+                    style: append_style style ("height: " ++ heightVal ++ ";")
+                ][
+                    widthVal: style_value sizeStr
+                    style: append_style style ("width: " ++ widthVal ++ ";")
+                ]
+            ]
+            attrs: attrs_without attrs "size"
+        ]
+        if key? attrs "origin" [
+            pos: attrs\origin
+            if equal? (type pos) :block [
+                if equal? (size pos) 2 [
+                    leftVal: style_value (get pos 0)
+                    topVal: style_value (get pos 1)
+                    style: append_style style ("padding-left: " ++ leftVal ++ ";")
+                    style: append_style style ("padding-top: " ++ topVal ++ ";")
+                ]
+            ]
+            attrs: attrs_without attrs "origin"
+        ]
+        if key? attrs "offset" [
+            pos: attrs\offset
+            if equal? (type pos) :block [
+                if equal? (size pos) 2 [
+                    style: append_style style "position: relative;"
+                    leftVal: style_value (get pos 0)
+                    topVal: style_value (get pos 1)
+                    style: append_style style ("left: " ++ leftVal ++ ";")
+                    style: append_style style ("top: " ++ topVal ++ ";")
+                ]
+            ]
+            attrs: attrs_without attrs "offset"
+        ]
+        if key? attrs "at" [
+            pos: attrs\at
+            if equal? (type pos) :block [
+                if equal? (size pos) 2 [
+                    style: append_style style "position: absolute;"
+                    leftVal: style_value (get pos 0)
+                    topVal: style_value (get pos 1)
+                    style: append_style style ("left: " ++ leftVal ++ ";")
+                    style: append_style style ("top: " ++ topVal ++ ";")
+                ]
+            ]
+            attrs: attrs_without attrs "at"
+        ]
+        if notEqual? style "" [
+            attrs\style: style
+        ]
+        attrs
+]
+
+apply_event_attrs: function [attrs bindings] [
+        res: attrs
+        if key? res "on-click" [
+            val: res\["on-click"]
+            res: attrs_without res "on-click"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onclick: compile_action val bindings
+            ][
+                res\onclick: to :string val
+            ]
+        ]
+        if key? res "on-over" [
+            val: res\["on-over"]
+            res: attrs_without res "on-over"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onmouseenter: compile_action val bindings
+            ][
+                res\onmouseenter: to :string val
+            ]
+        ]
+        if key? res "on-out" [
+            val: res\["on-out"]
+            res: attrs_without res "on-out"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onmouseleave: compile_action val bindings
+            ][
+                res\onmouseleave: to :string val
+            ]
+        ]
+        if key? res "on-down" [
+            val: res\["on-down"]
+            res: attrs_without res "on-down"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onmousedown: compile_action val bindings
+            ][
+                res\onmousedown: to :string val
+            ]
+        ]
+        if key? res "on-up" [
+            val: res\["on-up"]
+            res: attrs_without res "on-up"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onmouseup: compile_action val bindings
+            ][
+                res\onmouseup: to :string val
+            ]
+        ]
+        if key? res "on-change" [
+            val: res\["on-change"]
+            res: attrs_without res "on-change"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onchange: compile_action val bindings
+            ][
+                res\onchange: to :string val
+            ]
+        ]
+        if key? res "on-key" [
+            val: res\["on-key"]
+            res: attrs_without res "on-key"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onkeydown: compile_action val bindings
+            ][
+                res\onkeydown: to :string val
+            ]
+        ]
+        if key? res "on-focus" [
+            val: res\["on-focus"]
+            res: attrs_without res "on-focus"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onfocus: compile_action val bindings
+            ][
+                res\onfocus: to :string val
+            ]
+        ]
+        if key? res "on-blur" [
+            val: res\["on-blur"]
+            res: attrs_without res "on-blur"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onblur: compile_action val bindings
+            ][
+                res\onblur: to :string val
+            ]
+        ]
+        if key? res "on-input" [
+            val: res\["on-input"]
+            res: attrs_without res "on-input"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\oninput: compile_action val bindings
+            ][
+                res\oninput: to :string val
+            ]
+        ]
+        res
+]
+
+prepare_attrs: function [attrs bindings] [
+        attrs: merge_layout_scopes attrs
+        attrs: apply_layout_attrs attrs
+        attrs: apply_facet_attrs attrs
+        attrs: apply_event_attrs attrs bindings
+        if greater? (size keys vista_state\layout_pending_attrs) 0 [
+            attrs: merge_pending_attrs attrs vista_state\layout_pending_attrs
+            vista_state\layout_pending_attrs: #[]
+        ]
+        attrs
+]
+
+merge_class_attr: function [attrs baseClass] [
+        if notEqual? (type attrs) :dictionary [
+            attrs: #[]
+        ]
+        classVal: baseClass
+        if key? attrs "class" [
+            classVal: baseClass ++ " " ++ to :string attrs\class
+        ]
+        rest: attrs_without attrs "class"
+        #[
+            class: classVal
+            attrs: rest
+        ]
+]
+
+js_literal: function [value] [
+        t: type value
+        switch equal? t :string [
+            escaped: js_escape_single value
+            out: "'"
+            out: out ++ escaped
+            out: out ++ "'"
+            out
+        ][
+            switch equal? t :integer [
+                to :string value
+            ][
+                switch equal? t :floating [
+                    to :string value
+                ][
+                    switch equal? t :logical [
+                        to :string value
+                    ][
+                        switch equal? t :null [
+                            "null"
+                        ][
+                            escaped: js_escape_single (to :string value)
+                            out: "'"
+                            out: out ++ escaped
+                            out: out ++ "'"
+                            out
+                        ]
+                    ]
+                ]
+            ]
+        ]
+]
+
+add_binding: function [bindings word] [
+        unless key? bindings word [
+            keyName: to :string word
+            val: ""
+            sym: symbols
+            has_value: key? sym keyName
+            switch has_value [
+                valCandidate: sym\[keyName]
+                switch equal? (type valCandidate) :function [
+                    val: ""
+                ][
+                    val: valCandidate
+                ]
+            ][
+                val: ""
+            ]
+            bindings\[word]: val
+        ]
+]
+
+js_token: function [token bindings] [
+        t: type token
+        switch equal? t :word [
+            add_binding bindings token
+            "state." ++ to :string token
+        ][
+            switch equal? t :symbol [
+                to :string token
+            ][
+                switch equal? t :string [
+                    escaped: js_escape_single token
+                    out: "'"
+                    out: out ++ escaped
+                    out: out ++ "'"
+                    out
+                ][
+                    switch equal? t :integer [
+                        to :string token
+                    ][
+                        switch equal? t :floating [
+                            to :string token
+                        ][
+                            switch equal? t :logical [
+                                to :string token
+                            ][
+                                switch equal? t :null [
+                                    "null"
+                                ][
+                                    escaped: js_escape_single (to :string token)
+                                    out: "'"
+                                    out: out ++ escaped
+                                    out: out ++ "'"
+                                    out
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+]
+
+compile_expr: function [tokens bindings] [
+        expr: ""
+        tokens_len: size tokens
+        if equal? tokens_len 0 [
+            return "null"
+        ]
+        i: 0
+        while [less? i tokens_len][
+            part: js_token (get tokens i) bindings
+            switch equal? expr "" [
+                expr: part
+            ][
+                expr: expr ++ " " ++ part
+            ]
+            i: i + 1
+        ]
+        expr
+]
+
+dict_to_block: function [d] [
+        out: []
+        if notEqual? (type d) :dictionary [
+                return out
+        ]
+        keysList: keys d
+        i: 0
+        klen: size keysList
+        while [less? i klen][
+                k: get keysList i
+                out: out ++ @[to :label (to :string k)]
+                out: out ++ @[d\[k]]
+                i: i + 1
+        ]
+        out
+]
+
+compile_action: function [blk bindings] [
+        if equal? (type blk) :dictionary [
+                blk: dict_to_block blk
+        ]
+        js: ""
+        blk_len: size blk
+        i: 0
+        while [less? i blk_len][
+            tok: get blk i
+            tok_type: type tok
+            switch equal? tok_type :label [
+                nameStr: to :string tok
+                nameWord: to :word nameStr
+                add_binding bindings nameWord
+                i: i + 1
+                exprTokens: []
+                while [less? i blk_len][
+                    next_type: type (get blk i)
+                    if equal? next_type :label [
+                        break
+                    ]
+                    exprTokens: append_value exprTokens (get blk i)
+                    i: i + 1
+                ]
+                expr: compile_expr exprTokens bindings
+                js: js ++ "state." ++ nameStr ++ " = " ++ expr ++ "; render();"
+            ][
+                i: i + 1
+            ]
+        ]
+        js
+]
+
+render_script: function [bindings] [
+        keysList: keys bindings
+        keys_len: size keysList
+        if equal? keys_len 0 [
+            return ""
+        ]
+        statePairs: ""
+        i: 0
+        while [less? i keys_len][
+            k: get keysList i
+            v: bindings\[k]
+            vStr: js_literal v
+            pair: to :string k ++ ": " ++ vStr
+            switch equal? statePairs "" [
+                statePairs: pair
+            ][
+                statePairs: statePairs ++ ", " ++ pair
+            ]
+            i: i + 1
+        ]
+        script: "<script>"
+        script: script ++ "const state = {" ++ statePairs ++ "};"
+        script: script ++ "function _vistaParsePx(v){const n=parseFloat(v);return isNaN(n)?0:n;}"
+        script: script ++ "function _vistaMeasureText(text,font){const c=_vistaMeasureText._c||(_vistaMeasureText._c=document.createElement('canvas'));const ctx=c.getContext('2d');ctx.font=font||'16px sans-serif';const lines=String(text||'').split('\\n');let maxW=0;lines.forEach(line=>{const w=ctx.measureText(line).width;if(w>maxW){maxW=w;}});let lineHeight=0;const m=ctx.measureText('M');if((m.actualBoundingBoxAscent||0)+(m.actualBoundingBoxDescent||0)>0){lineHeight=m.actualBoundingBoxAscent+m.actualBoundingBoxDescent;}if(!lineHeight){const fontSize=_vistaParsePx((font||'').match(/\\d+px/)?(font.match(/\\d+px/)[0]):'16px');lineHeight=fontSize*1.2;}let height=lineHeight*lines.length;return {width:maxW,height:height};}"
+        script: script ++ "function autoSize(){document.querySelectorAll('[data-auto-size]').forEach(el=>{const hasInlineWidth=!!el.style.width;const hasInlineHeight=!!el.style.height;const managed=el.dataset.autoSizeManaged==='1';if((hasInlineWidth||hasInlineHeight) && !managed){return;}const style=getComputedStyle(el);const text=el.textContent||'';const m=_vistaMeasureText(text,style.font);const padX=_vistaParsePx(style.paddingLeft)+_vistaParsePx(style.paddingRight);const padY=_vistaParsePx(style.paddingTop)+_vistaParsePx(style.paddingBottom);const borderX=_vistaParsePx(style.borderLeftWidth)+_vistaParsePx(style.borderRightWidth);const borderY=_vistaParsePx(style.borderTopWidth)+_vistaParsePx(style.borderBottomWidth);const lineHeight=(style.lineHeight&&style.lineHeight!=='normal')?_vistaParsePx(style.lineHeight):0;const lines=Math.max(1,String(text||'').split('\\n').length);if(lineHeight>0){m.height=Math.max(m.height,lineHeight*lines);}const w=Math.ceil(m.width+padX+borderX);const h=Math.ceil(m.height+padY+borderY);if(w>0){el.style.width=w+'px';}if(h>0){el.style.height=h+'px';}el.dataset.autoSizeManaged='1';});}"
+        script: script ++ "function bindInputs(){document.querySelectorAll('[data-bind]').forEach(el=>{if(el.dataset.vistaBound==='1'){return;}el.dataset.vistaBound='1';const key=el.getAttribute('data-bind');if(el.tagName==='INPUT'){if(el.type==='checkbox'){el.addEventListener('change',()=>{state[key]=el.checked;render();if(window.vistaPushState){vistaPushState();}});}else if(el.type==='radio'){el.addEventListener('change',()=>{if(el.checked){state[key]=el.value;}render();if(window.vistaPushState){vistaPushState();}});}else{el.addEventListener('input',()=>{state[key]=el.value;const action=el.dataset.oninputAction;if(action){try{eval(action);}catch(e){}}render();if(window.vistaPushState){vistaPushState();}});}}else if(el.tagName==='TEXTAREA'){el.addEventListener('input',()=>{state[key]=el.value;render();if(window.vistaPushState){vistaPushState();}});}else if(el.tagName==='SELECT'){el.addEventListener('change',()=>{state[key]=el.value;render();if(window.vistaPushState){vistaPushState();}});}});}"
+        script: script ++ "function render(){document.querySelectorAll('[data-bind]').forEach(el=>{const key=el.getAttribute('data-bind');if(el.tagName==='INPUT'){if(el.type==='checkbox'){el.checked=!!state[key];}else if(el.type==='radio'){el.checked=(state[key]==null?'':state[key])==el.value;}else{el.value=(state[key]==null?'':state[key]);}}else if(el.tagName==='TEXTAREA'){el.value=(state[key]==null?'':state[key]);}else if(el.tagName==='SELECT'){el.value=(state[key]==null?'':state[key]);}else if(el.tagName==='PROGRESS'){el.value=(state[key]==null?0:state[key]);}else if(el.tagName==='IMG'){if(state[key]!=null){el.src=state[key];}}else{el.textContent=(state[key]==null?'':state[key]);}});document.querySelectorAll('[data-show-bind]').forEach(el=>{const key=el.dataset.showBind;const expected=el.dataset.showValue;const cur=state[key];let show=false;if(expected==null||expected===''){show=!!cur;}else{show=String(cur)===expected;}el.style.display=show?'':'none';});document.querySelectorAll('ul[data-list-bind]').forEach(ul=>{const key=ul.dataset.listBind;const multi=ul.dataset.multi==='true';const items=[...ul.querySelectorAll('li[data-value]')];const setActive=(idx)=>{if(idx<0||idx>=items.length){return;}ul.dataset.activeIndex=String(idx);items.forEach((li,i)=>{li.classList.toggle('is-active',i===idx);});};const applyRange=(a,b,additive)=>{let start=Math.min(a,b);let end=Math.max(a,b);let values=items.slice(start,end+1).map(li=>li.dataset.value);let cur=state[key];if(!Array.isArray(cur)){cur=[];}if(!additive){cur=[];}values.forEach(v=>{if(!cur.includes(v)){cur.push(v);}});state[key]=cur;};const toggleValue=(v)=>{let cur=state[key];if(!Array.isArray(cur)){cur=[];}if(cur.includes(v)){cur=cur.filter(x=>x!==v);}else{cur=[...cur,v];}state[key]=cur;};const selectIndex=(idx,evt)=>{if(idx<0||idx>=items.length){return;}setActive(idx);const v=items[idx].dataset.value;if(!multi){state[key]=v;render();if(window.vistaPushState){vistaPushState();}return;}const shift=evt&&evt.shiftKey;const additive=evt&&(evt.ctrlKey||evt.metaKey);if(shift){const anchor=parseInt(ul.dataset.anchorIndex||String(idx),10);applyRange(anchor,idx,additive);}else if(additive){toggleValue(v);}else{state[key]=[v];}if(!shift){ul.dataset.anchorIndex=String(idx);}render();if(window.vistaPushState){vistaPushState();}};items.forEach((li,idx)=>{li.addEventListener('click',e=>{selectIndex(idx,e);});});ul.addEventListener('keydown',e=>{if(!items.length){return;}const selectedIndex=items.findIndex(li=>li.classList.contains('is-selected'));let idx=selectedIndex>=0?selectedIndex:0;if(e.key==='ArrowDown'){e.preventDefault();idx=Math.min(items.length-1,idx+1);if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(idx);return;}selectIndex(idx,e);}else if(e.key==='ArrowUp'){e.preventDefault();idx=Math.max(0,idx-1);if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(idx);return;}selectIndex(idx,e);}else if(e.key==='Home'){e.preventDefault();if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(0);return;}selectIndex(0,e);}else if(e.key==='End'){e.preventDefault();if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(items.length-1);return;}selectIndex(items.length-1,e);}else if(e.key===' '||e.key==='Enter'){e.preventDefault();selectIndex(idx,e);}else if(e.key.length===1 && !e.ctrlKey && !e.metaKey){const ch=e.key.toLowerCase();const buf=(ul._vistaTypeBuf||'')+ch;ul._vistaTypeBuf=buf;clearTimeout(ul._vistaTypeTimer);ul._vistaTypeTimer=setTimeout(()=>{ul._vistaTypeBuf='';},500);const found=items.findIndex(li=>li.textContent.trim().toLowerCase().startsWith(buf));if(found>=0){selectIndex(found,e);}} });});const handleKey=(el,e)=>{const bind=el.dataset.keyBind;const mode=el.dataset.keyMode||'keydown';if((mode==='keyup'&&e.type!=='keyup')||(mode!=='keyup'&&e.type!=='keydown')){return;}let value='';const modifiersOnly=el.dataset.keyModifiers==='true';if(modifiersOnly){const mods=[];if(e.shiftKey){mods.push('Shift');}if(e.ctrlKey){mods.push('Ctrl');}if(e.altKey){mods.push('Alt');}if(e.metaKey){mods.push('Meta');}value=mods.join('+');}else{value=e.key;}const filter=(el.dataset.keyFilter||'').split(',').map(s=>s.trim()).filter(Boolean);if(filter.length>0 && value!=='' && !filter.includes(value)){return;}state[bind]=value;render();if(el.dataset.keyAction){try{eval(el.dataset.keyAction);}catch(e){}}if(window.vistaPushState){vistaPushState();}};document.querySelectorAll('[data-key-bind]').forEach(el=>{el.addEventListener('keydown',e=>handleKey(el,e));el.addEventListener('keyup',e=>handleKey(el,e));});autoSize();}"
+        script: script ++ "setTimeout(()=>{render();bindInputs();},0);"
+        script: script ++ "window.vistaShow=function(id,html){const el=document.querySelector('[data-face-id=\"'+id+'\"]');if(!el){return false;}el.outerHTML=html;render();bindInputs();return true;};"
+        switch webview_state_sync_from_ui [
+            script: script ++ "window.vistaPushState=function(){if(window.__vistaPushTimer){clearTimeout(window.__vistaPushTimer);}window.__vistaPushTimer=setTimeout(()=>{fetch('/vista-state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)}).catch(()=>{});},"
+            script: script ++ to :string webview_state_push_ms
+            script: script ++ ");};"
+        ][
+            ""
+        ]
+        switch greater? webview_state_sync_ms 0 [
+            script: script ++ "document.addEventListener('DOMContentLoaded', ()=>{render();bindInputs();setInterval(()=>{fetch('/vista-sync').then(r=>r.json()).then(data=>{Object.keys(data||{}).forEach(k=>{state[k]=data[k];});render();});},"
+            script: script ++ to :string webview_state_sync_ms
+            script: script ++ ");});"
+        ][
+            script: script ++ "document.addEventListener('DOMContentLoaded', ()=>{render();bindInputs();});"
+        ]
+        script: script ++ "</script>"
+        script
+]
+
+tabs_script: function [] [
+        "<script>document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('[data-tabs]').forEach(container=>{const buttons=[...container.querySelectorAll('.vista-tab-btn')];const panels=[...container.querySelectorAll('.vista-tab-panel')];const activate=id=>{buttons.forEach(btn=>{btn.classList.toggle('is-active',btn.dataset.tab===id);});panels.forEach(panel=>{panel.classList.toggle('is-active',panel.dataset.tab===id);});};let selectedIndex=parseInt(container.dataset.tabsSelected||'0',10);if(isNaN(selectedIndex)){selectedIndex=0;}if(buttons.length>0){const idx=Math.max(0,Math.min(selectedIndex,buttons.length-1));activate(buttons[idx].dataset.tab);}buttons.forEach((btn,idx)=>{btn.addEventListener('click',()=>activate(btn.dataset.tab));btn.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();const next=(idx+1)%buttons.length;buttons[next].click();buttons[next].focus();}else if(e.key==='ArrowLeft'){e.preventDefault();const prev=(idx-1+buttons.length)%buttons.length;buttons[prev].click();buttons[prev].focus();}else if(e.key==='Home'){e.preventDefault();buttons[0].click();buttons[0].focus();}else if(e.key==='End'){e.preventDefault();buttons[buttons.length-1].click();buttons[buttons.length-1].focus();}});});});});</script>"
+]
+
+menubar_script: function [] [
+        "<script>document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('.vista-menubar').forEach(bar=>{const buttons=[...bar.querySelectorAll('[data-menu]')];const panels=[...bar.querySelectorAll('[data-menu-panel]')];let openKey=null;const closeAll=()=>{panels.forEach(p=>p.classList.remove('is-open'));buttons.forEach(b=>b.classList.remove('is-active'));openKey=null;};const openMenu=(key,btn)=>{const panel=panels.find(p=>p.dataset.menuPanel===key);if(!panel){return;}panels.forEach(p=>p.classList.toggle('is-open',p===panel));buttons.forEach(b=>b.classList.toggle('is-active',b===btn));const barRect=bar.getBoundingClientRect();const btnRect=btn.getBoundingClientRect();panel.style.left=(btnRect.left-barRect.left)+'px';panel.style.top=(barRect.height+4)+'px';openKey=key;};buttons.forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();const key=btn.dataset.menu;if(openKey===key){closeAll();}else{openMenu(key,btn);}});btn.addEventListener('mouseenter',()=>{if(openKey){openMenu(btn.dataset.menu,btn);}});});document.addEventListener('click',()=>{if(openKey){closeAll();}});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();}});panels.forEach(panel=>{panel.addEventListener('click',e=>e.stopPropagation());});});});</script>"
+]
+
+table_script: function [] [
+        "<script>document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('table[data-row-select]').forEach(table=>{table.querySelectorAll('tbody tr').forEach(row=>{row.addEventListener('click',()=>{table.querySelectorAll('tbody tr').forEach(r=>r.classList.remove('is-selected'));row.classList.add('is-selected');table.dataset.selectedText=row.textContent.trim();});});});});</script>"
+]
+
+auto_reload_script: function [] [
+        if webview_auto_reload [
+            return "<script>setInterval(()=>{location.reload();}," ++ (to :string webview_reload_ms) ++ ");</script>"
+        ]
+        ""
+]
+
+merge_bindings: function [dest src] [
+        keysList: keys src
+        i: 0
+        keys_len: size keysList
+        while [less? i keys_len][
+            k: get keysList i
+            dest\[k]: src\[k]
+            i: i + 1
+        ]
+]
+

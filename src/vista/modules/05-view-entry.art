@@ -1,0 +1,85 @@
+; View function: generate full HTML and serve
+view: function [layoutBlock] [
+    apply_arturo_header
+    vista_state\webview_open: false
+    fullHtml: build_full_html layoutBlock
+    htmlOnly: false
+    if attr? "returnHtml" [
+        htmlOnly: true
+    ]
+    if attr? "html" [
+        htmlOnly: true
+    ]
+    if htmlOnly [
+        return fullHtml
+    ]
+    noWebview: false
+    if attr? "noWebview" [
+        noWebview: true
+    ]
+    env_vars: env
+    if key? env_vars "VISTA_NO_WEBVIEW" [
+        noWebview: true
+    ]
+    if key? env_vars "NO_WEBVIEW" [
+        noWebview: true
+    ]
+    if not? webview_enabled [
+        noWebview: true
+    ]
+    filePath: attr "file"
+    switch notEqual? filePath null [
+        pathStr: to :string filePath
+        absPath: relative pathStr
+        write fullHtml absPath
+        if noWebview [
+            vista_state\webview_open: false
+            return fullHtml
+        ]
+        vista_state\webview_open: true
+        webview fullHtml
+        vista_state\webview_open: false
+    ][
+        write fullHtml "ui.html"
+        if noWebview [
+            vista_state\webview_open: false
+            return fullHtml
+        ]
+        vista_state\webview_open: true
+        webview fullHtml
+        vista_state\webview_open: false
+    ]
+]
+
+vid: function [layoutBlock] [
+    prev: vista_vid_mode
+    vista_vid_mode: true
+    result: null
+    returnHtml: false
+    if attr? "returnHtml" [
+        returnHtml: true
+    ]
+    if attr? "html" [
+        returnHtml: true
+    ]
+    switch returnHtml [
+        result: view .returnHtml layoutBlock
+    ][
+        switch attr? "file" [
+            path: attr "file"
+            switch attr? "noWebview" [
+                result: view .file:path .noWebview layoutBlock
+            ][
+                result: view .file:path layoutBlock
+            ]
+        ][
+            switch attr? "noWebview" [
+                result: view .noWebview layoutBlock
+            ][
+                result: view layoutBlock
+            ]
+        ]
+    ]
+    vista_vid_mode: prev
+    result
+]

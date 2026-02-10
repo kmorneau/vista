@@ -1,0 +1,656 @@
+; Vista UI Framework for Arturo - Modeling Rebol View
+; Generates HTML5 UI from declarative blocks, rendered via WebView/HTML5
+
+import "src/vista/graphics/vista-graphics.art"!
+
+; Face types: functions that generate HTML for UI elements
+button: function [text action attrs] [
+        attrsVal: attrs
+        if equal? attrsVal null [
+            attrsVal: #[]
+        ]
+        textStr: ""
+        if notEqual? text null [
+            textStr: to :string text
+        ]
+        actionStr: ""
+        if [action notEqual? null] [
+            actionStr: to :string action
+        ]
+        attrStr: attrs_to_html attrsVal
+        html: "<button" ++ attrStr
+        switch equal? actionStr "" [
+            html: html ++ ">"
+        ][
+            html: html ++ " onclick=\""
+            html: html ++ actionStr
+            html: html ++ "\">"
+        ]
+        html ++ textStr ++ "</button>"
+]
+
+key_button: function [text bindName attrs] [
+        attrsVal: attrs
+        if equal? attrsVal null [
+            attrsVal: #[]
+        ]
+        textStr: ""
+        if notEqual? text null [
+            textStr: to :string text
+        ]
+        bindStr: ""
+        if notEqual? bindName null [
+            bindStr: to :string bindName
+        ]
+        merged: merge_class_attr attrsVal "vista-key"
+        attrs: merged\attrs
+        if key? merged "class" [
+            attrs\class: merged\class
+        ]
+        if notEqual? bindStr "" [
+            attrs\["data-key-bind"]: bindStr
+        ]
+        if not? key? attrs "tabindex" [
+            attrs\tabindex: 0
+        ]
+        attrStr: attrs_to_html attrs
+        "<button" ++ attrStr ++ ">" ++ textStr ++ "</button>"
+]
+
+text: function [content] [
+        contentStr: html_text content
+        "<span>" ++ contentStr ++ "</span>"
+]
+
+title: function [content attrs] [
+        merged: merge_class_attr attrs "vista-title"
+        attrStr: attrs_to_html merged\attrs
+        contentStr: html_text content
+        "<h1 class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</h1>"
+]
+
+subtitle: function [content attrs] [
+        merged: merge_class_attr attrs "vista-subtitle"
+        attrStr: attrs_to_html merged\attrs
+        contentStr: html_text content
+        "<h2 class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</h2>"
+]
+
+field: function [value] [
+        "<input type='text' value='" ++ (to :string value) ++ "'>"
+]
+
+label: function [content] [
+        contentStr: html_text content
+        "<label>" ++ contentStr ++ "</label>"
+]
+
+box: function [content attrs] [
+        merged: merge_class_attr attrs "vista-box"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+panel_face: function [titleHtml bodyHtml attrs] [
+        merged: merge_class_attr attrs "vista-panel"
+        attrStr: attrs_to_html merged\attrs
+        html: "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        if notEqual? titleHtml "" [
+            html: html ++ "<div class='vista-panel-title'>" ++ titleHtml ++ "</div>"
+        ]
+        html: html ++ "<div class='vista-panel-body'>" ++ bodyHtml ++ "</div></div>"
+        html
+]
+
+grid_face: function [content attrs cols] [
+        merged: merge_class_attr attrs "vista-grid"
+        attrStr: attrs_to_html merged\attrs
+        html: "<div class='" ++ merged\class ++ "'" ++ attrStr ++ " style='display: grid; grid-template-columns: repeat("
+        html: html ++ to :string cols
+        html: html ++ ", 1fr);'>"
+        html: html ++ content ++ "</div>"
+        html
+]
+
+spacer_face: function [attrs] [
+        attrStr: attrs_to_html attrs
+        "<div class='vista-spacer'" ++ attrStr ++ "></div>"
+]
+
+table_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table"
+        attrStr: attrs_to_html merged\attrs
+        "<table class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</table>"
+]
+
+table_row_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-row"
+        attrStr: attrs_to_html merged\attrs
+        contentStr: ""
+        if notEqual? content null [
+            contentStr: to :string content
+        ]
+        "<tr class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</tr>"
+]
+
+table_cell_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-cell"
+        attrStr: attrs_to_html merged\attrs
+        contentStr: ""
+        if notEqual? content null [
+            contentStr: to :string content
+        ]
+        "<td class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</td>"
+]
+
+table_head_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-head"
+        attrStr: attrs_to_html merged\attrs
+        "<thead class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</thead>"
+]
+
+table_body_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-body"
+        attrStr: attrs_to_html merged\attrs
+        "<tbody class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</tbody>"
+]
+
+table_foot_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-foot"
+        attrStr: attrs_to_html merged\attrs
+        "<tfoot class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</tfoot>"
+]
+
+table_header_cell_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-table-header"
+        attrStr: attrs_to_html merged\attrs
+        "<th class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</th>"
+]
+
+toolbar_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-toolbar"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+menubar_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-menubar"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+tool_group_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-tool-group"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+canvas_face: function [attrs] [
+        merged: merge_class_attr attrs "vista-canvas"
+        attrStr: attrs_to_html merged\attrs
+        "<canvas class='" ++ merged\class ++ "'" ++ attrStr ++ "></canvas>"
+]
+
+canvas_draw_script: function [face] [
+        if not? key? face "meta" [
+                return ""
+        ]
+        if not? key? face\meta "draw" [
+                return ""
+        ]
+        drawBlock: face\meta\draw
+        if not? key? face\attrs "id" [
+                return ""
+        ]
+        canvasId: face\attrs\id
+        draw_script canvasId drawBlock
+]
+
+divider_face: function [attrs] [
+        merged: merge_class_attr attrs "vista-divider"
+        attrStr: attrs_to_html merged\attrs
+        "<hr class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+]
+
+split_face: function [leftHtml rightHtml attrs ratio] [
+        merged: merge_class_attr attrs "vista-split"
+        attrStr: attrs_to_html merged\attrs
+        leftStyle: ""
+        rightStyle: ""
+        if notEqual? ratio null [
+            ratioNum: ratio
+            if less? ratioNum 1 [
+                ratioNum: ratioNum * 100
+            ]
+            leftStr: to :string ratioNum
+            rightStr: to :string (100 - ratioNum)
+            leftStyle: " style='flex-basis: " ++ leftStr ++ "%;'"
+            rightStyle: " style='flex-basis: " ++ rightStr ++ "%;'"
+        ]
+        html: "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        html: html ++ "<div class='vista-split-pane'" ++ leftStyle ++ ">" ++ leftHtml ++ "</div>"
+        html: html ++ "<div class='vista-split-pane'" ++ rightStyle ++ ">" ++ rightHtml ++ "</div>"
+        html ++ "</div>"
+]
+
+text_list: function [items attrs] [
+        merged: merge_class_attr attrs "vista-text-list"
+        attrStr: attrs_to_html merged\attrs
+        html: "<ul class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        i: 0
+        items_len: size items
+        while [less? i items_len][
+            val: get items i
+            val_type: type val
+            switch equal? val_type :word [
+                lit: to :literal val
+                if set? lit [
+                    val: do to :string val
+                ]
+            ][
+                val: val
+            ]
+            html: html ++ "<li>"
+            html: html ++ html_text val
+            html: html ++ "</li>"
+            i: i + 1
+        ]
+        html: html ++ "</ul>"
+        html
+]
+
+text_list_bind: function [items bindings attrs] [
+        merged: merge_class_attr attrs "vista-text-list"
+        attrStr: attrs_to_html merged\attrs
+        html: "<ul class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        i: 0
+        items_len: size items
+        while [less? i items_len][
+            val: get items i
+            val_type: type val
+            switch equal? val_type :word [
+                add_binding bindings val
+                val_str: to :string val
+                html: html ++ "<li data-bind='"
+                html: html ++ val_str
+                html: html ++ "'></li>"
+            ][
+                html: html ++ "<li>"
+                html: html ++ html_text val
+                html: html ++ "</li>"
+            ]
+            i: i + 1
+        ]
+        html: html ++ "</ul>"
+        html
+]
+
+list_face_bind: function [items bindName multi bindings attrs] [
+        merged: merge_class_attr attrs "vista-list"
+        merged\attrs\["data-list-bind"]: bindName
+        merged\attrs\["data-multi"]: to :string multi
+        if not? key? merged\attrs "tabindex" [
+            merged\attrs\tabindex: 0
+        ]
+        attrStr: attrs_to_html merged\attrs
+        html: "<ul class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        i: 0
+        items_len: size items
+        while [less? i items_len][
+            val: get items i
+            val_type: type val
+            switch equal? val_type :word [
+                lit: to :literal val
+                if set? lit [
+                    val: do to :string val
+                ]
+            ][
+                val: val
+            ]
+            valStr: to :string val
+            valAttr: html_escape_attr valStr
+            html: html ++ "<li data-value='" ++ valAttr ++ "'>"
+            html: html ++ html_text val
+            html: html ++ "</li>"
+            i: i + 1
+        ]
+        html: html ++ "</ul>"
+        html
+]
+
+row: function [content attrs] [
+        merged: merge_class_attr attrs "vista-row"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+col: function [content attrs] [
+        merged: merge_class_attr attrs "vista-col"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+group: function [content attrs] [
+        attrStr: attrs_to_html attrs
+        "<div" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+sensor_face: function [content attrs] [
+        if key? attrs "onclick" [
+                if not? key? attrs "tabindex" [
+                        attrs\tabindex: 0
+                ]
+                if not? key? attrs "role" [
+                        attrs\role: "button"
+                ]
+                if not? key? attrs "onkeydown" [
+                        attrs\onkeydown: "if(event.key==='Enter'||event.key===' '){event.preventDefault();" ++ (to :string attrs\onclick) ++ ";}"
+                ]
+                switch key? attrs "class" [
+                        attrs\class: to :string attrs\class ++ " vista-clickable"
+                ][
+                        attrs\class: "vista-clickable"
+                ]
+        ]
+        merged: merge_class_attr attrs "vista-sensor"
+        attrStr: attrs_to_html merged\attrs
+        "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+form: function [content attrs action] [
+        attrStr: attrs_to_html attrs
+        html: "<form" ++ attrStr
+        switch equal? action "" [
+            html: html ++ ">"
+        ][
+            html: html ++ " onsubmit=\""
+            html: html ++ action
+            html: html ++ "; return false;\">"
+        ]
+        html ++ content ++ "</form>"
+]
+
+checkbox: function [labelHtml bindName attrs] [
+        merged: merge_class_attr attrs "vista-checkbox"
+        disabledAttr: ""
+        if key? attrs "disabled" [
+            if attrs\disabled [
+                disabledAttr: " disabled"
+            ]
+            attrs: attrs_without attrs "disabled"
+        ]
+        attrStr: attrs_to_html merged\attrs
+        html: "<label class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        html: html ++ "<input type='checkbox' data-bind='" ++ bindName ++ "'" ++ disabledAttr ++ ">"
+        switch equal? labelHtml "" [
+            html: html ++ "</label>"
+        ][
+            html: html ++ "<span>" ++ labelHtml ++ "</span></label>"
+        ]
+        html
+]
+
+toggle: function [labelHtml bindName attrs] [
+        merged: merge_class_attr attrs "vista-toggle"
+        disabledAttr: ""
+        if key? attrs "disabled" [
+            if attrs\disabled [
+                disabledAttr: " disabled"
+            ]
+            attrs: attrs_without attrs "disabled"
+        ]
+        attrStr: attrs_to_html merged\attrs
+        html: "<label class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        html: html ++ "<input type='checkbox' data-bind='" ++ bindName ++ "'" ++ disabledAttr ++ ">"
+        html: html ++ "<span class='vista-toggle-slider'></span>"
+        switch equal? labelHtml "" [
+            html: html ++ "</label>"
+        ][
+            html: html ++ "<span class='vista-toggle-label'>" ++ labelHtml ++ "</span></label>"
+        ]
+        html
+]
+
+input_field: function [bindName attrs] [
+        inputType: "text"
+        if key? attrs "type" [
+            inputType: to :string attrs\type
+        ]
+        if key? attrs "oninput" [
+            attrs\["data-oninput-action"]: attrs\oninput
+            attrs: attrs_without attrs "oninput"
+        ]
+        attrStr: attrs_to_html (attrs_without attrs "type")
+        "<input type='" ++ inputType ++ "' data-bind='" ++ bindName ++ "'" ++ attrStr ++ ">"
+]
+
+slider_field: function [bindName attrs] [
+        attrsVal: attrs
+        if notEqual? (type attrsVal) :dictionary [
+            attrsVal: #[]
+        ]
+        merged: merge_class_attr attrsVal "vista-slider"
+        mergedAttrs: merged\attrs
+        unless key? mergedAttrs "type" [
+            mergedAttrs\type: "range"
+        ]
+        input_field bindName mergedAttrs
+]
+
+rotary_field: function [bindName attrs] [
+        attrsVal: attrs
+        if notEqual? (type attrsVal) :dictionary [
+            attrsVal: #[]
+        ]
+        merged: merge_class_attr attrsVal "vista-rotary"
+        mergedAttrs: merged\attrs
+        unless key? mergedAttrs "type" [
+            mergedAttrs\type: "range"
+        ]
+        input_field bindName mergedAttrs
+]
+
+textarea_field: function [bindName attrs value] [
+        attrStr: attrs_to_html attrs
+        html: "<textarea data-bind='" ++ bindName ++ "'" ++ attrStr ++ ">"
+        if notEqual? value null [
+            html: html ++ html_escape_attr (to :string value)
+        ]
+        html ++ "</textarea>"
+]
+
+select_field: function [bindName attrs options] [
+        attrStr: attrs_to_html attrs
+        html: "<select data-bind='" ++ bindName ++ "'" ++ attrStr ++ ">"
+        opt_len: size options
+        i: 0
+        while [less? i opt_len][
+            opt: get options i
+            opt_type: type opt
+            switch equal? opt_type :block [
+                if (size opt) equal? 2 [
+                    val: get opt 0
+                    lbl: get opt 1
+                    html: html ++ "<option value='"
+                    html: html ++ html_escape_attr (to :string val)
+                    html: html ++ "'>"
+                    html: html ++ html_text lbl
+                    html: html ++ "</option>"
+                ]
+            ][
+                html: html ++ "<option value='"
+                html: html ++ html_escape_attr (to :string opt)
+                html: html ++ "'>"
+                html: html ++ html_text opt
+                html: html ++ "</option>"
+            ]
+            i: i + 1
+        ]
+        html ++ "</select>"
+]
+
+radio_group: function [bindName attrs options bindings] [
+        merged: merge_class_attr attrs "vista-radio-group"
+        attrStr: attrs_to_html merged\attrs
+        html: "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        opt_len: size options
+        i: 0
+        while [less? i opt_len][
+            opt: get options i
+            opt_type: type opt
+            opt_norm: opt
+            opt_norm_type: opt_type
+            if notEqual? opt_type :block [
+                opt_text: to :string opt
+                if all? @[prefix? opt_text "[" suffix? opt_text "]"] [
+                    parsed_opt: do opt_text
+                    if equal? (type parsed_opt) :block [
+                        opt_norm: parsed_opt
+                        opt_norm_type: :block
+                    ]
+                ]
+            ]
+            opt_value: ""
+            opt_label: ""
+            label_block: false
+            opt_attrs: #[]
+            if equal? opt_norm_type :block [
+                opt_len2: size opt_norm
+                if greaterOrEqual? opt_len2 2 [
+                    opt_value: to :string (get opt_norm 0)
+                    label_part: get opt_norm 1
+                    if greaterOrEqual? opt_len2 3 [
+                        tok2: get opt_norm 2
+                        if equal? (type tok2) :dictionary [
+                            opt_attrs: tok2
+                        ]
+                    ]
+                    if greaterOrEqual? opt_len2 4 [
+                        tok2: get opt_norm 2
+                        tok3: get opt_norm 3
+                        if all? @[equal? (type tok2) :symbol equal? (to :string tok2) "#" equal? (type tok3) :block] [
+                            opt_attrs: header_from_block tok3
+                        ]
+                    ]
+                    switch equal? (type label_part) :block [
+                        inner: layout_state label_part
+                        merge_bindings bindings inner\bindings
+                        opt_label: inner\html
+                        label_block: true
+                    ][
+                        opt_label: html_text label_part
+                    ]
+                ] [
+                    opt_value: to :string opt_norm
+                    opt_label: html_text opt_norm
+                ]
+            ] [
+                opt_value: to :string opt
+                opt_label: html_text opt
+            ]
+            optAttrStr: ""
+            if equal? (type opt_attrs) :dictionary [
+                optAttrStr: attrs_to_html opt_attrs
+            ]
+            html: html ++ "<label class='vista-radio-item'>"
+            html: html ++ "<input type='radio' data-bind='"
+            html: html ++ bindName
+            html: html ++ "' name='"
+            html: html ++ bindName
+            html: html ++ "' value='"
+            html: html ++ html_escape_attr opt_value
+            html: html ++ "'" ++ optAttrStr ++ ">"
+            switch label_block [
+                html: html ++ opt_label ++ "</label>"
+            ][
+                html: html ++ "<span>" ++ opt_label ++ "</span></label>"
+            ]
+            i: i + 1
+        ]
+        html ++ "</div>"
+]
+
+image_face: function [src attrs] [
+        attrStr: attrs_to_html attrs
+        srcStr: html_escape_attr (to :string src)
+        "<img src='" ++ srcStr ++ "'" ++ attrStr ++ ">"
+]
+
+progress_face: function [value attrs] [
+        attrStr: attrs_to_html attrs
+        valueStr: html_escape_attr (to :string value)
+        "<progress value='" ++ valueStr ++ "'" ++ attrStr ++ "></progress>"
+]
+
+webview_title: "ARTURO/VISTA"
+webview_width: 900
+webview_height: 600
+webview_debug: false
+webview_enabled: true
+webview_auto_reload: false
+webview_reload_ms: 1000
+webview_sync_updates: false
+webview_sync_state_updates: false
+webview_state_sync_ms: 0
+webview_state_sync_from_ui: false
+webview_state_push_ms: 150
+vista_app_header: #[]
+vista_app_logo_path: "arturo-vista.png"
+vista_css: "*{box-sizing:border-box;}" ++
+    ":root{--arturo-primary:#f2c230;--arturo-ink:#141414;--arturo-muted:#4b4b4b;--arturo-bg:#f7f6f1;--arturo-panel:#ffffff;--arturo-border:#ded6c2;--arturo-focus:#1f1f1f;}" ++
+    "body{font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;margin:0;background:var(--arturo-bg);color:var(--arturo-ink);}" ++
+    "button,input,select,textarea{font:inherit;}" ++
+    "button{cursor:pointer;}" ++
+    "a{color:inherit;}" ++
+    ".vista-app-header{position:sticky;top:0;z-index:1000;background:var(--arturo-primary);color:var(--arturo-ink);border-bottom:2px solid var(--arturo-ink);}" ++
+    ".vista-app-header-inner{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;}" ++
+    ".vista-app-logo{height:28px;width:auto;display:block;}" ++
+    ".vista-app-mark{font-weight:800;letter-spacing:0.2em;text-transform:uppercase;}" ++
+    ".vista-app-title{font-size:18px;font-weight:700;}" ++
+    ".vista-app-body{max-width:1100px;margin:0 auto;padding:16px;}" ++
+    ".vista-row,.vista-layout-across{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}" ++
+    ".vista-col,.vista-layout-below{display:flex;flex-direction:column;gap:8px;}" ++
+    ".vista-layout-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}" ++
+    ".vista-box{border:1px solid var(--arturo-border);background:var(--arturo-panel);border-radius:10px;padding:12px;}" ++
+    ".vista-panel{border:1px solid var(--arturo-border);background:var(--arturo-panel);border-radius:12px;overflow:hidden;}" ++
+    ".vista-panel-title{padding:8px 10px;font-weight:700;background:var(--arturo-primary);border-bottom:1px solid var(--arturo-ink);}" ++
+    ".vista-panel-body{padding:12px;}" ++
+    ".vista-grid{gap:8px;}" ++
+    ".vista-spacer{min-height:8px;min-width:8px;}" ++
+    ".vista-table{width:100%;border-collapse:collapse;background:var(--arturo-panel);}" ++
+    ".vista-table th,.vista-table td{border:1px solid var(--arturo-border);padding:8px 10px;text-align:left;}" ++
+    ".vista-table tbody tr:hover{background:#fbf0c2;}" ++
+    ".vista-table tr.is-selected{background:#f7e199;}" ++
+    ".vista-toolbar,.vista-menubar{display:flex;gap:6px;align-items:center;padding:6px 8px;background:var(--arturo-primary);border:1px solid var(--arturo-ink);border-radius:10px;}" ++
+    ".vista-menubar{position:relative;}" ++
+    ".vista-menu-panel{position:absolute;top:calc(100% + 4px);min-width:160px;background:var(--arturo-panel);border:1px solid var(--arturo-border);border-radius:8px;padding:6px;box-shadow:0 8px 20px rgba(0,0,0,0.12);display:none;z-index:1000;}" ++
+    ".vista-menu-panel.is-open{display:block;}" ++
+    ".vista-menu-item{display:block;width:100%;text-align:left;}" ++
+    ".vista-tool-group{display:flex;gap:6px;align-items:center;}" ++
+    ".vista-divider{border:none;border-top:1px solid var(--arturo-border);margin:8px 0;}" ++
+    ".vista-canvas{border:1px solid var(--arturo-border);border-radius:8px;}" ++
+    ".vista-split{display:flex;gap:8px;}" ++
+    ".vista-split-pane{flex:1;}" ++
+    ".vista-text-list{padding-left:18px;margin:0;}" ++
+    ".vista-list{list-style:none;padding:0;margin:0;border:1px solid var(--arturo-border);border-radius:10px;background:var(--arturo-panel);max-height:220px;overflow:auto;}" ++
+    ".vista-list li{padding:6px 8px;border-bottom:1px solid var(--arturo-border);cursor:pointer;}" ++
+    ".vista-list li:last-child{border-bottom:none;}" ++
+    ".vista-list li.is-selected{background:#f7e199;}" ++
+    ".vista-list li.is-active{outline:2px solid var(--arturo-ink);}" ++
+    ".vista-tabs{display:flex;flex-direction:column;gap:6px;}" ++
+    ".vista-tabs-header{display:flex;gap:6px;flex-wrap:wrap;}" ++
+    ".vista-tab-btn{padding:6px 10px;border:1px solid var(--arturo-border);border-radius:8px;background:var(--arturo-panel);}" ++
+    ".vista-tab-btn.is-active{background:var(--arturo-primary);border-color:var(--arturo-ink);}" ++
+    ".vista-tab-panel{display:none;padding:10px;border:1px solid var(--arturo-border);border-radius:10px;background:var(--arturo-panel);}" ++
+    ".vista-tab-panel.is-active{display:block;}" ++
+    ".vista-key{min-width:120px;}" ++
+    ".vista-radio-group{display:flex;flex-direction:column;gap:6px;}" ++
+    ".vista-radio-item{display:flex;align-items:center;gap:6px;}"
+vista_vid_css: "body.vista-vid{background:#e5e5e5;}" ++
+    "body.vista-vid .vista-panel{border-radius:6px;border-color:#a9a9a9;}" ++
+    "body.vista-vid .vista-panel-title{background:#d6d6d6;}" ++
+    "body.vista-vid .vista-toolbar,body.vista-vid .vista-menubar{background:#dcdcdc;border-color:#b7b7b7;}" ++
+    "body.vista-vid .vista-box{border-radius:4px;border-color:#a9a9a9;}" ++
+    "body.vista-vid .vista-tab-btn{background:#efefef;}" ++
+    "body.vista-vid .vista-tab-btn.is-active{background:#cfe0ff;}"
+
