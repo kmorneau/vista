@@ -907,6 +907,28 @@ draw_to_canvas: function [canvasId drawBlock] [
                                                 ]
                                         ]
                                 ]
+                                "arc" [
+                                        if less? (i + 3) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                r: get drawBlock (i + 2)
+                                                ang: get drawBlock (i + 3)
+                                                if notEqual? p1 null [
+                                                        startDeg: 0
+                                                        endDeg: 360
+                                                        if equal? (type ang) :block [
+                                                                if greaterOrEqual? (size ang) 2 [
+                                                                        startDeg: get ang 0
+                                                                        endDeg: get ang 1
+                                                                ]
+                                                        ] else [
+                                                                endDeg: ang
+                                                        ]
+                                                        js: js ++ "ctx.beginPath();ctx.arc(" ++ to :string p1\x ++ "," ++ to :string p1\y ++ "," ++ to :string r ++ ",(" ++ to :string startDeg ++ ")*Math.PI/180,(" ++ to :string endDeg ++ ")*Math.PI/180);ctx.stroke();"
+                                                        i: i + 4
+                                                        continue
+                                                ]
+                                        ]
+                                ]
                                 "ellipse" [
                                         if less? (i + 2) blen [
                                                 p1: draw_point (get drawBlock (i + 1))
@@ -944,6 +966,29 @@ draw_to_canvas: function [canvasId drawBlock] [
                                                                         continue
                                                                 ]
                                                         ]
+                                                ]
+                                        ]
+                                ]
+                                "curve" [
+                                        if less? (i + 3) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                c: draw_point (get drawBlock (i + 2))
+                                                p2: draw_point (get drawBlock (i + 3))
+                                                if all? @[notEqual? p1 null notEqual? c null notEqual? p2 null] [
+                                                        js: js ++ "ctx.beginPath();ctx.moveTo(" ++ to :string p1\x ++ "," ++ to :string p1\y ++ ");ctx.quadraticCurveTo(" ++ to :string c\x ++ "," ++ to :string c\y ++ "," ++ to :string p2\x ++ "," ++ to :string p2\y ++ ");ctx.stroke();"
+                                                        i: i + 4
+                                                        continue
+                                                ]
+                                        ]
+                                        if less? (i + 4) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                c1: draw_point (get drawBlock (i + 2))
+                                                c2: draw_point (get drawBlock (i + 3))
+                                                p2: draw_point (get drawBlock (i + 4))
+                                                if all? @[notEqual? p1 null notEqual? c1 null notEqual? c2 null notEqual? p2 null] [
+                                                        js: js ++ "ctx.beginPath();ctx.moveTo(" ++ to :string p1\x ++ "," ++ to :string p1\y ++ ");ctx.bezierCurveTo(" ++ to :string c1\x ++ "," ++ to :string c1\y ++ "," ++ to :string c2\x ++ "," ++ to :string c2\y ++ "," ++ to :string p2\x ++ "," ++ to :string p2\y ++ ");ctx.stroke();"
+                                                        i: i + 5
+                                                        continue
                                                 ]
                                         ]
                                 ]
@@ -1022,6 +1067,17 @@ draw_to_canvas: function [canvasId drawBlock] [
                                                 ]
                                         ]
                                 ]
+                                "flood" [
+                                        if less? (i + 2) blen [
+                                                p1: draw_point (get drawBlock (i + 1))
+                                                col: get drawBlock (i + 2)
+                                                if notEqual? p1 null [
+                                                        js: js ++ "ctx.save();ctx.fillStyle=" ++ draw_js_token col ++ ";ctx.fillRect(0,0,c.width,c.height);ctx.restore();"
+                                                        i: i + 3
+                                                        continue
+                                                ]
+                                        ]
+                                ]
                         ]
                 ]
                 i: i + 1
@@ -1057,12 +1113,16 @@ logo_data_url: function [pathStr] [
         if any? @[equal? pathStr null equal? pathStr ""] [
                 return ""
         ]
+        ptype: type pathStr
+        if not? equal? ptype :string [
+                if any? @[equal? ptype :literal equal? ptype :pathLiteral equal? ptype :path] [
+                        pathStr: to :string pathStr
+                ] [
+                        return ""
+                ]
+        ]
         if any? @[prefix? pathStr "data:" prefix? pathStr "http://" prefix? pathStr "https://"] [
                 return pathStr
-        ]
-        if exists? pathStr [
-                encoded: encode (read pathStr)
-                return "data:image/png;base64," ++ encoded
         ]
         pathStr
 ]
@@ -2060,7 +2120,7 @@ is_keyword: function [item block] [
                 ]
                 return true
             ]
-            in? name ["across" "below" "return" "end" "pad" "space" "align" "valign" "size" "origin" "offset" "indent" "guide" "do" "scope" "raw" "style" "styles" "stylize" "at" "backcolor" "text" "title" "subtitle" "field" "info" "button" "key" "label" "box" "panel" "text-list" "text_list" "list" "row" "col" "grid" "spacer" "group" "form" "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select" "drop-list" "drop_list" "radio" "radio-group" "radio_group" "tabs" "tab" "image" "icon" "anim" "progress" "table" "table-row" "table_row" "table-cell" "table_cell" "table-header" "table_header" "table-head" "table_head" "table-body" "table_body" "table-foot" "table_foot" "toolbar" "menubar" "tool-group" "tool_group" "canvas" "divider" "split" "sensor" "pen" "fill-pen" "line-width" "line-cap" "line-join" "line-pattern" "line" "box" "circle" "ellipse" "polygon" "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew" "smooth" "coord-system" "text-baseline" "text-align" "linear-gradient" "radial-gradient"]
+            in? name ["across" "below" "return" "end" "pad" "space" "align" "valign" "size" "origin" "offset" "indent" "guide" "do" "scope" "raw" "style" "styles" "stylize" "at" "backcolor" "text" "title" "subtitle" "field" "info" "button" "key" "label" "box" "panel" "text-list" "text_list" "list" "row" "col" "grid" "spacer" "group" "form" "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select" "drop-list" "drop_list" "radio" "radio-group" "radio_group" "tabs" "tab" "image" "icon" "anim" "progress" "table" "table-row" "table_row" "table-cell" "table_cell" "table-header" "table_header" "table-head" "table_head" "table-body" "table_body" "table-foot" "table_foot" "toolbar" "menubar" "tool-group" "tool_group" "canvas" "divider" "split" "sensor" "pen" "fill-pen" "line-width" "line-cap" "line-join" "line-pattern" "line" "box" "circle" "arc" "ellipse" "polygon" "curve" "flood" "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew" "smooth" "coord-system" "text-baseline" "text-align" "linear-gradient" "radial-gradient"]
         ][
             ; Also check for compound keywords like "-width" from "line-width" tokenized as "line - width"
             switch equal? item_type :symbol [

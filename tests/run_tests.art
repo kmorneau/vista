@@ -57,6 +57,7 @@ files: [
     "tests/52-draw-transforms.art"
     "tests/52-face-inspector.art"
     "tests/53-canvas-styles.art"
+    "tests/54-draw-arc-curve-flood.art"
 ]
 
 out_dir: "tests/snapshots/snapshots"

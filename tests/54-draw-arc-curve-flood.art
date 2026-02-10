@@ -1,0 +1,23 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    canvas .id:"draw-arc-curve-flood" .width: 360 .height: 220 [
+        pen "#1f5cff"
+        line-width 3
+        arc [90 90] 56 [30 280]
+
+        pen "#ff6b6b"
+        curve [20 170] [120 110] [220 170]
+
+        pen "#0f172a"
+        curve [220 170] [255 120] [285 220] [335 170]
+
+        flood [0 0] "#fff7cf"
+        pen "#111827"
+        line-width 2
+        arc [90 90] 56 [30 280]
+        curve [20 170] [120 110] [220 170]
+        curve [220 170] [255 120] [285 220] [335 170]
+    ]
+]
+print html

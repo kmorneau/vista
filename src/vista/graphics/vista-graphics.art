@@ -228,6 +228,28 @@ draw_to_canvas: function [canvasId drawBlock] [
                         ]
                     ]
                 ]
+                "arc" [
+                    if less? (i + 3) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        r: get drawBlock (i + 2)
+                        ang: get drawBlock (i + 3)
+                        if notEqual? p1 null [
+                            startDeg: 0
+                            endDeg: 360
+                            if equal? (type ang) :block [
+                                if greaterOrEqual? (size ang) 2 [
+                                    startDeg: get ang 0
+                                    endDeg: get ang 1
+                                ]
+                            ] else [
+                                endDeg: ang
+                            ]
+                            js: js ++ "ctx.beginPath();ctx.arc(" ++ to :string p1\x ++ "," ++ to :string p1\y ++ "," ++ to :string r ++ ",(" ++ to :string startDeg ++ ")*Math.PI/180,(" ++ to :string endDeg ++ ")*Math.PI/180);ctx.stroke();"
+                            i: i + 4
+                            continue
+                        ]
+                    ]
+                ]
                 "ellipse" [
                     if less? (i + 2) blen [
                         p1: vg_point (get drawBlock (i + 1))
@@ -265,6 +287,29 @@ draw_to_canvas: function [canvasId drawBlock] [
                                     continue
                                 ]
                             ]
+                        ]
+                    ]
+                ]
+                "curve" [
+                    if less? (i + 3) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        c: vg_point (get drawBlock (i + 2))
+                        p2: vg_point (get drawBlock (i + 3))
+                        if all? @[notEqual? p1 null notEqual? c null notEqual? p2 null] [
+                            js: js ++ "ctx.beginPath();ctx.moveTo(" ++ to :string p1\x ++ "," ++ to :string p1\y ++ ");ctx.quadraticCurveTo(" ++ to :string c\x ++ "," ++ to :string c\y ++ "," ++ to :string p2\x ++ "," ++ to :string p2\y ++ ");ctx.stroke();"
+                            i: i + 4
+                            continue
+                        ]
+                    ]
+                    if less? (i + 4) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        c1: vg_point (get drawBlock (i + 2))
+                        c2: vg_point (get drawBlock (i + 3))
+                        p2: vg_point (get drawBlock (i + 4))
+                        if all? @[notEqual? p1 null notEqual? c1 null notEqual? c2 null notEqual? p2 null] [
+                            js: js ++ "ctx.beginPath();ctx.moveTo(" ++ to :string p1\x ++ "," ++ to :string p1\y ++ ");ctx.bezierCurveTo(" ++ to :string c1\x ++ "," ++ to :string c1\y ++ "," ++ to :string c2\x ++ "," ++ to :string c2\y ++ "," ++ to :string p2\x ++ "," ++ to :string p2\y ++ ");ctx.stroke();"
+                            i: i + 5
+                            continue
                         ]
                     ]
                 ]
@@ -339,6 +384,17 @@ draw_to_canvas: function [canvasId drawBlock] [
                             js: js ++ draw_gradient_stops stops gname
                             js: js ++ "ctx.fillStyle=" ++ gname ++ ";"
                             i: i + 6
+                            continue
+                        ]
+                    ]
+                ]
+                "flood" [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get drawBlock (i + 1))
+                        col: get drawBlock (i + 2)
+                        if notEqual? p1 null [
+                            js: js ++ "ctx.save();ctx.fillStyle=" ++ draw_js_token col ++ ";ctx.fillRect(0,0,c.width,c.height);ctx.restore();"
+                            i: i + 3
                             continue
                         ]
                     ]

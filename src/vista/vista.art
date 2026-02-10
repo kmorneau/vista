@@ -122,7 +122,7 @@ is_keyword: function [item block] [
                         ]
                         return true
                 ]
-                in? name ["across" "below" "return" "end" "pad" "space" "align" "valign" "size" "origin" "offset" "indent" "guide" "do" "scope" "raw" "text" "title" "subtitle" "field" "info" "button" "key" "label" "box" "panel" "text-list" "text_list" "list" "row" "col" "grid" "spacer" "group" "form" "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select" "drop-list" "drop_list" "radio" "radio-group" "radio_group" "tabs" "tab" "image" "icon" "anim" "progress" "table" "table-row" "table_row" "table-cell" "table_cell" "table-header" "table_header" "table-head" "table_head" "table-body" "table_body" "table-foot" "table_foot" "toolbar" "menubar" "tool-group" "tool_group" "canvas" "divider" "split" "sensor" "pen" "fill-pen" "line-width" "line-cap" "line-join" "line" "box" "circle" "ellipse" "polygon" "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew" "smooth" "coord-system" "text-baseline" "text-align" "linear-gradient" "radial-gradient"]
+                in? name ["across" "below" "return" "end" "pad" "space" "align" "valign" "size" "origin" "offset" "indent" "guide" "do" "scope" "raw" "text" "title" "subtitle" "field" "info" "button" "key" "label" "box" "panel" "text-list" "text_list" "list" "row" "col" "grid" "spacer" "group" "form" "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select" "drop-list" "drop_list" "radio" "radio-group" "radio_group" "tabs" "tab" "image" "icon" "anim" "progress" "table" "table-row" "table_row" "table-cell" "table_cell" "table-header" "table_header" "table-head" "table_head" "table-body" "table_body" "table-foot" "table_foot" "toolbar" "menubar" "tool-group" "tool_group" "canvas" "divider" "split" "sensor" "pen" "fill-pen" "line-width" "line-cap" "line-join" "line-pattern" "line" "box" "circle" "arc" "ellipse" "polygon" "curve" "flood" "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew" "smooth" "coord-system" "text-baseline" "text-align" "linear-gradient" "radial-gradient"]
         ][
                 switch equal? item_type :symbol [
                         if not? block [
@@ -151,7 +151,7 @@ is_keyword: function [item block] [
                                 if any? @[equal? tail_type :word equal? tail_type :label] [
                                         tailName: to :string tail
                                         compoundSuf: "-" ++ tailName
-                                        suffixes: ["-width" "-pen" "-cap" "-join" "-system" "-baseline" "-align" "-gradient"]
+                                        suffixes: ["-width" "-pen" "-cap" "-join" "-pattern" "-system" "-baseline" "-align" "-gradient"]
                                         in? compoundSuf suffixes
                                 ] [
                                         false

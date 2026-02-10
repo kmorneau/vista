@@ -1,23 +1,23 @@
 [
     {
         "name": "01-layout-flow.html",
-        "size": 974293
+        "size": 7379
     },
     {
         "name": "02-bindings.html",
-        "size": 981981
+        "size": 15067
     },
     {
         "name": "03-controls.html",
-        "size": 982146
+        "size": 15232
     },
     {
         "name": "04-form-submit.html",
-        "size": 982183
+        "size": 15269
     },
     {
         "name": "05-lists-boxes.html",
-        "size": 981998
+        "size": 15084
     },
     {
         "name": "06-advanced-controls.html",
@@ -25,31 +25,31 @@
     },
     {
         "name": "07-media-progress.html",
-        "size": 974316
+        "size": 7402
     },
     {
         "name": "08-tabs.html",
-        "size": 982423
+        "size": 15509
     },
     {
         "name": "09-radio-block-labels.html",
-        "size": 982310
+        "size": 15396
     },
     {
         "name": "10-events-layout.html",
-        "size": 982256
+        "size": 15342
     },
     {
         "name": "11-layout-positioning.html",
-        "size": 974506
+        "size": 7592
     },
     {
         "name": "12-list-drop-list.html",
-        "size": 982139
+        "size": 15225
     },
     {
         "name": "13-slider-labels.html",
-        "size": 981989
+        "size": 15075
     },
     {
         "name": "14-panel-grid-spacer.html",
@@ -57,15 +57,15 @@
     },
     {
         "name": "15-table.html",
-        "size": 974529
+        "size": 7615
     },
     {
         "name": "16-toolbar-menubar.html",
-        "size": 982179
+        "size": 15265
     },
     {
         "name": "17-canvas-divider.html",
-        "size": 974329
+        "size": 7415
     },
     {
         "name": "18-split.html",
@@ -73,11 +73,11 @@
     },
     {
         "name": "19-radio-attrs.html",
-        "size": 982096
+        "size": 15182
     },
     {
         "name": "20-nested-layout.html",
-        "size": 974417
+        "size": 7503
     },
     {
         "name": "21-style.html",
@@ -85,7 +85,7 @@
     },
     {
         "name": "22-tabs-update.html",
-        "size": 974674
+        "size": 7760
     },
     {
         "name": "23-face-tree.html",
@@ -105,7 +105,7 @@
     },
     {
         "name": "27-layout-container-attrs.html",
-        "size": 974326
+        "size": 7412
     },
     {
         "name": "28-vid-mode.html",
@@ -113,7 +113,7 @@
     },
     {
         "name": "29-scope-layout.html",
-        "size": 974350
+        "size": 7436
     },
     {
         "name": "30-vid-helper.html",
@@ -125,7 +125,7 @@
     },
     {
         "name": "32-list-selection.html",
-        "size": 982122
+        "size": 15208
     },
     {
         "name": "33-key-onchange.html",
@@ -137,27 +137,27 @@
     },
     {
         "name": "35-vid-widgets.html",
-        "size": 982183
+        "size": 15269
     },
     {
         "name": "36-overlay-inspector.html",
-        "size": 974165
+        "size": 7251
     },
     {
         "name": "37-layout-vid-mode.html",
-        "size": 974410
+        "size": 7496
     },
     {
         "name": "38-tabs-selected.html",
-        "size": 974680
+        "size": 7766
     },
     {
         "name": "39-edge-facets.html",
-        "size": 974730
+        "size": 7816
     },
     {
         "name": "40-events-over-out.html",
-        "size": 974246
+        "size": 7332
     },
     {
         "name": "41-mouse-events.html",
@@ -169,19 +169,19 @@
     },
     {
         "name": "42-demo-tabs.html",
-        "size": 974863
+        "size": 7949
     },
     {
         "name": "43-demo-lists.html",
-        "size": 982153
+        "size": 15239
     },
     {
         "name": "44-demo-toolbar.html",
-        "size": 974496
+        "size": 7582
     },
     {
         "name": "45-demo-table.html",
-        "size": 974830
+        "size": 7916
     },
     {
         "name": "46-demo-split.html",
@@ -189,11 +189,11 @@
     },
     {
         "name": "47-app-header.html",
-        "size": 974157
+        "size": 7243
     },
     {
         "name": "48-smoke-app.html",
-        "size": 592
+        "size": 7243
     },
     {
         "name": "49-draw-primitives.html",
@@ -218,5 +218,9 @@
     {
         "name": "53-canvas-styles.html",
         "size": 629
+    },
+    {
+        "name": "54-draw-arc-curve-flood.html",
+        "size": 722
     }
 ]

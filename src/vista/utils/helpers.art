@@ -28,12 +28,16 @@ logo_data_url: function [pathStr] [
         if any? @[equal? pathStr null equal? pathStr ""] [
                 return ""
         ]
+        ptype: type pathStr
+        if not? equal? ptype :string [
+                if any? @[equal? ptype :literal equal? ptype :pathLiteral equal? ptype :path] [
+                        pathStr: to :string pathStr
+                ] [
+                        return ""
+                ]
+        ]
         if any? @[prefix? pathStr "data:" prefix? pathStr "http://" prefix? pathStr "https://"] [
                 return pathStr
-        ]
-        if exists? pathStr [
-                encoded: encode (read pathStr)
-                return "data:image/png;base64," ++ encoded
         ]
         pathStr
 ]
