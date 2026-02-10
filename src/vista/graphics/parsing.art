@@ -25,10 +25,9 @@ vg_normalize_block: function [block] [
                 j: j + 2
             ]
             if greater? j i [
-                if equal? tok_type :attributeLabel [
+                switch equal? tok_type :attributeLabel [
                     out: out ++ @[to :attributeLabel combinedStr]
-                ]
-                else [
+                ][
                     out: out ++ @[to :word combinedStr]
                 ]
                 i: j + 1

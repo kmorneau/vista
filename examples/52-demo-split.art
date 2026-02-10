@@ -8,8 +8,7 @@ ARTURO [
 ]
 
 view [
-    split .ratio:40 [
-        panel "Left" [text "Left pane"]
-        panel "Right" [text "Right pane"]
-    ]
+    split .ratio:40
+        [panel "Left" [text "Left pane"]]
+        [panel "Right" [text "Right pane"]]
 ]

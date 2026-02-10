@@ -2,11 +2,12 @@
 ; Demonstrates Vista's animation system for UI transitions and sprite animations
 
 ; Import Vista framework
-import "src/vista/vista.art"!
+import "vista.art"!
 
 ; Example 1: Fade-in animation on panel
 fade_in_demo: function [] [
-        view #[Title: "Vista Animation Demo"] [
+        ARTURO [Title: "Vista Animation Demo"]
+        view [
                 box [
                         text "Fade In Animation"
                         button "Show with Fade" .on-click: [
@@ -22,7 +23,8 @@ fade_in_demo: function [] [
 
 ; Example 2: Slide and scale animations
 slide_scale_demo: function [] [
-        view #[Title: "Slide & Scale Demo"] [
+        ARTURO [Title: "Slide & Scale Demo"]
+        view [
                 row [
                         button "Slide In" .on-click: [
                                 "slide-box" animate: "slide-in" 300
@@ -50,7 +52,8 @@ slide_scale_demo: function [] [
 
 ; Example 3: Pulse animation for attention
 pulse_demo: function [] [
-        view #[Title: "Pulse Animation Demo"] [
+        ARTURO [Title: "Pulse Animation Demo"]
+        view [
                 box [
                         text "Pulse Animation (Continuous)"
                         button "Start Pulse" .on-click: [
@@ -68,7 +71,8 @@ pulse_demo: function [] [
 
 ; Example 4: Spin animation for loading
 spin_demo: function [] [
-        view #[Title: "Spin Animation Demo"] [
+        ARTURO [Title: "Spin Animation Demo"]
+        view [
                 box [
                         text "Spin Animation (Loading)"
                         button "Start Spinner" .on-click: [
@@ -84,7 +88,8 @@ spin_demo: function [] [
 
 ; Example 5: Sprite animation
 sprite_demo: function [] [
-        view #[Title: "Sprite Animation Demo"] [
+        ARTURO [Title: "Sprite Animation Demo"]
+        view [
                 box [
                         text "Sprite Animation"
                         button "Start Animation" .on-click: [
@@ -100,7 +105,8 @@ sprite_demo: function [] [
 
 ; Example 6: Animation sequence
 sequence_demo: function [] [
-        view #[Title: "Animation Sequence Demo"] [
+        ARTURO [Title: "Animation Sequence Demo"]
+        view [
                 box [
                         text "Animation Sequence"
                         button "Play Sequence" .on-click: [
@@ -119,7 +125,8 @@ sequence_demo: function [] [
 
 ; Example 7: Multiple animations on different elements
 multi_demo: function [] [
-        view #[Title: "Multiple Animations Demo"] [
+        ARTURO [Title: "Multiple Animations Demo"]
+        view [
                 row [
                         box "box-1" [text "Box 1"]
                         box "box-2" [text "Box 2"]
@@ -143,7 +150,28 @@ multi_demo: function [] [
 
 ; Run animation demo
 animation_demo: function [] [
-        view #[Title: "Vista Animation System"] [
+        ARTURO [Title: "Vista Animation System"]
+        view [
+                raw {<style>
+                @keyframes vistaFadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes vistaBounce { 0%,100% { transform: translateY(0); } 30% { transform: translateY(-10px); } 60% { transform: translateY(0); } }
+                @keyframes vistaShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+                .vista-demo-fade-in { animation-name: vistaFadeIn; animation-timing-function: ease-out; }
+                .vista-demo-bounce { animation-name: vistaBounce; animation-timing-function: ease-in-out; }
+                .vista-demo-shake { animation-name: vistaShake; animation-timing-function: ease-in-out; }
+                </style>
+                <script>
+                function vistaDemoAnim(id, cls, ms) {
+                  var el = document.getElementById(id);
+                  if (!el) return;
+                  var all = ['vista-demo-fade-in', 'vista-demo-bounce', 'vista-demo-shake'];
+                  all.forEach(function(c) { el.classList.remove(c); });
+                  void el.offsetWidth;
+                  el.style.animationDuration = (ms || 400) + 'ms';
+                  el.classList.add(cls);
+                  setTimeout(function(){ el.classList.remove(cls); }, ms || 400);
+                }
+                </script>}
                 title "Vista Animation Examples"
                 
                 text "Vista provides CSS-based animations inspired by REBOL View:"
@@ -153,25 +181,19 @@ animation_demo: function [] [
                 
                 panel [
                         text "Quick Demo"
-                        button "Fade In" .on-click: [
-                                "demo-panel" animate: "fade-in" 400
-                        ]
-                        button "Bounce" .on-click: [
-                                "demo-panel" animate: "bounce" 500
-                        ]
-                        button "Shake" .on-click: [
-                                "demo-panel" animate: "shake" 500
-                        ]
+                        button "Fade In" .on-click:"vistaDemoAnim('demo-panel','vista-demo-fade-in',400)"
+                        button "Bounce" .on-click:"vistaDemoAnim('demo-panel','vista-demo-bounce',500)"
+                        button "Shake" .on-click:"vistaDemoAnim('demo-panel','vista-demo-shake',500)"
                 ]
                 
-                box "demo-panel" [
+                box .id:"demo-panel" "Animated Panel" [
                         text "Animated Panel"
                 ]
         ]
 ]
 
 ; Export for use
-exports: #{
+exports: #[
         demo: :animation_demo
         fade: :fade_in_demo
         slide: :slide_scale_demo
@@ -180,4 +202,6 @@ exports: #{
         sprite: :sprite_demo
         sequence: :sequence_demo
         multi: :multi_demo
-}
+]
+
+animation_demo

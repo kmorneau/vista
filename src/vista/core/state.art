@@ -6,6 +6,7 @@ vista_state: #[
         last_root: null
         face_names: #[]
         last_bindings: #[]
+        webview_open: false
         layout_pending_attrs: #[]
         layout_scope_stack: @[]
         tabs_id_counter: 0

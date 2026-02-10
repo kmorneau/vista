@@ -7,6 +7,8 @@ ARTURO [
     Height: 560
 ]
 
+status: "Ready"
+
 view [
     menubar [
         text "File"
@@ -14,8 +16,10 @@ view [
         text "Help"
     ]
     toolbar [
-        button "New" [print "new"]
-        button "Open" [print "open"]
-        button "Save" [print "save"]
+        button "New" [status: "New clicked"]
+        button "Open" [status: "Open clicked"]
+        button "Save" [status: "Save clicked"]
     ]
+    text "Status:"
+    text status
 ]

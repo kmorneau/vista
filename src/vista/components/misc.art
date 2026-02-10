@@ -34,7 +34,7 @@ split_face: function [leftHtml rightHtml attrs ratio] [
         rightStyle: ""
         if ratio notEqual? null [
                 ratioNum: ratio
-                if ratioNum less? 1 [
+                if less? ratioNum 1 [
                         ratioNum: ratioNum * 100
                 ]
                 leftStr: to :string ratioNum

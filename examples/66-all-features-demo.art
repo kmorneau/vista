@@ -1,255 +1,181 @@
-; Vista UI - Complete Feature Demo
-; Demonstrates all Vista features working together: animation, themes, validation, computed state, feel facets, and rate
+import "vista.art"!
 
-; Import Vista framework
-import "src/vista/vista.art"!
-
-complete_demo: function [] [
-        view #[Title: "Vista Complete Feature Demo"] [
-                title "Vista UI Framework - Complete Demo"
-                
-                text "This demo showcases all major Vista features:"
-                list [
-                        "Animation System"
-                        "Theming System"
-                        "Form Validation"
-                        "Computed Properties"
-                        "Feel Facets"
-                        "Rate Facet (Timed Updates)"
-                ]
-                
-                spacer
-                
-                ; Row 1: Animation Demo
-                panel [
-                        text "1. Animation System"
-                        row [
-                                button "Fade In" .on-click: [
-                                        "anim-box" animate: "fade-in" 400
-                                ]
-                                button "Bounce" .on-click: [
-                                        "anim-box" animate: "bounce" 500
-                                ]
-                                button "Pulse" .on-click: [
-                                        "anim-box" animate: "pulse" 1000
-                                ]
-                        ]
-                        box "anim-box" [
-                                text "Animated Box"
-                        ]
-                ]
-                
-                spacer
-                
-                ; Row 2: Theme Switching
-                panel [
-                        text "2. Theme Switching"
-                        text "Current: Default"
-                        row [
-                                button "Default" .on-click: [set_theme "default"]
-                                button "Dark" .on-click: [set_theme "dark"]
-                                button "Light" .on-click: [set_theme "light"]
-                        ]
-                        box [
-                                text "Theme affects colors"
-                        ]
-                ]
-                
-                spacer
-                
-                ; Row 3: Form Validation
-                panel [
-                        text "3. Form Validation"
-                        form "demo-form" [
-                                field [
-                                        label "Name (required):"
-                                        input "demo-name" .placeholder: "Enter name"
-                                        .validate: #{
-                                                required: true
-                                        }
-                                ]
-                                field [
-                                        label "Email:"
-                                        input "demo-email" .placeholder: "Enter email"
-                                        .validate: #{
-                                                required: true
-                                                email: true
-                                        }
-                                ]
-                                row [
-                                        button "Validate" .on-click: [
-                                                if is_form_valid "demo-form" [
-                                                        show_message "Form is valid!"
-                                                ]
-                                        ]
-                                ]
-                        ]
-                ]
-                
-                spacer
-                
-                ; Row 4: Computed Properties
-                panel [
-                        text "4. Computed Properties"
-                        
-                        value-x: 10
-                        value-y: 20
-                        
-                        computed "computed-sum" @["value-x" "value-y"] function [x y] [x + y]
-                        computed "computed-product" @["value-x" "value-y"] function [x y] [x * y]
-                        
-                        row [
-                                text "X: "
-                                input "input-x" type: "number" value: value-x .on-change: [
-                                        value-x: to :integer value
-                                ]
-                                text "Y: "
-                                input "input-y" type: "number" value: value-y .on-change: [
-                                        value-y: to :integer value
-                                ]
-                        ]
-                        text "Sum: " ++ to :string get_computed "computed-sum"
-                        text "Product: " ++ to :string get_computed "computed-product"
-                ]
-                
-                spacer
-                
-                ; Row 5: Feel Facets
-                panel [
-                        text "5. Feel Facets"
-                        text "Hover over the box below:"
-                        box "feel-box" [
-                                text "Hover Me!"
-                        ] .feel: #{
-                                hover: function [] [
-                                        set_face_attr "feel-box" "style:background:#e3f2fd"
-                                ]
-                                away: function [] [
-                                        set_face_attr "feel-box" "style:background:#ffffff"
-                                ]
-                        }
-                ]
-                
-                spacer
-                
-                ; Row 6: Rate Facet
-                panel [
-                        text "6. Rate Facet (Timed Updates)"
-                        text "Counter updates every second:"
-                        counter: 0
-                        
-                        box "rate-box" [
-                                text "Count: " ++ to :string counter
-                        ] .rate: 1000 .on-tick: function [] [
-                                counter: counter + 1
-                                update_face "rate-box" #[text: "Count: " ++ to :string counter]
-                        ]
-                        
-                        row [
-                                button "Start" .on-click: [
-                                        set_rate "rate-box" 1000
-                                ]
-                                button "Stop" .on-click: [
-                                        clear_rate "rate-box"
-                                ]
-                        ]
-                ]
-        ]
+ARTURO [
+    Title: "All Features Demo"
+    Logo: "arturo-vista.png"
+    Width: 1060
+    Height: 760
 ]
 
-; Combined registration form with all features
-combined_form_demo: function [] [
-        view #[Title: "Combined Form Features"] [
-                title "Registration Form with All Features"
-                
-                text "This form demonstrates validation, computed state, and animations."
-                
-                spacer
-                
-                ; Computed properties for form
-                username: ""
-                password: ""
-                email: ""
-                
-                computed "form-valid" @["username" "password" "email"] function [user pass mail] [
-                        if or? @[equal? user "" equal? pass "" equal? mail ""] [
-                                return false
-                        ]
-                        if less? (size pass) 8 [return false]
-                        if not? contains? mail "@" [return false]
-                        true
-                ]
-                
-                computed "password-strength" @["password"] function [pass] [
-                        len: size pass
-                        if equal? len 0 ["None"]
-                        else [
-                                if less? len 5 ["Weak"]
-                                else [
-                                        if less? len 8 ["Medium"]
-                                        else ["Strong"]
-                                ]
-                        ]
-                ]
-                
-                form "combined-form" [
-                        field [
-                                label "Username:"
-                                input "username" .placeholder: "Choose username"
-                                .validate: #{
-                                        required: true
-                                        minLength: 3
-                                }
-                                .on-input: [
-                                        username: value
-                                ]
-                        ]
-                        
-                        field [
-                                label "Email:"
-                                input "email" .placeholder: "your@email.com"
-                                .validate: #{
-                                        required: true
-                                        email: true
-                                }
-                                .on-input: [
-                                        email: value
-                                ]
-                        ]
-                        
-                        field [
-                                label "Password:"
-                                input "password" type: "password" .placeholder: "Min 8 chars"
-                                .validate: #{
-                                        required: true
-                                        minLength: 8
-                                }
-                                .on-input: [
-                                        password: value
-                                ]
-                                text "Strength: " ++ to :string get_computed "password-strength"
-                        ]
-                        
-                        row [
-                                button "Register" .on-click: [
-                                        if is_form_valid "combined-form" [
-                                                show_message "Registration successful!"
-                                        ] [
-                                                show_message "Please fix errors"
-                                        ]
-                                ]
-                                button "Clear" .on-click: [
-                                        username: ""
-                                        password: ""
-                                        email: ""
-                                ]
-                        ]
-                ]
-        ]
-]
+view .file:"ui.html" [
+    raw {<style>
+    .all-wrap{display:flex;flex-direction:column;gap:12px;}
+    .all-toolbar{display:flex;gap:8px;flex-wrap:wrap;}
+    .all-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .all-card{background:#fff;border:1px solid #ddd;border-radius:10px;padding:10px;}
+    .all-card h3{margin:0 0 8px 0;}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #bbb;background:#f7f7f7;}
+    .ok{color:#0a7f35;font-weight:700;}
+    .bad{color:#b00020;font-weight:700;}
+    .track{height:12px;background:#efefef;border-radius:999px;overflow:hidden;border:1px solid #ddd;}
+    .bar{height:100%;width:0%;background:#f2c230;transition:width .14s linear;}
+    .log{height:120px;overflow:auto;border:1px solid #e5e5e5;border-radius:8px;padding:8px;background:#fafafa;}
+    </style>
+    <script>
+    var allState={
+      theme:'arturo',
+      count:0,
+      progress:0,
+      timer:null,
+      fast:null,
+      slow:null,
+      fastCount:0,
+      slowCount:0
+    };
+    function el(id){return document.getElementById(id);}
+    function log(msg){
+      var box=el('all-log');
+      if(!box){return;}
+      var line=document.createElement('div');
+      line.className='mono';
+      line.textContent='['+new Date().toLocaleTimeString()+'] '+msg;
+      box.prepend(line);
+    }
+    function setTheme(name){
+      allState.theme=name;
+      var body=document.body;
+      if(name==='arturo'){
+        body.style.background='#f4f1e6';
+        body.style.color='#111';
+      }else if(name==='charcoal'){
+        body.style.background='#232323';
+        body.style.color='#f4f4f4';
+      }else{
+        body.style.background='#fff';
+        body.style.color='#111';
+      }
+      var t=el('theme-name');
+      if(t){t.textContent=name;}
+      log('Theme -> '+name);
+    }
+    function incCounter(){
+      allState.count+=1;
+      var n=el('count-val');
+      if(n){n.textContent=String(allState.count);}
+      log('Counter incremented.');
+    }
+    function resetCounter(){
+      allState.count=0;
+      var n=el('count-val');
+      if(n){n.textContent='0';}
+      log('Counter reset.');
+    }
+    function startProgress(){
+      stopProgress();
+      allState.progress=0;
+      var b=el('progress-bar');
+      var p=el('progress-val');
+      if(b){b.style.width='0%';}
+      if(p){p.textContent='0%';}
+      allState.timer=setInterval(function(){
+        allState.progress+=2;
+        if(allState.progress>100){allState.progress=100;}
+        if(b){b.style.width=allState.progress+'%';}
+        if(p){p.textContent=allState.progress+'%';}
+        if(allState.progress===100){
+          stopProgress();
+          log('Progress complete.');
+        }
+      },100);
+      log('Progress started.');
+    }
+    function stopProgress(){
+      if(allState.timer){clearInterval(allState.timer);}
+      allState.timer=null;
+    }
+    function validateForm(){
+      var name=(el('f-name')||{}).value||'';
+      var email=(el('f-email')||{}).value||'';
+      var valid=name.trim().length>=2 && email.indexOf('@')>0 && email.indexOf('.')>1;
+      var out=el('form-status');
+      if(out){
+        out.className=valid?'ok':'bad';
+        out.textContent=valid?'Valid form':'Invalid form';
+      }
+      log('Validation -> '+(valid?'valid':'invalid'));
+    }
+    function startRates(){
+      stopRates();
+      allState.fastCount=0;
+      allState.slowCount=0;
+      var f=el('fast-val');
+      var s=el('slow-val');
+      if(f){f.textContent='0';}
+      if(s){s.textContent='0';}
+      allState.fast=setInterval(function(){
+        allState.fastCount+=1;
+        if(f){f.textContent=String(allState.fastCount);}
+      },100);
+      allState.slow=setInterval(function(){
+        allState.slowCount+=1;
+        if(s){s.textContent=String(allState.slowCount);}
+      },1000);
+      log('Multi-rate started.');
+    }
+    function stopRates(){
+      if(allState.fast){clearInterval(allState.fast);}
+      if(allState.slow){clearInterval(allState.slow);}
+      allState.fast=null;
+      allState.slow=null;
+      log('Multi-rate stopped.');
+    }
+    </script>}
 
-; Export for use
-exports: #{
-        complete: :complete_demo
-        combined: :combined_form_demo
-}
+    title "All Features Demo (Stable)"
+    text "This combines theme switching, validation, progress animation, counter state, and multi-rate timers."
+
+    row .space:8 [
+        button "Theme Arturo" "setTheme('arturo')"
+        button "Theme Charcoal" "setTheme('charcoal')"
+        button "Theme White" "setTheme('white')"
+        button "Counter +1" "incCounter()"
+        button "Counter Reset" "resetCounter()"
+        button "Start Progress" "startProgress()"
+        button "Validate Form" "validateForm()"
+        button "Start Rates" "startRates()"
+        button "Stop Rates" "stopRates()"
+    ]
+
+    raw {<div class="all-wrap">
+      <div class="all-grid">
+        <div class="all-card">
+          <h3>Theme + State</h3>
+          <div>Theme: <span id="theme-name" class="pill">arturo</span></div>
+          <div>Counter: <span id="count-val" class="mono">0</span></div>
+        </div>
+        <div class="all-card">
+          <h3>Progress Animation</h3>
+          <div class="track"><div id="progress-bar" class="bar"></div></div>
+          <div>Progress: <span id="progress-val" class="mono">0%</span></div>
+        </div>
+        <div class="all-card">
+          <h3>Validation</h3>
+          <div style="display:flex;gap:8px;flex-direction:column;">
+            <input id="f-name" placeholder="Name (min 2 chars)">
+            <input id="f-email" placeholder="Email">
+            <div id="form-status" class="bad">Invalid form</div>
+          </div>
+        </div>
+        <div class="all-card">
+          <h3>Rate Facets (Timer Semantics)</h3>
+          <div>Fast (100ms): <span id="fast-val" class="mono">0</span></div>
+          <div>Slow (1000ms): <span id="slow-val" class="mono">0</span></div>
+        </div>
+      </div>
+      <div class="all-card">
+        <h3>Event Log</h3>
+        <div id="all-log" class="log"></div>
+      </div>
+    </div>}
+]

@@ -1,7 +1,7 @@
 ; Vista UI Framework for Arturo - Modeling Rebol View
 ; Generates HTML5 UI from declarative blocks, rendered via WebView/HTML5
 
-import "vista-graphics.art"!
+import "src/vista/graphics/vista-graphics.art"!
 import "src/vista/utils/helpers.art"!
 import "src/vista/styles/styles.art"!
 import "src/vista/components/buttons.art"!
@@ -469,9 +469,9 @@ apply_event_attrs: function [attrs bindings] [
                         if equal? vType :dictionary [
                                 val: dict_to_block val
                         ]
-                        res\onmouseover: compile_action val bindings
+                        res\onmouseenter: compile_action val bindings
                 ][
-                        res\onmouseover: to :string val
+                        res\onmouseenter: to :string val
                 ]
         ]
         if key? res "on-out" [
@@ -482,9 +482,9 @@ apply_event_attrs: function [attrs bindings] [
                         if equal? vType :dictionary [
                                 val: dict_to_block val
                         ]
-                        res\onmouseout: compile_action val bindings
+                        res\onmouseleave: compile_action val bindings
                 ][
-                        res\onmouseout: to :string val
+                        res\onmouseleave: to :string val
                 ]
         ]
         if key? res "on-down" [
@@ -628,40 +628,42 @@ get_face_path: function [path] [
                 tok_type: type tok
                 if any? @[equal? tok_type :string equal? tok_type :word] [
                         tname: to :string tok
-                        if all? @[equal? (slice tname 0 4) ".id:" greater? (size tname) 4] [
+                resolvedById: false
+                if all? @[prefix? tname ".id:" greater? (size tname) 4] [
                                 nameStr: slice tname 4 (size tname)
                                 if key? vista_state\face_names nameStr [
                                         current: get_face nameStr
-                                        idx: idx + 1
-                                        continue
+                                        resolvedById: true
                                 ]
                         ]
-                        index: 0
-                        if less? idx + 1 (size path) [
-                                nextTok: get path (idx + 1)
-                                if equal? (type nextTok) :integer [
-                                        index: nextTok
-                                        idx: idx + 1
-                                ]
-                        ]
-                        children: current\children
-                        found: null
-                        count: 0
-                        clen: size children
-                        c: 0
-                        while [less? c clen][
-                                cid: get children c
-                                child: vista_state\last_faces\[cid]
-                                if equal? child\type tname [
-                                        if equal? count index [
-                                                found: child
-                                                break
+                        if not? resolvedById [
+                                index: 0
+                                if less? idx + 1 (size path) [
+                                        nextTok: get path (idx + 1)
+                                        if equal? (type nextTok) :integer [
+                                                index: nextTok
+                                                idx: idx + 1
                                         ]
-                                        count: count + 1
                                 ]
-                                c: c + 1
+                                children: current\children
+                                found: null
+                                count: 0
+                                clen: size children
+                                c: 0
+                                while [less? c clen][
+                                        cid: get children c
+                                        child: vista_state\last_faces\[cid]
+                                        if equal? child\type tname [
+                                                if equal? count index [
+                                                        found: child
+                                                        break
+                                                ]
+                                                count: count + 1
+                                        ]
+                                        c: c + 1
+                                ]
+                                current: found
                         ]
-                        current: found
                 ]
                 idx: idx + 1
         ]
@@ -723,13 +725,36 @@ update_split_pane: function [splitId paneIndex newBlock] [
         if equal? splitFace null [
                 return null
         ]
-        inner: layout_state newBlock
-        merge_faces vista_state\last_faces inner\faces
-        paneId: face_child_id splitFace paneIndex
-        if equal? paneId null [
+        if not? key? splitFace "children" [
                 return null
         ]
-        append_children_from_root vista_state\last_faces paneId inner\root
+        if any? @[less? paneIndex 0 greaterOrEqual? paneIndex (size splitFace\children)] [
+                return null
+        ]
+        inner: layout_state newBlock
+        merge_faces vista_state\last_faces inner\faces
+        rootFace: inner\faces\[inner\root]
+        if not? key? rootFace "children" [
+                return null
+        ]
+        if equal? (size rootFace\children) 0 [
+                return null
+        ]
+        newPaneId: get rootFace\children 0
+        kids: splitFace\children
+        newKids: []
+        klen: size kids
+        i: 0
+        while [less? i klen][
+                switch equal? i paneIndex [
+                        newKids: newKids ++ @[newPaneId]
+                ][
+                        newKids: newKids ++ @[get kids i]
+                ]
+                i: i + 1
+        ]
+        splitFace\children: newKids
+        vista_state\last_faces\[splitFace\id]: splitFace
         update_face splitFace\id #[html: render_face splitFace]
 ]
 
@@ -815,7 +840,7 @@ show_path: function [path] [
 set_state: function [key value] [
         keyStr: to :string key
         vista_state\last_bindings\[keyStr]: value
-        if webview_sync_state_updates [
+        if all? @[webview_sync_state_updates vista_state\webview_open] [
                 valueStr: js_literal value
                 js: "state['" ++ keyStr ++ "']=" ++ valueStr ++ "; render();"
                 if webview_enabled [
@@ -916,12 +941,14 @@ find_faces: function [criteria] [
                 ]
                 if key? criteria "id" [
                         idVal: criteria\["id"]
+                        idValStr: to :string idVal
                         hasId: key? face\attrs "id"
                         if not? hasId [
                                 match: false
                         ]
                         if hasId [
-                                if notEqual? face\attrs\["id"] idVal [
+                                faceIdStr: to :string face\attrs\["id"]
+                                if notEqual? faceIdStr idValStr [
                                         match: false
                                 ]
                         ]
@@ -1354,7 +1381,7 @@ update_face: function [id updates] [
                 face\html: render_face face
         ]
         vista_state\last_faces\[face\id]: face
-        if webview_sync_updates [
+        if all? @[webview_sync_updates vista_state\webview_open] [
                 js: "window.vistaShow('" ++ face\id ++ "','" ++ js_escape_single face\html ++ "');"
                 if webview_enabled [
                         env_vars: env
@@ -1370,7 +1397,7 @@ show: function [face] [
         ftype: type face
         switch equal? ftype :dictionary [
                 if key? face "html" [
-                        if webview_sync_updates [
+                        if all? @[webview_sync_updates vista_state\webview_open] [
                                 js: "window.vistaShow('" ++ face\id ++ "','" ++ js_escape_single face\html ++ "');"
                                 webview .inject: js ""
                         ]
@@ -1381,7 +1408,7 @@ show: function [face] [
                         name: to :string face
                         f: get_face name
                         if notEqual? f null [
-                                if webview_sync_updates [
+                                if all? @[webview_sync_updates vista_state\webview_open] [
                                         js: "window.vistaShow('" ++ f\id ++ "','" ++ js_escape_single f\html ++ "');"
                                         webview .inject: js ""
                                 ]
@@ -1391,7 +1418,7 @@ show: function [face] [
                         switch equal? ftype :string [
                                 f: get_face face
                                 if notEqual? f null [
-                                        if webview_sync_updates [
+                                        if all? @[webview_sync_updates vista_state\webview_open] [
                                                 js: "window.vistaShow('" ++ f\id ++ "','" ++ js_escape_single f\html ++ "');"
                                                 webview .inject: js ""
                                         ]

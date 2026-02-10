@@ -8,27 +8,36 @@ parse_attrs: function [args] [
         while [less? i args_len][
                 tok: get args i
                 tok_type: type tok
-                switch equal? tok_type :attributeLabel [
+                switch any? @[equal? tok_type :attributeLabel equal? tok_type :label] [
                         name: to :string tok
                         advance: 1
                         if less? i + 2 args_len [
                                 mid: get args (i + 1)
                                 tail: get args (i + 2)
-                                if all? @[equal? (type mid) :symbol equal? (to :string mid) "-" equal? (type tail) :word] [
+                                if all? @[equal? (type mid) :symbol equal? (to :string mid) "-" any? @[equal? (type tail) :word equal? (type tail) :label]] [
                                         name: name ++ "-" ++ to :string tail
                                         advance: 3
                                 ]
                         ]
                         switch less? i + advance args_len [
-                                val: get args (i + advance)
+                                valIndex: i + advance
+                                val: get args valIndex
+                                if equal? (type val) :symbol [
+                                        if equal? (to :string val) ":" [
+                                                if less? (valIndex + 1) args_len [
+                                                        valIndex: valIndex + 1
+                                                        val: get args valIndex
+                                                ]
+                                        ]
+                                ]
                                 handled: false
                                 if equal? (type val) :symbol [
                                         if equal? (to :string val) "#" [
-                                                if less? (i + advance + 1) args_len [
-                                                        nextVal: get args (i + advance + 1)
+                                                if less? (valIndex + 1) args_len [
+                                                        nextVal: get args (valIndex + 1)
                                                         if equal? (type nextVal) :block [
                                                                 attrs\[name]: header_from_block nextVal
-                                                                i: i + advance + 2
+                                                                i: valIndex + 2
                                                                 handled: true
                                                         ]
                                                 ]
@@ -36,7 +45,7 @@ parse_attrs: function [args] [
                                 ]
                                 if not? handled [
                                         attrs\[name]: val
-                                        i: i + advance + 1
+                                        i: valIndex + 1
                                 ]
                         ][
                                 i: i + 1
@@ -47,7 +56,7 @@ parse_attrs: function [args] [
                                 if less? i + 2 args_len [
                                         mid: get args (i + 1)
                                         tail: get args (i + 2)
-                                        if all? @[equal? (type mid) :symbol equal? (to :string mid) "-" equal? (type tail) :word] [
+                                        if all? @[equal? (type mid) :symbol equal? (to :string mid) "-" any? @[equal? (type tail) :word equal? (type tail) :label]] [
                                                 name: name ++ "-" ++ to :string tail
                                                 i: i + 3
                                                 attrs\[name]: true

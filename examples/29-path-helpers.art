@@ -18,6 +18,16 @@ firstFace: path_first ["panel" 0]
 lastFace: path_last ["panel" 0]
 secondFace: path_nth ["panel" 0] 1
 
-print show firstFace
-print show lastFace
-print show secondFace
+face_text_or_id: function [face] [
+    if equal? face null [
+        return "<null>"
+    ]
+    if key? face "text" [
+        return to :string face\text
+    ]
+    face\id
+]
+
+print "first: " ++ face_text_or_id firstFace
+print "last: " ++ face_text_or_id lastFace
+print "second: " ++ face_text_or_id secondFace

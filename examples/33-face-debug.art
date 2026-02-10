@@ -7,14 +7,12 @@ ARTURO [
     Height: 560
 ]
 
-html: view [
+view [
     panel "Info" [
         text "Hello"
         text .id:greeting "World"
     ]
 ]
-
-print html
 
 face: find_face #[id: "greeting"]
 print face_info face

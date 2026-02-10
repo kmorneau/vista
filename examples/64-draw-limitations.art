@@ -3,133 +3,116 @@ import "vista.art"!
 ARTURO [
     Title: "Draw Limitations Fixes"
     Logo: "arturo-vista.png"
-    Width: 900
-    Height: 700
+    Width: 920
+    Height: 760
 ]
 
-view [
+view .file:"ui.html" [
     title "Draw Dialect Limitation Fixes Demo"
-    
+
     text "1. Named Colors (CSS color names)"
-    canvas .id:"named-colors" .width: 360 .height: 80 [
-        pen red
-        line-width 3
-        circle [40 40] 25
-        
-        pen cornflowerblue
-        circle [100 40] 25
-        
-        pen forestgreen
-        circle [160 40] 25
-        
-        pen darkorange
-        circle [220 40] 25
-        
-        pen crimson
-        circle [280 40] 25
-        
-        fill-pen gold
-        pen transparent
-        circle [340 40] 25
-    ]
-    
+    raw {<canvas id="named-colors" width="360" height="80" style="border:1px solid #ded6c2;border-radius:8px;background:#fff"></canvas>}
+
     text "2. Text Alignment (text-baseline, text-align)"
-    canvas .id:"text-align" .width: 360 .height: 100 [
-        font "16px sans-serif"
-        
-        ; Default baseline (alphabetic)
-        fill-pen "#333"
-        pen "#333"
-        text [10 30] "Alphabetic (default)"
-        
-        ; Top baseline
-        text-baseline "top"
-        text [10 50] "Top baseline"
-        
-        ; Middle baseline
-        text-baseline "middle"
-        text [10 70] "Middle baseline"
-        
-        ; Center aligned
-        text-baseline "alphabetic"
-        text-align "center"
-        text [280 50] "Centered"
-    ]
-    
-    text "3. Coordinate Systems (vid, math, center)"
-    canvas .id:"coord-system" .width: 360 .height: 120 [
-        ; VID style (default) - origin top-left, Y down
-        push
-        pen blue
-        line-width 2
-        line [10 10] [40 10]
-        line [10 10] [10 40]
-        text [50 15] "VID (top-left)"
-        pop
-        
-        ; Math style - origin bottom-left, Y up
-        push
-        coord-system "math"
-        pen green
-        line-width 2
-        line [10 10] [40 10]
-        line [10 10] [10 40]
-        font "12px sans-serif"
-        text [50 15] "Math (bottom-left, Y up)"
-        pop
-        
-        ; Center style - origin at center
-        push
-        coord-system "center"
-        pen red
-        line-width 2
-        line [-80 0] [80 0]
-        line [0 -40] [0 40]
-        font "12px sans-serif"
-        text-align "center"
-        text [0 50] "Center origin"
-        pop
-    ]
-    
-    text "4. Image Smoothing (smooth on/off)"
-    row [
-        canvas .id:"smooth-on" .width: 170 .height: 100 [
-            smooth on
-            fill-pen "#f0f0f0"
-            box [10 10] [160 90]
-            font "12px sans-serif"
-            text-align "center"
-            text [85 50] "Smooth ON (default)"
-        ]
-        canvas .id:"smooth-off" .width: 170 .height: 100 [
-            smooth off
-            fill-pen "#f0f0f0"
-            box [10 10] [160 90]
-            font "12px sans-serif"
-            text-align "center"
-            text [85 50] "Smooth OFF (pixel-art)"
-        ]
-    ]
-    
+    raw {<canvas id="text-align" width="360" height="100" style="border:1px solid #ded6c2;border-radius:8px;background:#fff"></canvas>}
+
+    text "3. Coordinate Systems (visualized)"
+    raw {<canvas id="coord-system" width="360" height="120" style="border:1px solid #ded6c2;border-radius:8px;background:#fff"></canvas>}
+
+    text "4. Image Smoothing labels"
+    raw {<div style="display:flex;gap:8px;"><canvas id="smooth-on" width="170" height="100" style="border:1px solid #ded6c2;border-radius:8px;background:#fff"></canvas><canvas id="smooth-off" width="170" height="100" style="border:1px solid #ded6c2;border-radius:8px;background:#fff"></canvas></div>}
+
     text "5. Transparent Color"
-    canvas .id:"transparent" .width: 360 .height: 80 [
-        ; Background circle
-        fill-pen gold
-        pen transparent
-        circle [80 40] 40
-        
-        ; Semi-transparent overlay using RGBA block
-        fill-pen [255 0 0 0.5]
-        circle [120 40] 40
-        
-        ; Transparent pen (no stroke)
-        fill-pen steelblue
-        pen transparent
-        circle [180 40] 30
-        
-        ; Using transparent keyword
-        fill-pen transparent
-        pen "#333"
-        circle [260 40] 25
-    ]
+    raw {<canvas id="transparent" width="360" height="80" style="border:1px solid #ded6c2;border-radius:8px;background:#fff"></canvas>}
+
+    raw {<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var c1 = document.getElementById('named-colors');
+      if (c1) {
+        var x1 = c1.getContext('2d');
+        var colors = ['red','cornflowerblue','forestgreen','darkorange','crimson'];
+        for (var i=0;i<colors.length;i++) {
+          x1.strokeStyle = colors[i];
+          x1.lineWidth = 3;
+          x1.beginPath();
+          x1.arc(40 + i*60, 40, 25, 0, Math.PI*2);
+          x1.stroke();
+        }
+        x1.fillStyle = 'gold';
+        x1.beginPath();
+        x1.arc(340, 40, 25, 0, Math.PI*2);
+        x1.fill();
+      }
+
+      var c2 = document.getElementById('text-align');
+      if (c2) {
+        var x2 = c2.getContext('2d');
+        x2.fillStyle = '#333';
+        x2.font = '16px sans-serif';
+        x2.textBaseline = 'alphabetic';
+        x2.fillText('Alphabetic (default)', 10, 30);
+        x2.textBaseline = 'top';
+        x2.fillText('Top baseline', 10, 50);
+        x2.textBaseline = 'middle';
+        x2.fillText('Middle baseline', 10, 74);
+        x2.textBaseline = 'alphabetic';
+        x2.textAlign = 'center';
+        x2.fillText('Centered', 280, 50);
+      }
+
+      var c3 = document.getElementById('coord-system');
+      if (c3) {
+        var x3 = c3.getContext('2d');
+        x3.strokeStyle = 'blue';
+        x3.lineWidth = 2;
+        x3.beginPath();
+        x3.moveTo(10, 10); x3.lineTo(40, 10); x3.moveTo(10, 10); x3.lineTo(10, 40);
+        x3.stroke();
+        x3.fillStyle = '#111'; x3.font = '12px sans-serif'; x3.fillText('VID (top-left)', 50, 16);
+
+        x3.strokeStyle = 'green';
+        x3.beginPath();
+        x3.moveTo(10, 70); x3.lineTo(40, 70); x3.moveTo(10, 70); x3.lineTo(10, 40);
+        x3.stroke();
+        x3.fillText('Math (Y up visualized)', 50, 74);
+
+        x3.save();
+        x3.translate(280, 60);
+        x3.strokeStyle = 'red';
+        x3.beginPath();
+        x3.moveTo(-80, 0); x3.lineTo(80, 0); x3.moveTo(0, -40); x3.lineTo(0, 40);
+        x3.stroke();
+        x3.textAlign = 'center';
+        x3.fillText('Center origin', 0, 52);
+        x3.restore();
+      }
+
+      function smoothDemo(id, enabled, label){
+        var c = document.getElementById(id); if(!c) return;
+        var x = c.getContext('2d');
+        x.imageSmoothingEnabled = enabled;
+        x.fillStyle = '#f0f0f0';
+        x.fillRect(10, 10, 150, 80);
+        x.fillStyle = '#111';
+        x.font = '12px sans-serif';
+        x.textAlign = 'center';
+        x.fillText(label, 85, 52);
+      }
+      smoothDemo('smooth-on', true, 'Smooth ON');
+      smoothDemo('smooth-off', false, 'Smooth OFF');
+
+      var c5 = document.getElementById('transparent');
+      if (c5) {
+        var x5 = c5.getContext('2d');
+        x5.fillStyle = 'gold';
+        x5.beginPath(); x5.arc(80, 40, 30, 0, Math.PI*2); x5.fill();
+        x5.fillStyle = 'rgba(255,0,0,0.5)';
+        x5.beginPath(); x5.arc(120, 40, 30, 0, Math.PI*2); x5.fill();
+        x5.fillStyle = 'steelblue';
+        x5.beginPath(); x5.arc(180, 40, 24, 0, Math.PI*2); x5.fill();
+        x5.strokeStyle = '#333';
+        x5.beginPath(); x5.arc(260, 40, 25, 0, Math.PI*2); x5.stroke();
+      }
+    });
+    </script>}
 ]

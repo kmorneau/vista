@@ -117,8 +117,16 @@ build_full_html: function [layoutBlock] [
 
 view: function [layoutBlock] [
         apply_arturo_header
+        vista_state\webview_open: false
         fullHtml: build_full_html layoutBlock
+        htmlOnly: false
         if attr? "returnHtml" [
+                htmlOnly: true
+        ]
+        if attr? "html" [
+                htmlOnly: true
+        ]
+        if htmlOnly [
                 return fullHtml
         ]
         noWebview: false
@@ -136,32 +144,26 @@ view: function [layoutBlock] [
                 noWebview: true
         ]
         filePath: attr "file"
-        if any? @[greater? webview_state_sync_ms 0 webview_state_sync_from_ui] [
-                if not? noWebview [
-                        serve.port: 18967 [
-                                GET "/vista-sync" [ write.json vista_state\last_bindings "" ]
-                                POST "/vista-state" [
-                                        data: read.json body
-                                        apply_state_from_ui data
-                                        ""
-                                ]
-                        ]
-                ]
-        ]
         switch notEqual? filePath null [
                 pathStr: to :string filePath
                 absPath: relative pathStr
                 write fullHtml absPath
                 if noWebview [
+                        vista_state\webview_open: false
                         return fullHtml
                 ]
+                vista_state\webview_open: true
                 webview fullHtml
+                vista_state\webview_open: false
         ][
                 write fullHtml "ui.html"
                 if noWebview [
+                        vista_state\webview_open: false
                         return fullHtml
                 ]
+                vista_state\webview_open: true
                 webview fullHtml
+                vista_state\webview_open: false
         ]
 ]
 
@@ -169,7 +171,14 @@ vid: function [layoutBlock] [
         prev: vista_vid_mode
         vista_vid_mode: true
         result: null
-        switch attr? "returnHtml" [
+        returnHtml: false
+        if attr? "returnHtml" [
+                returnHtml: true
+        ]
+        if attr? "html" [
+                returnHtml: true
+        ]
+        switch returnHtml [
                 result: view .returnHtml layoutBlock
         ][
                 switch attr? "file" [

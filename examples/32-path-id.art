@@ -8,8 +8,18 @@ ARTURO [
 ]
 
 view [
+    title "Path .id Helper"
     text .id:"greeting" "Hello"
+    text "Close window to see lookup result in terminal."
 ]
 
 face: get_face_path [".id:greeting"]
-print show face
+switch equal? face null [
+    print "Lookup failed: .id:greeting not found"
+][
+    print "Lookup succeeded:"
+    print "id: " ++ face\id
+    if key? face "text" [
+        print "text: " ++ to :string face\text
+    ]
+]

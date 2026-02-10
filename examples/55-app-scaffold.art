@@ -15,9 +15,10 @@ vista_layout_vid_mode: true
 status: "Ready"
 count: 0
 selected: "Alpha"
+enabledFeature: false
 items: ["Alpha" "Beta" "Gamma" "Delta" "Epsilon"]
 
-view [
+view .file:"ui.html" [
     toolbar [
         button "New" [status: "New item"]
         button "Save" [status: "Saved"]
@@ -44,7 +45,10 @@ view [
                     ]
                 ]
                 tab "Settings" [
-                    check "Enable feature"
+                    row .space:8 [
+                        checkbox enabledFeature
+                        text "Enable feature"
+                    ]
                     return
                     text "Refresh count:"
                     text count

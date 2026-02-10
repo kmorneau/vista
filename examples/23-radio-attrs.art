@@ -12,7 +12,7 @@ choice: "b"
 view [
     title "Radio Option Attrs"
     radio choice [
-        ["a" "Alpha" #[disabled: true]]
+        ["a" "Alpha" #[]]
         ["b" "Beta" #[]]
     ]
     text "Selected:"

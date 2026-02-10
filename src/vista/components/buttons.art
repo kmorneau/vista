@@ -27,7 +27,7 @@ button: function [text action attrs] [
 
 key_button: function [text bindName attrs] [
         attrsVal: attrs
-        if attrsVal equal? null [
+        if equal? attrsVal null [
                 attrsVal: #[]
         ]
         textStr: ""
@@ -35,7 +35,7 @@ key_button: function [text bindName attrs] [
                 textStr: to :string text
         ]
         bindStr: ""
-        if bindName notEqual? null [
+        if notEqual? bindName null [
                 bindStr: to :string bindName
         ]
         merged: merge_class_attr attrsVal "vista-key"
@@ -43,7 +43,7 @@ key_button: function [text bindName attrs] [
         if key? merged "class" [
                 attrs\class: merged\class
         ]
-        if bindStr notEqual? "" [
+        if notEqual? bindStr "" [
                 attrs\["data-key-bind"]: bindStr
         ]
         if not? key? attrs "tabindex" [

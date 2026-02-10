@@ -7,8 +7,6 @@ ARTURO [
     Height: 560
 ]
 
-webview_sync_updates: true
-
 view .file: "ui.html" [
     panel "Info" [
         text "Old"

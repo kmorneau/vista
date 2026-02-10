@@ -1666,20 +1666,31 @@ layout_state: function [block] [
                                         args_len: size args
                                         if greater? args_len 0 [
                                                 bindName: "value"
-                                                items: []
+                                                listItems: []
                                                 switch equal? (type (get args 0)) :word [
                                                         bindName: to :string (get args 0)
                                                         add_binding bindings (get args 0)
                                                         if greater? args_len 1 [
-                                                                if equal? (type (get args 1)) :block [
-                                                                        items: get args 1
+                                                                arg1: get args 1
+                                                                arg1Type: type arg1
+                                                                if equal? arg1Type :block [
+                                                                        listItems: arg1
+                                                                ]
+                                                                if equal? arg1Type :word [
+                                                                        arg1Lit: to :literal arg1
+                                                                        if set? arg1Lit [
+                                                                                arg1Val: do to :string arg1
+                                                                                if equal? (type arg1Val) :block [
+                                                                                        listItems: arg1Val
+                                                                                ]
+                                                                        ]
                                                                 ]
                                                         ]
                                                 ][
                                                         switch equal? (type (get args 0)) :block [
-                                                                items: get args 0
+                                                                listItems: get args 0
                                                         ][
-                                                                items: [get args 0]
+                                                                listItems: [get args 0]
                                                         ]
                                                 ]
                                                 multi: false
@@ -1693,10 +1704,10 @@ layout_state: function [block] [
                                                 set_face_attrs_and_name faces faceId attrs
                                                 set_face_meta faces faceId #[
                                                         bindName: bindName
-                                                        options: items
+                                                        options: listItems
                                                         multi: multi
                                                 ]
-                                                faceHtml: list_face_bind items bindName multi bindings attrs
+                                                faceHtml: list_face_bind listItems bindName multi bindings attrs
                                                 html: html ++ faceHtml
                                                 set_face_html faces faceId faceHtml
                                         ]

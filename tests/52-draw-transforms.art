@@ -1,6 +1,8 @@
 ; Test for canvas graphics transforms: push, pop, translate, rotate, scale, skew
 ; Verifies state save/restore and coordinate transformations on canvas
 
+import "vista.art"!
+
 html: view .returnHtml [
     title "Canvas Transforms Test"
     canvas .id:"draw-transforms" .width: 400 .height: 300 [

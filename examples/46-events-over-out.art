@@ -10,7 +10,7 @@ ARTURO [
 status: "Out"
 
 view [
-    sensor .on-over:[status: "Over"] .on-out:[status: "Out"] [
+    group .class:"vista-box" .style:"display:inline-block; padding:12px; cursor:default;" .on-over:[status: "Over"] .on-out:[status: "Out"] [
         text "Hover me"
     ]
     text "Status:"

@@ -23,7 +23,7 @@ draw_js_token: function [token] [
     if equal? t :null [
         return "null"
     ]
-    return {"} ++ vg_js_escape_single (to :string token) ++ {"}
+    return "'" ++ vg_js_escape_single (to :string token) ++ "'"
 ]
 
 ; Parse a point: [x y] or "x y" block or two numbers

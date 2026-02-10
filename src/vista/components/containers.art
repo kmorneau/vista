@@ -10,7 +10,7 @@ panel_face: function [titleHtml bodyHtml attrs] [
         merged: merge_class_attr attrs "vista-panel"
         attrStr: attrs_to_html merged\attrs
         html: "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
-        if titleHtml notEqual? "" [
+        if notEqual? titleHtml "" [
                 html: html ++ "<div class='vista-panel-title'>" ++ titleHtml ++ "</div>"
         ]
         html: html ++ "<div class='vista-panel-body'>" ++ bodyHtml ++ "</div></div>"

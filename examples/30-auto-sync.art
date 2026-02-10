@@ -8,11 +8,22 @@ ARTURO [
 ]
 
 webview_state_sync_ms: 500
+webview_state_sync_from_ui: true
+webview_state_push_ms: 150
 
-counter: 0
+counter: "0"
+
+print "Window is opening now."
+print "Type in the input while the window is open, then close it."
 
 view .file: "ui.html" [
+    title "Auto Sync Demo"
+    text "Type a value in the field below."
+    text "Close the window and check terminal output."
+    input counter
+    text "Current value in UI:"
     text counter
 ]
 
-counter: counter + 1
+print "Final counter from Arturo state:"
+print counter

@@ -7,7 +7,7 @@ ARTURO [
     Height: 560
 ]
 
-vid .html [
+vid [
     h1 "VID helper"
     panel "Panel" [
         text "Hello"

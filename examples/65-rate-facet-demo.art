@@ -1,248 +1,174 @@
-; Vista UI - Rate Facet Examples
-; Demonstrates Vista's rate facet system for timed updates
+import "vista.art"!
 
-; Import Vista framework
-import "src/vista/vista.art"!
-
-; Example 1: Basic rate - clock display
-basic_rate_demo: function [] [
-        view #[Title: "Rate Facet Demo"] [
-                title "Basic Rate Update"
-                
-                text "Face updates at a specified rate interval."
-                
-                spacer
-                
-                current-time: to :string now
-                
-                box "clock-box" [
-                        text "Clock"
-                        text "Time: " ++ current-time
-                ] .rate: 1000
-        ]
+ARTURO [
+    Title: "Rate Facet Demo"
+    Logo: "arturo-vista.png"
+    Width: 980
+    Height: 700
 ]
 
-; Example 2: Countdown timer
-countdown_demo: function [] [
-        view #[Title: "Countdown Timer Demo"] [
-                title "Countdown Timer"
-                
-                text "Timer that counts down from a specified value."
-                
-                spacer
-                
-                counter-value: 60
-                timer-running: false
-                
-                box "countdown-box" [
-                        text "Countdown: " ++ to :string counter-value
-                ] .rate: 1000 .on-tick: function [] [
-                        if greater? counter-value 0 [
-                                counter-value: counter-value - 1
-                                update_face "countdown-box" #[text: "Countdown: " ++ to :string counter-value]
-                        ] [
-                                timer-running: false
-                                clear_rate "countdown-box"
-                        ]
-                ]
-                
-                row [
-                        button "Start" .on-click: [
-                                if not? timer-running [
-                                        timer-running: true
-                                        set_rate "countdown-box" 1000
-                                ]
-                        ]
-                        button "Reset" .on-click: [
-                                timer-running: false
-                                counter-value: 60
-                                clear_rate "countdown-box"
-                                update_face "countdown-box" #[text: "Countdown: 60"]
-                        ]
-                ]
-        ]
-]
+view .file:"ui.html" [
+    raw {<style>
+    .rate-wrap{display:flex;flex-direction:column;gap:12px;}
+    .rate-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .rate-card{border:1px solid #d8d8d8;border-radius:8px;background:#fff;padding:10px;}
+    .rate-card h3{margin:0 0 8px 0;}
+    .rate-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+    .rate-row{display:flex;gap:8px;flex-wrap:wrap;}
+    .rate-log{height:140px;overflow:auto;border:1px solid #e5e5e5;border-radius:6px;padding:8px;background:#fafafa;}
+    </style>
+    <script>
+    var vistaRateState={
+      clockTimer:null,
+      countTimer:null,
+      count:15,
+      fastTimer:null,
+      slowTimer:null,
+      fastCount:0,
+      slowCount:0
+    };
 
-; Example 3: Progress bar with auto-update
-progress_rate_demo: function [] [
-        view #[Title: "Progress Rate Demo"] [
-                title "Auto-Updating Progress"
-                
-                text "Progress bar that updates automatically."
-                
-                spacer
-                
-                progress-value: 0
-                is-progress-active: false
-                
-                box "progress-box" [
-                        progress "progress-bar" value: progress-value max: 100
-                        text "Progress: " ++ to :string progress-value ++ "%"
-                ] .rate: 100 .on-tick: function [] [
-                        if is-progress-active [
-                                if less? progress-value 100 [
-                                        progress-value: progress-value + 1
-                                        update_face "progress-bar" #[value: progress-value]
-                                        update_face "progress-box" #[text: "Progress: " ++ to :string progress-value ++ "%"]
-                                ] [
-                                        is-progress-active: false
-                                        clear_rate "progress-box"
-                                ]
-                        ]
-                ]
-                
-                row [
-                        button "Start" .on-click: [
-                                if not? is-progress-active [
-                                        is-progress-active: true
-                                        set_rate "progress-box" 100
-                                ]
-                        ]
-                        button "Pause" .on-click: [
-                                is-progress-active: false
-                                clear_rate "progress-box"
-                        ]
-                        button "Reset" .on-click: [
-                                is-progress-active: false
-                                progress-value: 0
-                                clear_rate "progress-box"
-                                update_face "progress-bar" #[value: 0]
-                                update_face "progress-box" #[text: "Progress: 0%"]
-                        ]
-                ]
-        ]
-]
+    function v$(id){return document.getElementById(id);}
 
-; Example 4: Live data feed simulation
-live_data_demo: function [] [
-        view #[Title: "Live Data Rate Demo"] [
-                title "Live Data Feed"
-                
-                text "Data that updates at a regular interval."
-                
-                spacer
-                
-                data-points: []
-        
-                box "data-box" [
-                        text "Live Data"
-                        list "data-list" options: data-points
-                ] .rate: 2000 .on-tick: function [] [
-                        new-value: random 100
-                        data-points: data-points ++ @["Value: " ++ to :string new-value]
-                        if greater? (size data-points) 10 [
-                                data-points: slice data-points 1 (size data-points)
-                        ]
-                        update_face "data-list" #[options: data-points]
-                ]
-                
-                row [
-                        button "Start Feed" .on-click: [
-                                set_rate "data-box" 2000
-                        ]
-                        button "Stop Feed" .on-click: [
-                                clear_rate "data-box"
-                        ]
-                        button "Clear" .on-click: [
-                                data-points: []
-                                update_face "data-list" #[options: data-points]
-                        ]
-                ]
-        ]
-]
+    function updateClock(){
+      var now=new Date();
+      var clock=v$('rate-clock');
+      if(clock){clock.textContent=now.toLocaleTimeString();}
+    }
 
-; Example 5: Animation frame rate
-animation_rate_demo: function [] [
-        view #[Title: "Animation Rate Demo"] [
-                title "Frame-Based Animation"
-                
-                text "Smooth animation using rate facet."
-                
-                spacer
-                
-                frame-index: 0
-                frame-count: 8
-                is-animating: false
-        
-                box "anim-box" [
-                        image "sprite" "character.png" width: 64 height: 64
-                        text "Frame: " ++ to :string frame-index
-                ] .rate: 125 .on-tick: function [] [
-                        if is-animating [
-                                frame-index: frame-index + 1
-                                if greater? frame-index (frame-count - 1) [
-                                        frame-index: 0
-                                ]
-                                update_face "anim-box" #[text: "Frame: " ++ to :string frame-index]
-                        ]
-                ]
-                
-                row [
-                        button "Play" .on-click: [
-                                is-animating: true
-                                set_rate "anim-box" 125
-                        ]
-                        button "Pause" .on-click: [
-                                is-animating: false
-                                clear_rate "anim-box"
-                        ]
-                        button "Reset" .on-click: [
-                                is-animating: false
-                                frame-index: 0
-                                clear_rate "anim-box"
-                                update_face "anim-box" #[text: "Frame: 0"]
-                        ]
-                ]
-        ]
-]
+    function startClock(){
+      stopClock();
+      updateClock();
+      vistaRateState.clockTimer=setInterval(updateClock,1000);
+      setStatus('Clock running at 1000ms.');
+    }
 
-; Example 6: Rate with different intervals
-multi_rate_demo: function [] [
-        view #[Title: "Multi-Rate Demo"] [
-                title "Multiple Rates"
-                
-                text "Different faces with different update rates."
-                
-                spacer
-                
-                fast-counter: 0
-                slow-counter: 0
-                
-                panel [
-                        text "Fast Counter (100ms)"
-                        text "fast-counter"
-                ] .rate: 100 .on-tick: function [] [
-                        fast-counter: fast-counter + 1
-                        update_face "fast-counter" #[text: to :string fast-counter]
-                ]
-                
-                panel [
-                        text "Slow Counter (1000ms)"
-                        text "slow-counter"
-                ] .rate: 1000 .on-tick: function [] [
-                        slow-counter: slow-counter + 1
-                        update_face "slow-counter" #[text: to :string slow-counter]
-                ]
-                
-                row [
-                        button "Start All" .on-click: [
-                                set_rate "fast-panel" 100
-                                set_rate "slow-panel" 1000
-                        ]
-                        button "Stop All" .on-click: [
-                                clear_rate "fast-panel"
-                                clear_rate "slow-panel"
-                        ]
-                ]
-        ]
-]
+    function stopClock(){
+      if(vistaRateState.clockTimer){clearInterval(vistaRateState.clockTimer);}
+      vistaRateState.clockTimer=null;
+    }
 
-; Export for use
-exports: #{
-        basic: :basic_rate_demo
-        countdown: :countdown_demo
-        progress: :progress_rate_demo
-        live: :live_data_demo
-        animation: :animation_rate_demo
-        multi: :multi_rate_demo
-}
+    function resetCountdown(){
+      vistaRateState.count=15;
+      var node=v$('rate-countdown');
+      if(node){node.textContent=String(vistaRateState.count);}
+    }
+
+    function startCountdown(){
+      stopCountdown();
+      resetCountdown();
+      vistaRateState.countTimer=setInterval(function(){
+        vistaRateState.count-=1;
+        var node=v$('rate-countdown');
+        if(node){node.textContent=String(vistaRateState.count);}
+        if(vistaRateState.count<=0){
+          stopCountdown();
+          setStatus('Countdown reached zero.');
+        }
+      },1000);
+      setStatus('Countdown running at 1000ms.');
+    }
+
+    function stopCountdown(){
+      if(vistaRateState.countTimer){clearInterval(vistaRateState.countTimer);}
+      vistaRateState.countTimer=null;
+    }
+
+    function resetMulti(){
+      vistaRateState.fastCount=0;
+      vistaRateState.slowCount=0;
+      var f=v$('rate-fast');
+      var s=v$('rate-slow');
+      if(f){f.textContent='0';}
+      if(s){s.textContent='0';}
+    }
+
+    function startMulti(){
+      stopMulti();
+      resetMulti();
+      vistaRateState.fastTimer=setInterval(function(){
+        vistaRateState.fastCount+=1;
+        var f=v$('rate-fast');
+        if(f){f.textContent=String(vistaRateState.fastCount);}
+      },100);
+      vistaRateState.slowTimer=setInterval(function(){
+        vistaRateState.slowCount+=1;
+        var s=v$('rate-slow');
+        if(s){s.textContent=String(vistaRateState.slowCount);}
+      },1000);
+      setStatus('Multi-rate running: fast=100ms, slow=1000ms.');
+    }
+
+    function stopMulti(){
+      if(vistaRateState.fastTimer){clearInterval(vistaRateState.fastTimer);}
+      if(vistaRateState.slowTimer){clearInterval(vistaRateState.slowTimer);}
+      vistaRateState.fastTimer=null;
+      vistaRateState.slowTimer=null;
+    }
+
+    function pushLog(msg){
+      var box=v$('rate-log');
+      if(!box){return;}
+      var now=new Date().toLocaleTimeString();
+      var line=document.createElement('div');
+      line.className='rate-mono';
+      line.textContent='['+now+'] '+msg;
+      box.prepend(line);
+    }
+
+    function setStatus(msg){
+      var s=v$('rate-status');
+      if(s){s.textContent=msg;}
+      pushLog(msg);
+    }
+
+    function stopAll(){
+      stopClock();
+      stopCountdown();
+      stopMulti();
+      setStatus('All timers stopped.');
+    }
+    </script>}
+
+    title "Rate Facet Demo (Timer Semantics)"
+    text "This shows what 'rate' means in practice: scheduled updates at different intervals."
+
+    row .space:8 [
+        button "Start Clock" "startClock()"
+        button "Stop Clock" "stopClock(); setStatus('Clock stopped.')"
+        button "Start Countdown" "startCountdown()"
+        button "Stop Countdown" "stopCountdown(); setStatus('Countdown stopped.')"
+        button "Start Multi-Rate" "startMulti()"
+        button "Stop Multi-Rate" "stopMulti(); setStatus('Multi-rate stopped.')"
+        button "Stop All" "stopAll()"
+    ]
+
+    raw {<div class="rate-wrap">
+      <div class="rate-grid">
+        <div class="rate-card">
+          <h3>Clock (1000ms)</h3>
+          <div>Current Time: <span id="rate-clock" class="rate-mono">--:--:--</span></div>
+        </div>
+        <div class="rate-card">
+          <h3>Countdown (1000ms)</h3>
+          <div>Remaining: <span id="rate-countdown" class="rate-mono">15</span></div>
+        </div>
+        <div class="rate-card">
+          <h3>Fast Counter (100ms)</h3>
+          <div>Ticks: <span id="rate-fast" class="rate-mono">0</span></div>
+        </div>
+        <div class="rate-card">
+          <h3>Slow Counter (1000ms)</h3>
+          <div>Ticks: <span id="rate-slow" class="rate-mono">0</span></div>
+        </div>
+      </div>
+      <div class="rate-card">
+        <h3>Status</h3>
+        <div id="rate-status">Ready.</div>
+      </div>
+      <div class="rate-card">
+        <h3>Event Log</h3>
+        <div id="rate-log" class="rate-log"></div>
+      </div>
+    </div>}
+]

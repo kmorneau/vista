@@ -7,12 +7,40 @@ ARTURO [
     Height: 520
 ]
 
-view [
-    text "Draw gradients (linear + radial)"
-    canvas .id:"draw-gradients" .width: 360 .height: 220 [
-        linear-gradient [0 0] [360 0] [ [0 "#ff9f1c"] [1 "#2ec4b6"] ]
-        box [0 0] [360 80]
-        radial-gradient [180 150] 10 [180 150] 80 [ [0 "#ffffff"] [1 "#3a0ca3"] ]
-        circle [180 150] 70
-    ]
+view .file:"ui.html" [
+    raw {<style>
+    .draw-wrap{display:flex;flex-direction:column;gap:10px;}
+    .draw-card{border:1px solid #ddd;border-radius:8px;padding:10px;background:#fff;}
+    canvas{border:1px solid #e2e2e2;border-radius:6px;background:#fff;}
+    </style>}
+
+    title "Draw Gradients"
+    text "Linear and radial gradients rendered on HTML5 canvas."
+    raw {<div class="draw-wrap">
+      <div class="draw-card">
+        <canvas id="grad-canvas" width="640" height="280"></canvas>
+      </div>
+    </div>
+    <script>
+    (function(){
+      var c=document.getElementById('grad-canvas');
+      if(!c){return;}
+      var ctx=c.getContext('2d');
+      var lg=ctx.createLinearGradient(0,0,640,0);
+      lg.addColorStop(0,'#ff9f1c');
+      lg.addColorStop(1,'#2ec4b6');
+      ctx.fillStyle=lg;
+      ctx.fillRect(0,0,640,90);
+
+      var rg=ctx.createRadialGradient(320,190,16,320,190,92);
+      rg.addColorStop(0,'#ffffff');
+      rg.addColorStop(1,'#3a0ca3');
+      ctx.fillStyle=rg;
+      ctx.beginPath();
+      ctx.arc(320,190,86,0,Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle='#2b2b2b';
+      ctx.stroke();
+    })();
+    </script>}
 ]
