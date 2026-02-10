@@ -4,18 +4,100 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>data/wiki/core/concepts/index.md - Vista</title>
-  <link rel="stylesheet" href="/assets/main.css" />
+  <link rel="stylesheet" href="/vista/assets/main.css" />
+  <style>
+    :root{
+      --arturo-primary:#f2c230;
+      --arturo-ink:#141414;
+      --arturo-bg:#f7f6f1;
+      --arturo-panel:#ffffff;
+      --arturo-border:#ded6c2;
+    }
+    body{
+      margin:0;
+      background:var(--arturo-bg);
+      color:var(--arturo-ink);
+      font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+    }
+    .vista-app-header{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:var(--arturo-primary);
+      color:var(--arturo-ink);
+      border-bottom:2px solid var(--arturo-ink);
+    }
+    .vista-app-header-inner{
+      max-width:1100px;
+      margin:0 auto;
+      padding:10px 16px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .vista-app-logo{
+      height:28px;
+      width:auto;
+      display:block;
+    }
+    .vista-app-mark{
+      font-weight:800;
+      letter-spacing:0.2em;
+      text-transform:uppercase;
+    }
+    .vista-app-title{
+      font-size:18px;
+      font-weight:700;
+    }
+    .site-nav{
+      margin-left:auto;
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .site-nav a{
+      color:var(--arturo-ink);
+      text-decoration:none;
+      border:1px solid var(--arturo-ink);
+      background:#fff8dc;
+      border-radius:8px;
+      padding:6px 10px;
+      font-size:14px;
+      font-weight:600;
+    }
+    .site-nav a.site-title{
+      border:none;
+      background:transparent;
+      padding:0;
+    }
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      padding:16px;
+    }
+    .markdown-body{
+      border:1px solid var(--arturo-border);
+      border-radius:12px;
+      background:var(--arturo-panel);
+      padding:14px;
+    }
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <nav class="site-nav">
-      <a href="/" class="site-title">Vista</a>
-      <a href="/guide/">Guide</a>
-      <a href="/wiki/">Wiki</a>
-    </nav>
+  <header class="vista-app-header">
+    <div class="vista-app-header-inner">
+      <a href="/vista/" class="site-title">
+        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+      </a>
+      <div class="vista-app-mark">ARTURO/VISTA</div>
+      <div class="vista-app-title">data/wiki/core/concepts/index.md</div>
+      <nav class="site-nav">
+        <a href="/vista/guide/">Guide</a>
+        <a href="/vista/wiki/">Wiki</a>
+      </nav>
+    </div>
   </header>
   <main class="container">
-    <h1>data/wiki/core/concepts/index.md</h1>
     <div class="markdown-body">
     
 # Core Concepts
@@ -24,15 +106,15 @@ Understanding the fundamental concepts of Vista is essential for building robust
 
 ## Key Concepts
 
-- [VID Overview](/wiki/core/concepts/vid-overview/) - Introduction to the Visual Interface Dialect
+- [VID Overview](/vista/wiki/core/concepts/vid-overview/) - Introduction to the Visual Interface Dialect
 
-- [Face Model](/wiki/core/concepts/face-model/) - Understanding faces and facets
+- [Face Model](/vista/wiki/core/concepts/face-model/) - Understanding faces and facets
 
-- [Layout System](/wiki/core/concepts/layout-overview/) - Layout concepts and philosophy
+- [Layout System](/vista/wiki/core/concepts/layout-overview/) - Layout concepts and philosophy
 
-- [State Management](/wiki/core/concepts/state-management/) - Managing application state
+- [State Management](/vista/wiki/core/concepts/state-management/) - Managing application state
 
-- [Event System](/wiki/core/concepts/event-system/) - Event handling architecture
+- [Event System](/vista/wiki/core/concepts/event-system/) - Event handling architecture
 
 ## Face Model
 The face model is the foundation of Vista's UI system. Faces are the basic building blocks that represent UI elements with properties, state, and behavior.
@@ -42,12 +124,12 @@ Vista provides a comprehensive event system that allows you to respond to user i
 
 ## See Also
 
-- [Components](/wiki/core/components/) - UI components reference
+- [Components](/vista/wiki/core/components/) - UI components reference
 
-- [Tutorials](/wiki/core/tutorials/) - Learning guides
+- [Tutorials](/vista/wiki/core/tutorials/) - Learning guides
 
     </div>
   </main>
-  <script src="/assets/main.js"></script>
+  <script src="/vista/assets/main.js"></script>
 </body>
 </html>

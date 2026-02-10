@@ -4,18 +4,100 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>data/wiki/shared/migration/vid-compatibility.md - Vista</title>
-  <link rel="stylesheet" href="/assets/main.css" />
+  <link rel="stylesheet" href="/vista/assets/main.css" />
+  <style>
+    :root{
+      --arturo-primary:#f2c230;
+      --arturo-ink:#141414;
+      --arturo-bg:#f7f6f1;
+      --arturo-panel:#ffffff;
+      --arturo-border:#ded6c2;
+    }
+    body{
+      margin:0;
+      background:var(--arturo-bg);
+      color:var(--arturo-ink);
+      font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+    }
+    .vista-app-header{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:var(--arturo-primary);
+      color:var(--arturo-ink);
+      border-bottom:2px solid var(--arturo-ink);
+    }
+    .vista-app-header-inner{
+      max-width:1100px;
+      margin:0 auto;
+      padding:10px 16px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .vista-app-logo{
+      height:28px;
+      width:auto;
+      display:block;
+    }
+    .vista-app-mark{
+      font-weight:800;
+      letter-spacing:0.2em;
+      text-transform:uppercase;
+    }
+    .vista-app-title{
+      font-size:18px;
+      font-weight:700;
+    }
+    .site-nav{
+      margin-left:auto;
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .site-nav a{
+      color:var(--arturo-ink);
+      text-decoration:none;
+      border:1px solid var(--arturo-ink);
+      background:#fff8dc;
+      border-radius:8px;
+      padding:6px 10px;
+      font-size:14px;
+      font-weight:600;
+    }
+    .site-nav a.site-title{
+      border:none;
+      background:transparent;
+      padding:0;
+    }
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      padding:16px;
+    }
+    .markdown-body{
+      border:1px solid var(--arturo-border);
+      border-radius:12px;
+      background:var(--arturo-panel);
+      padding:14px;
+    }
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <nav class="site-nav">
-      <a href="/" class="site-title">Vista</a>
-      <a href="/guide/">Guide</a>
-      <a href="/wiki/">Wiki</a>
-    </nav>
+  <header class="vista-app-header">
+    <div class="vista-app-header-inner">
+      <a href="/vista/" class="site-title">
+        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+      </a>
+      <div class="vista-app-mark">ARTURO/VISTA</div>
+      <div class="vista-app-title">data/wiki/shared/migration/vid-compatibility.md</div>
+      <nav class="site-nav">
+        <a href="/vista/guide/">Guide</a>
+        <a href="/vista/wiki/">Wiki</a>
+      </nav>
+    </div>
   </header>
   <main class="container">
-    <h1>data/wiki/shared/migration/vid-compatibility.md</h1>
     <div class="markdown-body">
     
 # VID Compatibility
@@ -89,12 +171,12 @@ view/legacy [
 
 ## See Also
 
-- [VID Parity](/wiki/shared/migration/vid-parity/) - Full feature comparison
+- [VID Parity](/vista/wiki/shared/migration/vid-parity/) - Full feature comparison
 
-- [From Rebol/View](/wiki/shared/migration/from-rebol-view/) - Migration from Rebol
+- [From Rebol/View](/vista/wiki/shared/migration/from-rebol-view/) - Migration from Rebol
 
     </div>
   </main>
-  <script src="/assets/main.js"></script>
+  <script src="/vista/assets/main.js"></script>
 </body>
 </html>

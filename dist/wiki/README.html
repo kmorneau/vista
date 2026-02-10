@@ -4,18 +4,100 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>data/wiki/README.md - Vista</title>
-  <link rel="stylesheet" href="/assets/main.css" />
+  <link rel="stylesheet" href="/vista/assets/main.css" />
+  <style>
+    :root{
+      --arturo-primary:#f2c230;
+      --arturo-ink:#141414;
+      --arturo-bg:#f7f6f1;
+      --arturo-panel:#ffffff;
+      --arturo-border:#ded6c2;
+    }
+    body{
+      margin:0;
+      background:var(--arturo-bg);
+      color:var(--arturo-ink);
+      font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+    }
+    .vista-app-header{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:var(--arturo-primary);
+      color:var(--arturo-ink);
+      border-bottom:2px solid var(--arturo-ink);
+    }
+    .vista-app-header-inner{
+      max-width:1100px;
+      margin:0 auto;
+      padding:10px 16px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .vista-app-logo{
+      height:28px;
+      width:auto;
+      display:block;
+    }
+    .vista-app-mark{
+      font-weight:800;
+      letter-spacing:0.2em;
+      text-transform:uppercase;
+    }
+    .vista-app-title{
+      font-size:18px;
+      font-weight:700;
+    }
+    .site-nav{
+      margin-left:auto;
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .site-nav a{
+      color:var(--arturo-ink);
+      text-decoration:none;
+      border:1px solid var(--arturo-ink);
+      background:#fff8dc;
+      border-radius:8px;
+      padding:6px 10px;
+      font-size:14px;
+      font-weight:600;
+    }
+    .site-nav a.site-title{
+      border:none;
+      background:transparent;
+      padding:0;
+    }
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      padding:16px;
+    }
+    .markdown-body{
+      border:1px solid var(--arturo-border);
+      border-radius:12px;
+      background:var(--arturo-panel);
+      padding:14px;
+    }
+  </style>
 </head>
 <body>
-  <header class="site-header">
-    <nav class="site-nav">
-      <a href="/" class="site-title">Vista</a>
-      <a href="/guide/">Guide</a>
-      <a href="/wiki/">Wiki</a>
-    </nav>
+  <header class="vista-app-header">
+    <div class="vista-app-header-inner">
+      <a href="/vista/" class="site-title">
+        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+      </a>
+      <div class="vista-app-mark">ARTURO/VISTA</div>
+      <div class="vista-app-title">data/wiki/README.md</div>
+      <nav class="site-nav">
+        <a href="/vista/guide/">Guide</a>
+        <a href="/vista/wiki/">Wiki</a>
+      </nav>
+    </div>
   </header>
   <main class="container">
-    <h1>data/wiki/README.md</h1>
     <div class="markdown-body">
     
 # Vista Documentation
@@ -30,39 +112,39 @@ Welcome to the Vista documentation. Vista is a declarative UI framework for Artu
 
 ## Getting Started
 
-- [Getting Started](/wiki/getting-started/) - Quick start guide
+- [Getting Started](/vista/wiki/getting-started/) - Quick start guide
 
-- [Hello World Tutorial](/wiki/core/tutorials/hello-world/) - Your first Vista app
+- [Hello World Tutorial](/vista/wiki/core/tutorials/hello-world/) - Your first Vista app
 
-- [VID Overview](/wiki/core/concepts/vid-overview/) - Introduction to the VID dialect
+- [VID Overview](/vista/wiki/core/concepts/vid-overview/) - Introduction to the VID dialect
 
 ## Vista Core
 
-- [Concepts](/wiki/core/concepts/) - Architecture and design
+- [Concepts](/vista/wiki/core/concepts/) - Architecture and design
 
-- [Tutorials](/wiki/core/tutorials/) - Step-by-step guides
+- [Tutorials](/vista/wiki/core/tutorials/) - Step-by-step guides
 
-- [Components](/wiki/core/components/) - UI component reference
+- [Components](/vista/wiki/core/components/) - UI component reference
 
-- [Layout](/wiki/core/layout/) - Layout system reference
+- [Layout](/vista/wiki/core/layout/) - Layout system reference
 
-- [Data Binding](/wiki/core/data-binding/) - State and binding
+- [Data Binding](/vista/wiki/core/data-binding/) - State and binding
 
-- [Events](/wiki/core/events/) - Event handling
+- [Events](/vista/wiki/core/events/) - Event handling
 
 ## Vista Graphics
 
-- [Concepts](/wiki/graphics/concepts/) - Graphics fundamentals
+- [Concepts](/vista/wiki/graphics/concepts/) - Graphics fundamentals
 
-- [Tutorials](/wiki/graphics/tutorials/) - Graphics guides
+- [Tutorials](/vista/wiki/graphics/tutorials/) - Graphics guides
 
-- [Drawing](/wiki/graphics/drawing/) - Drawing commands
+- [Drawing](/vista/wiki/graphics/drawing/) - Drawing commands
 
-- [Transforms](/wiki/graphics/transforms/) - Transformations
+- [Transforms](/vista/wiki/graphics/transforms/) - Transformations
 
-- [Colors](/wiki/graphics/colors/) - Colors and gradients
+- [Colors](/vista/wiki/graphics/colors/) - Colors and gradients
 
-- [Animation](/wiki/graphics/animation/) - Animation techniques
+- [Animation](/vista/wiki/graphics/animation/) - Animation techniques
 
 ## Building the Docs
 Edit files in `data/wiki/` and rebuild:
@@ -72,10 +154,10 @@ arturo tools/build.art
 `
 
 ## File Format
-Wiki pages use Arturo block comments. See [wiki-template.art](/wiki/wiki-template/) for a template.
+Wiki pages use Arturo block comments. See [wiki-template.art](/vista/wiki/wiki-template/) for a template.
 
     </div>
   </main>
-  <script src="/assets/main.js"></script>
+  <script src="/vista/assets/main.js"></script>
 </body>
 </html>
