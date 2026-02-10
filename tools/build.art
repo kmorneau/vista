@@ -25,11 +25,9 @@ withBase: function [path] [
 apply_base_links: function [content] [
     out: to :string content
     out: replace out "href=\"/wiki/" ("href=\"" ++ withBase "/wiki/")
-    out: replace out "href=\"/guide/" ("href=\"" ++ withBase "/guide/")
     out: replace out "href=\"/assets/" ("href=\"" ++ withBase "/assets/")
     out: replace out "src=\"/assets/" ("src=\"" ++ withBase "/assets/")
     out: replace out "](/wiki/" ("](" ++ withBase "/wiki/")
-    out: replace out "](/guide/" ("](" ++ withBase "/guide/")
     out: replace out "](/assets/" ("](" ++ withBase "/assets/")
     out
 ]
@@ -61,7 +59,6 @@ pageTemplate: function [title, content][
     cssHref: withBase "/assets/main.css"
     logoSrc: withBase "/assets/images/arturo-vista.png"
     homeHref: withBase "/"
-    guideHref: withBase "/guide/"
     wikiHref: withBase "/wiki/"
     jsSrc: withBase "/assets/main.js"
     html: {
@@ -159,7 +156,6 @@ pageTemplate: function [title, content][
       <div class="vista-app-mark">ARTURO/VISTA</div>
       <div class="vista-app-title">__TITLE__</div>
       <nav class="site-nav">
-        <a href="__GUIDE_HREF__">Guide</a>
         <a href="__WIKI_HREF__">Wiki</a>
       </nav>
     </div>
@@ -176,7 +172,6 @@ pageTemplate: function [title, content][
     html: replace html "__CSS_HREF__" cssHref
     html: replace html "__LOGO_SRC__" logoSrc
     html: replace html "__HOME_HREF__" homeHref
-    html: replace html "__GUIDE_HREF__" guideHref
     html: replace html "__WIKI_HREF__" wikiHref
     html: replace html "__JS_SRC__" jsSrc
     html: replace html "__TITLE__" title
@@ -188,10 +183,9 @@ pageTemplate: function [title, content][
 print "Generating root index page..."
 
 rootContent: {
-<p>Welcome to Vista, an Arturo GUI framework! <a href="/guide/">View the Arturo Guide</a> or explore the <a href="/wiki/">Wiki</a>.</p>
+<p>Welcome to Vista, an Arturo GUI framework. Explore the <a href="/wiki/">Wiki</a>.</p>
 <h2>Quick Links</h2>
 <ul>
-  <li><a href="/guide/">Getting Started Guide</a></li>
   <li><a href="/wiki/core/">Core Concepts</a></li>
   <li><a href="/wiki/graphics/">Graphics & Animation</a></li>
 </ul>
@@ -262,20 +256,6 @@ getTitle: function [frontmatter, default][
     ]
     return title
 ]
-
-; Generate ARTURO_GUIDE.md page
-execute "mkdir -p dist/guide"
-
-guideContent: parseMarkdown "ARTURO_GUIDE.md"
-guideTitle: getTitle guideContent\frontmatter "Arturo Guide"
-print ["Title:" guideTitle]
-print ["Body length:" (to :string (size guideContent\body))]
-
-guideBody: guideContent\body
-
-guideHtml: pageTemplate guideTitle guideBody
-write guideHtml "dist/guide/index.html"
-print "Generated: dist/guide/index.html"
 
 ; Helper: Process all wiki files recursively
 print "Processing wiki files..."
