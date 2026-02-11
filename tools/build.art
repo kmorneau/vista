@@ -51,8 +51,9 @@ execute "cp -r src/theme/resources/icons/*.svg dist/assets/icons/ 2>/dev/null ||
 ; Copy images
 print "Copying images..."
 execute "mkdir -p dist/assets/images"
-execute "cp Arturo_Guide.png dist/assets/images/ 2>/dev/null || true"
-execute "cp arturo-vista.png dist/assets/images/ 2>/dev/null || true"
+; execute "cp Arturo_Guide.png dist/assets/images/ 2>/dev/null || true"
+; execute "cp arturo-vista.png dist/assets/images/ 2>/dev/null || true"
+execute "cp -r src/theme/resouces/arturo-vista.png dist/assets/images/ 2>/dev/null || true"
 
 ; Helper: Create page HTML
 pageTemplate: function [title, content][
