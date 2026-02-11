@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/graphics/api-reference/block-normalization.md - Vista</title>
+  <link rel="stylesheet" href="/vista/assets/main.css" />
+  <style>
+    :root{
+      --arturo-primary:#f2c230;
+      --arturo-ink:#101010;
+      --arturo-bg:#f7f6f1;
+      --arturo-panel:#ffffff;
+      --arturo-border:#ded6c2;
+    }
+    body{
+      margin:0;
+      background:var(--arturo-bg);
+      color:var(--arturo-ink);
+      font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+    }
+    .logo-bar{
+      background:var(--arturo-primary);
+      border-bottom:1px solid var(--arturo-ink);
+    }
+    .logo-row{
+      max-width:1080px;
+      margin:0 auto;
+      padding:8px 16px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
+      width:auto;
+      display:block;
+    }
+    .brand-mark{
+      margin-left:10px;
+      font-weight:800;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .top-nav{
+      margin-left:auto;
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .top-nav a{
+      color:var(--arturo-ink);
+      text-decoration:none;
+      border:1px solid var(--arturo-ink);
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
+      font-weight:600;
+    }
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
+    }
+    .main{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px 16px 32px;
+    }
+    .markdown-body{
+      border:1px solid var(--arturo-border);
+      background:var(--arturo-panel);
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
+    }
+  </style>
+</head>
+<body>
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
+      </a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
+      </nav>
+    </div>
+  </header>
+  <div class="nav-bar"></div>
+  <main class="main">
+    <div class="markdown-body">
+    <h1>Block Normalization</h1>
+<p>Block normalization handles the parsing and normalization of draw blocks, ensuring that compound keywords like <code>fill-pen</code> and <code>line-width</code> survive Arturo tokenization correctly.</p>
+<h2>Overview</h2>
+<p>When Arturo tokenizes code, compound words with hyphens may be split into separate tokens. The normalization process recombines these tokens to restore the intended keywords.</p>
+<h2>vg_normalize_block</h2>
+<p>Normalizes a draw block by recombining hyphenated keywords.</p>
+<p><code>normalized: vg_normalize_block block</code></p>
+<h3>Parameters</h3>
+<ul>
+<li><code>block</code> - The draw block to normalize</li>
+</ul>
+<h3>Returns</h3>
+<p>A new block with compound keywords properly combined.</p>
+<h2>How It Works</h2>
+<p>The function scans the block for patterns like:</p>
+<p><code>[fill - pen box 0 0 100 100]</code>
+`
+And combines them into:</p>
+<p><code>[fill-pen box 0 0 100 100]</code></p>
+<h2>Supported Compound Keywords</h2>
+<ul>
+<li><p><code>fill-pen</code> - Fill color/gradient</p>
+</li>
+<li><p><code>line-width</code> - Stroke width</p>
+</li>
+<li><p><code>line-cap</code> - Line end style</p>
+</li>
+<li><p><code>line-join</code> - Line corner style</p>
+</li>
+<li><p><code>text-align</code> - Text alignment</p>
+</li>
+<li><p><code>text-baseline</code> - Text baseline</p>
+</li>
+<li><p><code>coord-system</code> - Coordinate system</p>
+</li>
+<li><p><code>anti-aliased</code> - Anti-aliasing toggle</p>
+</li>
+</ul>
+<h2>Example</h2>
+<p>`
+; Input block (after tokenization)
+rawBlock: [fill - pen red line - width 2 box 0 0 100 100]</p>
+<p>; Normalized block
+normalized: vg_normalize_block rawBlock
+; Result: [fill-pen red line-width 2 box 0 0 100 100]
+`</p>
+<h2>When Normalization Happens</h2>
+<p>Block normalization is typically applied automatically when:</p>
+<ul>
+<li><p>Parsing draw blocks for canvas rendering</p>
+</li>
+<li><p>Processing VID style specifications</p>
+</li>
+<li><p>Handling inline draw dialect code</p>
+</li>
+</ul>
+<h2>Implementation Details</h2>
+<p>The function:</p>
+<ul>
+<li><p>Iterates through block tokens</p>
+</li>
+<li><p>Identifies word/symbol/word patterns with hyphens</p>
+</li>
+<li><p>Combines matched patterns into single words</p>
+</li>
+<li><p>Preserves attribute labels correctly</p>
+</li>
+<li><p>Returns a new normalized block</p>
+</li>
+</ul>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/graphics/concepts/draw-model/">Draw Model</a> - Draw dialect concepts</p>
+</li>
+<li><p><a href="/vista/wiki/graphics/api-reference/draw-commands/">Draw Commands</a> - Drawing API</p>
+</li>
+</ul>
+</ul
+
+    </div>
+  </main>
+  <script src="/vista/assets/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/data-binding/binding-overview.md - Vista</title>
+  <link rel="stylesheet" href="/vista/assets/main.css" />
+  <style>
+    :root{
+      --arturo-primary:#f2c230;
+      --arturo-ink:#101010;
+      --arturo-bg:#f7f6f1;
+      --arturo-panel:#ffffff;
+      --arturo-border:#ded6c2;
+    }
+    body{
+      margin:0;
+      background:var(--arturo-bg);
+      color:var(--arturo-ink);
+      font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+    }
+    .logo-bar{
+      background:var(--arturo-primary);
+      border-bottom:1px solid var(--arturo-ink);
+    }
+    .logo-row{
+      max-width:1080px;
+      margin:0 auto;
+      padding:8px 16px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
+      width:auto;
+      display:block;
+    }
+    .brand-mark{
+      margin-left:10px;
+      font-weight:800;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .top-nav{
+      margin-left:auto;
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .top-nav a{
+      color:var(--arturo-ink);
+      text-decoration:none;
+      border:1px solid var(--arturo-ink);
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
+      font-weight:600;
+    }
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
+    }
+    .main{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px 16px 32px;
+    }
+    .markdown-body{
+      border:1px solid var(--arturo-border);
+      background:var(--arturo-panel);
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
+    }
+  </style>
+</head>
+<body>
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
+      </a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
+      </nav>
+    </div>
+  </header>
+  <div class="nav-bar"></div>
+  <main class="main">
+    <div class="markdown-body">
+    <h1>Data Binding Overview</h1>
+<p>Vista's data binding system connects your application state to UI components, enabling automatic synchronization between data and presentation. This follows the REBOL/View tradition of declarative face binding.</p>
+<h2>How Data Binding Works</h2>
+<p>When you pass a word to a UI component, Vista automatically:</p>
+<ul>
+<li><p>Creates a binding between the word and the component</p>
+</li>
+<li><p>Generates a state entry in JavaScript</p>
+</li>
+<li><p>Sets up reactive updates when state changes</p>
+</li>
+</ul>
+<p>`
+import 'vista!</p>
+<p>; Define state
+counter: 0
+name: &quot;World&quot;</p>
+<p>view [
+; Text automatically updates when counter changes
+text counter</p>
+<p>; Field is bound to name - edits update state
+field name</p>
+<p>; Button action modifies state
+button &quot;Increment&quot; [counter: counter + 1]
+]
+`</p>
+<h2>Binding Types</h2>
+<h3>Text Binding</h3>
+<p>Text components display bound values that update automatically:</p>
+<p><code>text counter text [&quot;Hello &quot; name]</code></p>
+<h3>Input Binding (Two-Way)</h3>
+<p>Field and input components support two-way binding:</p>
+<p><code>field username        ; Bound to 'username input .type:&quot;email&quot; email textarea notes</code></p>
+<h3>Selection Binding</h3>
+<p>List and selection components bind to selection state:</p>
+<p><code>list choice [&quot;Red&quot; &quot;Green&quot; &quot;Blue&quot;] radio color [&quot;red&quot; &quot;green&quot; &quot;blue&quot;] drop-list selection [&quot;A&quot; &quot;B&quot; &quot;C&quot;]</code></p>
+<h3>Boolean Binding</h3>
+<p>Checkbox and toggle components bind to boolean state:</p>
+<p><code>checkbox accepted &quot;Accept terms&quot; toggle darkMode &quot;Dark Mode&quot;</code></p>
+<h2>State Synchronization</h2>
+<p>Vista provides several mechanisms for state synchronization:</p>
+<h3>Automatic Sync (Recommended)</h3>
+<p>`
+; Enable automatic periodic sync
+webview_state_sync_ms: 500</p>
+<p>; Then state syncs automatically every 500ms
+counter: counter + 1
+`</p>
+<h3>Manual Sync</h3>
+<p><code>; Call sync_state after modifications counter: counter + 1 sync_state</code></p>
+<h3>Programmatic Updates</h3>
+<p><code>; Set state directly set_state &quot;counter&quot; 42</code></p>
+<h2>Binding Expressions</h2>
+<p>You can use expressions in bindings:</p>
+<p><code>text [&quot;Count: &quot; counter] text [&quot;Total: &quot; price * quantity] text [&quot;Valid: &quot; if valid [&quot;Yes&quot;] else [&quot;No&quot;]]</code></p>
+<h2>Component State</h2>
+<p>Some components have their own internal state:</p>
+<p><code>tabs .selected:1 [ tab &quot;One&quot; [text &quot;First panel&quot;] tab &quot;Two&quot; [text &quot;Second panel&quot;] ]</code></p>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/data-binding/state-model/">State Model</a> - Understanding Vista's state system</p>
+</li>
+<li><p><a href="/vista/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Input binding details</p>
+</li>
+<li><p><a href="/vista/wiki/core/concepts/state-management/">State Management</a> - Managing application state</p>
+</li>
+</ul>
+</ul
+
+    </div>
+  </main>
+  <script src="/vista/assets/main.js"></script>
+</body>
+</html>

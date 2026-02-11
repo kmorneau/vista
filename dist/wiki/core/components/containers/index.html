@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/components/containers.md - Vista</title>
+  <link rel="stylesheet" href="/vista/assets/main.css" />
+  <style>
+    :root{
+      --arturo-primary:#f2c230;
+      --arturo-ink:#101010;
+      --arturo-bg:#f7f6f1;
+      --arturo-panel:#ffffff;
+      --arturo-border:#ded6c2;
+    }
+    body{
+      margin:0;
+      background:var(--arturo-bg);
+      color:var(--arturo-ink);
+      font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+    }
+    .logo-bar{
+      background:var(--arturo-primary);
+      border-bottom:1px solid var(--arturo-ink);
+    }
+    .logo-row{
+      max-width:1080px;
+      margin:0 auto;
+      padding:8px 16px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
+      width:auto;
+      display:block;
+    }
+    .brand-mark{
+      margin-left:10px;
+      font-weight:800;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .top-nav{
+      margin-left:auto;
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .top-nav a{
+      color:var(--arturo-ink);
+      text-decoration:none;
+      border:1px solid var(--arturo-ink);
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
+      font-weight:600;
+    }
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
+    }
+    .main{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px 16px 32px;
+    }
+    .markdown-body{
+      border:1px solid var(--arturo-border);
+      background:var(--arturo-panel);
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
+    }
+  </style>
+</head>
+<body>
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
+      </a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
+      </nav>
+    </div>
+  </header>
+  <div class="nav-bar"></div>
+  <main class="main">
+    <div class="markdown-body">
+    <h1>Container Components</h1>
+<p>Container components organize and structure your UI layout. They provide the building blocks for creating complex interfaces.</p>
+<h2>Box</h2>
+<p>A basic container with the <code>vista-box</code> class for styling:</p>
+<p><code>box &quot;Content goes here&quot; .class: &quot;my-box&quot;</code></p>
+<h2>Panel</h2>
+<p>A panel with optional title and body sections:</p>
+<p><code>panel &quot;Panel Title&quot; [ ; Panel body content text &quot;Content inside panel&quot; ]</code></p>
+<h2>Grid</h2>
+<p>A CSS grid container with specified number of columns:</p>
+<p><code>grid 3 [ box &quot;Cell 1&quot; box &quot;Cell 2&quot; box &quot;Cell 3&quot; box &quot;Cell 4&quot; ]</code>
+`
+Creates a 3-column grid layout.</p>
+<h2>Row</h2>
+<p>A horizontal flex container:</p>
+<p><code>row [ button &quot;Left&quot; button &quot;Center&quot; button &quot;Right&quot; ]</code></p>
+<h2>Column (col)</h2>
+<p>A vertical flex container:</p>
+<p><code>col [ text &quot;Top&quot; text &quot;Middle&quot; text &quot;Bottom&quot; ]</code></p>
+<h2>Group</h2>
+<p>A generic container without default styling:</p>
+<p><code>group .id: &quot;my-group&quot; [ text &quot;Grouped content&quot; ]</code></p>
+<h2>Spacer</h2>
+<p>Adds flexible spacing between elements:</p>
+<p><code>row [ button &quot;Left&quot; spacer button &quot;Right&quot; ]</code></p>
+<h2>Sensor</h2>
+<p>A clickable container with accessibility support:</p>
+<p><code>sensor .onclick: &quot;handleClick()&quot; [ text &quot;Click this area&quot; ]</code>
+`
+Sensors automatically add keyboard accessibility (Enter/Space) and ARIA roles.</p>
+<h2>Example</h2>
+<p><code>view .html [ panel &quot;Dashboard&quot; [ grid 2 [ box &quot;Widget 1&quot; box &quot;Widget 2&quot; box &quot;Widget 3&quot; box &quot;Widget 4&quot; ] ] ]</code></p>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/layout/layout-overview/">Layout Overview</a> - Layout system concepts</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/data-display/">Data Display</a> - Table and list components</p>
+</li>
+</ul>
+</ul
+
+    </div>
+  </main>
+  <script src="/vista/assets/main.js"></script>
+</body>
+</html>

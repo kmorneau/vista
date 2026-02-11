@@ -357,6 +357,13 @@ processWikiFiles: function [dir, baseOutputDir][
                 pageHtml: pageTemplate title body
                 
                 write pageHtml finalOutput
+                if notEqual? fileName "index" [
+                    prettyDir: "dist/" ++ baseOutputDir ++ "/" ++ fileName
+                    cmdPretty: "mkdir -p \"" ++ prettyDir ++ "\""
+                    execute cmdPretty
+                    prettyIndex: prettyDir ++ "/index.html"
+                    write pageHtml prettyIndex
+                ]
                 print ["Generated:" finalOutput]
             ]
         ]

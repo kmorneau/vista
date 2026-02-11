@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/shared/patterns/anti-patterns.md - Vista</title>
+  <link rel="stylesheet" href="/vista/assets/main.css" />
+  <style>
+    :root{
+      --arturo-primary:#f2c230;
+      --arturo-ink:#101010;
+      --arturo-bg:#f7f6f1;
+      --arturo-panel:#ffffff;
+      --arturo-border:#ded6c2;
+    }
+    body{
+      margin:0;
+      background:var(--arturo-bg);
+      color:var(--arturo-ink);
+      font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+    }
+    .logo-bar{
+      background:var(--arturo-primary);
+      border-bottom:1px solid var(--arturo-ink);
+    }
+    .logo-row{
+      max-width:1080px;
+      margin:0 auto;
+      padding:8px 16px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
+      width:auto;
+      display:block;
+    }
+    .brand-mark{
+      margin-left:10px;
+      font-weight:800;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .top-nav{
+      margin-left:auto;
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .top-nav a{
+      color:var(--arturo-ink);
+      text-decoration:none;
+      border:1px solid var(--arturo-ink);
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
+      font-weight:600;
+    }
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
+    }
+    .main{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px 16px 32px;
+    }
+    .markdown-body{
+      border:1px solid var(--arturo-border);
+      background:var(--arturo-panel);
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
+    }
+  </style>
+</head>
+<body>
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
+      </a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
+      </nav>
+    </div>
+  </header>
+  <div class="nav-bar"></div>
+  <main class="main">
+    <div class="markdown-body">
+    <h1>Anti-Patterns</h1>
+<p>Common mistakes and patterns to avoid when building Vista applications.</p>
+<h2>Hardcoding Values</h2>
+<p>❌ Don't:</p>
+<p>button &quot;Submit&quot; [
+color: #FF0000
+width: 200
+height: 50
+]
+✓ Do:</p>
+<p>button &quot;Submit&quot; [
+color: theme.primary
+width: theme.buttonWidth
+height: theme.buttonHeight
+]</p>
+<h2>Deep Nesting</h2>
+<p>❌ Don't:</p>
+<p>panel [
+row [
+column [
+panel [
+row [
+column [ text &quot;Deep&quot; ]
+]
+]
+]
+]
+]
+✓ Do:</p>
+<p>MyCard: [
+row [ column [ text &quot;Shallow&quot; ] ]
+]</p>
+<p>panel [
+row [ column [ MyCard ] ]
+]</p>
+<h2>Inline Event Handlers</h2>
+<p>❌ Don't:</p>
+<p>button &quot;Click&quot; [
+on:click [
+do: [
+print &quot;clicked&quot;
+someLongAction
+anotherAction
+yetAnother
+]
+]
+]
+✓ Do:</p>
+<p>handleClick: [
+print &quot;clicked&quot;
+someLongAction
+anotherAction
+yetAnother
+]</p>
+<p>button &quot;Click&quot; [ on:click -&gt; handleClick ]</p>
+<h2>Ignoring Cleanup</h2>
+<p>❌ Don't:</p>
+<p>on:create [
+timer: setInterval [...1000]
+; No cleanup!
+]
+✓ Do:</p>
+<p>on:create [
+timer: setInterval [ doSomething 1000 ]
+]</p>
+<p>on:destroy [
+clearInterval timer
+]</p>
+<h2>Mutating Props Directly</h2>
+<p>❌ Don't:</p>
+<p>component: [
+data: passedProp
+data.message: &quot;Modified&quot; ; Mutating parent state!
+]
+✓ Do:</p>
+<p>component: [
+localData: copy passedProp
+localData.message: &quot;Modified&quot;
+]</p>
+<h2>Using Magic Numbers</h2>
+<p>❌ Don't:</p>
+<p>position: 42 + 24 * 2 - 8
+✓ Do:</p>
+<p>padding: theme.spacing.md
+position: basePosition + offset * 2 - margin</p>
+<h2>Not Using Layout System</h2>
+<p>❌ Don't:</p>
+<p>text &quot;First&quot; [ offset: 0x0 ]
+text &quot;Second&quot; [ offset: 0x30 ]
+text &quot;Third&quot; [ offset: 0x60 ]
+✓ Do:</p>
+<p>column [
+text &quot;First&quot;
+text &quot;Second&quot;
+text &quot;Third&quot;
+]</p>
+<h2>Excessive State</h2>
+<p>❌ Don't:</p>
+<p>count: 0
+doubleCount: 0
+tripleCount: 0
+derivedValue: 0
+✓ Do:</p>
+<p>count: 0
+doubleCount: =&gt; count * 2
+tripleCount: =&gt; count * 3
+derivedValue: =&gt; calculateDerived count</p>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/shared/patterns/common-patterns/">Common Patterns</a> - Recommended patterns</p>
+</li>
+<li><p><a href="/vista/wiki/shared/troubleshooting/common-issues/">Common Issues</a> - Troubleshooting guide</p>
+</li>
+</ul>
+
+    </div>
+  </main>
+  <script src="/vista/assets/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/shared/troubleshooting/common-issues.md - Vista</title>
+  <link rel="stylesheet" href="/vista/assets/main.css" />
+  <style>
+    :root{
+      --arturo-primary:#f2c230;
+      --arturo-ink:#101010;
+      --arturo-bg:#f7f6f1;
+      --arturo-panel:#ffffff;
+      --arturo-border:#ded6c2;
+    }
+    body{
+      margin:0;
+      background:var(--arturo-bg);
+      color:var(--arturo-ink);
+      font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+    }
+    .logo-bar{
+      background:var(--arturo-primary);
+      border-bottom:1px solid var(--arturo-ink);
+    }
+    .logo-row{
+      max-width:1080px;
+      margin:0 auto;
+      padding:8px 16px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
+      width:auto;
+      display:block;
+    }
+    .brand-mark{
+      margin-left:10px;
+      font-weight:800;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .top-nav{
+      margin-left:auto;
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .top-nav a{
+      color:var(--arturo-ink);
+      text-decoration:none;
+      border:1px solid var(--arturo-ink);
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
+      font-weight:600;
+    }
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
+    }
+    .main{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px 16px 32px;
+    }
+    .markdown-body{
+      border:1px solid var(--arturo-border);
+      background:var(--arturo-panel);
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
+    }
+  </style>
+</head>
+<body>
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
+      </a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
+      </nav>
+    </div>
+  </header>
+  <div class="nav-bar"></div>
+  <main class="main">
+    <div class="markdown-body">
+    <h1>Common Issues</h1>
+<p>This guide covers common issues encountered when building Vista applications and their solutions.</p>
+<h2>Data Binding Issues</h2>
+<h3>Binding Not Updating</h3>
+<p><strong>Problem:</strong> UI doesn't update when state changes.</p>
+<p><strong>Solution:</strong></p>
+<ul>
+<li><p>Ensure <code>webview_state_sync_ms</code> is set</p>
+</li>
+<li><p>Call <code>sync_state</code> after modifications</p>
+</li>
+<li><p>Verify the word is a literal token (not a string)</p>
+</li>
+</ul>
+<p>`
+; Enable auto-sync
+webview_state_sync_ms: 500</p>
+<p>; Or manually sync
+counter: counter + 1
+sync_state
+`</p>
+<h3>Binding Word Not Recognized</h3>
+<p><strong>Problem:</strong> &quot;Word not bound&quot; error or no binding generated.</p>
+<p><strong>Solution:</strong></p>
+<ul>
+<li><p>Use a literal word, not a string: <code>field counter</code> not <code>field &quot;counter&quot;</code></p>
+</li>
+<li><p>Define the variable before calling <code>view</code></p>
+</li>
+</ul>
+<h2>Layout Issues</h2>
+<h3>Elements Not Stacking</h3>
+<p><strong>Problem:</strong> Elements appear horizontally instead of vertically.</p>
+<p><strong>Solution:</strong> Add layout keywords:</p>
+<p><code>view [ below          ; Start vertical layout text &quot;A&quot; text &quot;B&quot; ]</code></p>
+<h3>Spacing Issues</h3>
+<p><strong>Problem:</strong> Elements are too close together.</p>
+<p><strong>Solution:</strong> Use <code>spacer</code> or layout attributes:</p>
+<p><code>view [ across text &quot;A&quot; spacer 12 text &quot;B&quot; ]</code></p>
+<h3>Reserved Word Conflicts</h3>
+<p><strong>Problem:</strong> &quot;list&quot; causes parsing errors.</p>
+<p><strong>Solution:</strong> Use <code>text_list</code> instead of <code>list</code>:</p>
+<p>`
+; Instead of:
+list [&quot;A&quot; &quot;B&quot;]</p>
+<p>; Use:
+text_list [&quot;A&quot; &quot;B&quot;]
+`</p>
+<h2>Event Issues</h2>
+<h3>Event Handler Not Firing</h3>
+<p><strong>Problem:</strong> Click or input events don't trigger.</p>
+<p><strong>Solution:</strong></p>
+<ul>
+<li><p>Check syntax: <code>.on-click:</code> not <code>on-click:</code></p>
+</li>
+<li><p>Ensure the block is properly formatted</p>
+</li>
+</ul>
+<p><code>button &quot;Click&quot; [ .on-click:[print &quot;Test&quot;]  ; Correct ]</code></p>
+<h3>on-input vs on-change Confusion</h3>
+<p><strong>Problem:</strong> Wrong event fires or events don't fire as expected.</p>
+<p><strong>Solution:</strong> Understand the difference:</p>
+<ul>
+<li><p><code>on-input</code>: Fires on every keystroke</p>
+</li>
+<li><p><code>on-change</code>: Fires on blur or Enter</p>
+</li>
+</ul>
+<h2>Action Compilation Issues</h2>
+<h3>Complex Expressions Not Compiling</h3>
+<p><strong>Problem:</strong> Action block with complex logic doesn't work.</p>
+<p><strong>Solution:</strong> Keep actions simple or split into functions:</p>
+<p>`
+; Instead of complex inline logic:
+button &quot;Process&quot; [
+result: loop 100 [complex-calculation]
+saveResult
+]</p>
+<p>; Define function:
+processAction [
+result: loop 100 [complex-calculation]
+saveResult
+]</p>
+<p>button &quot;Process&quot; [processAction]
+`</p>
+<h2>WebView Issues</h2>
+<h3>Window Doesn't Open</h3>
+<p><strong>Problem:</strong> <code>view</code> runs but no window appears.</p>
+<p><strong>Solution:</strong></p>
+<ul>
+<li><p>Check <code>webview_enabled: true</code></p>
+</li>
+<li><p>Verify HTML output with <code>view .html:[...]</code></p>
+</li>
+<li><p>Check console for errors</p>
+</li>
+</ul>
+<h3>DevTools Not Opening</h3>
+<p><strong>Problem:</strong> Can't debug the WebView.</p>
+<p><strong>Solution:</strong> Enable debug mode:</p>
+<p><code>webview_debug: true</code></p>
+<h2>Style Issues</h2>
+<h3>CSS Not Applying</h3>
+<p><strong>Problem:</strong> Custom styles don't appear.</p>
+<p><strong>Solution:</strong></p>
+<ul>
+<li><p>Use <code>.style:</code> for inline styles</p>
+</li>
+<li><p>Use <code>.class:</code> for CSS classes</p>
+</li>
+<li><p>Check browser DevTools for style conflicts</p>
+</li>
+</ul>
+<p><code>text &quot;Styled&quot; .style:&quot;color: red; font-weight: bold&quot; text &quot;Classy&quot; .class:&quot;my-class&quot;</code></p>
+<h2>Canvas/Drawing Issues</h2>
+<h3>Draw Commands Not Rendering</h3>
+<p><strong>Problem:</strong> Canvas is blank or Draw commands don't work.</p>
+<p><strong>Solution:</strong></p>
+<ul>
+<li><p>Ensure <code>pen</code> is set before drawing</p>
+</li>
+<li><p>Check coordinates are within canvas bounds</p>
+</li>
+<li><p>Use <code>fill-pen</code> for filled shapes</p>
+</li>
+</ul>
+<p><code>canvas .width:200 .height:100 [ pen &quot;#000&quot; line-width 2 line [10 10] [190 90] ]</code></p>
+<h2>Performance Issues</h2>
+<h3>Slow Updates</h3>
+<p><strong>Problem:</strong> UI feels sluggish on updates.</p>
+<p><strong>Solution:</strong></p>
+<ul>
+<li><p>Increase sync interval: <code>webview_state_sync_ms: 1000</code></p>
+</li>
+<li><p>Reduce number of bound components</p>
+</li>
+<li><p>Avoid expensive operations in <code>on-input</code></p>
+</li>
+</ul>
+<h2>Debugging Tips</h2>
+<ul>
+<li><p>Use <code>view .html:[...]</code> to inspect generated HTML</p>
+</li>
+<li><p>Enable <code>webview_debug: true</code> for DevTools</p>
+</li>
+<li><p>Use <code>print</code> statements in actions</p>
+</li>
+<li><p>Check browser console for JavaScript errors</p>
+</li>
+<li><p>Use <code>face_tree_overlay</code> for UI debugging</p>
+</li>
+</ul>
+<h2>Getting More Help</h2>
+<ul>
+<li><p>Check the <a href="/vista/wiki/core/api-reference/">API Reference</a></p>
+</li>
+<li><p>Review <a href="/examples/">Examples</a> for similar use cases</p>
+</li>
+<li><p>Look for similar issues in the GitHub repository</p>
+</li>
+</ul>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/shared/migration/from-rebol-view/">Migration Guide</a> - REBOL View migration</p>
+</li>
+<li><p><a href="/vista/wiki/core/concepts/event-system/">Event System</a> - Event handling</p>
+</li>
+<li><p><a href="/vista/wiki/core/api-reference/">API Reference</a> - Complete API</p>
+</li>
+</ul>
+</ul
+
+    </div>
+  </main>
+  <script src="/vista/assets/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/data-binding/two-way-binding.md - Vista</title>
+  <link rel="stylesheet" href="/vista/assets/main.css" />
+  <style>
+    :root{
+      --arturo-primary:#f2c230;
+      --arturo-ink:#101010;
+      --arturo-bg:#f7f6f1;
+      --arturo-panel:#ffffff;
+      --arturo-border:#ded6c2;
+    }
+    body{
+      margin:0;
+      background:var(--arturo-bg);
+      color:var(--arturo-ink);
+      font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+    }
+    .logo-bar{
+      background:var(--arturo-primary);
+      border-bottom:1px solid var(--arturo-ink);
+    }
+    .logo-row{
+      max-width:1080px;
+      margin:0 auto;
+      padding:8px 16px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
+      width:auto;
+      display:block;
+    }
+    .brand-mark{
+      margin-left:10px;
+      font-weight:800;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .top-nav{
+      margin-left:auto;
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .top-nav a{
+      color:var(--arturo-ink);
+      text-decoration:none;
+      border:1px solid var(--arturo-ink);
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
+      font-weight:600;
+    }
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
+    }
+    .main{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px 16px 32px;
+    }
+    .markdown-body{
+      border:1px solid var(--arturo-border);
+      background:var(--arturo-panel);
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
+    }
+  </style>
+</head>
+<body>
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
+      </a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
+      </nav>
+    </div>
+  </header>
+  <div class="nav-bar"></div>
+  <main class="main">
+    <div class="markdown-body">
+    <h1>Two-Way Binding</h1>
+<p>Two-way binding synchronizes data between input components and state in both directions. Changes in the UI update state, and state changes update the UI. This is fundamental to forms and interactive interfaces.</p>
+<h2>How Two-Way Binding Works</h2>
+<p>`
+import 'vista!</p>
+<p>name: &quot;Guest&quot;</p>
+<p>view [
+label &quot;Your name:&quot;
+field name           ; Binds to 'name</p>
+<p>; This text updates as you type
+text [&quot;Hello, &quot; name &quot;!&quot;]</p>
+<p>; Action can also modify name
+button &quot;Reset&quot; [name: &quot;Guest&quot;]
+]
+`</p>
+<h2>Bound Input Components</h2>
+<h3>field</h3>
+<p>Text input with two-way binding:</p>
+<p><code>field username field &quot;Default value&quot; field .placeholder:&quot;Enter text&quot; message</code></p>
+<h3>input</h3>
+<p>Explicit input with type support:</p>
+<p><code>input .type:&quot;text&quot; username input .type:&quot;email&quot; email input .type:&quot;password&quot; password input .type:&quot;number&quot; quantity input .type:&quot;tel&quot; phone input .type:&quot;search&quot; query</code></p>
+<h3>textarea</h3>
+<p>Multi-line text input:</p>
+<p><code>textarea notes textarea .rows:5 .cols:40 description textarea .placeholder:&quot;Enter details&quot; details</code></p>
+<h2>Binding Behavior</h2>
+<h3>UI to State</h3>
+<p>When user types, state updates automatically:</p>
+<p>`
+; User types in field
+; State 'username updates in real-time
+field username</p>
+<p>; Action can react to changes
+button &quot;Submit&quot; [print [&quot;Sending: &quot; username]]
+`</p>
+<h3>State to UI</h3>
+<p>When state changes, UI updates:</p>
+<p>`
+; This updates the field display
+button &quot;Set Name&quot; [name: &quot;Alice&quot;]</p>
+<p>; This also works
+set_state &quot;name&quot; &quot;Bob&quot;
+`</p>
+<h2>Input Event Handlers</h2>
+<h3>on-input</h3>
+<p>Fires on every keystroke:</p>
+<p><code>field search .on-input:[ print [&quot;Searching: &quot; search] results: filter search ]</code></p>
+<h3>on-change</h3>
+<p>Fires when input loses focus or Enter is pressed:</p>
+<p><code>field email .on-change:[ print [&quot;Email changed to: &quot; email] validate_email ]</code></p>
+<h2>Input Types and Attributes</h2>
+<p>`
+; Text input with validation
+input .type:&quot;email&quot; email .placeholder:&quot;you@example.com&quot;</p>
+<p>; Number input with range
+input .type:&quot;number&quot; age .min:0 .max:150 .step:1</p>
+<p>; Range slider
+input .type:&quot;range&quot; volume .min:0 .max:100 .step:5</p>
+<p>; Textarea with sizing
+textarea bio .rows:4 .cols:50</p>
+<p>; Disabled input
+field readonlyValue .disabled:true
+`</p>
+<h2>Form Example</h2>
+<p>`
+import 'vista!</p>
+<p>formData: #[
+name: &quot;&quot;
+email: &quot;&quot;
+message: &quot;&quot;
+]</p>
+<p>view [
+form .on-submit:[submit_form] [
+label &quot;Name:&quot;
+input .type:&quot;text&quot; formData\name</p>
+<p>label &quot;Email:&quot;
+input .type:&quot;email&quot; formData\email</p>
+<p>label &quot;Message:&quot;
+textarea formData\message .rows:4</p>
+<p>button &quot;Submit&quot; [submit_form]
+]
+]
+`</p>
+<h2>Best Practices</h2>
+<ul>
+<li><p>Use <code>on-input</code> for real-time validation or search</p>
+</li>
+<li><p>Use <code>on-change</code> for form-like interactions</p>
+</li>
+<li><p>Consider using <code>form</code> component for submit handling</p>
+</li>
+<li><p>Enable <code>webview_state_sync_ms</code> for smooth updates</p>
+</li>
+</ul>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/data-binding/binding-overview/">Binding Overview</a> - Complete binding guide</p>
+</li>
+<li><p><a href="/vista/wiki/core/data-binding/state-model/">State Model</a> - Understanding state</p>
+</li>
+<li><p><a href="/vista/wiki/core/events/input-events/">Input Events</a> - Event handling for inputs</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/input-fields/">Input Fields</a> - Input component reference</p>
+</li>
+</ul>
+</ul
+
+    </div>
+  </main>
+  <script src="/vista/assets/main.js"></script>
+</body>
+</html>
