@@ -40,20 +40,18 @@ execute "mkdir -p dist"
 ; Copy static assets
 print "Copying assets..."
 execute "mkdir -p dist/assets"
-execute "cp src/theme/resources/styles/main.css dist/assets/ 2>/dev/null || true"
-execute "cp src/theme/resources/scripts/main.js dist/assets/ 2>/dev/null || true"
+execute "cp src/theme/resources/styles/main.css dist/assets/main.css"
+execute "cp src/theme/resources/scripts/main.js dist/assets/main.js"
 
 ; Copy icons
 print "Copying icons..."
 execute "mkdir -p dist/assets/icons"
-execute "cp -r src/theme/resources/icons/*.svg dist/assets/icons/ 2>/dev/null || true"
+execute "cp -r src/theme/resources/icons/. dist/assets/icons/"
 
 ; Copy images
 print "Copying images..."
 execute "mkdir -p dist/assets/images"
-; execute "cp Arturo_Guide.png dist/assets/images/ 2>/dev/null || true"
-; execute "cp arturo-vista.png dist/assets/images/ 2>/dev/null || true"
-execute "cp -r src/theme/resouces/arturo-vista.png dist/assets/images/ 2>/dev/null || true"
+execute "cp src/theme/resources/arturo-vista.png dist/assets/images/arturo-vista.png"
 
 ; Helper: Create page HTML
 pageTemplate: function [title, content][
