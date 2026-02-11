@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,277 +19,225 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/shared/migration/from-rebol-view.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# Migration from REBOL View
-
-This guide helps REBOL/View developers transition to Vista. Vista inherits the declarative layout philosophy of VID while targeting modern web technologies.
-
-## Core Philosophy
-
-Like REBOL/View, Vista uses:
-
-- Declarative face definitions
-
-- Layout words (`across`, `below`, `return`)
-
-- Data binding via word references
-
-- Action blocks for interactivity
-
-## Layout Keywords
-
-### REBOL/View to Vista
-
-REBOL/ViewVista
-`across``across`
-`below``below`
-`return``return`
-`end``end`
-`pad``.pad:`
-`space``.space:`
-
-## Layout Examples
-
-### REBOL/View
-`
-view layout [
+    <h1>Migration from REBOL View</h1>
+<p>This guide helps REBOL/View developers transition to Vista. Vista inherits the declarative layout philosophy of VID while targeting modern web technologies.</p>
+<h2>Core Philosophy</h2>
+<p>Like REBOL/View, Vista uses:</p>
+<ul>
+<li><p>Declarative face definitions</p>
+</li>
+<li><p>Layout words (<code>across</code>, <code>below</code>, <code>return</code>)</p>
+</li>
+<li><p>Data binding via word references</p>
+</li>
+<li><p>Action blocks for interactivity</p>
+</li>
+</ul>
+<h2>Layout Keywords</h2>
+<h3>REBOL/View to Vista</h3>
+<p>REBOL/ViewVista
+<code>across``across</code>
+<code>below``below</code>
+<code>return``return</code>
+<code>end``end</code>
+<code>pad``.pad:</code>
+<code>space``.space:</code></p>
+<h2>Layout Examples</h2>
+<h3>REBOL/View</h3>
+<p><code>view layout [ across field &quot;Name&quot; button &quot;Save&quot; [save-data] return field &quot;Email&quot; button &quot;Cancel&quot; [close] ]</code></p>
+<h3>Vista</h3>
+<p><code>view [ across field &quot;Name&quot; button &quot;Save&quot; [save-data] return field &quot;Email&quot; button &quot;Cancel&quot; [close] ]</code></p>
+<h2>Face Mapping</h2>
+<p>REBOL/ViewVistaNotes
+<code>text``text</code>Same syntax
+<code>field``field</code>Same syntax
+<code>button``button</code>Same syntax
+<code>toggle``toggle</code>Same syntax
+<code>checkbox``checkbox</code>Same syntax
+<code>radio``radio</code>Same syntax
+<code>slider``slider</code>Same syntax
+<code>drop-list``drop-list</code>Same syntax
+<code>area``textarea</code>Renamed
+<code>list``text_list</code>Use <code>text_list</code> (list is reserved)
+<code>panel``panel</code>Same syntax
+<code>box``box</code>Same syntax</p>
+<h2>Data Binding</h2>
+<h3>REBOL/View</h3>
+<p><code>name: &quot;World&quot; view layout [ field name text name ]</code></p>
+<h3>Vista</h3>
+<p><code>name: &quot;World&quot; view [ field name text name ]</code></p>
+<h2>Actions</h2>
+<h3>REBOL/View</h3>
+<p><code>button &quot;Click&quot; [print &quot;Hello&quot;]</code></p>
+<h3>Vista</h3>
+<p><code>button &quot;Click&quot; [print &quot;Hello&quot;]</code></p>
+<p>Action blocks work the same way. Vista compiles them to JavaScript.</p>
+<h2>VID Style Features</h2>
+<p>Enable VID compatibility mode for closer REBOL/View behavior:</p>
+<p>`
+vista_layout_vid_mode: true</p>
+<p>view [
 across
-field "Name"
-button "Save" [save-data]
-return
-field "Email"
-button "Cancel" [close]
+text &quot;A&quot;
+text &quot;B&quot;
 ]
-`
-
-### Vista
-`
-view [
-across
-field "Name"
-button "Save" [save-data]
-return
-field "Email"
-button "Cancel" [close]
-]
-`
-
-## Face Mapping
-
-REBOL/ViewVistaNotes
-`text``text`Same syntax
-`field``field`Same syntax
-`button``button`Same syntax
-`toggle``toggle`Same syntax
-`checkbox``checkbox`Same syntax
-`radio``radio`Same syntax
-`slider``slider`Same syntax
-`drop-list``drop-list`Same syntax
-`area``textarea`Renamed
-`list``text_list`Use `text_list` (list is reserved)
-`panel``panel`Same syntax
-`box``box`Same syntax
-
-## Data Binding
-
-### REBOL/View
-`
-name: "World"
-view layout [
-field name
-text name
-]
-`
-
-### Vista
-`
-name: "World"
-view [
-field name
-text name
-]
-`
-
-## Actions
-
-### REBOL/View
-`
-button "Click" [print "Hello"]
-`
-
-### Vista
-`
-button "Click" [print "Hello"]
-`
-
-Action blocks work the same way. Vista compiles them to JavaScript.
-
-## VID Style Features
-
-Enable VID compatibility mode for closer REBOL/View behavior:
-
-`
-vista_layout_vid_mode: true
-
-view [
-across
-text "A"
-text "B"
-]
-`
-
-## Draw Graphics
-
-Vista supports Draw blocks for canvas rendering:
-
-`
-canvas .width:240 .height:140 [
-pen "#1f5cff"
-line-width 3
-line [20 20] [200 20]
-fill-pen "#f0f4ff"
-box [20 40] [200 120]
-]
-`
-
-## Common REBOL/View Idioms
-
-### Skin/Feel
-Vista uses CSS instead of VID skins. Use classes and styles:
-
-`
-button "Primary" .class:"btn-primary" [action]
-box .style:"border: 2px solid #999" [...]
-`
-
-### Style Sheets
-Define reusable styles:
-
-`
-style card [
-box [
-title "Title"
-text "Body"
-]
-]
-`
-
-## What's Different
-
-- Output is HTML/WebView, not native
-
-- No `face` object - uses DOM elements
-
-- `show` uses JavaScript render cycle
-
-- Some VID words are reserved in Arturo (use alternatives)
-
-- Event system uses HTML event attributes
-
-## Quick Reference
-
-`
+`</p>
+<h2>Draw Graphics</h2>
+<p>Vista supports Draw blocks for canvas rendering:</p>
+<p><code>canvas .width:240 .height:140 [ pen &quot;#1f5cff&quot; line-width 3 line [20 20] [200 20] fill-pen &quot;#f0f4ff&quot; box [20 40] [200 120] ]</code></p>
+<h2>Common REBOL/View Idioms</h2>
+<h3>Skin/Feel</h3>
+<p>Vista uses CSS instead of VID skins. Use classes and styles:</p>
+<p><code>button &quot;Primary&quot; .class:&quot;btn-primary&quot; [action] box .style:&quot;border: 2px solid #999&quot; [...]</code></p>
+<h3>Style Sheets</h3>
+<p>Define reusable styles:</p>
+<p><code>style card [ box [ title &quot;Title&quot; text &quot;Body&quot; ] ]</code></p>
+<h2>What's Different</h2>
+<ul>
+<li><p>Output is HTML/WebView, not native</p>
+</li>
+<li><p>No <code>face</code> object - uses DOM elements</p>
+</li>
+<li><p><code>show</code> uses JavaScript render cycle</p>
+</li>
+<li><p>Some VID words are reserved in Arturo (use alternatives)</p>
+</li>
+<li><p>Event system uses HTML event attributes</p>
+</li>
+</ul>
+<h2>Quick Reference</h2>
+<p>`
 ; REBOL/View
-view layout [across field name button "OK" [do something]]
-
-; Vista
-view [across field name button "OK" [do something]]
-
-; Same for:
+view layout [across field name button &quot;OK&quot; [do something]]</p>
+<p>; Vista
+view [across field name button &quot;OK&quot; [do something]]</p>
+<p>; Same for:
 ; - field, button, text, label
 ; - checkbox, toggle, radio
 ; - slider, drop-list, select
 ; - box, panel, group
 ; - across, below, return, end
-`
-
-## See Also
-
-- [VID Overview](/vista/wiki/vid-overview/) - VID concepts in Vista
-
-- [Getting Started](/vista/wiki/getting-started/) - Quick start guide
-
-- [Common Issues](/vista/wiki/shared/troubleshooting/common-issues/) - Migration troubleshooting
-
+`</p>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/vid-overview/">VID Overview</a> - VID concepts in Vista</p>
+</li>
+<li><p><a href="/vista/wiki/getting-started/">Getting Started</a> - Quick start guide</p>
+</li>
+<li><p><a href="/vista/wiki/shared/troubleshooting/common-issues/">Common Issues</a> - Migration troubleshooting</p>
+</li>
+</ul>
 </ul
 
     </div>

@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,120 +19,145 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/core/layout/index.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# Layout System
-
-Vista's layout system provides powerful tools for arranging UI elements in rows, columns, and grids.
-
-## Layout Topics
-
-- [Layout Overview](/vista/wiki/core/concepts/layout-overview/) - Introduction to layouts
-
-- [Across/Below](/vista/wiki/core/layout/across-below/) - Row and column layout
-
-- [Grid System](/vista/wiki/core/layout/grid-system/) - Grid layout patterns
-
-- [Spacing & Padding](/vista/wiki/core/layout/spacing-pad/) - Controlling whitespace
-
-- [Alignment](/vista/wiki/core/layout/alignment-valign/) - Horizontal and vertical alignment
-
-- [Origin/Offset](/vista/wiki/core/layout/origin-offset/) - Positioning control
-
-- [Scope & Nesting](/vista/wiki/core/layout/scope-nesting/) - Scoped layouts
-
-## Basic Layout Example
-`view .html [
-row [
-text "Left"
-text "Center"
-text "Right"
-]
-]`
-
-## See Also
-
-- [Components](/vista/wiki/core/components/) - UI components
-
-- [Concepts](/vista/wiki/core/concepts/) - Core concepts
+    <h1>Layout System</h1>
+<p>Vista's layout system provides powerful tools for arranging UI elements in rows, columns, and grids.</p>
+<h2>Layout Topics</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/concepts/layout-overview/">Layout Overview</a> - Introduction to layouts</p>
+</li>
+<li><p><a href="/vista/wiki/core/layout/across-below/">Across/Below</a> - Row and column layout</p>
+</li>
+<li><p><a href="/vista/wiki/core/layout/grid-system/">Grid System</a> - Grid layout patterns</p>
+</li>
+<li><p><a href="/vista/wiki/core/layout/spacing-pad/">Spacing &amp; Padding</a> - Controlling whitespace</p>
+</li>
+<li><p><a href="/vista/wiki/core/layout/alignment-valign/">Alignment</a> - Horizontal and vertical alignment</p>
+</li>
+<li><p><a href="/vista/wiki/core/layout/origin-offset/">Origin/Offset</a> - Positioning control</p>
+</li>
+<li><p><a href="/vista/wiki/core/layout/scope-nesting/">Scope &amp; Nesting</a> - Scoped layouts</p>
+</li>
+</ul>
+<h2>Basic Layout Example</h2>
+<p><code>view .html [ row [ text &quot;Left&quot; text &quot;Center&quot; text &quot;Right&quot; ] ]</code></p>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/components/">Components</a> - UI components</p>
+</li>
+<li><p><a href="/vista/wiki/core/concepts/">Concepts</a> - Core concepts</p>
+</li>
+</ul>
 
     </div>
   </main>

@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,186 +19,206 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/shared/troubleshooting/debugging-tips.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# Debugging Tips
-
-Techniques for debugging Vista applications.
-
-## Enable Debug Mode
-; Enable debug logging
-set-debug true
-
-; Enable component logging
-debug:components true
-
-; Enable event logging
-debug:events true
-
-## Component Inspection
-; Inspect a component
-inspect myComponent
-
-; Print component tree
-print-tree root
-
-; Show component props
-show-props myComponent
-
-## Event Debugging
-; Log all events
-log-events true
-
-; Watch specific event
-watch-event :click
-
-; Trace event propagation
-trace-events
-
-## State Inspection
-; Print state snapshot
-snapshot state
-
-; Watch state changes
-watch state
-
-; Diff state changes
-diff-state oldState newState
-
-## Performance Profiling
-; Start profiling
-profile:start
-
-; Run your code
-do: slowOperation
-
-; Get report
-profile:report
-
-## Common Issues
-### Component Not Rendering
-
-- Check if component is mounted
-
-- Verify render function returns a face
-
-- Check for errors in render chain
-
-- Ensure required props are provided
-
-### Events Not Firing
-
-- Verify event handler is attached
-
-- Check if component has focus
-
-- Ensure event bubbling is not stopped
-
-- Check for typos in event name
-
-### State Not Updating
-
-- Verify state is reactive
-
-- Check if update triggers re-render
-
-- Ensure no circular dependencies
-
-- Check for mutation vs assignment
-
-## Browser DevTools
-
-- Use Vue/React devtools if applicable
-
-- Check console for errors
-
-- Use network tab to debug API calls
-
-- Use elements tab to inspect DOM
-
-## See Also
-
-- [Performance Tips](/vista/wiki/shared/troubleshooting/performance-tips/) - Optimization guide
-
-- [Common Issues](/vista/wiki/shared/troubleshooting/common-issues/) - Known issues and solutions
+    <h1>Debugging Tips</h1>
+<p>Techniques for debugging Vista applications.</p>
+<h2>Enable Debug Mode</h2>
+<p>; Enable debug logging
+set-debug true</p>
+<p>; Enable component logging
+debug:components true</p>
+<p>; Enable event logging
+debug:events true</p>
+<h2>Component Inspection</h2>
+<p>; Inspect a component
+inspect myComponent</p>
+<p>; Print component tree
+print-tree root</p>
+<p>; Show component props
+show-props myComponent</p>
+<h2>Event Debugging</h2>
+<p>; Log all events
+log-events true</p>
+<p>; Watch specific event
+watch-event :click</p>
+<p>; Trace event propagation
+trace-events</p>
+<h2>State Inspection</h2>
+<p>; Print state snapshot
+snapshot state</p>
+<p>; Watch state changes
+watch state</p>
+<p>; Diff state changes
+diff-state oldState newState</p>
+<h2>Performance Profiling</h2>
+<p>; Start profiling
+profile:start</p>
+<p>; Run your code
+do: slowOperation</p>
+<p>; Get report
+profile:report</p>
+<h2>Common Issues</h2>
+<h3>Component Not Rendering</h3>
+<ul>
+<li><p>Check if component is mounted</p>
+</li>
+<li><p>Verify render function returns a face</p>
+</li>
+<li><p>Check for errors in render chain</p>
+</li>
+<li><p>Ensure required props are provided</p>
+</li>
+</ul>
+<h3>Events Not Firing</h3>
+<ul>
+<li><p>Verify event handler is attached</p>
+</li>
+<li><p>Check if component has focus</p>
+</li>
+<li><p>Ensure event bubbling is not stopped</p>
+</li>
+<li><p>Check for typos in event name</p>
+</li>
+</ul>
+<h3>State Not Updating</h3>
+<ul>
+<li><p>Verify state is reactive</p>
+</li>
+<li><p>Check if update triggers re-render</p>
+</li>
+<li><p>Ensure no circular dependencies</p>
+</li>
+<li><p>Check for mutation vs assignment</p>
+</li>
+</ul>
+<h2>Browser DevTools</h2>
+<ul>
+<li><p>Use Vue/React devtools if applicable</p>
+</li>
+<li><p>Check console for errors</p>
+</li>
+<li><p>Use network tab to debug API calls</p>
+</li>
+<li><p>Use elements tab to inspect DOM</p>
+</li>
+</ul>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/shared/troubleshooting/performance-tips/">Performance Tips</a> - Optimization guide</p>
+</li>
+<li><p><a href="/vista/wiki/shared/troubleshooting/common-issues/">Common Issues</a> - Known issues and solutions</p>
+</li>
+</ul>
 
     </div>
   </main>

@@ -1,8 +1,0 @@
-#[
-  "title": "Getting Started"
-  "layout": "docpage"
-  "body": {
-    <h1>Getting Started</h1>
-    <p>Install, hello world, first window.</p>
-  }
-]

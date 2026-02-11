@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,250 +19,226 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/core/data-binding/state-model.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# State Model
-
-Vista maintains a state object that represents the current data values for all bound components. Understanding this model is key to building reactive applications.
-
-## State Structure
-
-The state is a JavaScript object where each property corresponds to a bound word in your layout:
-
-`
+    <h1>State Model</h1>
+<p>Vista maintains a state object that represents the current data values for all bound components. Understanding this model is key to building reactive applications.</p>
+<h2>State Structure</h2>
+<p>The state is a JavaScript object where each property corresponds to a bound word in your layout:</p>
+<p>`
 ; Arturo code
 counter: 0
-name: "Alice"
-accepted: false
-
-view [
+name: &quot;Alice&quot;
+accepted: false</p>
+<p>view [
 text counter
 field name
-checkbox accepted "Accept"
-]
-
-; Generates JavaScript state:
+checkbox accepted &quot;Accept&quot;
+]</p>
+<p>; Generates JavaScript state:
 state = {
 counter: 0,
-name: "Alice",
+name: &quot;Alice&quot;,
 accepted: false
 }
-`
-
-## State Types
-
-### Primitive Values
-`
-count: 42            ; Number
-name: "Text"         ; String
-active: true          ; Boolean
-value: null          ; Null
-`
-
-### Arrays and Lists
-`
-items: ["A" "B" "C"]
-selection: [0 2]     ; Multi-select
-`
-
-### Mixed Values
-`
+`</p>
+<h2>State Types</h2>
+<h3>Primitive Values</h3>
+<p><code>count: 42            ; Number name: &quot;Text&quot;         ; String active: true          ; Boolean value: null          ; Null</code></p>
+<h3>Arrays and Lists</h3>
+<p><code>items: [&quot;A&quot; &quot;B&quot; &quot;C&quot;] selection: [0 2]     ; Multi-select</code></p>
+<h3>Mixed Values</h3>
+<p>`
 ; Radio groups
-color: "red"
-
-; Tabs
+color: &quot;red&quot;</p>
+<p>; Tabs
 tabIndex: 1
-`
-
-## Setting State
-
-### Via Actions
-Button actions can modify state directly:
-
-`
-button "Increment" [counter: counter + 1]
-button "Set Name" [name: "New Name"]
-button "Toggle" [active: not active]
-`
-
-### Via set_state Function
-`
-set_state "counter" 100
-set_state "name" "Updated"
-`
-
-## Reading State
-
-State values are accessed directly in expressions:
-
-`
+`</p>
+<h2>Setting State</h2>
+<h3>Via Actions</h3>
+<p>Button actions can modify state directly:</p>
+<p><code>button &quot;Increment&quot; [counter: counter + 1] button &quot;Set Name&quot; [name: &quot;New Name&quot;] button &quot;Toggle&quot; [active: not active]</code></p>
+<h3>Via set_state Function</h3>
+<p><code>set_state &quot;counter&quot; 100 set_state &quot;name&quot; &quot;Updated&quot;</code></p>
+<h2>Reading State</h2>
+<p>State values are accessed directly in expressions:</p>
+<p>`
 ; In actions
-button "Double" [counter: counter * 2]
-
-; In conditions
+button &quot;Double&quot; [counter: counter * 2]</p>
+<p>; In conditions
 if greater? counter 10 [
-text "Large number!"
-]
-
-; In computed values
-text ["Total: " price * quantity]
-`
-
-## State Change Detection
-
-Vista detects state changes and triggers UI updates:
-
-`
+text &quot;Large number!&quot;
+]</p>
+<p>; In computed values
+text [&quot;Total: &quot; price * quantity]
+`</p>
+<h2>State Change Detection</h2>
+<p>Vista detects state changes and triggers UI updates:</p>
+<p>`
 ; Enable change detection
-webview_sync_updates: true
-
-; After modifying state
+webview_sync_updates: true</p>
+<p>; After modifying state
 counter: counter + 1
 sync_state
-`
-
-## Initial State
-
-State is initialized from your Arturo variables:
-
-`
+`</p>
+<h2>Initial State</h2>
+<p>State is initialized from your Arturo variables:</p>
+<p>`
 ; Define before view()
-username: ""
-email: ""
-settings: #[darkMode: false notifications: true]
-
-view [
+username: &quot;&quot;
+email: &quot;&quot;
+settings: #[darkMode: false notifications: true]</p>
+<p>view [
 field username
-input .type:"email" email
-toggle darkMode "Dark Mode"
+input .type:&quot;email&quot; email
+toggle darkMode &quot;Dark Mode&quot;
 ]
-`
-
-## State Validation
-
-You can validate state changes using on-change handlers:
-
-`
-field email .on-change:[
-if not equal? email "" [
-valid: contains? email "@"
-]
-]
-`
-
-## State Persistence
-
-For persistent state, combine with storage:
-
-`
+`</p>
+<h2>State Validation</h2>
+<p>You can validate state changes using on-change handlers:</p>
+<p><code>field email .on-change:[ if not equal? email &quot;&quot; [ valid: contains? email &quot;@&quot; ] ]</code></p>
+<h2>State Persistence</h2>
+<p>For persistent state, combine with storage:</p>
+<p>`
 ; Load on start
-if exists? "settings.json" [
-data: read "settings.json"
+if exists? &quot;settings.json&quot; [
+data: read &quot;settings.json&quot;
 settings: to :block data
+]</p>
+<p>; Save on change
+button &quot;Save&quot; [
+write &quot;settings.json&quot; to :string settings
 ]
-
-; Save on change
-button "Save" [
-write "settings.json" to :string settings
-]
-`
-
-## Best Practices
-
-- Define all bound variables before calling `view`
-
-- Use descriptive names for state variables
-
-- Group related state into blocks or dictionaries
-
-- Enable `webview_state_sync_ms` for automatic updates
-
-## See Also
-
-- [Binding Overview](/vista/wiki/core/data-binding/binding-overview/) - Data binding concepts
-
-- [Two-Way Binding](/vista/wiki/core/data-binding/two-way-binding/) - Input binding
-
-- [State Management](/vista/wiki/core/concepts/state-management/) - State patterns
-
+`</p>
+<h2>Best Practices</h2>
+<ul>
+<li><p>Define all bound variables before calling <code>view</code></p>
+</li>
+<li><p>Use descriptive names for state variables</p>
+</li>
+<li><p>Group related state into blocks or dictionaries</p>
+</li>
+<li><p>Enable <code>webview_state_sync_ms</code> for automatic updates</p>
+</li>
+</ul>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/data-binding/binding-overview/">Binding Overview</a> - Data binding concepts</p>
+</li>
+<li><p><a href="/vista/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Input binding</p>
+</li>
+<li><p><a href="/vista/wiki/core/concepts/state-management/">State Management</a> - State patterns</p>
+</li>
+</ul>
 </ul
 
     </div>

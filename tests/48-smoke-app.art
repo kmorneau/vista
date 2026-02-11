@@ -6,7 +6,7 @@ ARTURO [
     Height: 200
 ]
 
-html: run_app .html [
+html: run_app .returnHtml [
     text "Smoke"
 ]
 

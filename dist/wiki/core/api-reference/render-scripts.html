@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,251 +19,241 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/core/api-reference/render-scripts.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# Render Scripts
-
-Render scripts generate the client-side JavaScript that powers data binding, state management, and UI updates in Vista applications.
-
-## Overview
-The render script system automatically generates JavaScript code that:
-
-- Initializes client-side state from server data
-
-- Binds input elements to state variables
-
-- Handles two-way data synchronization
-
-- Manages list and table interactions
-
-- Supports keyboard navigation and accessibility
-
-## render_script
-Generates the main client-side script for a view.
-
+    <h1>Render Scripts</h1>
+<p>Render scripts generate the client-side JavaScript that powers data binding, state management, and UI updates in Vista applications.</p>
+<h2>Overview</h2>
+<p>The render script system automatically generates JavaScript code that:</p>
+<ul>
+<li><p>Initializes client-side state from server data</p>
+</li>
+<li><p>Binds input elements to state variables</p>
+</li>
+<li><p>Handles two-way data synchronization</p>
+</li>
+<li><p>Manages list and table interactions</p>
+</li>
+<li><p>Supports keyboard navigation and accessibility</p>
+</li>
+</ul>
+<h2>render_script</h2>
+<p>Generates the main client-side script for a view.</p>
+<p><code>script: render_script bindings</code></p>
+<h3>Parameters</h3>
+<ul>
+<li><code>bindings</code> - Dictionary of state variable names to initial values</li>
+</ul>
+<h3>Returns</h3>
+<p>A `` element containing the client-side code.</p>
+<h3>Generated Functions</h3>
+<ul>
+<li><p><code>state</code> - Global state object</p>
+</li>
+<li><p><code>render()</code> - Updates all bound elements from state</p>
+</li>
+<li><p><code>bindInputs()</code> - Attaches event listeners to inputs</p>
+</li>
+<li><p><code>autoSize()</code> - Auto-sizes elements with data-auto-size</p>
+</li>
+<li><p><code>_vistaMeasureText()</code> - Text measurement utility</p>
+</li>
+<li><p><code>_vistaParsePx()</code> - Pixel value parser</p>
+</li>
+</ul>
+<h2>tabs_script</h2>
+<p>Generates JavaScript for tab component functionality.</p>
+<p><code>script: tabs_script</code>
 `
-script: render_script bindings
+Features:</p>
+<ul>
+<li><p>Click activation of tabs</p>
+</li>
+<li><p>Keyboard navigation (Arrow keys, Home, End)</p>
+</li>
+<li><p>Panel visibility management</p>
+</li>
+</ul>
+<h2>menubar_script</h2>
+<p>Generates JavaScript for menubar functionality.</p>
+<p><code>script: menubar_script</code>
 `
-### Parameters
-
-- `bindings` - Dictionary of state variable names to initial values
-
-### Returns
-A `` element containing the client-side code.
-
-### Generated Functions
-
-- `state` - Global state object
-
-- `render()` - Updates all bound elements from state
-
-- `bindInputs()` - Attaches event listeners to inputs
-
-- `autoSize()` - Auto-sizes elements with data-auto-size
-
-- `_vistaMeasureText()` - Text measurement utility
-
-- `_vistaParsePx()` - Pixel value parser
-
-## tabs_script
-Generates JavaScript for tab component functionality.
-
+Features:</p>
+<ul>
+<li><p>Dropdown menu toggling</p>
+</li>
+<li><p>Hover activation when menu is open</p>
+</li>
+<li><p>Click-outside to close</p>
+</li>
+<li><p>Escape key to close</p>
+</li>
+</ul>
+<h2>table_script</h2>
+<p>Generates JavaScript for table row selection.</p>
+<p><code>script: table_script</code>
 `
-script: tabs_script
+Features:</p>
+<ul>
+<li><p>Row click selection</p>
+</li>
+<li><p>Visual highlighting of selected row</p>
+</li>
+</ul>
+<h2>auto_reload_script</h2>
+<p>Generates script for automatic page reloading (useful for development).</p>
+<p><code>script: auto_reload_script</code>
 `
-Features:
-
-- Click activation of tabs
-
-- Keyboard navigation (Arrow keys, Home, End)
-
-- Panel visibility management
-
-## menubar_script
-Generates JavaScript for menubar functionality.
-
-`
-script: menubar_script
-`
-Features:
-
-- Dropdown menu toggling
-
-- Hover activation when menu is open
-
-- Click-outside to close
-
-- Escape key to close
-
-## table_script
-Generates JavaScript for table row selection.
-
-`
-script: table_script
-`
-Features:
-
-- Row click selection
-
-- Visual highlighting of selected row
-
-## auto_reload_script
-Generates script for automatic page reloading (useful for development).
-
-`
-script: auto_reload_script
-`
-Controlled by `webview_auto_reload` and `webview_reload_ms` settings.
-
-## WebView State Sync
-When `webview_state_sync_from_ui` is enabled, the script includes:
-
-`
-window.vistaPushState = function() {
-fetch('/vista-state', {
-method: 'POST',
-body: JSON.stringify(state)
-});
-};
-`
-
-When `webview_state_sync_ms` is set, periodic polling is enabled:
-
-`
-setInterval(() => {
-fetch('/vista-sync')
-.then(r => r.json())
-.then(data => {
-Object.assign(state, data);
-render();
-});
-}, syncInterval);
-`
-
-## window.vistaShow
-Global function for updating a face's HTML dynamically:
-
-`
-window.vistaShow = function(id, html) {
-const el = document.querySelector('[data-face-id="' + id + '"]');
-if (el) {
-el.outerHTML = html;
-render();
-bindInputs();
-return true;
-}
-return false;
-};
-`
-
-## Data Attributes
-
-- `data-bind` - Binds element to state variable
-
-- `data-show-bind` - Conditional visibility binding
-
-- `data-show-value` - Value for conditional visibility
-
-- `data-list-bind` - List selection binding
-
-- `data-multi` - Enable multi-select for lists
-
-- `data-key-bind` - Keyboard input binding
-
-- `data-key-mode` - Key event mode (keydown/keyup)
-
-- `data-key-filter` - Filter specific keys
-
-- `data-key-modifiers` - Capture only modifiers
-
-- `data-face-id` - Face identifier for updates
-
-- `data-auto-size` - Enable auto-sizing
-
-## See Also
-
-- [Two-Way Binding](/vista/wiki/core/data-binding/two-way-binding/) - Data binding concepts
-
-- [Event Overview](/vista/wiki/core/events/event-overview/) - Event handling
-
+Controlled by <code>webview_auto_reload</code> and <code>webview_reload_ms</code> settings.</p>
+<h2>WebView State Sync</h2>
+<p>When <code>webview_state_sync_from_ui</code> is enabled, the script includes:</p>
+<p><code>window.vistaPushState = function() { fetch('/vista-state', { method: 'POST', body: JSON.stringify(state) }); };</code></p>
+<p>When <code>webview_state_sync_ms</code> is set, periodic polling is enabled:</p>
+<p><code>setInterval(() =&gt; { fetch('/vista-sync') .then(r =&gt; r.json()) .then(data =&gt; { Object.assign(state, data); render(); }); }, syncInterval);</code></p>
+<h2>window.vistaShow</h2>
+<p>Global function for updating a face's HTML dynamically:</p>
+<p><code>window.vistaShow = function(id, html) { const el = document.querySelector('[data-face-id=&quot;' + id + '&quot;]'); if (el) { el.outerHTML = html; render(); bindInputs(); return true; } return false; };</code></p>
+<h2>Data Attributes</h2>
+<ul>
+<li><p><code>data-bind</code> - Binds element to state variable</p>
+</li>
+<li><p><code>data-show-bind</code> - Conditional visibility binding</p>
+</li>
+<li><p><code>data-show-value</code> - Value for conditional visibility</p>
+</li>
+<li><p><code>data-list-bind</code> - List selection binding</p>
+</li>
+<li><p><code>data-multi</code> - Enable multi-select for lists</p>
+</li>
+<li><p><code>data-key-bind</code> - Keyboard input binding</p>
+</li>
+<li><p><code>data-key-mode</code> - Key event mode (keydown/keyup)</p>
+</li>
+<li><p><code>data-key-filter</code> - Filter specific keys</p>
+</li>
+<li><p><code>data-key-modifiers</code> - Capture only modifiers</p>
+</li>
+<li><p><code>data-face-id</code> - Face identifier for updates</p>
+</li>
+<li><p><code>data-auto-size</code> - Enable auto-sizing</p>
+</li>
+</ul>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Data binding concepts</p>
+</li>
+<li><p><a href="/vista/wiki/core/events/event-overview/">Event Overview</a> - Event handling</p>
+</li>
+</ul>
 </ul
 
     </div>

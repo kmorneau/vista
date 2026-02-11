@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,136 +19,167 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/core/api-reference/event-functions.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# Event Functions
-
-Complete reference for Vista's event handling functions.
-
-## Event Handlers
-
-- **on-click**: Handle click events
-
-- **on-change**: Handle change events
-
-- **on-input**: Handle input events
-
-- **on-over**: Handle mouse enter events
-
-- **on-out**: Handle mouse leave events
-
-- **on-down**: Handle mouse down events
-
-- **on-up**: Handle mouse up events
-
-- **on-key**: Handle keyboard events
-
-- **on-focus**: Handle focus events
-
-- **on-blur**: Handle blur events
-
-## Global Events
-
-- **key**: Global keyboard shortcut
-
-- **on-key-down**: Global key down
-
-- **on-key-up**: Global key up
-
-## Event Control
-
-- **prevent**: Prevent default event behavior
-
-- **stop**: Stop event propagation
-
-## Example
-`button "Click Me" [
-print "Clicked!"
-]`
-
-## See Also
-
-- [Events](/vista/wiki/core/events/) - Event documentation
-
-- [Face Functions](/vista/wiki/core/api-reference/face-functions/) - Face manipulation
+    <h1>Event Functions</h1>
+<p>Complete reference for Vista's event handling functions.</p>
+<h2>Event Handlers</h2>
+<ul>
+<li><p><strong>on-click</strong>: Handle click events</p>
+</li>
+<li><p><strong>on-change</strong>: Handle change events</p>
+</li>
+<li><p><strong>on-input</strong>: Handle input events</p>
+</li>
+<li><p><strong>on-over</strong>: Handle mouse enter events</p>
+</li>
+<li><p><strong>on-out</strong>: Handle mouse leave events</p>
+</li>
+<li><p><strong>on-down</strong>: Handle mouse down events</p>
+</li>
+<li><p><strong>on-up</strong>: Handle mouse up events</p>
+</li>
+<li><p><strong>on-key</strong>: Handle keyboard events</p>
+</li>
+<li><p><strong>on-focus</strong>: Handle focus events</p>
+</li>
+<li><p><strong>on-blur</strong>: Handle blur events</p>
+</li>
+</ul>
+<h2>Global Events</h2>
+<ul>
+<li><p><strong>key</strong>: Global keyboard shortcut</p>
+</li>
+<li><p><strong>on-key-down</strong>: Global key down</p>
+</li>
+<li><p><strong>on-key-up</strong>: Global key up</p>
+</li>
+</ul>
+<h2>Event Control</h2>
+<ul>
+<li><p><strong>prevent</strong>: Prevent default event behavior</p>
+</li>
+<li><p><strong>stop</strong>: Stop event propagation</p>
+</li>
+</ul>
+<h2>Example</h2>
+<p><code>button &quot;Click Me&quot; [ print &quot;Clicked!&quot; ]</code></p>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/events/">Events</a> - Event documentation</p>
+</li>
+<li><p><a href="/vista/wiki/core/api-reference/face-functions/">Face Functions</a> - Face manipulation</p>
+</li>
+</ul>
 
     </div>
   </main>

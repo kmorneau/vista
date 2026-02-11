@@ -1,6 +1,6 @@
 import "vista.art"!
 
-html: vid .html [
+html: vid .returnHtml [
     h2 "VID helper"
     panel "Panel" [
         text "Hello"

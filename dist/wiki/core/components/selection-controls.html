@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,178 +19,183 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/core/components/selection-controls.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# Selection Controls
-
-Selection controls allow users to choose from predefined options. Vista provides checkbox, toggle, and radio components for different selection scenarios.
-
-## Checkbox
-
-Checkboxes represent boolean on/off states.
-
-### Basic Checkbox
-`
-import 'vista!
-
-accepted: false
-
-view [
-checkbox accepted "I accept the terms"
-
-button "Submit" [
+    <h1>Selection Controls</h1>
+<p>Selection controls allow users to choose from predefined options. Vista provides checkbox, toggle, and radio components for different selection scenarios.</p>
+<h2>Checkbox</h2>
+<p>Checkboxes represent boolean on/off states.</p>
+<h3>Basic Checkbox</h3>
+<p>`
+import 'vista!</p>
+<p>accepted: false</p>
+<p>view [
+checkbox accepted &quot;I accept the terms&quot;</p>
+<p>button &quot;Submit&quot; [
 if accepted [
-print "Proceeding..."
+print &quot;Proceeding...&quot;
 ]
 ]
 ]
-`
-
-### Checkbox with Block Label
-Use block labels for rich content:
-
-`
-checkbox accepted [
-text "I agree to the "
-label .style:"text-decoration:underline" "terms and conditions"
-]
-`
-
-### Multiple Checkboxes
-`
+`</p>
+<h3>Checkbox with Block Label</h3>
+<p>Use block labels for rich content:</p>
+<p><code>checkbox accepted [ text &quot;I agree to the &quot; label .style:&quot;text-decoration:underline&quot; &quot;terms and conditions&quot; ]</code></p>
+<h3>Multiple Checkboxes</h3>
+<p>`
 options: #[
 news: false
 updates: true
 offers: false
+]</p>
+<p>view [
+checkbox options\news &quot;Subscribe to newsletter&quot;
+checkbox options\updates &quot;Get product updates&quot;
+checkbox options\offers &quot;Receive special offers&quot;
 ]
-
-view [
-checkbox options\news "Subscribe to newsletter"
-checkbox options\updates "Get product updates"
-checkbox options\offers "Receive special offers"
-]
-`
-
-## Toggle
-
-Toggles are stylized checkboxes for on/off settings.
-
-### Basic Toggle
-`
-darkMode: false
-
-view [
-toggle darkMode "Dark Mode"
-
-button "Apply" [
+`</p>
+<h2>Toggle</h2>
+<p>Toggles are stylized checkboxes for on/off settings.</p>
+<h3>Basic Toggle</h3>
+<p>`
+darkMode: false</p>
+<p>view [
+toggle darkMode &quot;Dark Mode&quot;</p>
+<p>button &quot;Apply&quot; [
 if darkMode [
 enableDarkTheme
 ]
 ]
 ]
-`
-
-### Toggles for Settings
-`
+`</p>
+<h3>Toggles for Settings</h3>
+<p>`
 settings: #[
 notifications: true
 autoSave: false
 compactView: true
+]</p>
+<p>view [
+toggle settings\notifications &quot;Enable notifications&quot;
+toggle settings\autoSave &quot;Auto-save changes&quot;
+toggle settings\compactView &quot;Compact view mode&quot;
 ]
-
-view [
-toggle settings\notifications "Enable notifications"
-toggle settings\autoSave "Auto-save changes"
-toggle settings\compactView "Compact view mode"
-]
-`
-
-### Toggle with on-change
-Respond to toggle changes:
-
-`
-enabled: false
-
-view [
-toggle enabled "Feature Enabled"
+`</p>
+<h3>Toggle with on-change</h3>
+<p>Respond to toggle changes:</p>
+<p>`
+enabled: false</p>
+<p>view [
+toggle enabled &quot;Feature Enabled&quot;
 .on-change:[
 if enabled [
 activateFeature
@@ -199,146 +204,121 @@ deactivateFeature
 ]
 ]
 ]
-`
-
-## Radio
-
-Radio buttons allow selecting one option from a group.
-
-### Basic Radio Group
-`
-color: "red"
-
-view [
-label "Choose color:"
-radio color ["red" "green" "blue"]
+`</p>
+<h2>Radio</h2>
+<p>Radio buttons allow selecting one option from a group.</p>
+<h3>Basic Radio Group</h3>
+<p>`
+color: &quot;red&quot;</p>
+<p>view [
+label &quot;Choose color:&quot;
+radio color [&quot;red&quot; &quot;green&quot; &quot;blue&quot;]
 ]
-`
-
-### Radio with on-change
-Respond to selection changes:
-
-`
-size: "medium"
-
-view [
-radio size ["small" "medium" "large"]
+`</p>
+<h3>Radio with on-change</h3>
+<p>Respond to selection changes:</p>
+<p>`
+size: &quot;medium&quot;</p>
+<p>view [
+radio size [&quot;small&quot; &quot;medium&quot; &quot;large&quot;]
 .on-change:[
-print ["Selected: " size]
+print [&quot;Selected: &quot; size]
 updatePreview
 ]
 ]
-`
-
-### Radio with Value-Label Pairs
-`
-priority: 1
-
-view [
+`</p>
+<h3>Radio with Value-Label Pairs</h3>
+<p>`
+priority: 1</p>
+<p>view [
 radio priority [
-[1 "Low"]
-[2 "Medium"]
-[3 "High"]
+[1 &quot;Low&quot;]
+[2 &quot;Medium&quot;]
+[3 &quot;High&quot;]
 ]
 ]
-`
-
-### Block Labels for Radio
-Rich content in radio labels:
-
-`
-color: "red"
-
-radio color [
-["red" [
-text "● "
-label .style:"color:red" "Red"
+`</p>
+<h3>Block Labels for Radio</h3>
+<p>Rich content in radio labels:</p>
+<p>`
+color: &quot;red&quot;</p>
+<p>radio color [
+[&quot;red&quot; [
+text &quot;● &quot;
+label .style:&quot;color:red&quot; &quot;Red&quot;
 ]]
-["blue" [
-text "● "
-label .style:"color:blue" "Blue"
+[&quot;blue&quot; [
+text &quot;● &quot;
+label .style:&quot;color:blue&quot; &quot;Blue&quot;
 ]]
 ]
-`
-
-### Radio with Option Attributes
-Disable individual options:
-
-`
-choice: "a"
-
-radio choice [
-["a" "Option A" #[]]
-["b" "Option B" #[disabled: true]]  ; Disabled
-["c" "Option C" #[]]
+`</p>
+<h3>Radio with Option Attributes</h3>
+<p>Disable individual options:</p>
+<p>`
+choice: &quot;a&quot;</p>
+<p>radio choice [
+[&quot;a&quot; &quot;Option A&quot; #[]]
+[&quot;b&quot; &quot;Option B&quot; #[disabled: true]]  ; Disabled
+[&quot;c&quot; &quot;Option C&quot; #[]]
 ]
-`
-
-## Selection Controls Comparison
-
-Component
+`</p>
+<h2>Selection Controls Comparison</h2>
+<p>Component
 Use Case
-State Type
-
-`checkbox`
+State Type</p>
+<p><code>checkbox</code>
 Boolean on/off
-Boolean
-
-`toggle`
+Boolean</p>
+<p><code>toggle</code>
 Settings on/off
-Boolean
-
-`radio`
+Boolean</p>
+<p><code>radio</code>
 One of many
-String/Number
-
-## Complete Example
-
-`
-import 'vista!
-
-formData: #[
+String/Number</p>
+<h2>Complete Example</h2>
+<p>`
+import 'vista!</p>
+<p>formData: #[
 newsletter: false
 notifications: true
-theme: "light"
-]
-
-view [
-text "Preferences"
+theme: &quot;light&quot;
+]</p>
+<p>view [
+text &quot;Preferences&quot;
 box [
-checkbox formData\newsletter "Subscribe to newsletter"
-toggle formData\notifications "Push notifications"
-]
-
-text "Theme"
-radio formData\theme ["light" "dark" "system"]
-
-button "Save" [
+checkbox formData\newsletter &quot;Subscribe to newsletter&quot;
+toggle formData\notifications &quot;Push notifications&quot;
+]</p>
+<p>text &quot;Theme&quot;
+radio formData\theme [&quot;light&quot; &quot;dark&quot; &quot;system&quot;]</p>
+<p>button &quot;Save&quot; [
 savePreferences
 ]
 ]
-`
-
-## Best Practices
-
-- Use `checkbox` for independent boolean choices
-
-- Use `toggle` for settings and preferences
-
-- Use `radio` for mutually exclusive options
-
-- Provide clear labels for all selection controls
-
-- Use `on-change` for immediate feedback
-
-## See Also
-
-- [Sliders & Choice](/vista/wiki/core/components/sliders-choice/) - Slider and drop-list components
-
-- [Input Fields](/vista/wiki/core/components/input-fields/) - Text input components
-
-- [Input Events](/vista/wiki/core/events/input-events/) - Event handling for selections
-
+`</p>
+<h2>Best Practices</h2>
+<ul>
+<li><p>Use <code>checkbox</code> for independent boolean choices</p>
+</li>
+<li><p>Use <code>toggle</code> for settings and preferences</p>
+</li>
+<li><p>Use <code>radio</code> for mutually exclusive options</p>
+</li>
+<li><p>Provide clear labels for all selection controls</p>
+</li>
+<li><p>Use <code>on-change</code> for immediate feedback</p>
+</li>
+</ul>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/components/sliders-choice/">Sliders &amp; Choice</a> - Slider and drop-list components</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/input-fields/">Input Fields</a> - Text input components</p>
+</li>
+<li><p><a href="/vista/wiki/core/events/input-events/">Input Events</a> - Event handling for selections</p>
+</li>
+</ul>
 </ul
 
     </div>

@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,127 +19,153 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/core/components/index.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# UI Components
-
-Vista provides a comprehensive library of pre-built UI components for building modern user interfaces.
-
-## Component Categories
-
-- [Text Components](/vista/wiki/core/components/text-components/) - Labels, titles, subtitles
-
-- [Button Controls](/vista/wiki/core/components/button-controls/) - Buttons and key buttons
-
-- [Input Fields](/vista/wiki/core/components/input-fields/) - Text inputs, textareas, selects
-
-- [Selection Controls](/vista/wiki/core/components/selection-controls/) - Checkboxes, toggles, radio groups
-
-- [Sliders & Choice](/vista/wiki/core/components/sliders-choice/) - Sliders, rotary, drop lists
-
-- [Containers](/vista/wiki/core/components/containers/) - Boxes, panels, groups
-
-- [Layout Containers](/vista/wiki/core/components/layout-containers/) - Rows, columns, grids
-
-- [Navigation](/vista/wiki/core/components/navigation-components/) - Tabs, toolbar, menubar
-
-- [Data Display](/vista/wiki/core/components/data-display/) - Lists, tables
-
-- [Visual Dividers](/vista/wiki/core/components/visual-divider/) - Dividers, spacers, splits
-
-- [Canvas](/vista/wiki/core/components/canvas-artifacts/) - Canvas elements
-
-## Basic Usage
-`view .html [
-text "Hello, World!"
-button "Click Me" [print "Clicked!"]
-field "Enter text..." []
-checkbox "Accept terms" []
-]`
-
-## See Also
-
-- [Layout](/vista/wiki/core/layout/) - Layout system
-
-- [Events](/vista/wiki/core/events/) - Event handling
+    <h1>UI Components</h1>
+<p>Vista provides a comprehensive library of pre-built UI components for building modern user interfaces.</p>
+<h2>Component Categories</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/components/text-components/">Text Components</a> - Labels, titles, subtitles</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/button-controls/">Button Controls</a> - Buttons and key buttons</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/input-fields/">Input Fields</a> - Text inputs, textareas, selects</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/selection-controls/">Selection Controls</a> - Checkboxes, toggles, radio groups</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/sliders-choice/">Sliders &amp; Choice</a> - Sliders, rotary, drop lists</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/containers/">Containers</a> - Boxes, panels, groups</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/layout-containers/">Layout Containers</a> - Rows, columns, grids</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/navigation-components/">Navigation</a> - Tabs, toolbar, menubar</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/data-display/">Data Display</a> - Lists, tables</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/visual-divider/">Visual Dividers</a> - Dividers, spacers, splits</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/canvas-artifacts/">Canvas</a> - Canvas elements</p>
+</li>
+</ul>
+<h2>Basic Usage</h2>
+<p><code>view .html [ text &quot;Hello, World!&quot; button &quot;Click Me&quot; [print &quot;Clicked!&quot;] field &quot;Enter text...&quot; [] checkbox &quot;Accept terms&quot; [] ]</code></p>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/layout/">Layout</a> - Layout system</p>
+</li>
+<li><p><a href="/vista/wiki/core/events/">Events</a> - Event handling</p>
+</li>
+</ul>
 
     </div>
   </main>

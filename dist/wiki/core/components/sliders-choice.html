@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,122 +19,143 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/core/components/sliders-choice.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# Sliders & Choice Components
-
-Vista provides several components for choosing values from ranges or lists: sliders, rotary dials, and drop-lists.
-
-## Slider
-
-Sliders allow selecting a value from a range.
-
-### Basic Slider
-`
-import 'vista!
-
-volume: 50
-
-view [
-label ["Volume: " volume]
+    <h1>Sliders &amp; Choice Components</h1>
+<p>Vista provides several components for choosing values from ranges or lists: sliders, rotary dials, and drop-lists.</p>
+<h2>Slider</h2>
+<p>Sliders allow selecting a value from a range.</p>
+<h3>Basic Slider</h3>
+<p>`
+import 'vista!</p>
+<p>volume: 50</p>
+<p>view [
+label [&quot;Volume: &quot; volume]
 slider volume .min:0 .max:100
 ]
-`
-
-### Slider with Step
-`
-progress: 25
-
-view [
-label ["Progress: " progress "%"]
+`</p>
+<h3>Slider with Step</h3>
+<p>`
+progress: 25</p>
+<p>view [
+label [&quot;Progress: &quot; progress &quot;%&quot;]
 slider progress .min:0 .max:100 .step:5
 ]
-`
-
-### Slider with on-input and on-change
-`
-value: 50
-
-view [
-label ["Value: " value]
+`</p>
+<h3>Slider with on-input and on-change</h3>
+<p>`
+value: 50</p>
+<p>view [
+label [&quot;Value: &quot; value]
 slider value .min:0 .max:100
 .on-input:[
 updatePreview
@@ -143,211 +164,172 @@ updatePreview
 saveSetting
 ]
 ]
-`
-
-### Using input with type:range
-Alternative syntax using input component:
-
-`
-brightness: 75
-
-view [
-label ["Brightness: " brightness]
-input .type:"range" brightness .min:0 .max:100
+`</p>
+<h3>Using input with type:range</h3>
+<p>Alternative syntax using input component:</p>
+<p>`
+brightness: 75</p>
+<p>view [
+label [&quot;Brightness: &quot; brightness]
+input .type:&quot;range&quot; brightness .min:0 .max:100
 ]
-`
-
-## Rotary
-
-Rotary is a knob-like slider component for selecting from discrete values.
-
-### Basic Rotary
-`
-selection: 1
-
-view [
-label ["Setting: " selection]
+`</p>
+<h2>Rotary</h2>
+<p>Rotary is a knob-like slider component for selecting from discrete values.</p>
+<h3>Basic Rotary</h3>
+<p>`
+selection: 1</p>
+<p>view [
+label [&quot;Setting: &quot; selection]
 rotary selection .min:0 .max:10
 ]
-`
-
-### Rotary with Step
-`
-speed: 50
-
-view [
-label ["Speed: " speed]
+`</p>
+<h3>Rotary with Step</h3>
+<p>`
+speed: 50</p>
+<p>view [
+label [&quot;Speed: &quot; speed]
 rotary speed .min:0 .max:100 .step:10
 ]
-`
-
-## Drop-list
-
-Drop-lists (select) allow choosing from a dropdown list.
-
-### Basic Drop-list
-`
-color: "Red"
-
-view [
-label "Choose color:"
-drop-list color ["Red" "Green" "Blue"]
+`</p>
+<h2>Drop-list</h2>
+<p>Drop-lists (select) allow choosing from a dropdown list.</p>
+<h3>Basic Drop-list</h3>
+<p>`
+color: &quot;Red&quot;</p>
+<p>view [
+label &quot;Choose color:&quot;
+drop-list color [&quot;Red&quot; &quot;Green&quot; &quot;Blue&quot;]
 ]
-`
-
-### Drop-list with on-change
-`
-choice: "Option A"
-
-view [
-drop-list choice ["Option A" "Option B" "Option C"]
+`</p>
+<h3>Drop-list with on-change</h3>
+<p>`
+choice: &quot;Option A&quot;</p>
+<p>view [
+drop-list choice [&quot;Option A&quot; &quot;Option B&quot; &quot;Option C&quot;]
 .on-change:[
-print ["Selected: " choice]
+print [&quot;Selected: &quot; choice]
 updateUI
 ]
 ]
-`
-
-### Drop-list with Value-Label Pairs
-`
-priorityId: 2
-
-view [
+`</p>
+<h3>Drop-list with Value-Label Pairs</h3>
+<p>`
+priorityId: 2</p>
+<p>view [
 drop-list priorityId [
-[1 "Low Priority"]
-[2 "Normal Priority"]
-[3 "High Priority"]
+[1 &quot;Low Priority&quot;]
+[2 &quot;Normal Priority&quot;]
+[3 &quot;High Priority&quot;]
 ]
 ]
-`
-
-### Select Component (Alias)
-`select` is an alias for `drop-list`:
-
-`
-country: "US"
-
-view [
-label "Country:"
-select country ["US" "CA" "UK" "DE"]
+`</p>
+<h3>Select Component (Alias)</h3>
+<p><code>select</code> is an alias for <code>drop-list</code>:</p>
+<p>`
+country: &quot;US&quot;</p>
+<p>view [
+label &quot;Country:&quot;
+select country [&quot;US&quot; &quot;CA&quot; &quot;UK&quot; &quot;DE&quot;]
 ]
-`
-
-## Multiple Choice Controls
-
-### Multiple Sliders
-`
+`</p>
+<h2>Multiple Choice Controls</h2>
+<h3>Multiple Sliders</h3>
+<p>`
 settings: #[
 volume: 50
 brightness: 75
 contrast: 60
-]
-
-view [
-label "Audio"
-slider settings\volume .min:0 .max:100
-
-label "Display"
+]</p>
+<p>view [
+label &quot;Audio&quot;
+slider settings\volume .min:0 .max:100</p>
+<p>label &quot;Display&quot;
 slider settings\brightness .min:0 .max:100
-slider settings\contrast .min:0 .max:100
-
-button "Apply" [saveSettings]
+slider settings\contrast .min:0 .max:100</p>
+<p>button &quot;Apply&quot; [saveSettings]
 ]
-`
-
-### Multiple Drop-lists
-`
+`</p>
+<h3>Multiple Drop-lists</h3>
+<p>`
 filter: #[
-category: "All"
-sortBy: "name"
-viewType: "grid"
+category: &quot;All&quot;
+sortBy: &quot;name&quot;
+viewType: &quot;grid&quot;
+]</p>
+<p>view [
+drop-list filter\category [&quot;All&quot; &quot;Books&quot; &quot;Movies&quot; &quot;Music&quot;]
+drop-list filter\sortBy [&quot;Name&quot; &quot;Date&quot; &quot;Price&quot;]
+drop-list filter\viewType [&quot;Grid&quot; &quot;List&quot;]
 ]
-
-view [
-drop-list filter\category ["All" "Books" "Movies" "Music"]
-drop-list filter\sortBy ["Name" "Date" "Price"]
-drop-list filter\viewType ["Grid" "List"]
-]
-`
-
-## Complete Example
-
-`
-import 'vista!
-
-formData: #[
+`</p>
+<h2>Complete Example</h2>
+<p>`
+import 'vista!</p>
+<p>formData: #[
 rating: 3
-category: "General"
+category: &quot;General&quot;
 priority: 2
-]
-
-view [
-text "Feedback Form"
+]</p>
+<p>view [
+text &quot;Feedback Form&quot;
 box [
-label "Rating:"
+label &quot;Rating:&quot;
 slider formData\rating .min:1 .max:5 .step:1
-text ["Selected: " formData\rating "/5"]
-
-label "Category:"
+text [&quot;Selected: &quot; formData\rating &quot;/5&quot;]</p>
+<p>label &quot;Category:&quot;
 drop-list formData\category [
-"General"
-"Bug Report"
-"Feature Request"
-"Question"
-]
-
-label "Priority:"
-rotary formData\priority .min:1 .max:3
-
-button "Submit" [submitFeedback]
+&quot;General&quot;
+&quot;Bug Report&quot;
+&quot;Feature Request&quot;
+&quot;Question&quot;
+]</p>
+<p>label &quot;Priority:&quot;
+rotary formData\priority .min:1 .max:3</p>
+<p>button &quot;Submit&quot; [submitFeedback]
 ]
 ]
-`
-
-## Component Comparison
-
-Component
+`</p>
+<h2>Component Comparison</h2>
+<p>Component
 Use Case
-State Type
-
-`slider`
+State Type</p>
+<p><code>slider</code>
 Continuous range selection
-Number
-
-`rotary`
+Number</p>
+<p><code>rotary</code>
 Discrete value selection (knob style)
-Number
-
-`drop-list`
+Number</p>
+<p><code>drop-list</code>
 Choose from list
-String/Number
-
-`select`
+String/Number</p>
+<p><code>select</code>
 Choose from list (alias)
-String/Number
-
-## Best Practices
-
-- Use `slider` for continuous values (volume, brightness)
-
-- Use `slider .step:` for discrete ranges
-
-- Use `drop-list` for categorical choices
-
-- Use `on-input` for live preview during drag
-
-- Use `on-change` for saving final value
-
-- Provide labels for all choice components
-
-## See Also
-
-- [Selection Controls](/vista/wiki/core/components/selection-controls/) - Checkbox and radio
-
-- [Input Fields](/vista/wiki/core/components/input-fields/) - Text input components
-
-- [Input Events](/vista/wiki/core/events/input-events/) - Event handling
-
+String/Number</p>
+<h2>Best Practices</h2>
+<ul>
+<li><p>Use <code>slider</code> for continuous values (volume, brightness)</p>
+</li>
+<li><p>Use <code>slider .step:</code> for discrete ranges</p>
+</li>
+<li><p>Use <code>drop-list</code> for categorical choices</p>
+</li>
+<li><p>Use <code>on-input</code> for live preview during drag</p>
+</li>
+<li><p>Use <code>on-change</code> for saving final value</p>
+</li>
+<li><p>Provide labels for all choice components</p>
+</li>
+</ul>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/components/selection-controls/">Selection Controls</a> - Checkbox and radio</p>
+</li>
+<li><p><a href="/vista/wiki/core/components/input-fields/">Input Fields</a> - Text input components</p>
+</li>
+<li><p><a href="/vista/wiki/core/events/input-events/">Input Events</a> - Event handling</p>
+</li>
+</ul>
 </ul
 
     </div>

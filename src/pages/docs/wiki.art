@@ -1,9 +1,0 @@
-#[
-  "title": "Wiki"
-  "layout": "docpage"
-  "body": {
-    <h1>Wiki</h1>
-    <p>The WIP wiki is generated from markdown files under <code>data/wiki/</code>.</p>
-    <p><a href="/wiki/">Open the Wiki Index →</a></p>
-  }
-]

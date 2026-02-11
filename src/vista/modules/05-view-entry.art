@@ -7,9 +7,6 @@ view: function [layoutBlock] [
     if attr? "returnHtml" [
         htmlOnly: true
     ]
-    if attr? "html" [
-        htmlOnly: true
-    ]
     if htmlOnly [
         return fullHtml
     ]
@@ -57,9 +54,6 @@ vid: function [layoutBlock] [
     result: null
     returnHtml: false
     if attr? "returnHtml" [
-        returnHtml: true
-    ]
-    if attr? "html" [
         returnHtml: true
     ]
     switch returnHtml [

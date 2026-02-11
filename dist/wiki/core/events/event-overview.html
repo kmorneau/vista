@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,192 +19,186 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/core/events/event-overview.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# Event System Overview
-
-Vista's event system provides a declarative way to handle user interactions. Events are attached to components using attributes, and event handlers are Arturo blocks that are compiled to JavaScript.
-
-## Event Categories
-
-Vista supports several categories of events:
-
-- **Click Events** - Button clicks, form submissions
-
-- **Mouse Events** - Hover, enter, leave
-
-- **Input Events** - Text changes, selection changes
-
-- **Keyboard Events** - Key presses
-
-- **Focus Events** - Focus gained/lost
-
-## Event Attributes
-
-Events are specified as component attributes:
-
-`
-button "Click Me"
-.on-click:[print "Clicked!"]
-
-field name
-.on-input:[status: "Typing..."]
+    <h1>Event System Overview</h1>
+<p>Vista's event system provides a declarative way to handle user interactions. Events are attached to components using attributes, and event handlers are Arturo blocks that are compiled to JavaScript.</p>
+<h2>Event Categories</h2>
+<p>Vista supports several categories of events:</p>
+<ul>
+<li><p><strong>Click Events</strong> - Button clicks, form submissions</p>
+</li>
+<li><p><strong>Mouse Events</strong> - Hover, enter, leave</p>
+</li>
+<li><p><strong>Input Events</strong> - Text changes, selection changes</p>
+</li>
+<li><p><strong>Keyboard Events</strong> - Key presses</p>
+</li>
+<li><p><strong>Focus Events</strong> - Focus gained/lost</p>
+</li>
+</ul>
+<h2>Event Attributes</h2>
+<p>Events are specified as component attributes:</p>
+<p>`
+button &quot;Click Me&quot;
+.on-click:[print &quot;Clicked!&quot;]</p>
+<p>field name
+.on-input:[status: &quot;Typing...&quot;]
 .on-change:[validate name]
-`
-
-## Available Events
-
-### Click Events
-
-`on-click`Fired when element is clicked
-`on-dblclick`Fired on double-click
-
-### Mouse Events
-
-`on-over`Mouse enters element
-`on-out`Mouse leaves element
-`on-down`Mouse button pressed
-`on-up`Mouse button released
-
-### Input Events
-
-`on-input`Fired on every keystroke (for inputs)
-`on-change`Fired when value changes (blur or Enter)
-
-### Keyboard Events
-
-`on-key`Any key pressed
-`on-keydown`Key pressed down
-`on-keyup`Key released
-
-### Focus Events
-
-`on-focus`Element gains focus
-`on-blur`Element loses focus
-
-## Event Handler Structure
-
-Event handlers are Arturo action blocks:
-
-`
-button "Submit" [
-print "Button clicked!"
-name: name + "!"
-]
-`
-
-## Event Context
-
-Event handlers have access to:
-
-- Bound state variables
-
-- The event target (via `this`)
-
-- Event data (in some cases)
-
-## Multiple Handlers
-
-You can attach multiple handlers to the same event:
-
-`
-field username [
-.on-input:[
-status: "Typing..."
-]
-.on-change:[
-validate username
-status: "Done"
-]
-]
-`
-
-## See Also
-
-- [Click Events](/vista/wiki/core/events/click-events/) - Click handling details
-
-- [Input Events](/vista/wiki/core/events/input-events/) - Input change handling
-
-- [Event System](/vista/wiki/core/concepts/event-system/) - Full event reference
-
+`</p>
+<h2>Available Events</h2>
+<h3>Click Events</h3>
+<p><code>on-click</code>Fired when element is clicked
+<code>on-dblclick</code>Fired on double-click</p>
+<h3>Mouse Events</h3>
+<p><code>on-over</code>Mouse enters element
+<code>on-out</code>Mouse leaves element
+<code>on-down</code>Mouse button pressed
+<code>on-up</code>Mouse button released</p>
+<h3>Input Events</h3>
+<p><code>on-input</code>Fired on every keystroke (for inputs)
+<code>on-change</code>Fired when value changes (blur or Enter)</p>
+<h3>Keyboard Events</h3>
+<p><code>on-key</code>Any key pressed
+<code>on-keydown</code>Key pressed down
+<code>on-keyup</code>Key released</p>
+<h3>Focus Events</h3>
+<p><code>on-focus</code>Element gains focus
+<code>on-blur</code>Element loses focus</p>
+<h2>Event Handler Structure</h2>
+<p>Event handlers are Arturo action blocks:</p>
+<p><code>button &quot;Submit&quot; [ print &quot;Button clicked!&quot; name: name + &quot;!&quot; ]</code></p>
+<h2>Event Context</h2>
+<p>Event handlers have access to:</p>
+<ul>
+<li><p>Bound state variables</p>
+</li>
+<li><p>The event target (via <code>this</code>)</p>
+</li>
+<li><p>Event data (in some cases)</p>
+</li>
+</ul>
+<h2>Multiple Handlers</h2>
+<p>You can attach multiple handlers to the same event:</p>
+<p><code>field username [ .on-input:[ status: &quot;Typing...&quot; ] .on-change:[ validate username status: &quot;Done&quot; ] ]</code></p>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/events/click-events/">Click Events</a> - Click handling details</p>
+</li>
+<li><p><a href="/vista/wiki/core/events/input-events/">Input Events</a> - Input change handling</p>
+</li>
+<li><p><a href="/vista/wiki/core/concepts/event-system/">Event System</a> - Full event reference</p>
+</li>
+</ul>
 </ul
 
     </div>

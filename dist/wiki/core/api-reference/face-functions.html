@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,211 +19,198 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/core/api-reference/face-functions.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# Face Functions
-
-Face functions manage the creation, registration, and manipulation of UI elements (faces) in Vista.
-
-## Overview
-Faces are the fundamental UI building blocks. Each face has an ID, type, attributes, HTML content, and optional children.
-
-## next_face_id
-Generates a unique face identifier.
-
+    <h1>Face Functions</h1>
+<p>Face functions manage the creation, registration, and manipulation of UI elements (faces) in Vista.</p>
+<h2>Overview</h2>
+<p>Faces are the fundamental UI building blocks. Each face has an ID, type, attributes, HTML content, and optional children.</p>
+<h2>next_face_id</h2>
+<p>Generates a unique face identifier.</p>
+<p><code>id: next_face_id ; Returns &quot;face-1&quot;, &quot;face-2&quot;, etc.</code></p>
+<h2>register_face</h2>
+<p>Registers a new face in the faces dictionary.</p>
+<p><code>register_face faces parentId &quot;button&quot; attrs html</code></p>
+<h3>Parameters</h3>
+<ul>
+<li><p><code>faces</code> - The faces dictionary to register into</p>
+</li>
+<li><p><code>parentId</code> - Parent face ID (or null for root)</p>
+</li>
+<li><p><code>type</code> - Face type (e.g., &quot;button&quot;, &quot;panel&quot;)</p>
+</li>
+<li><p><code>attrs</code> - Attribute dictionary</p>
+</li>
+<li><p><code>html</code> - Generated HTML string</p>
+</li>
+</ul>
+<h3>Returns</h3>
+<p>The new face's ID.</p>
+<h2>current_parent_id</h2>
+<p>Gets the current parent ID from a stack.</p>
+<p><code>parentId: current_parent_id stack</code></p>
+<h2>register_face_name</h2>
+<p>Registers a face by its name for lookup.</p>
+<p><code>register_face_name face</code>
 `
-id: next_face_id
-; Returns "face-1", "face-2", etc.
-`
-
-## register_face
-Registers a new face in the faces dictionary.
-
-`
-register_face faces parentId "button" attrs html
-`
-### Parameters
-
-- `faces` - The faces dictionary to register into
-
-- `parentId` - Parent face ID (or null for root)
-
-- `type` - Face type (e.g., "button", "panel")
-
-- `attrs` - Attribute dictionary
-
-- `html` - Generated HTML string
-
-### Returns
-The new face's ID.
-
-## current_parent_id
-Gets the current parent ID from a stack.
-
-`
-parentId: current_parent_id stack
-`
-
-## register_face_name
-Registers a face by its name for lookup.
-
-`
-register_face_name face
-`
-Uses the face's `id` attribute as its name.
-
-## set_face_attrs
-Updates a face's attributes.
-
-`
-set_face_attrs faces "face-1" #[class: "new-class"]
-`
-
-## set_face_attrs_and_name
-Updates attributes and registers the name.
-
-`
-set_face_attrs_and_name faces "face-1" #[id: "myButton"]
-`
-
-## set_face_html
-Updates a face's HTML content.
-
-`
-set_face_html faces "face-1" "New Text"
-`
-
-## set_face_meta
-Sets metadata on a face.
-
-`
-set_face_meta faces "face-1" #[draw: [line 0 0 100 100]]
-`
-
-## with_face_id
-Adds a data-face-id attribute to an attributes dictionary.
-
-`
-attrs: with_face_id attrs "face-1"
-`
-
-## merge_faces
-Merges all faces from source into destination dictionary.
-
-`
-merge_faces destFaces srcFaces
-`
-
-## append_children_from_root
-Copies children from a root face to a parent face.
-
-`
-append_children_from_root faces parentId rootId
-`
-
-## Vista State
-The global `vista_state` dictionary tracks:
-
-- `face_counter` - Counter for generating unique IDs
-
-- `last_faces` - Most recent faces dictionary
-
-- `last_root` - Last root face ID
-
-- `face_names` - Name to ID mapping
-
-- `last_bindings` - Current data bindings
-
-- `layout_pending_attrs` - Pending layout attributes
-
-- `layout_scope_stack` - Stack for scoped layouts
-
-- `tabs_id_counter` - Counter for tab components
-
-## See Also
-
-- [Face Model](/vista/wiki/core/concepts/face-model/) - Face architecture concepts
-
-- [State Model](/vista/wiki/core/data-binding/state-model/) - State management
-
+Uses the face's <code>id</code> attribute as its name.</p>
+<h2>set_face_attrs</h2>
+<p>Updates a face's attributes.</p>
+<p><code>set_face_attrs faces &quot;face-1&quot; #[class: &quot;new-class&quot;]</code></p>
+<h2>set_face_attrs_and_name</h2>
+<p>Updates attributes and registers the name.</p>
+<p><code>set_face_attrs_and_name faces &quot;face-1&quot; #[id: &quot;myButton&quot;]</code></p>
+<h2>set_face_html</h2>
+<p>Updates a face's HTML content.</p>
+<p><code>set_face_html faces &quot;face-1&quot; &quot;New Text&quot;</code></p>
+<h2>set_face_meta</h2>
+<p>Sets metadata on a face.</p>
+<p><code>set_face_meta faces &quot;face-1&quot; #[draw: [line 0 0 100 100]]</code></p>
+<h2>with_face_id</h2>
+<p>Adds a data-face-id attribute to an attributes dictionary.</p>
+<p><code>attrs: with_face_id attrs &quot;face-1&quot;</code></p>
+<h2>merge_faces</h2>
+<p>Merges all faces from source into destination dictionary.</p>
+<p><code>merge_faces destFaces srcFaces</code></p>
+<h2>append_children_from_root</h2>
+<p>Copies children from a root face to a parent face.</p>
+<p><code>append_children_from_root faces parentId rootId</code></p>
+<h2>Vista State</h2>
+<p>The global <code>vista_state</code> dictionary tracks:</p>
+<ul>
+<li><p><code>face_counter</code> - Counter for generating unique IDs</p>
+</li>
+<li><p><code>last_faces</code> - Most recent faces dictionary</p>
+</li>
+<li><p><code>last_root</code> - Last root face ID</p>
+</li>
+<li><p><code>face_names</code> - Name to ID mapping</p>
+</li>
+<li><p><code>last_bindings</code> - Current data bindings</p>
+</li>
+<li><p><code>layout_pending_attrs</code> - Pending layout attributes</p>
+</li>
+<li><p><code>layout_scope_stack</code> - Stack for scoped layouts</p>
+</li>
+<li><p><code>tabs_id_counter</code> - Counter for tab components</p>
+</li>
+</ul>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/concepts/face-model/">Face Model</a> - Face architecture concepts</p>
+</li>
+<li><p><a href="/vista/wiki/core/data-binding/state-model/">State Model</a> - State management</p>
+</li>
+</ul>
 </ul
 
     </div>

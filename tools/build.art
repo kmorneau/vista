@@ -60,6 +60,7 @@ pageTemplate: function [title, content][
     logoSrc: withBase "/assets/images/arturo-vista.png"
     homeHref: withBase "/"
     wikiHref: withBase "/wiki/"
+    readmeHref: withBase "/wiki/README.html"
     jsSrc: withBase "/assets/main.js"
     html: {
 <!doctype html>
@@ -72,7 +73,7 @@ pageTemplate: function [title, content][
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -83,84 +84,116 @@ pageTemplate: function [title, content][
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="__HOME_HREF__" class="site-title">
-        <img class="vista-app-logo" src="__LOGO_SRC__" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="__HOME_HREF__" class="logo-wrap">
+        <img class="brand-logo" src="__LOGO_SRC__" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">__TITLE__</div>
-      <nav class="site-nav">
-        <a href="__WIKI_HREF__">Wiki</a>
+      <nav class="top-nav">
+        <a href="__HOME_HREF__">Docs</a>
+        <a href="__WIKI_HREF__">Wiki Index</a>
+        <a href="__README_HREF__">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
     __CONTENT__
     </div>
@@ -173,6 +206,7 @@ pageTemplate: function [title, content][
     html: replace html "__LOGO_SRC__" logoSrc
     html: replace html "__HOME_HREF__" homeHref
     html: replace html "__WIKI_HREF__" wikiHref
+    html: replace html "__README_HREF__" readmeHref
     html: replace html "__JS_SRC__" jsSrc
     html: replace html "__TITLE__" title
     html: replace html "__CONTENT__" (apply_base_links content)
@@ -183,11 +217,23 @@ pageTemplate: function [title, content][
 print "Generating root index page..."
 
 rootContent: {
-<p>Welcome to Vista, an Arturo GUI framework. Explore the <a href="/wiki/">Wiki</a>.</p>
-<h2>Quick Links</h2>
+<h1>Vista Documentation</h1>
+<p>Central index for Arturo/Vista docs, examples, and implementation notes.</p>
+<h2>Introduction</h2>
 <ul>
-  <li><a href="/wiki/core/">Core Concepts</a></li>
-  <li><a href="/wiki/graphics/">Graphics & Animation</a></li>
+  <li><a href="/wiki/getting-started.html">Getting Started</a><br>Setup, first app, and workflow basics.</li>
+  <li><a href="/wiki/README.html">Wiki Overview</a><br>How the documentation set is organized.</li>
+</ul>
+<h2>Guides, Manuals, References</h2>
+<ul>
+  <li><a href="/wiki/core/index.html">Core Concepts</a><br>Layout model, state, and face lifecycle.</li>
+  <li><a href="/wiki/graphics/index.html">Graphics & Animation</a><br>Draw dialect, primitives, and canvas behaviors.</li>
+  <li><a href="/wiki/core/tutorials/index.html">Core Tutorials</a><br>Runnable walkthroughs and example patterns.</li>
+</ul>
+<h2>Project Resources</h2>
+<ul>
+  <li><a href="/wiki/core/api-reference/index.html">API Reference</a><br>Function-level docs across Vista modules.</li>
+  <li><a href="/wiki/shared/troubleshooting/index.html">Troubleshooting</a><br>Debugging, common issues, and performance notes.</li>
 </ul>
 }
 
@@ -244,8 +290,9 @@ parseMarkdown: function [filePath][
     body: join.with:"\n" bodyLines
     return #[
         frontmatter: frontmatter
-        body: body
+        body: read.markdown body
     ]
+
 ]
 
 ; Helper: Get safe title

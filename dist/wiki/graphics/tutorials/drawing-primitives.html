@@ -8,7 +8,7 @@
   <style>
     :root{
       --arturo-primary:#f2c230;
-      --arturo-ink:#141414;
+      --arturo-ink:#101010;
       --arturo-bg:#f7f6f1;
       --arturo-panel:#ffffff;
       --arturo-border:#ded6c2;
@@ -19,213 +19,171 @@
       color:var(--arturo-ink);
       font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
     }
-    .vista-app-header{
-      position:sticky;
-      top:0;
-      z-index:1000;
+    .logo-bar{
       background:var(--arturo-primary);
-      color:var(--arturo-ink);
-      border-bottom:2px solid var(--arturo-ink);
+      border-bottom:1px solid var(--arturo-ink);
     }
-    .vista-app-header-inner{
-      max-width:1100px;
+    .logo-row{
+      max-width:1080px;
       margin:0 auto;
-      padding:10px 16px;
+      padding:8px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:16px;
     }
-    .vista-app-logo{
-      height:28px;
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
       width:auto;
       display:block;
     }
-    .vista-app-mark{
+    .brand-mark{
+      margin-left:10px;
       font-weight:800;
-      letter-spacing:0.2em;
+      letter-spacing:0.08em;
       text-transform:uppercase;
+      white-space:nowrap;
     }
-    .vista-app-title{
-      font-size:18px;
-      font-weight:700;
-    }
-    .site-nav{
+    .top-nav{
       margin-left:auto;
       display:flex;
-      gap:12px;
+      gap:6px;
       align-items:center;
     }
-    .site-nav a{
+    .top-nav a{
       color:var(--arturo-ink);
       text-decoration:none;
       border:1px solid var(--arturo-ink);
-      background:#fff8dc;
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:14px;
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
       font-weight:600;
     }
-    .site-nav a.site-title{
-      border:none;
-      background:transparent;
-      padding:0;
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
     }
-    .container{
-      max-width:1100px;
+    .main{
+      max-width:980px;
       margin:0 auto;
-      padding:16px;
+      padding:18px 16px 32px;
     }
     .markdown-body{
       border:1px solid var(--arturo-border);
-      border-radius:12px;
       background:var(--arturo-panel);
-      padding:14px;
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
     }
   </style>
 </head>
 <body>
-  <header class="vista-app-header">
-    <div class="vista-app-header-inner">
-      <a href="/vista/" class="site-title">
-        <img class="vista-app-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO" />
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
       </a>
-      <div class="vista-app-mark">ARTURO/VISTA</div>
-      <div class="vista-app-title">data/wiki/graphics/tutorials/drawing-primitives.md</div>
-      <nav class="site-nav">
-        <a href="/vista/wiki/">Wiki</a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
       </nav>
     </div>
   </header>
-  <main class="container">
+  <div class="nav-bar"></div>
+  <main class="main">
     <div class="markdown-body">
-    
-# Drawing Primitives Tutorial
-
-Learn how to draw basic shapes using Vista Graphics.
-
-## Setup
-`
-import 'vista-graphics!
-`
-
-## Drawing Lines
-Use the `line` command to draw lines:
-
-`
-canvas [
-draw [
-pen red
-line 10 10 200 100
-]
-]
-`
-
-## Drawing Rectangles
-Use the `box` command to draw rectangles:
-
-`
-canvas [
-draw [
-pen blue
-fill-pen lightblue
-box 10 10 100 100
-]
-]
-`
-
-## Drawing Circles
-Use the `circle` command to draw circles:
-
-`
-canvas [
-draw [
-pen green
-fill-pen lightgreen
-circle 150 150 50
-]
-]
-`
-
-## Drawing Ellipses
-Use the `ellipse` command to draw ellipses:
-
-`
-canvas [
-draw [
-pen purple
-fill-pen lavender
-ellipse 150 150 100 50
-]
-]
-`
-
-## Drawing Polygons
-Use the `polygon` command to draw polygons:
-
-`
-canvas [
-draw [
-pen orange
-fill-pen yellow
-polygon [
-150 50
-200 150
-100 150
-]
-]
-]
-`
-
-## Styling
-Control line width and style:
-
-`
-canvas [
-draw [
-line-width 3
-line-cap round
-line-join round
-pen red
-line 10 10 200 100
-]
-]
-`
-
-## Complete Example
-`
+    <h1>Drawing Primitives Tutorial</h1>
+<p>Learn how to draw basic shapes using Vista Graphics.</p>
+<h2>Setup</h2>
+<p><code>import 'vista-graphics!</code></p>
+<h2>Drawing Lines</h2>
+<p>Use the <code>line</code> command to draw lines:</p>
+<p><code>canvas [ draw [ pen red line 10 10 200 100 ] ]</code></p>
+<h2>Drawing Rectangles</h2>
+<p>Use the <code>box</code> command to draw rectangles:</p>
+<p><code>canvas [ draw [ pen blue fill-pen lightblue box 10 10 100 100 ] ]</code></p>
+<h2>Drawing Circles</h2>
+<p>Use the <code>circle</code> command to draw circles:</p>
+<p><code>canvas [ draw [ pen green fill-pen lightgreen circle 150 150 50 ] ]</code></p>
+<h2>Drawing Ellipses</h2>
+<p>Use the <code>ellipse</code> command to draw ellipses:</p>
+<p><code>canvas [ draw [ pen purple fill-pen lavender ellipse 150 150 100 50 ] ]</code></p>
+<h2>Drawing Polygons</h2>
+<p>Use the <code>polygon</code> command to draw polygons:</p>
+<p><code>canvas [ draw [ pen orange fill-pen yellow polygon [ 150 50 200 150 100 150 ] ] ]</code></p>
+<h2>Styling</h2>
+<p>Control line width and style:</p>
+<p><code>canvas [ draw [ line-width 3 line-cap round line-join round pen red line 10 10 200 100 ] ]</code></p>
+<h2>Complete Example</h2>
+<p>`
 view .html [
 canvas [
 draw [
 pen black
-fill-pen wheat
-
-; House
-box 100 150 200 150
-
-; Roof
+fill-pen wheat</p>
+<p>; House
+box 100 150 200 150</p>
+<p>; Roof
 polygon [
 90 150
 200 50
 310 150
-]
-
-; Door
+]</p>
+<p>; Door
 pen brown
 fill-pen saddlebrown
 box 175 220 50 80
 ]
 ]
 ]
-`
-
-## Next Steps
-
-- [Gradients and Fills](/vista/wiki/graphics/tutorials/gradients-fills/) - Color and gradients
-
-- [Text Rendering](/vista/wiki/graphics/text-fonts/text-rendering/) - Drawing text
-
-- [Transformations](/vista/wiki/graphics/transforms/transform-overview/) - Rotate, scale, translate
-
+`</p>
+<h2>Next Steps</h2>
+<ul>
+<li><p><a href="/vista/wiki/graphics/tutorials/gradients-fills/">Gradients and Fills</a> - Color and gradients</p>
+</li>
+<li><p><a href="/vista/wiki/graphics/text-fonts/text-rendering/">Text Rendering</a> - Drawing text</p>
+</li>
+<li><p><a href="/vista/wiki/graphics/transforms/transform-overview/">Transformations</a> - Rotate, scale, translate</p>
+</li>
+</ul>
 </ul
 
     </div>
