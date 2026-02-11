@@ -190,7 +190,7 @@ view [across field name button "OK" [do something]]
 
 ## See Also
 
-- [VID Overview](/wiki/vid-overview/) - VID concepts in Vista
+- [VID Overview](/wiki/core/concepts/vid-overview/) - VID concepts in Vista
 
 - [Getting Started](/wiki/getting-started/) - Quick start guide
 

@@ -102,7 +102,7 @@ Vista Graphics supports multiple coordinate systems:
 
 - [Drawing Primitives](/wiki/graphics/drawing/primitives/) - Lines and shapes
 
-- [Transformations](/wiki/graphics/transforms/transform-overview/) - Rotate, scale, translate
+- [Transformations](/wiki/graphics/transforms/) - Rotate, scale, translate
 
 - [Colors](/wiki/graphics/colors/color-overview/) - Color and gradient reference
 

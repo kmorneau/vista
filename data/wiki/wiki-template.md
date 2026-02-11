@@ -32,4 +32,4 @@ print result
 
 ## See Also
 
-- [Related Topic](/wiki/related-topic/)
+- [Related Topic](/wiki/README/)

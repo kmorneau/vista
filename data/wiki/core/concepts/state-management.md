@@ -81,6 +81,6 @@ print ["Name changed to" name]
 
 - [Two-Way Binding](/wiki/core/data-binding/two-way-binding/) - Input binding details
 
-- [Auto Sync](/wiki/core/data-binding/auto-sync/) - Automatic synchronization
+- [Auto Sync](/wiki/core/data-binding/two-way-binding/) - Automatic synchronization
 
 </ul

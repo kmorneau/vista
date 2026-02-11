@@ -130,6 +130,6 @@ box 175 220 50 80
 
 - [Text Rendering](/wiki/graphics/text-fonts/text-rendering/) - Drawing text
 
-- [Transformations](/wiki/graphics/transforms/transform-overview/) - Rotate, scale, translate
+- [Transformations](/wiki/graphics/transforms/) - Rotate, scale, translate
 
 </ul

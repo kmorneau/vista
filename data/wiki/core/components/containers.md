@@ -107,7 +107,7 @@ box "Widget 4"
 
 ## See Also
 
-- [Layout Overview](/wiki/core/layout/layout-overview/) - Layout system concepts
+- [Layout Overview](/wiki/core/concepts/layout-overview/) - Layout system concepts
 
 - [Data Display](/wiki/core/components/data-display/) - Table and list components
 

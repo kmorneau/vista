@@ -26,6 +26,6 @@ arturo tools/build.art
 
 ## See Also
 
-- [VID Overview](/wiki/vid-overview/) - Learn about the VID dialect
+- [VID Overview](/wiki/core/concepts/vid-overview/) - Learn about the VID dialect
 
 </ul

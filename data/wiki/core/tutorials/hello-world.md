@@ -64,10 +64,10 @@ print "Hello from Vista!"
 
 ## Next Steps
 
-- [Forms Tutorial](/wiki/core/tutorials/forms-basics/) - Building forms
+- [Forms Tutorial](/wiki/core/components/input-fields/) - Building forms
 
 - [Text Components](/wiki/core/components/text-components/) - Learn about text faces
 
-- [Button Controls](/wiki/core/components/buttons-controls/) - Buttons and actions
+- [Button Controls](/wiki/core/components/button-controls/) - Buttons and actions
 
 </ul

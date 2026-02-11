@@ -11,7 +11,7 @@ Reference documentation for transformation commands in Vista Graphics.
 
 ## Transform Topics
 
-- [Transform Overview](/wiki/graphics/transforms/transform-overview/) - Transform system
+- [Transform Overview](/wiki/graphics/transforms/) - Transform system
 
 - [Translate](/wiki/graphics/transforms/translate/) - translate command
 
