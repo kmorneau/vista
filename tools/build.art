@@ -376,4 +376,13 @@ if exists? "dist/wiki/README.html" [
     execute "cp dist/wiki/README.html dist/wiki/index.html"
 ]
 
+; Backward-compatible aliases for older docs URLs.
+execute "mkdir -p dist/wiki/vid-overview && cp dist/wiki/core/concepts/vid-overview/index.html dist/wiki/vid-overview/index.html"
+execute "mkdir -p dist/wiki/core/components/buttons-controls && cp dist/wiki/core/components/button-controls/index.html dist/wiki/core/components/buttons-controls/index.html"
+execute "mkdir -p dist/wiki/core/data-binding/auto-sync && cp dist/wiki/core/data-binding/two-way-binding/index.html dist/wiki/core/data-binding/auto-sync/index.html"
+execute "mkdir -p dist/wiki/core/layout/layout-overview && cp dist/wiki/core/concepts/layout-overview/index.html dist/wiki/core/layout/layout-overview/index.html"
+execute "mkdir -p dist/wiki/core/tutorials/forms-basics && cp dist/wiki/core/components/input-fields/index.html dist/wiki/core/tutorials/forms-basics/index.html"
+execute "mkdir -p dist/wiki/graphics/transforms/transform-overview && cp dist/wiki/graphics/transforms/index.html dist/wiki/graphics/transforms/transform-overview/index.html"
+execute "mkdir -p dist/wiki/related-topic && cp dist/wiki/README/index.html dist/wiki/related-topic/index.html"
+
 print "Build complete!"

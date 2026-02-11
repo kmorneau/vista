@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>data/wiki/core/concepts/layout-overview.md - Vista</title>
+  <link rel="stylesheet" href="/vista/assets/main.css" />
+  <style>
+    :root{
+      --arturo-primary:#f2c230;
+      --arturo-ink:#101010;
+      --arturo-bg:#f7f6f1;
+      --arturo-panel:#ffffff;
+      --arturo-border:#ded6c2;
+    }
+    body{
+      margin:0;
+      background:var(--arturo-bg);
+      color:var(--arturo-ink);
+      font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+    }
+    .logo-bar{
+      background:var(--arturo-primary);
+      border-bottom:1px solid var(--arturo-ink);
+    }
+    .logo-row{
+      max-width:1080px;
+      margin:0 auto;
+      padding:8px 16px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      text-decoration:none;
+      color:var(--arturo-ink);
+    }
+    .brand-logo{
+      height:34px;
+      width:auto;
+      display:block;
+    }
+    .brand-mark{
+      margin-left:10px;
+      font-weight:800;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+    .top-nav{
+      margin-left:auto;
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .top-nav a{
+      color:var(--arturo-ink);
+      text-decoration:none;
+      border:1px solid var(--arturo-ink);
+      background:#fff9dd;
+      padding:6px 12px;
+      font-size:13px;
+      font-weight:600;
+    }
+    .nav-bar{
+      height:12px;
+      background:var(--arturo-ink);
+      border-bottom:1px solid #2f2f2f;
+    }
+    .main{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px 16px 32px;
+    }
+    .markdown-body{
+      border:1px solid var(--arturo-border);
+      background:var(--arturo-panel);
+      padding:18px 20px;
+    }
+    .markdown-body h1{
+      margin-top:0;
+      margin-bottom:14px;
+      font-size:30px;
+      line-height:1.15;
+      border-bottom:2px solid #ece4cc;
+      padding-bottom:10px;
+    }
+    .markdown-body h2{
+      margin-top:22px;
+      margin-bottom:8px;
+      font-size:20px;
+      border-left:6px solid var(--arturo-primary);
+      padding-left:8px;
+    }
+    .markdown-body ul{
+      margin-top:0;
+      padding-left:18px;
+    }
+    .markdown-body li{
+      margin:8px 0;
+      line-height:1.45;
+    }
+    .markdown-body a{
+      color:#191919;
+      font-weight:700;
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+    }
+    .markdown-body a:hover{
+      background:var(--arturo-primary);
+    }
+  </style>
+</head>
+<body>
+  <header class="logo-bar">
+    <div class="logo-row">
+      <a href="/vista/" class="logo-wrap">
+        <img class="brand-logo" src="/vista/assets/images/arturo-vista.png" alt="ARTURO/VISTA" />
+        <span class="brand-mark">ARTURO/VISTA</span>
+      </a>
+      <nav class="top-nav">
+        <a href="/vista/">Docs</a>
+        <a href="/vista/wiki/">Wiki Index</a>
+        <a href="/vista/wiki/README.html">Overview</a>
+      </nav>
+    </div>
+  </header>
+  <div class="nav-bar"></div>
+  <main class="main">
+    <div class="markdown-body">
+    <h1>Layout System</h1>
+<p>Vista's layout system provides a declarative way to arrange UI elements using a simple, intuitive syntax.</p>
+<h2>Layout Philosophy</h2>
+<p>Vista uses a flow-based layout system where elements are positioned sequentially. Key layout keywords include:</p>
+<ul>
+<li><p><code>across</code>: Arrange items in a horizontal row</p>
+</li>
+<li><p><code>below</code>: Arrange items in a vertical column</p>
+</li>
+<li><p><code>return</code>: Break to next line in current layout</p>
+</li>
+<li><p><code>end</code>: Close current layout context</p>
+</li>
+</ul>
+<h2>Across Layout</h2>
+<p><code>view .html [ across [ button &quot;Yes&quot; [] button &quot;No&quot; [] button &quot;Maybe&quot; [] ] ]</code></p>
+<h2>Below Layout</h2>
+<p><code>view .html [ below [ text &quot;First item&quot; text &quot;Second item&quot; text &quot;Third item&quot; ] ]</code></p>
+<h2>Nested Layouts</h2>
+<p>Layouts can be nested for complex arrangements:</p>
+<p><code>view .html [ panel &quot;Form&quot; [ across [ text &quot;Name:&quot; field &quot;John Doe&quot; ] return across [ text &quot;Email:&quot; field &quot;john@example.com&quot; ] ] ]</code></p>
+<h2>Layout Keywords</h2>
+<ul>
+<li><p><code>pad</code>: Add padding around elements</p>
+</li>
+<li><p><code>space</code>: Set gap between elements</p>
+</li>
+<li><p><code>align</code>: Align items horizontally</p>
+</li>
+<li><p><code>valign</code>: Align items vertically</p>
+</li>
+<li><p><code>origin</code>: Set origin position</p>
+</li>
+<li><p><code>offset</code>: Offset element position</p>
+</li>
+<li><p><code>indent</code>: Add indentation</p>
+</li>
+</ul>
+<h2>Grid Layout</h2>
+<p>The <code>grid</code> face creates a grid layout:</p>
+<p><code>view .html [ grid 2 [ text &quot;A1&quot; text &quot;A2&quot; text &quot;B1&quot; text &quot;B2&quot; ] ]</code></p>
+<h2>Row and Column Faces</h2>
+<p>Use row and col faces for explicit container layouts:</p>
+<p><code>view .html [ row [ button &quot;Left&quot; button &quot;Right&quot; ] col [ text &quot;Top&quot; text &quot;Bottom&quot; ] ]</code></p>
+<h2>See Also</h2>
+<ul>
+<li><p><a href="/vista/wiki/core/layout/across-below/">Across and Below</a> - Basic layout commands</p>
+</li>
+<li><p><a href="/vista/wiki/core/layout/grid-system/">Grid System</a> - Grid layout</p>
+</li>
+<li><p><a href="/vista/wiki/core/layout/spacing-pad/">Spacing and Padding</a> - Space and pad keywords</p>
+</li>
+</ul>
+</ul
+
+    </div>
+  </main>
+  <script src="/vista/assets/main.js"></script>
+</body>
+</html>
