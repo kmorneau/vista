@@ -1,0 +1,45 @@
+#[
+  "title": "Polygons"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["graphics", "drawing", "polygons", "shapes", "reference"]
+  "body": {
+    <h1>Polygons</h1>
+
+    <p>Reference for Vista Graphics polygon drawing commands.</p>
+
+    <h2>Basic Polygon</h2>
+    <pre><code>draw canvas [
+    polygon 100 100 150 50 200 100 150 150
+]</code></pre>
+
+    <h2>Regular Polygon</h2>
+    <pre><code>draw canvas [
+    triangle 100 100 50
+    square 200 100 50
+    pentagon 100 200 50
+    hexagon 200 200 50
+]</code></pre>
+
+    <h2>Polygon Parameters</h2>
+    <ul>
+      <li><strong>polygon</strong>: x1 y1 x2 y2 ... (vertex list)</li>
+      <li><strong>triangle</strong>: center-x center-y radius</li>
+      <li><strong>square</strong>: center-x center-y size</li>
+      <li><strong>pentagon</strong>: center-x center-y radius</li>
+      <li><strong>hexagon</strong>: center-x center-y radius</li>
+    </ul>
+
+    <h2>Filled Polygon</h2>
+    <pre><code>draw canvas [
+    fill red
+    polygon 100 100 150 50 200 100 150 150
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/drawing/primitives/">Primitives</a> - Basic shapes</li>
+      <li><a href="/wiki/graphics/drawing/paths/">Paths</a> - Path operations</li>
+    </ul>
+  }
+]

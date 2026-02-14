@@ -1,0 +1,31 @@
+#[
+  "title": "Text & Fonts"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["text", "fonts", "typography", "rendering"]
+  "body": {
+    <h1>Text & Fonts</h1>
+
+    <p>Reference documentation for text rendering and font handling in Vista Graphics.</p>
+
+    <h2>Text Topics</h2>
+    <ul>
+      <li><a href="/wiki/graphics/text-fonts/text-rendering/">Text Rendering</a> - Text command usage</li>
+      <li><a href="/wiki/graphics/text-fonts/font-settings/">Font Settings</a> - Font command and properties</li>
+      <li><a href="/wiki/graphics/text-fonts/text-alignment/">Text Alignment</a> - Text-baseline, text-align</li>
+      <li><a href="/wiki/graphics/text-fonts/typography-tips/">Typography Tips</a> - Best practices</li>
+    </ul>
+
+    <h2>Text Example</h2>
+    <pre><code>draw canvas [
+    font "Arial" 16
+    text "Hello, World!" 100 100
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/drawing/">Drawing</a> - Drawing reference</li>
+      <li><a href="/wiki/graphics/concepts/">Concepts</a> - Graphics fundamentals</li>
+    </ul>
+  }
+]

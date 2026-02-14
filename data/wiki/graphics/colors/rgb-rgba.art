@@ -1,0 +1,45 @@
+#[
+  "title": "RGB & RGBA"
+  "layout": "docpage"
+  "category": "Colors"
+  "tags: ["graphics", "colors", "rgb", "rgba", "reference"]
+  "body": {
+    <h1>RGB & RGBA Colors</h1>
+
+    <p>Vista Graphics supports RGB and RGBA color specifications.</p>
+
+    <h2>RGB Syntax</h2>
+    <pre><code>draw canvas [
+    fill rgb 255 0 0    ; Red
+    fill rgb 0 255 0    ; Green
+    fill rgb 0 0 255    ; Blue
+]</code></pre>
+
+    <h2>RGBA Syntax</h2>
+    <pre><code>draw canvas [
+    fill rgba 255 0 0 0.5    ; Semi-transparent red
+    fill rgba 0 255 0 0.3    ; More transparent green
+]</code></pre>
+
+    <h2>Parameters</h2>
+    <ul>
+      <li><strong>Red</strong>: 0-255</li>
+      <li><strong>Green</strong>: 0-255</li>
+      <li><strong>Blue</strong>: 0-255</li>
+      <li><strong>Alpha</strong>: 0.0-1.0 (RGBA only)</li>
+    </ul>
+
+    <h2>Hex Shortcuts</h2>
+    <pre><code>draw canvas [
+    fill #FF0000    ; Red
+    fill #00FF00    ; Green
+    fill #0000FF    ; Blue
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/colors/color-overview/">Color Overview</a> - Color introduction</li>
+      <li><a href="/wiki/graphics/colors/named-colors/">Named Colors</a> - Named color reference</li>
+    </ul>
+  }
+]

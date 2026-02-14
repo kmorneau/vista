@@ -1,0 +1,32 @@
+#[
+  "title": "Core Concepts"
+  "layout": "docpage"
+  "category": "Concepts"
+  "tags": ["concepts", "core", "architecture", "fundamentals"]
+  "body": {
+    <h1>Core Concepts</h1>
+
+    <p>Understanding the fundamental concepts of Vista is essential for building robust applications. This section covers the architecture and design principles that underpin the framework.</p>
+
+    <h2>Key Concepts</h2>
+    <ul>
+      <li><a href="/wiki/core/concepts/vid-overview/">VID Overview</a> - Introduction to the Visual Interface Dialect</li>
+      <li><a href="/wiki/core/concepts/face-model/">Face Model</a> - Understanding faces and facets</li>
+      <li><a href="/wiki/core/concepts/layout-overview/">Layout System</a> - Layout concepts and philosophy</li>
+      <li><a href="/wiki/core/concepts/state-management/">State Management</a> - Managing application state</li>
+      <li><a href="/wiki/core/concepts/event-system/">Event System</a> - Event handling architecture</li>
+    </ul>
+
+    <h2>Face Model</h2>
+    <p>The face model is the foundation of Vista's UI system. Faces are the basic building blocks that represent UI elements with properties, state, and behavior.</p>
+
+    <h2>Event System</h2>
+    <p>Vista provides a comprehensive event system that allows you to respond to user interactions, from simple clicks to complex gestures.</p>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/components/">Components</a> - UI components reference</li>
+      <li><a href="/wiki/core/tutorials/">Tutorials</a> - Learning guides</li>
+    </ul>
+  }
+]

@@ -58,6 +58,9 @@ files: [
     "tests/52-face-inspector.art"
     "tests/53-canvas-styles.art"
     "tests/54-draw-arc-curve-flood.art"
+    "tests/55-draw-coord-clip.art"
+    "tests/56-audio-video.art"
+    "tests/57-feature-coverage-smoke.art"
 ]
 
 out_dir: "tests/snapshots/snapshots"

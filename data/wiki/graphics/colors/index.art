@@ -1,0 +1,32 @@
+#[
+  "title": "Colors"
+  "layout": "docpage"
+  "category": "Colors"
+  "tags": ["colors", "gradients", "rgb", "reference"]
+  "body": {
+    <h1>Colors</h1>
+
+    <p>Reference documentation for color and gradient handling in Vista Graphics.</p>
+
+    <h2>Color Topics</h2>
+    <ul>
+      <li><a href="/wiki/graphics/colors/color-overview/">Color Overview</a> - Color handling</li>
+      <li><a href="/wiki/graphics/colors/named-colors/">Named Colors</a> - CSS named colors</li>
+      <li><a href="/wiki/graphics/colors/rgb-rgba/">RGB & RGBA</a> - RGB and RGBA colors</li>
+      <li><a href="/wiki/graphics/colors/gradient-fills/">Gradient Fills</a> - Linear/radial gradients</li>
+    </ul>
+
+    <h2>Color Example</h2>
+    <pre><code>draw canvas [
+    pen red
+    fill rgb 0 255 0
+    box 10 10 100 100
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/drawing/">Drawing</a> - Drawing reference</li>
+      <li><a href="/wiki/graphics/tutorials/gradients-fills/">Gradients Tutorial</a> - Learning guide</li>
+    </ul>
+  }
+]

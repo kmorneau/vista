@@ -1,0 +1,56 @@
+#[
+  "title": "Canvas Basics"
+  "layout": "docpage"
+  "category": "Concepts"
+  "tags": ["graphics", "concepts", "canvas", "setup", "basics"]
+  "body": {
+    <h1>Canvas Basics</h1>
+
+    <p>Learn the basics of setting up and using canvas elements for custom graphics.</p>
+
+    <h2>Creating a Canvas</h2>
+    <pre><code>view .html [
+    canvas 800x600
+]</code></pre>
+
+    <h2>Canvas with Drawing</h2>
+    <pre><code>view .html [
+    canvas 800x600 [
+        draw [
+            pen red
+            fill blue
+            circle 400 300 100
+        ]
+    ]
+]</code></pre>
+
+    <h2>Canvas Attributes</h2>
+    <ul>
+      <li><strong>width</strong>: Canvas width in pixels</li>
+      <li><strong>height</strong>: Canvas height in pixels</li>
+      <li><strong>draw</strong>: Initial drawing commands</li>
+    </ul>
+
+    <h2>Dynamic Canvas</h2>
+    <pre><code>view .html [
+    canvas 800x600 [
+        on-draw: function [] [
+            drawScene
+        ]
+    ]
+]</code></pre>
+
+    <h2>Best Practices</h2>
+    <ul>
+      <li>Use appropriate canvas size for your content</li>
+      <li>Consider using on-draw for dynamic content</li>
+      <li>Optimize drawing operations for performance</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/concepts/graphics-overview/">Graphics Overview</a> - Introduction</li>
+      <li><a href="/wiki/graphics/drawing/">Drawing</a> - Drawing reference</li>
+    </ul>
+  }
+]

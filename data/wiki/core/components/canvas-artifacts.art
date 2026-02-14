@@ -1,0 +1,49 @@
+#[
+  "title": "Canvas"
+  "layout": "docpage"
+  "category": "Components"
+  "tags": ["components", "canvas", "drawing", "graphics"]
+  "body": {
+    <h1>Canvas Component</h1>
+
+    <p>The canvas component provides a drawing area for custom graphics and visualizations.</p>
+
+    <h2>Basic Canvas</h2>
+    <pre><code>view .html [
+    canvas 400x300
+]</code></pre>
+
+    <h2>Canvas with Drawing</h2>
+    <pre><code>view .html [
+    canvas 400x300 [
+        draw [
+            pen red
+            fill blue
+            circle 200 150 100
+        ]
+    ]
+]</code></pre>
+
+    <h2>Canvas Attributes</h2>
+    <ul>
+      <li><strong>width/height</strong>: Canvas dimensions</li>
+      <li><strong>draw</strong>: Drawing commands block</li>
+      <li><strong>on-draw</strong>: Dynamic drawing callback</li>
+    </ul>
+
+    <h2>Dynamic Canvas</h2>
+    <pre><code>view .html [
+    canvas 400x300 [
+        on-draw [
+            drawScene
+        ]
+    ]
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/">Vista Graphics</a> - Graphics library</li>
+      <li><a href="/wiki/graphics/tutorials/drawing-primitives/">Drawing Primitives</a> - Drawing basics</li>
+    </ul>
+  }
+]

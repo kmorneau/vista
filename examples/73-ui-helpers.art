@@ -1,0 +1,47 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "UI Helpers Demo"
+    Logo: "arturo-vista.png"
+    Width: 1100
+    Height: 760
+    PrimaryColor: "#6aa3e9"
+    BackgroundColor: "#f5f4f2"
+    TitleColor: "#1f1f1f"
+    TextColor: "#1f1f1f"
+]
+
+ui_title: "Runtime UI Helpers"
+ui_message: "This message is used by alert, dialog, and clipboard copy/paste.\nUpdate it, then click a helper button."
+status: "Ready"
+
+cwd_path: strip execute "pwd"
+ui_name: "ui-73-ui-helpers.html"
+ui_path: cwd_path ++ "/" ++ ui_name
+
+full_html: view .returnHtml [
+    panel "UI Runtime Helpers" [
+        text "Message / Title" .style:"font-size:12px;color:#6f6f6f;"
+        field ui_title .style:"width:100%;max-width:480px;"
+        textarea ui_message .style:"width:100%;min-height:120px;white-space:pre-wrap;"
+
+        row .space:8 .style:"margin-top:6px;flex-wrap:wrap;" [
+            button "Alert" [alert #[message_key: "ui_message"]] .style:"font-weight:700;"
+            button "Dialog" [dialog #[message_key: "ui_message" title_key: "ui_title"]] .style:"font-weight:700;"
+            button "Clip (Copy Message)" [clip #[text_key: "ui_message" status_key: "status"]] .style:"font-weight:700;"
+            button "Unclip (Paste to Message)" [unclip #[target_key: "ui_message" status_key: "status"]] .style:"font-weight:700;"
+        ]
+
+        divider
+        text "Clipboard notes: browser clipboard read/write may require user interaction or permission." .style:"font-size:12px;color:#6f6f6f;"
+
+        divider
+        text "Status:" .style:"font-size:12px;color:#6f6f6f;"
+        text status
+    ]
+]
+
+write full_html ui_path
+safe_ui_path: replace ui_path "\"" "\\\""
+execute "open \"" ++ safe_ui_path ++ "\" >/dev/null 2>&1 &"
+print ["Opened in browser:" ui_path]

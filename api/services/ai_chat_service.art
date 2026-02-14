@@ -1,6 +1,126 @@
 import "api/providers/ai_providers.art"!
 import "api/http/validation.art"!
 
+ai_settings_file: "api/data/ai_settings.json"
+
+ai_settings_default: function [] [
+    #[
+        provider: "openai"
+        model: "gpt-4o-mini"
+        temperature: 0.2
+        top_p: 0.9
+        max_tokens: 128
+    ]
+]
+
+ai_settings_validate: function [provider model temperature topP maxTokens] [
+    p: lower to :string provider
+    m: to :string model
+    t: to :floating temperature
+    tp: to :floating topP
+    mt: to :integer maxTokens
+    errors: []
+
+    if not? provider_supported? p [
+        errors: errors ++ @[
+            #[field: "provider" message: "Unsupported provider"]
+        ]
+    ]
+    if equal? m "" [
+        errors: errors ++ @[
+            #[field: "model" message: "model is required"]
+        ]
+    ]
+    if any? @[less? t 0.0 greater? t 2.0] [
+        errors: errors ++ @[
+            #[field: "temperature" message: "temperature must be between 0.0 and 2.0"]
+        ]
+    ]
+    if any? @[less? tp 0.0 greater? tp 1.0] [
+        errors: errors ++ @[
+            #[field: "top_p" message: "top_p must be between 0.0 and 1.0"]
+        ]
+    ]
+    if less? mt 1 [
+        errors: errors ++ @[
+            #[field: "max_tokens" message: "max_tokens must be >= 1"]
+        ]
+    ]
+
+    if greater? (size errors) 0 [
+        return #[ok: false errors: errors]
+    ]
+
+    #[
+        ok: true
+        data: #[
+            provider: p
+            model: m
+            temperature: t
+            top_p: tp
+            max_tokens: mt
+        ]
+    ]
+]
+
+service_get_ai_settings: function [] [
+    if not? exists? ai_settings_file [
+        return #[ok: true data: ai_settings_default]
+    ]
+
+    parsed: null
+    if error? err: <= try [
+        parsed: read.json ai_settings_file
+    ] [
+        return #[ok: true data: ai_settings_default]
+    ]
+
+    if notEqual? type parsed :dictionary [
+        return #[ok: true data: ai_settings_default]
+    ]
+
+    provider: "openai"
+    model: "gpt-4o-mini"
+    temperature: 0.2
+    topP: 0.9
+    maxTokens: 128
+    if key? parsed "provider" [provider: to :string parsed\provider]
+    if key? parsed "model" [model: to :string parsed\model]
+    if key? parsed "temperature" [temperature: to :floating parsed\temperature]
+    if key? parsed "top_p" [topP: to :floating parsed\top_p]
+    if key? parsed "max_tokens" [maxTokens: to :integer parsed\max_tokens]
+
+    valid: ai_settings_validate provider model temperature topP maxTokens
+    if not? valid\ok [
+        return #[ok: true data: ai_settings_default]
+    ]
+    #[ok: true data: valid\data]
+]
+
+service_save_ai_settings: function [provider model temperature topP maxTokens] [
+    valid: ai_settings_validate provider model temperature topP maxTokens
+    if not? valid\ok [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "Validation failed"
+            details: valid\errors
+        ]
+    ]
+    data: valid\data
+    if error? err: <= try [
+        write (write.json data ø) ai_settings_file
+    ] [
+        return #[
+            ok: false
+            code: "server_error"
+            message: "Could not save settings"
+            details: #[reason: to :string err]
+        ]
+    ]
+    #[ok: true data: data]
+]
+
 service_list_ai_providers: function [] [
     #[
         ok: true
@@ -8,8 +128,8 @@ service_list_ai_providers: function [] [
     ]
 ]
 
-service_ai_chat: function [provider model prompt temperature] [
-    valid: validate_ai_chat_payload provider model prompt temperature
+service_ai_chat: function [provider model prompt temperature options] [
+    valid: validate_ai_chat_payload provider model prompt temperature options
     if not? valid\ok [
         return #[
             ok: false
@@ -33,7 +153,7 @@ service_ai_chat: function [provider model prompt temperature] [
     ]
 
     promptText: url_decode_basic clean\prompt
-    providerResult: call_ai_provider clean\provider clean\model promptText clean\temperature
+    providerResult: call_ai_provider clean\provider clean\model promptText clean\temperature clean\options
     if not? providerResult\ok [
         return providerResult
     ]

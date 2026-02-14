@@ -1,0 +1,37 @@
+#[
+  "title": "Layout System"
+  "layout": "docpage"
+  "category": "Layout"
+  "tags": ["layout", "positioning", "containers", "grid"]
+  "body": {
+    <h1>Layout System</h1>
+
+    <p>Vista's layout system provides powerful tools for arranging UI elements in rows, columns, and grids.</p>
+
+    <h2>Layout Topics</h2>
+    <ul>
+      <li><a href="/wiki/core/concepts/layout-overview/">Layout Overview</a> - Introduction to layouts</li>
+      <li><a href="/wiki/core/layout/across-below/">Across/Below</a> - Row and column layout</li>
+      <li><a href="/wiki/core/layout/grid-system/">Grid System</a> - Grid layout patterns</li>
+      <li><a href="/wiki/core/layout/spacing-pad/">Spacing & Padding</a> - Controlling whitespace</li>
+      <li><a href="/wiki/core/layout/alignment-valign/">Alignment</a> - Horizontal and vertical alignment</li>
+      <li><a href="/wiki/core/layout/origin-offset/">Origin/Offset</a> - Positioning control</li>
+      <li><a href="/wiki/core/layout/scope-nesting/">Scope & Nesting</a> - Scoped layouts</li>
+    </ul>
+
+    <h2>Basic Layout Example</h2>
+    <pre><code>view .html [
+    row [
+        text "Left"
+        text "Center"
+        text "Right"
+    ]
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/components/">Components</a> - UI components</li>
+      <li><a href="/wiki/core/concepts/">Concepts</a> - Core concepts</li>
+    </ul>
+  }
+]

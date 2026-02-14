@@ -1,0 +1,47 @@
+#[
+  "title": "Visual Dividers"
+  "layout": "docpage"
+  "category": "Components"
+  "tags": ["components", "divider", "spacer", "split", "visual"]
+  "body": {
+    <h1>Visual Dividers</h1>
+
+    <p>Visual dividers are components that help organize content and create visual separation.</p>
+
+    <h2>Divider</h2>
+    <pre><code>view .html [
+    text "Section 1"
+    divider
+    text "Section 2"
+]</code></pre>
+
+    <h2>Spacer</h2>
+    <pre><code>view .html [
+    text "Top"
+    spacer 50
+    text "Bottom"
+]</code></pre>
+
+    <h2>Split</h2>
+    <pre><code>view .html [
+    split [
+        text "Left Panel"
+    ] [
+        text "Right Panel"
+    ]
+]</code></pre>
+
+    <h2>Divider Attributes</h2>
+    <ul>
+      <li><strong>divider</strong>: Horizontal or vertical line</li>
+      <li><strong>spacer</strong>: Fixed-size space</li>
+      <li><strong>split</strong>: Resizable panel splitter</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/components/containers/">Containers</a> - Container components</li>
+      <li><a href="/wiki/core/layout/spacing-pad/">Spacing & Padding</a> - Spacing control</li>
+    </ul>
+  }
+]

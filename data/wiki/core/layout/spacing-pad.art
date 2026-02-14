@@ -1,0 +1,49 @@
+#[
+  "title": "Spacing & Padding"
+  "layout": "docpage"
+  "category": "Layout"
+  "tags": ["layout", "spacing", "padding", "margin", "style"]
+  "body": {
+    <h1>Spacing & Padding</h1>
+
+    <p>Control the whitespace around and within components using spacing and padding attributes.</p>
+
+    <h2>Padding</h2>
+    <pre><code>view .html [
+    box blue 200x200 [
+        padding: 20
+        text "Content with padding"
+    ]
+]</code></pre>
+
+    <h2>Spacing Between Children</h2>
+    <pre><code>view .html [
+    across [
+        spacing: 10
+        text "Item 1"
+        text "Item 2"
+        text "Item 3"
+    ]
+]</code></pre>
+
+    <h2>Margin</h2>
+    <pre><code>view .html [
+    button "Click Me" [
+        margin: 10
+    ]
+]</code></pre>
+
+    <h2>Attributes</h2>
+    <ul>
+      <li><strong>padding</strong>: Space inside the component</li>
+      <li><strong>spacing</strong>: Space between children</li>
+      <li><strong>margin</strong>: Space outside the component</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/layout/alignment-valign/">Alignment</a> - Alignment options</li>
+      <li><a href="/wiki/shared/styles/css-classes/">CSS Classes</a> - Styling reference</li>
+    </ul>
+  }
+]

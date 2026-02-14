@@ -1,0 +1,48 @@
+#[
+  "title": "State Functions"
+  "layout": "docpage"
+  "category": "API Reference"
+  "tags": ["api", "reference", "state", "functions"]
+  "body": {
+    <h1>State Functions</h1>
+
+    <p>Complete reference for Vista's state management functions.</p>
+
+    <h2>State Management</h2>
+    <ul>
+      <li><strong>set-state</strong>: Set component state value</li>
+      <li><strong>get-state</strong>: Get component state value</li>
+      <li><strong>observe</strong>: Observe state changes</li>
+      <li><strong>unobserve</strong>: Stop observing state changes</li>
+    </ul>
+
+    <h2>Data Binding</h2>
+    <ul>
+      <li><strong>bind</strong>: Bind data to component</li>
+      <li><strong>unbind</strong>: Unbind data from component</li>
+      <li><strong>sync</strong>: Synchronize bound data</li>
+      <li><strong>auto-sync</strong>: Enable automatic synchronization</li>
+    </ul>
+
+    <h2>State Helpers</h2>
+    <ul>
+      <li><strong>computed</strong>: Create computed value</li>
+      <li><strong>derived</strong>: Create derived state</li>
+      <li><strong>watch</strong>: Watch for state changes</li>
+    </ul>
+
+    <h2>Example</h2>
+    <pre><code>name: "World"
+view .html [
+    text "Hello, "
+    text :name
+    field :name
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/data-binding/">Data Binding</a> - Data binding documentation</li>
+      <li><a href="/wiki/core/api-reference/face-functions/">Face Functions</a> - Face manipulation</li>
+    </ul>
+  }
+]

@@ -1,0 +1,67 @@
+#[
+  "title": "Hello World Tutorial"
+  "layout": "tutorial"
+  "category": "Tutorials"
+  "tags": ["tutorial", "basics", "beginner"]
+  "body": {
+    <h1>Hello World Tutorial</h1>
+
+    <p>This tutorial will guide you through creating your first Vista application.</p>
+
+    <h2>Prerequisites</h2>
+    <ul>
+      <li>Arturo installed</li>
+      <li>Vista library available</li>
+    </ul>
+
+    <h2>Step 1: Import Vista</h2>
+    <p>Start by importing the Vista library:</p>
+    <pre><code>
+    import 'vista!
+    </code></pre>
+
+    <h2>Step 2: Create Your First View</h2>
+    <p>Use the <code>view</code> function to create a UI:</p>
+    <pre><code>
+    view .html [
+        text "Hello, World!"
+    ]
+    </code></pre>
+
+    <h2>Step 3: Add Interactivity</h2>
+    <p>Add a button with an action:</p>
+    <pre><code>
+    view .html [
+        text "Hello, World!"
+        button "Click Me" [
+            print "Button clicked!"
+        ]
+    ]
+    </code></pre>
+
+    <h2>Step 4: Run Your Application</h2>
+    <pre><code>
+    arturo hello-world.art
+    </code></pre>
+
+    <h2>Complete Example</h2>
+    <pre><code>
+    import 'vista!
+
+    view .html [
+        panel "My First App" [
+            text "Hello, World!"
+            button "Click Me" [
+                print "Hello from Vista!"
+            ]
+        ]
+    ]
+    </code></pre>
+
+    <h2>Next Steps</h2>
+    <ul>
+      <li><a href="/wiki/core/tutorials/forms-basics/">Forms Tutorial</a> - Building forms</li>
+      <li><a href="/wiki/core/components/text-components/">Text Components</a> - Learn about text faces</li>
+      <li><a href="/wiki/core/components/buttons-controls/">Button Controls</a> - Buttons and actions</li>
+    </ul>
+]

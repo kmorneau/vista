@@ -1,0 +1,41 @@
+#[
+  "title": "Scale"
+  "layout": "docpage"
+  "category": "Transforms"
+  "tags": ["graphics", "transforms", "scale", "resize"]
+  "body": {
+    <h1>Scale</h1>
+
+    <p>Scale subsequent drawing operations.</p>
+
+    <h2>Basic Scaling</h2>
+    <pre><code>draw canvas [
+    scale 2 2
+    box 0 0 50 50
+]</code></pre>
+
+    <h2>Parameters</h2>
+    <ul>
+      <li><strong>x-scale</strong>: Horizontal scale factor</li>
+      <li><strong>y-scale</strong>: Vertical scale factor</li>
+    </ul>
+
+    <h2>Uniform Scaling</h2>
+    <pre><code>draw canvas [
+    scale 1.5
+    circle 100 100 50
+]</code></pre>
+
+    <h2>Negative Scale (Flip)</h2>
+    <pre><code>draw canvas [
+    scale -1 1
+    text "Flipped" 100 100
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/transforms/">Transforms</a> - Transform overview</li>
+      <li><a href="/wiki/graphics/transforms/rotate/">Rotate</a> - Rotation transforms</li>
+    </ul>
+  }
+]

@@ -1,0 +1,42 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Authentication Demo"
+    Logo: "arturo-vista.png"
+    Width: 860
+    Height: 720
+]
+
+api_base: "http://localhost:18969"
+email: ""
+password: ""
+mfa_code: ""
+new_email: ""
+old_password: ""
+new_password: ""
+profile_label: "Signed out"
+auth_token: ""
+auth_status: "Ready"
+mfa_challenge: ""
+
+view [
+    auth_splash "Welcome" "Sign in to continue"
+
+    auth_login email password mfa_code [auth_login]
+
+    divider
+
+    auth_signup email password [auth_signup]
+
+    divider
+
+    text .class:"vista-auth-meta" auth_status
+    text "MFA Challenge:"
+    text mfa_challenge
+
+    auth_account profile_label new_email [auth_update_email] old_password new_password [auth_update_password] [auth_enable_mfa] [auth_disable_mfa] [auth_logout]
+
+    divider
+
+    button "Verify MFA Code" [auth_mfa_verify]
+]

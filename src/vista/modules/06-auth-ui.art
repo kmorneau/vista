@@ -1,0 +1,61 @@
+; Vista Auth UI helpers
+
+style "auth_splash" [
+    box .class:"vista-auth-splash" [
+        box .class:"vista-auth-splash-card" [
+            title .class:"vista-auth-title" arg0
+            text .class:"vista-auth-subtitle" arg1
+        ]
+    ]
+]
+
+style "auth_login" [
+    panel .class:"vista-auth-card" "Sign in" [
+        label "Email"
+        field arg0 .placeholder:"you@example.com"
+        label "Password"
+        field arg1 .type:"password" .placeholder:"••••••••"
+        label "MFA Code (if enabled)"
+        field arg2 .placeholder:"123456"
+        button "Sign in" arg3
+    ]
+]
+
+style "auth_signup" [
+    panel .class:"vista-auth-card" "Create account" [
+        label "Email"
+        field arg0 .placeholder:"you@example.com"
+        label "Password"
+        field arg1 .type:"password" .placeholder:"At least 8 characters"
+        button "Create account" arg2
+    ]
+]
+
+style "auth_account" [
+    panel .class:"vista-auth-card" "Account" [
+        text .class:"vista-auth-meta" arg0
+        divider
+        label "Change email"
+        field arg1 .placeholder:"new@email.com"
+        button "Update email" arg2
+        divider
+        label "Change password"
+        field arg3 .type:"password" .placeholder:"Current password"
+        field arg4 .type:"password" .placeholder:"New password"
+        button "Update password" arg5
+        divider
+        label "Multi-factor"
+        row [
+            button "Enable MFA" arg6
+            button "Disable MFA" arg7
+        ]
+        divider
+        button "Sign out" arg8
+    ]
+]
+
+; Hyphenated aliases (for readability in docs)
+style "auth-splash" [auth_splash args]
+style "auth-login" [auth_login args]
+style "auth-signup" [auth_signup args]
+style "auth-account" [auth_account args]

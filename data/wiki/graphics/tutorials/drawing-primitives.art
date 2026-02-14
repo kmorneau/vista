@@ -1,0 +1,126 @@
+#[
+  "title": "Drawing Primitives Tutorial"
+  "layout": "tutorial"
+  "category": "Graphics"
+  "tags": ["tutorial", "graphics", "drawing", "beginner"]
+  "body": {
+    <h1>Drawing Primitives Tutorial</h1>
+
+    <p>Learn how to draw basic shapes using Vista Graphics.</p>
+
+    <h2>Setup</h2>
+    <pre><code>
+    import 'vista-graphics!
+    </code></pre>
+
+    <h2>Drawing Lines</h2>
+    <p>Use the <code>line</code> command to draw lines:</p>
+    <pre><code>
+    canvas [
+        draw [
+            pen red
+            line 10 10 200 100
+        ]
+    ]
+    </code></pre>
+
+    <h2>Drawing Rectangles</h2>
+    <p>Use the <code>box</code> command to draw rectangles:</p>
+    <pre><code>
+    canvas [
+        draw [
+            pen blue
+            fill-pen lightblue
+            box 10 10 100 100
+        ]
+    ]
+    </code></pre>
+
+    <h2>Drawing Circles</h2>
+    <p>Use the <code>circle</code> command to draw circles:</p>
+    <pre><code>
+    canvas [
+        draw [
+            pen green
+            fill-pen lightgreen
+            circle 150 150 50
+        ]
+    ]
+    </code></pre>
+
+    <h2>Drawing Ellipses</h2>
+    <p>Use the <code>ellipse</code> command to draw ellipses:</p>
+    <pre><code>
+    canvas [
+        draw [
+            pen purple
+            fill-pen lavender
+            ellipse 150 150 100 50
+        ]
+    ]
+    </code></pre>
+
+    <h2>Drawing Polygons</h2>
+    <p>Use the <code>polygon</code> command to draw polygons:</p>
+    <pre><code>
+    canvas [
+        draw [
+            pen orange
+            fill-pen yellow
+            polygon [
+                150 50
+                200 150
+                100 150
+            ]
+        ]
+    ]
+    </code></pre>
+
+    <h2>Styling</h2>
+    <p>Control line width and style:</p>
+    <pre><code>
+    canvas [
+        draw [
+            line-width 3
+            line-cap round
+            line-join round
+            pen red
+            line 10 10 200 100
+        ]
+    ]
+    </code></pre>
+
+    <h2>Complete Example</h2>
+    <pre><code>
+    view .html [
+        canvas [
+            draw [
+                pen black
+                fill-pen wheat
+
+                ; House
+                box 100 150 200 150
+
+                ; Roof
+                polygon [
+                    90 150
+                    200 50
+                    310 150
+                ]
+
+                ; Door
+                pen brown
+                fill-pen saddlebrown
+                box 175 220 50 80
+            ]
+        ]
+    ]
+    </code></pre>
+
+    <h2>Next Steps</h2>
+    <ul>
+      <li><a href="/wiki/graphics/tutorials/gradients-fills/">Gradients and Fills</a> - Color and gradients</li>
+      <li><a href="/wiki/graphics/text-fonts/text-rendering/">Text Rendering</a> - Drawing text</li>
+      <li><a href="/wiki/graphics/transforms/transform-overview/">Transformations</a> - Rotate, scale, translate</li>
+    </ul>
+]

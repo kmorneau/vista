@@ -1,0 +1,38 @@
+#[
+  "title": "Transition Effects"
+  "layout": "docpage"
+  "category": "Animation"
+  "tags": ["graphics", "animation", "transitions", "effects"]
+  "body": {
+    <h1>Transition Effects</h1>
+
+    <p>Vista Graphics supports smooth transition effects for UI and graphics.</p>
+
+    <h2>Easing Functions</h2>
+    <ul>
+      <li><strong>linear</strong>: Constant speed</li>
+      <li><strong>ease-in</strong>: Accelerate</li>
+      <li><strong>ease-out</strong>: Decelerate</li>
+      <li><strong>ease-in-out</strong>: Accelerate then decelerate</li>
+      <li><strong>bounce</strong>: Bounce effect</li>
+    </ul>
+
+    <h2>Basic Transition</h2>
+    <pre><code>animate [
+    position: lerp start end t ease-out
+    drawObject position
+]</code></pre>
+
+    <h2>Color Transition</h2>
+    <pre><code>animate [
+    color: lerpColor red blue t
+    fill color
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/animation/animation-basics/">Animation Basics</a> - Fundamentals</li>
+      <li><a href="/wiki/graphics/animation/particle-systems/">Particle Systems</a> - Particle effects</li>
+    </ul>
+  }
+]

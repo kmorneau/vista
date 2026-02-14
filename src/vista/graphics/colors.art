@@ -158,7 +158,7 @@ vg_color_value: function [val] [
     ; Check for transparent keyword
     valStr: to :string val
     if equal? valStr "transparent" [
-        return "'rgba(0,0,0,0)'"
+        return draw_js_token "rgba(0,0,0,0)"
     ]
     
     ; Check for named color (word or string)
@@ -177,7 +177,7 @@ vg_color_value: function [val] [
             r: get val 0
             g: get val 1
             b: get val 2
-            return "'rgb(" ++ to :string r ++ "," ++ to :string g ++ "," ++ to :string b ++ ")'"
+            return draw_js_token ("rgb(" ++ to :string r ++ "," ++ to :string g ++ "," ++ to :string b ++ ")")
         ]
         ; RGBA block [r g b a]
         if equal? (size val) 4 [
@@ -185,7 +185,7 @@ vg_color_value: function [val] [
             g: get val 1
             b: get val 2
             a: get val 3
-            return "'rgba(" ++ to :string r ++ "," ++ to :string g ++ "," ++ to :string b ++ "," ++ to :string a ++ ")'"
+            return draw_js_token ("rgba(" ++ to :string r ++ "," ++ to :string g ++ "," ++ to :string b ++ "," ++ to :string a ++ ")")
         ]
     ]
     draw_js_token (to :string val)

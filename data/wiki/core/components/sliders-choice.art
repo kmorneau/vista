@@ -1,0 +1,257 @@
+#[
+  "title": "Sliders & Choice Components"
+  "layout": "docpage"
+  "category": "Core > Components"
+  "tags": ["slider", "rotary", "drop-list", "select", "choice", "range", "components"]
+  "body": {
+    <h1>Sliders & Choice Components</h1>
+
+    <p>Vista provides several components for choosing values from ranges or lists: sliders, rotary dials, and drop-lists.</p>
+
+    <h2>Slider</h2>
+
+    <p>Sliders allow selecting a value from a range.</p>
+
+    <h3>Basic Slider</h3>
+    <pre><code>
+    import 'vista!
+
+    volume: 50
+
+    view [
+        label ["Volume: " volume]
+        slider volume .min:0 .max:100
+    ]
+    </code></pre>
+
+    <h3>Slider with Step</h3>
+    <pre><code>
+    progress: 25
+
+    view [
+        label ["Progress: " progress "%"]
+        slider progress .min:0 .max:100 .step:5
+    ]
+    </code></pre>
+
+    <h3>Slider with on-input and on-change</h3>
+    <pre><code>
+    value: 50
+
+    view [
+        label ["Value: " value]
+        slider value .min:0 .max:100
+            .on-input:[
+                updatePreview
+            ]
+            .on-change:[
+                saveSetting
+            ]
+    ]
+    </code></pre>
+
+    <h3>Using input with type:range</h3>
+    <p>Alternative syntax using input component:</p>
+    <pre><code>
+    brightness: 75
+
+    view [
+        label ["Brightness: " brightness]
+        input .type:"range" brightness .min:0 .max:100
+    ]
+    </code></pre>
+
+    <h2>Rotary</h2>
+
+    <p>Rotary is a knob-like slider component for selecting from discrete values.</p>
+
+    <h3>Basic Rotary</h3>
+    <pre><code>
+    selection: 1
+
+    view [
+        label ["Setting: " selection]
+        rotary selection .min:0 .max:10
+    ]
+    </code></pre>
+
+    <h3>Rotary with Step</h3>
+    <pre><code>
+    speed: 50
+
+    view [
+        label ["Speed: " speed]
+        rotary speed .min:0 .max:100 .step:10
+    ]
+    </code></pre>
+
+    <h2>Drop-list</h2>
+
+    <p>Drop-lists (select) allow choosing from a dropdown list.</p>
+
+    <h3>Basic Drop-list</h3>
+    <pre><code>
+    color: "Red"
+
+    view [
+        label "Choose color:"
+        drop-list color ["Red" "Green" "Blue"]
+    ]
+    </code></pre>
+
+    <h3>Drop-list with on-change</h3>
+    <pre><code>
+    choice: "Option A"
+
+    view [
+        drop-list choice ["Option A" "Option B" "Option C"]
+            .on-change:[
+                print ["Selected: " choice]
+                updateUI
+            ]
+    ]
+    </code></pre>
+
+    <h3>Drop-list with Value-Label Pairs</h3>
+    <pre><code>
+    priorityId: 2
+
+    view [
+        drop-list priorityId [
+            [1 "Low Priority"]
+            [2 "Normal Priority"]
+            [3 "High Priority"]
+        ]
+    ]
+    </code></pre>
+
+    <h3>Select Component (Alias)</h3>
+    <p><code>select</code> is an alias for <code>drop-list</code>:</p>
+    <pre><code>
+    country: "US"
+
+    view [
+        label "Country:"
+        select country ["US" "CA" "UK" "DE"]
+    ]
+    </code></pre>
+
+    <h2>Multiple Choice Controls</h2>
+
+    <h3>Multiple Sliders</h3>
+    <pre><code>
+    settings: #[
+        volume: 50
+        brightness: 75
+        contrast: 60
+    ]
+
+    view [
+        label "Audio"
+        slider settings\volume .min:0 .max:100
+
+        label "Display"
+        slider settings\brightness .min:0 .max:100
+        slider settings\contrast .min:0 .max:100
+
+        button "Apply" [saveSettings]
+    ]
+    </code></pre>
+
+    <h3>Multiple Drop-lists</h3>
+    <pre><code>
+    filter: #[
+        category: "All"
+        sortBy: "name"
+        viewType: "grid"
+    ]
+
+    view [
+        drop-list filter\category ["All" "Books" "Movies" "Music"]
+        drop-list filter\sortBy ["Name" "Date" "Price"]
+        drop-list filter\viewType ["Grid" "List"]
+    ]
+    </code></pre>
+
+    <h2>Complete Example</h2>
+
+    <pre><code>
+    import 'vista!
+
+    formData: #[
+        rating: 3
+        category: "General"
+        priority: 2
+    ]
+
+    view [
+        text "Feedback Form"
+        box [
+            label "Rating:"
+            slider formData\rating .min:1 .max:5 .step:1
+            text ["Selected: " formData\rating "/5"]
+
+            label "Category:"
+            drop-list formData\category [
+                "General"
+                "Bug Report"
+                "Feature Request"
+                "Question"
+            ]
+
+            label "Priority:"
+            rotary formData\priority .min:1 .max:3
+
+            button "Submit" [submitFeedback]
+        ]
+    ]
+    </code></pre>
+
+    <h2>Component Comparison</h2>
+
+    <table>
+      <tr>
+        <th>Component</th>
+        <th>Use Case</th>
+        <th>State Type</th>
+      </tr>
+      <tr>
+        <td><code>slider</code></td>
+        <td>Continuous range selection</td>
+        <td>Number</td>
+      </tr>
+      <tr>
+        <td><code>rotary</code></td>
+        <td>Discrete value selection (knob style)</td>
+        <td>Number</td>
+      </tr>
+      <tr>
+        <td><code>drop-list</code></td>
+        <td>Choose from list</td>
+        <td>String/Number</td>
+      </tr>
+      <tr>
+        <td><code>select</code></td>
+        <td>Choose from list (alias)</td>
+        <td>String/Number</td>
+      </tr>
+    </table>
+
+    <h2>Best Practices</h2>
+
+    <ul>
+      <li>Use <code>slider</code> for continuous values (volume, brightness)</li>
+      <li>Use <code>slider .step:</code> for discrete ranges</li>
+      <li>Use <code>drop-list</code> for categorical choices</li>
+      <li>Use <code>on-input</code> for live preview during drag</li>
+      <li>Use <code>on-change</code> for saving final value</li>
+      <li>Provide labels for all choice components</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/components/selection-controls/">Selection Controls</a> - Checkbox and radio</li>
+      <li><a href="/wiki/core/components/input-fields/">Input Fields</a> - Text input components</li>
+      <li><a href="/wiki/core/events/input-events/">Input Events</a> - Event handling</li>
+    </ul>
+]

@@ -1,0 +1,1442 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Arte"
+    Logo: "arturo-vista.png"
+    Width: 1180
+    Height: 820
+]
+
+api_base: "http://localhost:19010"
+health_status: "Not checked"
+health_detail: ""
+auth_email: ""
+auth_password: ""
+auth_status: "Not signed in"
+auth_user_label: ""
+auth_token: ""
+auth_role: ""
+members_email: ""
+members_role: "builder"
+members_status: ""
+members: []
+invite_email: ""
+invite_role: "builder"
+invite_code: ""
+invite_password: ""
+invite_status: ""
+invite_list_status: ""
+app_name: ""
+apps_status: "No apps loaded"
+apps: []
+selected_app: ""
+page_name: ""
+pages_status: "No pages loaded"
+pages: []
+selected_page: ""
+layout_json: ""
+layout_status: "No layout loaded"
+vista_code: ""
+selected_component_index: ""
+selected_component_type: ""
+selected_component_props: ""
+selected_component_label: ""
+selected_component_placeholder: ""
+selected_component_size: ""
+selected_component_children: ""
+
+view_body: [
+    raw {<div id="arte-toast" class="arte-toast"></div>}
+    title "Arte" .class:"arte-title"
+    text "API health, apps, pages, layout, and preview" .class:"arte-subtitle"
+
+    row .space:10 [
+        button "Check API" "arteCheckHealth()" .class:"arte-btn"
+        text health_status .class:"arte-status"
+    ]
+    text health_detail .class:"arte-detail"
+
+    box .class:"arte-panel" [
+        title "Auth" .class:"arte-panel-title"
+        row .space:10 [
+            field auth_email .placeholder:"Email" .class:"arte-input"
+            field auth_password .placeholder:"Password" .class:"arte-input"
+        ]
+        row .space:10 [
+            button "Sign Up" "arteSignup()" .class:"arte-btn"
+            button "Login" "arteLogin()" .class:"arte-btn"
+            button "Logout" "arteLogout()" .class:"arte-btn-danger"
+        ]
+        text auth_status .class:"arte-detail"
+        text auth_user_label .class:"arte-detail"
+    ]
+
+    box .class:"arte-panel" [
+        title "Workspace Members" .class:"arte-panel-title"
+        text auth_user_label .class:"arte-detail"
+        row .space:10 [
+            field members_email .placeholder:"user@example.com" .class:"arte-input"
+            field members_role .placeholder:"admin|builder|viewer" .class:"arte-input"
+            button "Add Member" "arteAddMember()" .class:"arte-btn"
+            button "Refresh" "arteLoadMembers()" .class:"arte-btn"
+        ]
+        text members_status .class:"arte-detail"
+        raw {<div id="arte-members-list" class="arte-list"></div>}
+    ]
+
+    box .class:"arte-panel" [
+        title "Invites" .class:"arte-panel-title"
+        row .space:10 [
+            field invite_email .placeholder:"invitee@example.com" .class:"arte-input"
+            field invite_role .placeholder:"admin|builder|viewer" .class:"arte-input"
+            button "Create Invite" "arteCreateInvite()" .class:"arte-btn"
+        ]
+        row .space:10 [
+            field invite_code .placeholder:"Invite code" .class:"arte-input"
+            field invite_password .placeholder:"New password" .class:"arte-input"
+            button "Accept Invite" "arteAcceptInvite()" .class:"arte-btn"
+        ]
+        text invite_status .class:"arte-detail"
+        row .space:10 [
+            button "Refresh Invites" "arteLoadInvites()" .class:"arte-btn"
+            button "Revoke Expired" "arteRevokeExpiredInvites()" .class:"arte-btn-danger"
+            button "Revoke All" "arteRevokeAllInvites()" .class:"arte-btn-danger"
+        ]
+        text invite_list_status .class:"arte-detail"
+        raw {<div id="arte-invite-list" class="arte-list"></div>}
+    ]
+
+    divider
+
+    split .ratio:13 .class:"arte-shell" [
+        box .class:"arte-panel" [
+            title "Apps" .class:"arte-panel-title"
+
+            row .space:10 [
+                field app_name .placeholder:"New app name" .class:"arte-input"
+                button "Create" "arteCreateApp()" .class:"arte-btn"
+            ]
+
+            row .space:10 [
+                button "Rename" "arteRenameSelectedApp()" .class:"arte-btn"
+                button "Delete" "arteDeleteSelectedApp()" .class:"arte-btn-danger"
+            ]
+
+            text apps_status .class:"arte-detail"
+
+            list selected_app apps .class:"arte-list"
+        ]
+    ] [
+        box .class:"arte-panel" [
+            title "Pages" .class:"arte-panel-title"
+
+            row .space:10 [
+                field page_name .placeholder:"New page name" .class:"arte-input"
+                button "Create" "arteCreatePage()" .class:"arte-btn"
+            ]
+
+            row .space:10 [
+                button "Rename" "arteRenameSelectedPage()" .class:"arte-btn"
+                button "Delete" "arteDeleteSelectedPage()" .class:"arte-btn-danger"
+            ]
+
+            text pages_status .class:"arte-detail"
+
+            list selected_page pages .class:"arte-list"
+        ]
+    ] [
+        box .class:"arte-panel" [
+            title "Palette" .class:"arte-panel-title"
+
+            row .space:8 [
+                button "Title" "arteAddComponent('title')" .class:"arte-btn"
+                button "Text" "arteAddComponent('text')" .class:"arte-btn"
+                button "Button" "arteAddComponent('button')" .class:"arte-btn"
+                button "Input" "arteAddComponent('input')" .class:"arte-btn"
+                button "Row" "arteAddComponent('row')" .class:"arte-btn"
+            ]
+
+            text "Click a palette item to append it to the layout JSON." .class:"arte-detail"
+
+            divider
+
+            title "Layout (JSON)" .class:"arte-panel-title"
+
+            row .space:10 [
+                button "Load" "arteLoadLayout()" .class:"arte-btn"
+                button "Save" "arteSaveLayout()" .class:"arte-btn"
+                button "Generate Vista" "arteGenerateVista()" .class:"arte-btn"
+                button "Export .art" "arteExportPage()" .class:"arte-btn"
+            ]
+
+            textarea layout_json .class:"arte-textarea" .placeholder:"[{\"type\":\"title\",\"props\":\"Hello\"}]"
+            text layout_status .class:"arte-detail"
+
+            divider
+
+            title "Layout Order" .class:"arte-panel-title"
+            raw {<div id="arte-order-list" class="arte-order-list"></div>}
+
+            divider
+
+            title "Component Editor" .class:"arte-panel-title"
+            text "Select a layout item to edit its props." .class:"arte-detail"
+            title "Property Editor" .class:"arte-panel-title"
+            text "Use these fields for common component properties." .class:"arte-detail"
+            row .space:10 [
+                text "Label:" .class:"arte-detail"
+                field selected_component_label .class:"arte-input"
+            ]
+            row .space:10 [
+                text "Placeholder:" .class:"arte-detail"
+                field selected_component_placeholder .class:"arte-input"
+            ]
+            row .space:10 [
+                text "Size:" .class:"arte-detail"
+                field selected_component_size .class:"arte-input"
+            ]
+            row .space:10 [
+                text "Type:" .class:"arte-detail"
+                field selected_component_type .readonly:true .class:"arte-input"
+            ]
+            row .space:10 [
+                text "Props:" .class:"arte-detail"
+                field selected_component_props .class:"arte-input"
+            ]
+            text "Children JSON (row only):" .class:"arte-detail"
+            textarea selected_component_children .class:"arte-textarea" .placeholder:"[{\"type\":\"text\",\"props\":\"Hi\"}]"
+            row .space:10 [
+                button "Apply" "arteApplyComponentEdits()" .class:"arte-btn"
+                button "Delete" "arteDeleteComponent()" .class:"arte-btn-danger"
+            ]
+        ]
+    ]
+
+    box .class:"arte-preview" [
+        title "Preview" .class:"arte-panel-title"
+        raw {<iframe id="arte-preview-frame" class="arte-preview-frame"></iframe>}
+        text "Click Load or Save to refresh the preview." .class:"arte-detail"
+    ]
+
+    box .class:"arte-preview" [
+        title "Vista Output" .class:"arte-panel-title"
+        textarea vista_code .class:"arte-textarea" .placeholder:"Generated Vista markup will appear here" .readonly:true
+    ]
+
+    raw {<style>
+        :root{
+            --arte-bg:#f6f1ea;
+            --arte-ink:#1f1b16;
+            --arte-muted:#6c625b;
+            --arte-accent:#0b6dff;
+            --arte-danger:#c0392b;
+            --arte-panel:#fffaf3;
+            --arte-border:#e6ddd2;
+        }
+        body{
+            background:var(--arte-bg);
+            color:var(--arte-ink);
+            font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+        }
+        .vista-app-body{max-width:none;padding:24px;}
+        .arte-title{
+            font-size:28px;
+            font-weight:800;
+            margin:0 0 6px;
+        }
+        .arte-subtitle{
+            color:var(--arte-muted);
+            margin:0 0 16px;
+        }
+        .arte-shell{gap:16px;}
+        .arte-panel{
+            background:var(--arte-panel);
+            border:1px solid var(--arte-border);
+            border-radius:14px;
+            padding:12px;
+        }
+        .arte-panel-title{
+            font-size:16px;
+            font-weight:800;
+            margin:0 0 8px;
+        }
+        .arte-btn{
+            background:var(--arte-accent);
+            color:#fff;
+            border:none;
+            border-radius:10px;
+            padding:8px 12px;
+            font-weight:700;
+        }
+        .arte-btn-danger{
+            background:var(--arte-danger);
+            color:#fff;
+            border:none;
+            border-radius:10px;
+            padding:8px 12px;
+            font-weight:700;
+        }
+        .arte-status{
+            color:var(--arte-ink);
+            font-weight:600;
+        }
+        .arte-detail{
+            color:var(--arte-muted);
+            font-size:12px;
+        }
+        .arte-input{
+            min-width:220px;
+            border:1px solid var(--arte-border);
+            border-radius:10px;
+            padding:6px 10px;
+            background:#fff;
+        }
+        .arte-list{
+            background:#fff;
+            border:1px solid var(--arte-border);
+            border-radius:12px;
+            padding:8px;
+            max-height:220px;
+            overflow:auto;
+        }
+        .arte-member{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            border:1px solid var(--arte-border);
+            border-radius:8px;
+            padding:6px 8px;
+            margin-bottom:6px;
+            background:#faf7f2;
+        }
+        .arte-member-left{
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .arte-role-icon{
+            display:inline-block;
+            width:18px;
+            height:18px;
+            border-radius:6px;
+            text-align:center;
+            line-height:18px;
+            font-size:12px;
+            font-weight:800;
+            background:#f0f0f0;
+            color:#333;
+        }
+        .arte-role-icon.admin{ background:#fde2e2; color:#b91c1c; }
+        .arte-role-icon.builder{ background:#e0f2fe; color:#0284c7; }
+        .arte-role-icon.viewer{ background:#ecfccb; color:#4d7c0f; }
+        .arte-badge{
+            display:inline-block;
+            padding:2px 8px;
+            border-radius:999px;
+            font-size:11px;
+            font-weight:700;
+            background:#e9eefc;
+            color:#0b2a6f;
+            border:1px solid #c8d6fb;
+        }
+        .arte-badge.admin{
+            background:#fde2e2;
+            color:#b91c1c;
+            border-color:#fca5a5;
+        }
+        .arte-badge.builder{
+            background:#e0f2fe;
+            color:#0284c7;
+            border-color:#7dd3fc;
+        }
+        .arte-badge.viewer{
+            background:#ecfccb;
+            color:#4d7c0f;
+            border-color:#a3e635;
+        }
+        .arte-btn-mini{
+            background:transparent;
+            color:#b91c1c;
+            border:1px solid #fca5a5;
+            border-radius:8px;
+            padding:2px 8px;
+            font-size:11px;
+            font-weight:700;
+        }
+        .arte-textarea{
+            width:100%;
+            min-height:200px;
+            border:1px solid var(--arte-border);
+            border-radius:10px;
+            padding:8px 10px;
+            background:#fff;
+            font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+            font-size:12px;
+        }
+        .arte-preview{
+            margin-top:12px;
+            background:#fff;
+            border:1px solid var(--arte-border);
+            border-radius:14px;
+            padding:12px;
+        }
+        .arte-preview-frame{
+            width:100%;
+            height:320px;
+            border:1px solid var(--arte-border);
+            border-radius:10px;
+            background:#fff;
+        }
+        .arte-order-list{
+            border:1px solid var(--arte-border);
+            border-radius:10px;
+            background:#fff;
+            padding:6px;
+            min-height:100px;
+        }
+        .arte-order-item{
+            padding:6px 8px;
+            border:1px solid var(--arte-border);
+            border-radius:8px;
+            margin-bottom:6px;
+            background:#faf7f2;
+            cursor:grab;
+        }
+        .arte-order-item.selected{
+            outline:2px solid var(--arte-accent);
+        }
+        .arte-order-item.dragging{
+            opacity:0.6;
+        }
+        .arte-toast{
+            position:fixed;
+            right:18px;
+            bottom:18px;
+            background:#0f172a;
+            color:#f8fafc;
+            padding:10px 14px;
+            border-radius:12px;
+            font-size:12px;
+            opacity:0;
+            transform:translateY(8px);
+            transition:opacity 200ms ease, transform 200ms ease;
+            z-index:9999;
+            pointer-events:none;
+            box-shadow:0 12px 30px rgba(15,23,42,0.2);
+        }
+        .arte-toast.show{
+            opacity:1;
+            transform:translateY(0);
+        }
+        .arte-toast.warn{
+            background:#7f1d1d;
+        }
+        .arte-toast.ok{
+            background:#14532d;
+        }
+        @media (max-width: 980px){
+            .arte-shell{display:block;}
+            .arte-panel{margin-bottom:12px;}
+        }
+    </style>
+<script>
+(function(){
+  const apiBase = "http://localhost:19010";
+  const apiPath = (...parts) => '/' + parts.map(p => encodeURIComponent(String(p))).join('/');
+  const getJson = (path) => fetch(apiBase + path).then(r=>r.json());
+  const postJson = (path, data) => fetch(apiBase + path, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(r=>r.json());
+  const putJson = (path, data) => fetch(apiBase + path, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(r=>r.json());
+  const delJson = (path) => fetch(apiBase + path, { method: 'DELETE' }).then(r=>r.json());
+
+  const withTokenPath = (...parts) => {
+    if(state.auth_token){
+      return apiPath('api', ...parts.slice(0,1), state.auth_token, ...parts.slice(1));
+    }
+    return apiPath('api', ...parts);
+  };
+
+  const parseId = (label) => {
+    const m = /id:\s*(\d+)/.exec(label || "");
+    return m ? m[1] : "";
+  };
+
+  const parsePropsObject = (text) => {
+    if(!text){ return {}; }
+    try {
+      const obj = JSON.parse(text);
+      if(obj && typeof obj === 'object'){ return obj; }
+    } catch (e) {}
+    return {};
+  };
+
+  const encodeProps = (obj, fallbackText) => {
+    if(obj && typeof obj === 'object'){
+      try { return JSON.stringify(obj); } catch (e) {}
+    }
+    return fallbackText || '';
+  };
+
+  const parseLayoutArray = () => {
+    let arr = [];
+    try { arr = JSON.parse(state.layout_json || '[]'); } catch (e) { arr = []; }
+    if(!Array.isArray(arr)) arr = [];
+    return arr;
+  };
+
+  const showToast = (message, kind) => {
+    const el = document.getElementById('arte-toast');
+    if(!el){ return; }
+    el.textContent = message || '';
+    el.className = 'arte-toast show' + (kind ? (' ' + kind) : '');
+    setTimeout(() => {
+      el.className = 'arte-toast';
+    }, 2200);
+  };
+
+  const writeLayoutArray = (arr) => {
+    state.layout_json = JSON.stringify(arr, null, 2);
+    render();
+  };
+
+  const renderPreview = () => {
+    const frame = document.getElementById('arte-preview-frame');
+    if(!frame){ return; }
+    const pageId = parseId(state.selected_page);
+    if(!pageId || !state.auth_token){
+      frame.srcdoc = '<html><body style="font-family:IBM Plex Sans,Segoe UI,sans-serif;color:#6c625b;padding:16px;">Select a page and sign in to preview.</body></html>';
+      return;
+    }
+    let parsed = null;
+    try { parsed = JSON.parse(state.layout_json || '[]'); } catch (e) { parsed = null; }
+    if(!Array.isArray(parsed)){
+      frame.srcdoc = '<html><body style="font-family:IBM Plex Sans,Segoe UI,sans-serif;color:#b91c1c;padding:16px;">Invalid layout JSON.</body></html>';
+      return;
+    }
+    postJson(withTokenPath('pages', pageId, 'preview'), { layout: parsed })
+      .then(resp => {
+        if(resp && resp.ok && resp.data && resp.data.html){
+          frame.srcdoc = resp.data.html;
+        } else {
+          frame.srcdoc = '<html><body style="font-family:IBM Plex Sans,Segoe UI,sans-serif;color:#b91c1c;padding:16px;">Preview failed.</body></html>';
+        }
+      })
+      .catch(() => {
+        frame.srcdoc = '<html><body style="font-family:IBM Plex Sans,Segoe UI,sans-serif;color:#b91c1c;padding:16px;">Preview failed.</body></html>';
+      });
+  };
+
+  const renderOrderList = () => {
+    const root = document.getElementById('arte-order-list');
+    if(!root){ return; }
+    root.innerHTML = '';
+    const arr = parseLayoutArray();
+    arr.forEach((item, idx) => {
+      const el = document.createElement('div');
+      el.className = 'arte-order-item';
+      el.draggable = true;
+      const label = (item && item.type) ? item.type : 'unknown';
+      el.textContent = (idx + 1) + ". " + label;
+      el.dataset.index = String(idx);
+      if(String(idx) === String(state.selected_component_index)){
+        el.classList.add('selected');
+      }
+      el.addEventListener('click', () => {
+        state.selected_component_index = String(idx);
+        state.selected_component_type = label;
+        state.selected_component_props = (item && item.props) ? String(item.props) : '';
+        const obj = parsePropsObject(state.selected_component_props);
+        state.selected_component_label = obj.label ? String(obj.label) : '';
+        state.selected_component_placeholder = obj.placeholder ? String(obj.placeholder) : '';
+        state.selected_component_size = obj.size ? String(obj.size) : '';
+        if(item && Array.isArray(item.children)){
+          state.selected_component_children = JSON.stringify(item.children, null, 2);
+        } else {
+          state.selected_component_children = '';
+        }
+        render();
+      });
+      el.addEventListener('dragstart', (e) => {
+        el.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', el.dataset.index);
+      });
+      el.addEventListener('dragend', () => {
+        el.classList.remove('dragging');
+      });
+      el.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
+      el.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const from = parseInt(e.dataTransfer.getData('text/plain'), 10);
+        const to = parseInt(el.dataset.index, 10);
+        if(isNaN(from) || isNaN(to) || from === to) return;
+        const next = parseLayoutArray();
+        const moved = next.splice(from, 1)[0];
+        next.splice(to, 0, moved);
+        writeLayoutArray(next);
+        setTimeout(() => { renderOrderList(); renderPreview(); }, 0);
+      });
+      root.appendChild(el);
+    });
+  };
+
+  window.arteSignup = () => {
+    if(!state.auth_email || !state.auth_password){
+      state.auth_status = 'Provide email and password';
+      render();
+      return;
+    }
+    state.auth_status = 'Signing up...';
+    render();
+    postJson(apiPath('api','auth','signup'), { email: state.auth_email, password: state.auth_password })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.auth_token = resp.data && resp.data.token ? String(resp.data.token) : '';
+          state.auth_status = state.auth_token ? 'Signed in' : 'Signup ok';
+          window.arteMe();
+        } else {
+          state.auth_status = 'Signup failed';
+        }
+        render();
+      })
+      .catch(() => { state.auth_status = 'Signup failed'; render(); });
+  };
+
+  window.arteLogin = () => {
+    if(!state.auth_email || !state.auth_password){
+      state.auth_status = 'Provide email and password';
+      render();
+      return;
+    }
+    state.auth_status = 'Signing in...';
+    render();
+    postJson(apiPath('api','auth','login'), { email: state.auth_email, password: state.auth_password })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.auth_token = resp.data && resp.data.token ? String(resp.data.token) : '';
+          state.auth_status = state.auth_token ? 'Signed in' : 'Login ok';
+          window.arteMe();
+        } else {
+          state.auth_status = 'Login failed';
+        }
+        render();
+      })
+      .catch(() => { state.auth_status = 'Login failed'; render(); });
+  };
+
+  window.arteMe = () => {
+    if(!state.auth_token){
+      state.auth_user_label = '';
+      state.auth_role = '';
+      render();
+      return;
+    }
+    getJson(apiPath('api','auth','me', state.auth_token))
+      .then(resp => {
+        if(resp && resp.ok && resp.data && resp.data.user){
+          const u = resp.data.user;
+          const ws = resp.data.workspace || {};
+          state.auth_role = u.role ? String(u.role).toLowerCase() : '';
+          state.auth_user_label = 'user=' + (u.email || '') + ' role=' + (u.role || '') + ' workspace=' + (ws.name || ws.id || '');
+        } else {
+          state.auth_user_label = '';
+          state.auth_role = '';
+        }
+        render();
+      })
+      .catch(() => { state.auth_user_label = ''; state.auth_role = ''; render(); });
+  };
+
+window.arteLogout = () => {
+    if(!state.auth_token){
+      state.auth_status = 'Signed out';
+      render();
+      return;
+    }
+    postJson(apiPath('api','auth','logout'), { token: state.auth_token })
+      .then(() => {
+        state.auth_token = '';
+        state.auth_status = 'Signed out';
+        state.auth_user_label = '';
+        state.auth_role = '';
+        render();
+      })
+      .catch(() => {
+        state.auth_token = '';
+        state.auth_status = 'Signed out';
+        state.auth_user_label = '';
+        state.auth_role = '';
+        render();
+      });
+  };
+
+  window.arteLoadMembers = () => {
+    if(!state.auth_token){
+      state.members_status = 'Sign in first';
+      render();
+      return;
+    }
+    state.members_status = 'Loading members...';
+    render();
+    getJson(apiPath('api','workspaces', state.auth_token, 'members'))
+      .then(resp => {
+        if(resp && resp.ok){
+          const list = (resp.data || []).map(m => {
+            return 'user_id=' + (m.user_id || '') + ' role=' + (m.role || '');
+          });
+          state.members = list;
+          state.members_status = list.length ? ('Loaded ' + list.length + ' member(s)') : 'No members';
+          const host = document.getElementById('arte-members-list');
+          if(host){
+            host.innerHTML = '';
+            (resp.data || []).forEach(m => {
+              const row = document.createElement('div');
+              row.className = 'arte-member';
+              const left = document.createElement('div');
+              left.className = 'arte-member-left';
+              const role = String(m.role || '').toLowerCase();
+              const icon = document.createElement('span');
+              icon.className = 'arte-role-icon ' + role;
+              const svg = role === 'admin'
+                ? '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 2l3 6 6 .9-4.3 4.2 1 6-5.7-3-5.7 3 1-6L3 8.9 9 8z" fill="currentColor"/></svg>'
+                : (role === 'builder'
+                  ? '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 20h16v2H4zM7 4h10l2 7H5zM8 11h8l-1.5 7h-5z" fill="currentColor"/></svg>'
+                  : '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 5c5 0 9 5 9 7s-4 7-9 7-9-5-9-7 4-7 9-7zm0 3.2A3.8 3.8 0 1 0 12 16a3.8 3.8 0 0 0 0-7.6z" fill="currentColor"/></svg>');
+              icon.innerHTML = svg;
+              const label = document.createElement('div');
+              label.textContent = (m.email || '') + ' (id: ' + (m.user_id || '') + ')';
+              const badge = document.createElement('span');
+              badge.className = 'arte-badge ' + role;
+              badge.textContent = role.toUpperCase();
+              left.appendChild(icon);
+              left.appendChild(label);
+              row.appendChild(left);
+              row.appendChild(badge);
+              host.appendChild(row);
+            });
+          }
+        } else {
+          state.members_status = 'Load failed';
+        }
+        render();
+      })
+      .catch(() => { state.members_status = 'Load failed'; render(); });
+  };
+
+  window.arteCreateInvite = () => {
+    if(!state.auth_token){
+      state.invite_status = 'Sign in first';
+      render();
+      return;
+    }
+    if(!state.invite_email || !state.invite_role){
+      state.invite_status = 'Provide email and role';
+      render();
+      return;
+    }
+    state.invite_status = 'Creating invite...';
+    render();
+    postJson(apiPath('api','workspaces', state.auth_token, 'invites'), {
+      email: state.invite_email,
+      role: state.invite_role
+    })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.invite_status = 'Invite code: ' + (resp.data && resp.data.code ? resp.data.code : '');
+          state.invite_code = resp.data && resp.data.code ? resp.data.code : '';
+        } else {
+          state.invite_status = 'Invite failed';
+        }
+        render();
+      })
+      .catch(() => { state.invite_status = 'Invite failed'; render(); });
+  };
+
+window.arteLoadInvites = () => {
+    if(!state.auth_token){
+      state.invite_list_status = 'Sign in first';
+      render();
+      return;
+    }
+    state.invite_list_status = 'Loading invites...';
+    render();
+    getJson(apiPath('api','workspaces', state.auth_token, 'invites'))
+      .then(resp => {
+        if(resp && resp.ok){
+          const host = document.getElementById('arte-invite-list');
+          if(host){
+            host.innerHTML = '';
+            (resp.data || []).forEach(inv => {
+              const row = document.createElement('div');
+              row.className = 'arte-member';
+              const left = document.createElement('div');
+              left.className = 'arte-member-left';
+              const label = document.createElement('div');
+              const exp = inv.expires_at ? Number(inv.expires_at) : 0;
+              const now = Math.floor(Date.now() / 1000);
+              const expired = exp > 0 && exp < now;
+              label.textContent = (inv.email || '') + ' [' + (inv.role || '') + '] code=' + (inv.code || '') + (exp ? (' exp=' + new Date(exp * 1000).toLocaleString()) : '');
+              const badge = document.createElement('span');
+              const used = inv.used ? 'USED' : (expired ? 'EXPIRED' : 'OPEN');
+              badge.className = 'arte-badge ' + (inv.used ? 'viewer' : (expired ? 'admin' : 'builder'));
+              badge.textContent = used;
+              const revoke = document.createElement('button');
+              revoke.className = 'arte-btn-mini';
+              revoke.textContent = 'Revoke';
+              revoke.addEventListener('click', () => {
+                if(!state.auth_token || !inv.code){ return; }
+                fetch(apiBase + '/api/workspaces/' + encodeURIComponent(state.auth_token) + '/invites/' + encodeURIComponent(inv.code), {
+                  method: 'DELETE'
+                }).then(() => {
+                  window.arteLoadInvites();
+                }).catch(() => {
+                  window.arteLoadInvites();
+                });
+              });
+              left.appendChild(label);
+              row.appendChild(left);
+              row.appendChild(badge);
+              row.appendChild(revoke);
+              host.appendChild(row);
+            });
+          }
+          state.invite_list_status = 'Invites loaded';
+        } else {
+          state.invite_list_status = 'Invite list failed';
+        }
+        render();
+      })
+      .catch(() => { state.invite_list_status = 'Invite list failed'; render(); });
+  };
+
+window.arteRevokeExpiredInvites = () => {
+    if(!state.auth_token){
+      state.invite_list_status = 'Sign in first';
+      render();
+      return;
+    }
+    state.invite_list_status = 'Revoking expired invites...';
+    render();
+    postJson(apiPath('api','workspaces', state.auth_token, 'invites','cleanup'), {})
+      .then(resp => {
+        if(resp && resp.ok){
+          const removed = resp.data && typeof resp.data.removedCount === 'number' ? resp.data.removedCount : null;
+          if(removed !== null){
+            state.invite_list_status = 'Revoked expired invites: ' + removed;
+          } else {
+            state.invite_list_status = 'Revoked expired invites';
+          }
+          showToast(state.invite_list_status, 'ok');
+          render();
+          window.arteLoadInvites();
+        } else {
+          state.invite_list_status = 'Invite list failed';
+          showToast(state.invite_list_status, 'warn');
+          render();
+        }
+      })
+      .catch(() => { state.invite_list_status = 'Invite list failed'; showToast(state.invite_list_status, 'warn'); render(); });
+  };
+
+  window.arteRevokeAllInvites = () => {
+    if(!state.auth_token){
+      state.invite_list_status = 'Sign in first';
+      showToast(state.invite_list_status, 'warn');
+      render();
+      return;
+    }
+    if((state.auth_role || '').toLowerCase() !== 'admin'){
+      state.invite_list_status = 'Admin role required';
+      showToast(state.invite_list_status, 'warn');
+      render();
+      return;
+    }
+    if(!confirm('Revoke all invites for this workspace? This cannot be undone.')){
+      state.invite_list_status = 'Revoke all cancelled';
+      showToast(state.invite_list_status, 'warn');
+      render();
+      return;
+    }
+    state.invite_list_status = 'Revoking all invites...';
+    render();
+    getJson(apiPath('api','workspaces', state.auth_token, 'invites'))
+      .then(resp => {
+        if(resp && resp.ok){
+          const requests = (resp.data || []).map(inv =>
+            fetch(apiBase + '/api/workspaces/' + encodeURIComponent(state.auth_token) + '/invites/' + encodeURIComponent(inv.code), { method: 'DELETE' })
+          );
+          Promise.all(requests).then(() => {
+            state.invite_list_status = 'Revoked all invites';
+            showToast(state.invite_list_status, 'ok');
+            render();
+            window.arteLoadInvites();
+          }).catch(() => {
+            state.invite_list_status = 'Invite list failed';
+            showToast(state.invite_list_status, 'warn');
+            render();
+          });
+        } else {
+          state.invite_list_status = 'Invite list failed';
+          showToast(state.invite_list_status, 'warn');
+          render();
+        }
+      })
+      .catch(() => { state.invite_list_status = 'Invite list failed'; showToast(state.invite_list_status, 'warn'); render(); });
+  };
+
+window.arteAcceptInvite = () => {
+    if(!state.invite_code || !state.invite_password){
+      state.invite_status = 'Provide invite code and password';
+      render();
+      return;
+    }
+    state.invite_status = 'Accepting invite...';
+    render();
+    postJson(apiPath('api','invites','accept'), {
+      code: state.invite_code,
+      password: state.invite_password
+    })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.invite_status = 'Invite accepted';
+          state.auth_token = resp.data && resp.data.token ? String(resp.data.token) : '';
+          window.arteMe();
+        } else {
+          state.invite_status = 'Invite accept failed';
+        }
+        render();
+      })
+      .catch(() => { state.invite_status = 'Invite accept failed'; render(); });
+  };
+
+window.arteAddMember = () => {
+    if(!state.auth_token){
+      state.members_status = 'Sign in first';
+      render();
+      return;
+    }
+    if(!state.members_email || !state.members_role){
+      state.members_status = 'Provide email and role';
+      render();
+      return;
+    }
+    state.members_status = 'Adding member...';
+    render();
+    postJson(apiPath('api','workspaces', state.auth_token, 'members'), {
+      email: state.members_email,
+      role: state.members_role
+    })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.members_status = 'Member added';
+          state.members_email = '';
+          state.members_role = 'builder';
+          window.arteLoadMembers();
+        } else {
+          state.members_status = 'Add failed';
+        }
+        render();
+      })
+      .catch(() => { state.members_status = 'Add failed'; render(); });
+  };
+
+  const refreshPagesForSelectedApp = () => {
+    const appId = parseId(state.selected_app);
+    if(!appId){
+      state.pages = [];
+      state.pages_status = "Select an app to load pages";
+      render();
+      return;
+    }
+    state.pages_status = "Loading pages...";
+    render();
+    getJson(withTokenPath("apps", appId, "pages"))
+      .then(resp => {
+        if(resp && resp.ok){
+          const list = (resp.data || []).map(p => {
+            const name = p.name || "Untitled";
+            const id = p.id || "?";
+            const route = p.route || "";
+            return name + " (id: " + id + ")" + (route ? " [" + route + "]" : "");
+          });
+          state.pages = list;
+          state.pages_status = list.length ? ("Loaded " + list.length + " page(s)") : "No pages yet";
+        } else {
+          state.pages_status = "Failed to load pages";
+        }
+        render();
+      })
+      .catch(() => {
+        state.pages_status = "Failed to load pages";
+        render();
+      });
+  };
+
+  window.arteCheckHealth = () => {
+    state.health_status = "Checking...";
+    state.health_detail = "";
+    render();
+    getJson("/api/health")
+      .then(resp => {
+        if(resp && resp.ok){
+          state.health_status = "Up";
+          state.health_detail = "service=" + (resp.data && resp.data.service || "") + " status=" + (resp.data && resp.data.status || "");
+        } else {
+          state.health_status = "Down";
+          state.health_detail = "Unexpected response";
+        }
+        render();
+      })
+      .catch(() => {
+        state.health_status = "Down";
+        state.health_detail = "Request failed";
+        render();
+      });
+  };
+
+  window.arteLoadApps = () => {
+    state.apps_status = "Loading apps...";
+    render();
+    getJson(withTokenPath("apps"))
+      .then(resp => {
+        if(resp && resp.ok){
+          const list = (resp.data || []).map(a => {
+            const name = a.name || "Unnamed";
+            const id = a.id || "?";
+            const slug = a.slug || "";
+            return name + " (id: " + id + ")" + (slug ? " [" + slug + "]" : "");
+          });
+          state.apps = list;
+          state.apps_status = list.length ? ("Loaded " + list.length + " app(s)") : "No apps yet";
+        } else {
+          state.apps_status = "Failed to load apps";
+        }
+        render();
+        refreshPagesForSelectedApp();
+      })
+      .catch(() => {
+        state.apps_status = "Failed to load apps";
+        render();
+      });
+  };
+
+  window.arteCreateApp = () => {
+    if(!state.app_name){
+      state.apps_status = "Provide an app name";
+      render();
+      return;
+    }
+    state.apps_status = "Creating app...";
+    render();
+    postJson(withTokenPath("apps"), { name: state.app_name })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.app_name = "";
+          window.arteLoadApps();
+        } else {
+          state.apps_status = "Create failed";
+          render();
+        }
+      })
+      .catch(() => {
+        state.apps_status = "Create failed";
+        render();
+      });
+  };
+
+  window.arteRenameSelectedApp = () => {
+    const id = parseId(state.selected_app);
+    if(!id){
+      state.apps_status = "Select an app to rename";
+      render();
+      return;
+    }
+    if(!state.app_name){
+      state.apps_status = "Provide a new name";
+      render();
+      return;
+    }
+    state.apps_status = "Renaming app...";
+    render();
+    putJson(withTokenPath("apps", id), { name: state.app_name })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.app_name = "";
+          window.arteLoadApps();
+        } else {
+          state.apps_status = "Rename failed";
+          render();
+        }
+      })
+      .catch(() => {
+        state.apps_status = "Rename failed";
+        render();
+      });
+  };
+
+  window.arteDeleteSelectedApp = () => {
+    const id = parseId(state.selected_app);
+    if(!id){
+      state.apps_status = "Select an app to delete";
+      render();
+      return;
+    }
+    state.apps_status = "Deleting app...";
+    render();
+    delJson(withTokenPath("apps", id))
+      .then(resp => {
+        if(resp && resp.ok){
+          state.selected_app = "";
+          window.arteLoadApps();
+        } else {
+          state.apps_status = "Delete failed";
+          render();
+        }
+      })
+      .catch(() => {
+        state.apps_status = "Delete failed";
+        render();
+      });
+  };
+
+  window.arteCreatePage = () => {
+    const appId = parseId(state.selected_app);
+    if(!appId){
+      state.pages_status = "Select an app first";
+      render();
+      return;
+    }
+    if(!state.page_name){
+      state.pages_status = "Provide a page name";
+      render();
+      return;
+    }
+    state.pages_status = "Creating page...";
+    render();
+    postJson(withTokenPath("apps", appId, "pages"), { name: state.page_name })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.page_name = "";
+          refreshPagesForSelectedApp();
+        } else {
+          state.pages_status = "Create failed";
+          render();
+        }
+      })
+      .catch(() => {
+        state.pages_status = "Create failed";
+        render();
+      });
+  };
+
+  window.arteRenameSelectedPage = () => {
+    const pageId = parseId(state.selected_page);
+    if(!pageId){
+      state.pages_status = "Select a page to rename";
+      render();
+      return;
+    }
+    if(!state.page_name){
+      state.pages_status = "Provide a new page name";
+      render();
+      return;
+    }
+    state.pages_status = "Renaming page...";
+    render();
+    putJson(withTokenPath("pages", pageId), { name: state.page_name })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.page_name = "";
+          refreshPagesForSelectedApp();
+        } else {
+          state.pages_status = "Rename failed";
+          render();
+        }
+      })
+      .catch(() => {
+        state.pages_status = "Rename failed";
+        render();
+      });
+  };
+
+  window.arteDeleteSelectedPage = () => {
+    const pageId = parseId(state.selected_page);
+    if(!pageId){
+      state.pages_status = "Select a page to delete";
+      render();
+      return;
+    }
+    state.pages_status = "Deleting page...";
+    render();
+    delJson(withTokenPath("pages", pageId))
+      .then(resp => {
+        if(resp && resp.ok){
+          state.selected_page = "";
+          refreshPagesForSelectedApp();
+        } else {
+          state.pages_status = "Delete failed";
+          render();
+        }
+      })
+      .catch(() => {
+        state.pages_status = "Delete failed";
+        render();
+      });
+  };
+
+  window.arteLoadLayout = () => {
+    const pageId = parseId(state.selected_page);
+    if(!pageId){
+      state.layout_status = "Select a page to load layout";
+      render();
+      return;
+    }
+    state.layout_status = "Loading layout...";
+    render();
+    getJson(withTokenPath("pages", pageId, "components"))
+      .then(resp => {
+        if(resp && resp.ok){
+          state.layout_json = JSON.stringify(resp.data || [], null, 2);
+          state.layout_status = "Layout loaded";
+        } else {
+          state.layout_status = "Load failed";
+        }
+        render();
+        setTimeout(() => { renderPreview(); renderOrderList(); }, 0);
+      })
+      .catch(() => {
+        state.layout_status = "Load failed";
+        render();
+      });
+  };
+
+  window.arteSaveLayout = () => {
+    const pageId = parseId(state.selected_page);
+    if(!pageId){
+      state.layout_status = "Select a page to save layout";
+      render();
+      return;
+    }
+    let parsed = null;
+    try {
+      parsed = JSON.parse(state.layout_json || "[]");
+    } catch (e) {
+      state.layout_status = "Invalid JSON";
+      render();
+      return;
+    }
+    if(!Array.isArray(parsed)){
+      state.layout_status = "Layout must be a JSON list";
+      render();
+      return;
+    }
+    state.layout_status = "Saving layout...";
+    render();
+    putJson(withTokenPath("pages", pageId, "components"), { components: parsed })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.layout_status = "Layout saved";
+        } else {
+          state.layout_status = "Save failed";
+        }
+        render();
+        setTimeout(() => { renderPreview(); renderOrderList(); }, 0);
+      })
+      .catch(() => {
+        state.layout_status = "Save failed";
+        render();
+      });
+  };
+
+  window.arteAddComponent = (type) => {
+    let arr = parseLayoutArray();
+    if(type === 'row'){
+      arr.push({ type: 'row', children: [ { type: 'button', props: '{"label":"Action"}' }, { type: 'input', props: '{"placeholder":"Placeholder"}' } ] });
+    } else if(type === 'title'){
+      arr.push({ type: 'title', props: '{"label":"New Title"}' });
+    } else if(type === 'text'){
+      arr.push({ type: 'text', props: '{"label":"New text"}' });
+    } else if(type === 'button'){
+      arr.push({ type: 'button', props: '{"label":"Button"}' });
+    } else if(type === 'input'){
+      arr.push({ type: 'input', props: '{"placeholder":"Placeholder"}' });
+    }
+    writeLayoutArray(arr);
+    state.layout_status = "Layout updated";
+    render();
+    setTimeout(() => { renderPreview(); renderOrderList(); }, 0);
+  };
+
+  window.arteApplyComponentEdits = () => {
+    const idx = parseInt(state.selected_component_index || '', 10);
+    if(isNaN(idx)){
+      state.layout_status = "Select a component to edit";
+      render();
+      return;
+    }
+    const arr = parseLayoutArray();
+    if(idx < 0 || idx >= arr.length){
+      state.layout_status = "Selected component not found";
+      render();
+      return;
+    }
+    const item = arr[idx] || {};
+    if(item.type === 'row'){
+      let parsed = [];
+      try { parsed = JSON.parse(state.selected_component_children || '[]'); } catch (e) { parsed = null; }
+      if(!Array.isArray(parsed)){
+        state.layout_status = "Row children must be a JSON list";
+        render();
+        return;
+      }
+      item.children = parsed;
+    } else {
+      const propsObj = parsePropsObject(state.selected_component_props);
+      if(state.selected_component_label){ propsObj.label = state.selected_component_label; }
+      if(state.selected_component_placeholder){ propsObj.placeholder = state.selected_component_placeholder; }
+      if(state.selected_component_size){ propsObj.size = state.selected_component_size; }
+      item.props = encodeProps(propsObj, state.selected_component_props);
+    }
+    arr[idx] = item;
+    writeLayoutArray(arr);
+    state.layout_status = "Component updated";
+    render();
+    setTimeout(() => { renderPreview(); renderOrderList(); }, 0);
+  };
+
+  window.arteDeleteComponent = () => {
+    const idx = parseInt(state.selected_component_index || '', 10);
+    if(isNaN(idx)){
+      state.layout_status = "Select a component to delete";
+      render();
+      return;
+    }
+    const arr = parseLayoutArray();
+    if(idx < 0 || idx >= arr.length){
+      state.layout_status = "Selected component not found";
+      render();
+      return;
+    }
+    arr.splice(idx, 1);
+    writeLayoutArray(arr);
+    state.selected_component_index = "";
+    state.selected_component_type = "";
+    state.selected_component_props = "";
+    state.selected_component_label = "";
+    state.selected_component_placeholder = "";
+    state.selected_component_size = "";
+    state.selected_component_children = "";
+    state.layout_status = "Component deleted";
+    render();
+    setTimeout(() => { renderPreview(); renderOrderList(); }, 0);
+  };
+
+  const vistaEscape = (text) => {
+    return String(text || '').replace(/\\/g,'\\\\').replace(/"/g,'\\"');
+  };
+
+  const vistaFromItem = (item, indent) => {
+    const pad = ' '.repeat(indent);
+    const type = item && item.type ? item.type : 'text';
+    const propsObj = parsePropsObject(item && item.props ? item.props : '');
+    if(type === 'row' && Array.isArray(item.children)){
+      const inner = item.children.map(ch => vistaFromItem(ch, indent + 4)).join('\n');
+      return pad + "row [\n" + inner + "\n" + pad + "]";
+    }
+    if(type === 'title'){
+      const text = propsObj.label || item.props || '';
+      return pad + 'title "' + vistaEscape(text) + '"';
+    }
+    if(type === 'text'){
+      const text = propsObj.label || item.props || '';
+      return pad + 'text "' + vistaEscape(text) + '"';
+    }
+    if(type === 'button'){
+      const label = propsObj.label || item.props || 'Button';
+      return pad + 'button "' + vistaEscape(label) + '"';
+    }
+    if(type === 'input'){
+      const placeholder = propsObj.placeholder || item.props || '';
+      return pad + 'input .placeholder:"' + vistaEscape(placeholder) + '" name';
+    }
+    return pad + 'text "' + vistaEscape(type) + '"';
+  };
+
+  window.arteGenerateVista = () => {
+    const arr = parseLayoutArray();
+    const lines = arr.map(item => vistaFromItem(item, 4)).join('\n');
+    state.vista_code = "view [\n" + lines + "\n]";
+    render();
+  };
+
+  window.arteExportPage = () => {
+    const pageId = parseId(state.selected_page);
+    if(!pageId){
+      state.layout_status = "Select a page to export";
+      render();
+      return;
+    }
+    let parsed = null;
+    try {
+      parsed = JSON.parse(state.layout_json || "[]");
+    } catch (e) {
+      state.layout_status = "Invalid JSON";
+      render();
+      return;
+    }
+    if(!Array.isArray(parsed)){
+      state.layout_status = "Layout must be a JSON list";
+      render();
+      return;
+    }
+    state.layout_status = "Exporting .art...";
+    render();
+    postJson(withTokenPath("pages", pageId, "export"), { layout: parsed })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.layout_status = "Exported to " + (resp.data && resp.data.path ? resp.data.path : "arte/exports");
+          if(resp.data && resp.data.vista){
+            state.vista_code = resp.data.vista;
+          }
+        } else {
+          state.layout_status = "Export failed";
+        }
+        render();
+      })
+      .catch(() => {
+        state.layout_status = "Export failed";
+        render();
+      });
+  };
+
+  let lastApp = "";
+  setInterval(() => {
+    if(state.selected_app !== lastApp){
+      lastApp = state.selected_app;
+      refreshPagesForSelectedApp();
+    }
+  }, 400);
+
+  setTimeout(() => {
+    window.arteLoadApps();
+    setTimeout(() => { renderPreview(); renderOrderList(); }, 200);
+  }, 0);
+})();
+</script>}
+]
+
+if key? env "ARTE_NO_WEBVIEW" [
+    html: view .returnHtml view_body
+    write html "arte-ui.html"
+    print html
+] [
+    view .file:"arte-ui.html" view_body
+]

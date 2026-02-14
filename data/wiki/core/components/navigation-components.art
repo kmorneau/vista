@@ -1,0 +1,56 @@
+#[
+  "title": "Navigation Components"
+  "layout": "docpage"
+  "category": "Components"
+  "tags": ["components", "navigation", "tabs", "toolbar", "menubar"]
+  "body": {
+    <h1>Navigation Components</h1>
+
+    <p>Navigation components provide ways to navigate through application content and functionality.</p>
+
+    <h2>Tabs</h2>
+    <pre><code>view .html [
+    tabs [
+        tab "Tab 1" [print "Tab 1 selected"]
+        tab "Tab 2" [print "Tab 2 selected"]
+        tab "Tab 3" [print "Tab 3 selected"]
+    ]
+]</code></pre>
+
+    <h2>Toolbar</h2>
+    <pre><code>view .html [
+    toolbar [
+        button "New" [print "New"]
+        button "Open" [print "Open"]
+        button "Save" [print "Save"]
+    ]
+]</code></pre>
+
+    <h2>Menubar</h2>
+    <pre><code>view .html [
+    menubar [
+        menu "File" [
+            item "Open" [print "Open"]
+            item "Save" [print "Save"]
+        ]
+        menu "Edit" [
+            item "Copy" [print "Copy"]
+            item "Paste" [print "Paste"]
+        ]
+    ]
+]</code></pre>
+
+    <h2>Component Features</h2>
+    <ul>
+      <li><strong>Tabs</strong>: Tab selection with content switching</li>
+      <li><strong>Toolbar</strong>: Button groups for actions</li>
+      <li><strong>Menubar</strong>: Hierarchical menu structures</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/components/button-controls/">Button Controls</a> - Button components</li>
+      <li><a href="/wiki/core/events/click-events/">Click Events</a> - Event handling</li>
+    </ul>
+  }
+]

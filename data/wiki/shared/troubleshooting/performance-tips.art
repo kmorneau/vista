@@ -1,0 +1,138 @@
+#[
+  "title": "Performance Tips"
+  "layout": "docpage"
+  "category": "Troubleshooting"
+  "tags": ["performance", "optimization", "tips", "speed"]
+  "body": {
+    <h1>Performance Tips</h1>
+
+    <p>Optimizing Vista applications for better performance.</p>
+
+    <h2>Rendering Optimization</h2>
+    <h3>Use Keys in Lists</h3>
+    <p class="bad">❌ Don't:</p>
+    <pre><code class="language-arturo">list: map items => [ text item ]</code></pre>
+    <p class="good">✓ Do:</p>
+    <pre><code class="language-arturo">list: map items 'item [
+  text item [ key: item\id ]
+]</code></pre>
+
+    <h3>Memoize Expensive Computations</h3>
+    <pre><code class="language-arturo">expensiveCompute: => [
+  ; Heavy calculation
+  result: someHeavyFunction
+  return: result
+]
+
+; Use memoized version
+cachedResult: memoize expensiveCompute</code></pre>
+
+    <h3>Lazy Load Components</h3>
+    <pre><code class="language-arturo">; Only load when needed
+heavyComponent: lazy-load "path/to/component"
+
+; Use conditional loading
+if condition [ heavyComponent ]</code></pre>
+
+    <h2>State Optimization</h2>
+    <h3>Use Derived State</h3>
+    <p class="bad">❌ Don't:</p>
+    <pre><code class="language-arturo">total: 0
+update: [
+  total: sum allItems
+]</code></pre>
+    <p class="good">✓ Do:</p>
+    <pre><code class="language-arturo">total: => sum allItems ; Computed automatically</code></pre>
+
+    <h3>Batch State Updates</h3>
+    <pre><code class="language-arturo">; Single batched update
+update: [
+  batch [
+    state.value1: newValue1
+    state.value2: newValue2
+    state.value3: newValue3
+  ]
+]</code></pre>
+
+    <h2>Event Handling</h2>
+    <h3>Use Event Delegation</h3>
+    <pre><code class="language-arturo">; Single handler for many items
+list-container [
+  on:click -> handleItemClick
+]</code></pre>
+
+    <h3>Debounce Rapid Events</h3>
+    <pre><code class="language-arturo">searchInput [
+  on:change -> debounce [ doSearch ] 300
+]</code></pre>
+
+    <h2>Memory Management</h2>
+    <h3>Clean Up Subscriptions</h3>
+    <pre><code class="language-arturo">on:create [
+  sub: store\subscribe \value -> handleChange
+]
+
+on:destroy [
+  unsubscribe sub
+]</code></pre>
+
+    <h3>Clear Intervals/Timeouts</h3>
+    <pre><code class="language-arturo">on:create [
+  timer: setInterval [ tick ] 1000
+]
+
+on:destroy [
+  clearInterval timer
+]</code></pre>
+
+    <h2>Graphics Performance</h2>
+    <h3>Use requestAnimationFrame</h3>
+    <pre><code class="language-arturo">animate: [
+  requestAnimationFrame 'frame_callback
+]</code></pre>
+
+    <h3>Batch Canvas Operations</h3>
+    <pre><code class="language-arturo">; Group related draw calls
+canvas [
+  begin-batch
+  draw: item1
+  draw: item2
+  draw: item3
+  end-batch
+]</code></pre>
+
+    <h3>Cache Canvas Elements</h3>
+    <pre><code class="language-arturo">; Draw static content once
+staticContent: cache-draw [
+  draw: complexGraphic
+]
+
+; Reuse cached draw
+canvas [
+  draw: staticContent
+]</code></pre>
+
+    <h2>Code Splitting</h2>
+    <pre><code class="language-arturo">; Split routes
+routes: [
+  "/" -> lazy "home-page"
+  "/about" -> lazy "about-page"
+  "/dashboard" -> lazy "dashboard-page"
+]</code></pre>
+
+    <h2>Profiling Checklist</h2>
+    <ul>
+      <li>☐ Use React/Vue devtools to identify re-renders</li>
+      <li>☐ Check for large bundle sizes</li>
+      <li>☐ Monitor memory usage over time</li>
+      <li>☐ Test on low-end devices</li>
+      <li>☐ Profile animation smoothness (60fps target)</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/troubleshooting/debugging-tips/">Debugging Tips</a> - Debugging guide</li>
+      <li><a href="/wiki/shared/troubleshooting/common-issues/">Common Issues</a> - Known issues and solutions</li>
+    </ul>
+  }
+]

@@ -1,0 +1,174 @@
+import "arte/api/db/grafito.art"!
+
+clean_app_record: function [raw] [
+    if notEqual? (type raw) :dictionary [
+        return null
+    ]
+    if not? key? raw "properties" [
+        return null
+    ]
+    props: raw\properties
+    if notEqual? (type props) :dictionary [
+        return null
+    ]
+    if not? key? props "app_id" [
+        return null
+    ]
+    #[
+        id: to :string props\app_id
+        workspace_id: to :string props\workspace_id
+        name: to :string props\name
+        slug: to :string props\slug
+        created_at: to :string props\created_at
+        updated_at: to :string props\updated_at
+    ]
+]
+
+repo_next_app_id: function [apps] [
+    maxId: 0
+    i: 0
+    blen: size apps
+    while [less? i blen] [
+        item: get apps i
+        if all? @[equal? (type item) :dictionary key? item "id"] [
+            aid: to :integer item\id
+            if greater? aid maxId [
+                maxId: aid
+            ]
+        ]
+        i: i + 1
+    ]
+    maxId + 1
+]
+
+repo_list_apps: function [] [
+    rows: with_arte_db [
+        fetch 'app ø
+    ]
+    out: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        item: clean_app_record (get rows i)
+        if notEqual? item null [
+            out: out ++ @[item]
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+repo_list_apps_by_workspace: function [workspaceId] [
+    rows: with_arte_db [
+        fetch 'app ø
+    ]
+    out: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        item: clean_app_record (get rows i)
+        if all? @[notEqual? item null equal? item\workspace_id to :string workspaceId] [
+            out: out ++ @[item]
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+repo_find_app_by_id: function [id] [
+    needle: to :integer id
+    apps: repo_list_apps
+    i: 0
+    blen: size apps
+    while [less? i blen] [
+        item: get apps i
+        if all? @[equal? (type item) :dictionary key? item "id" equal? (to :integer item\id) needle] [
+            return item
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+repo_insert_app_with_workspace: function [workspaceId name slug] [
+    apps: repo_list_apps
+    newId: repo_next_app_id apps
+    nameVal: to :string name
+    slugVal: to :string slug
+    wsVal: to :string workspaceId
+    createdVal: to :string now
+    updatedVal: to :string now
+    with_arte_db [
+        put 'app [app_id: newId workspace_id: wsVal name: nameVal slug: slugVal created_at: createdVal updated_at: updatedVal]
+    ]
+    repo_find_app_by_id newId
+]
+
+repo_update_app: function [id name slug] [
+    needle: to :integer id
+    nameVal: to :string name
+    slugVal: to :string slug
+    rows: with_arte_db [
+        fetch 'app ø
+    ]
+    removeNodeIds: []
+    found: false
+    wsVal: ""
+    createdVal: to :string now
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        cleaned: clean_app_record row
+        if all? @[notEqual? cleaned null equal? (to :integer cleaned\id) needle key? row "id"] [
+            found: true
+            wsVal: cleaned\workspace_id
+            createdVal: cleaned\created_at
+            removeNodeIds: removeNodeIds ++ @[to :integer row\id]
+        ]
+        i: i + 1
+    ]
+    if not? found [
+        return null
+    ]
+    with_arte_db [
+        i: 0
+        blen: size removeNodeIds
+        while [less? i blen] [
+            unput (get removeNodeIds i)
+            i: i + 1
+        ]
+        put 'app [app_id: needle workspace_id: wsVal name: nameVal slug: slugVal created_at: createdVal updated_at: to :string now]
+    ]
+    repo_find_app_by_id needle
+]
+
+repo_delete_app: function [id] [
+    needle: to :integer id
+    rows: with_arte_db [
+        fetch 'app ø
+    ]
+    removeNodeIds: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        cleaned: clean_app_record row
+        if all? @[notEqual? cleaned null equal? (to :integer cleaned\id) needle key? row "id"] [
+            removeNodeIds: removeNodeIds ++ @[to :integer row\id]
+        ]
+        i: i + 1
+    ]
+    if equal? (size removeNodeIds) 0 [
+        return false
+    ]
+    with_arte_db [
+        i: 0
+        blen: size removeNodeIds
+        while [less? i blen] [
+            unput (get removeNodeIds i)
+            i: i + 1
+        ]
+    ]
+    true
+]

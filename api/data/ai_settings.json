@@ -1,0 +1,7 @@
+{
+    "provider": "echo",
+    "model": "echo-v1",
+    "temperature": 0.4,
+    "top_p": 0.9,
+    "max_tokens": 64
+}

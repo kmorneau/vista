@@ -24,7 +24,7 @@ state,text_align,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/
 state,text_baseline,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
 state,smooth,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Mapped to imageSmoothingEnabled
 setup,anti_alias,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Mapped to imageSmoothingEnabled
-setup,clip,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,partial,src/vista/graphics/drawing.art,Current implementation clips rectangular region from two points
+setup,clip,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,partial,src/vista/graphics/drawing.art,Supports rectangle two-point clip plus polygon-block and Path2D-string clip forms
 setup,fill_rule,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported through internal fill rule state
 setup,gamma,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,partial,src/vista/graphics/drawing.art,Accepted as no-op due Canvas API limitations
 setup,grad_pen,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported as linear gradient stroke style
@@ -38,6 +38,6 @@ transform,translate,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,s
 transform,rotate,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
 transform,scale,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
 transform,skew,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
-transform,coord_system,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,partial,src/vista/graphics/drawing.art,Recognized as placeholder
+transform,coord_system,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supports vid math center and center-math modes with optional origin point
 gradient,linear_gradient,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported
 gradient,radial_gradient,https://www.rebol.com/r3/docs/view/draw-setup.html,yes,yes,src/vista/graphics/drawing.art,Supported

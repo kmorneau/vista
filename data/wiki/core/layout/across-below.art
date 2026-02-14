@@ -1,0 +1,49 @@
+#[
+  "title": "Across & Below"
+  "layout": "docpage"
+  "category": "Layout"
+  "tags": ["layout", "across", "below", "rows", "columns"]
+  "body": {
+    <h1>Across & Below</h1>
+
+    <p>The across and below keywords are fundamental layout commands that arrange children horizontally (across) or vertically (below).</p>
+
+    <h2>Across (Row Layout)</h2>
+    <pre><code>view .html [
+    across [
+        text "First"
+        text "Second"
+        text "Third"
+    ]
+]</code></pre>
+
+    <h2>Below (Column Layout)</h2>
+    <pre><code>view .html [
+    below [
+        text "First"
+        text "Second"
+        text "Third"
+    ]
+]</code></pre>
+
+    <h2>Nested Layouts</h2>
+    <pre><code>view .html [
+    across [
+        below [
+            text "Left Top"
+            text "Left Bottom"
+        ]
+        below [
+            text "Right Top"
+            text "Right Bottom"
+        ]
+    ]
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/layout/grid-system/">Grid System</a> - Grid layout</li>
+      <li><a href="/wiki/core/layout/spacing-pad/">Spacing & Padding</a> - Controlling whitespace</li>
+    </ul>
+  }
+]

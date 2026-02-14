@@ -63,7 +63,7 @@ validate_user_payload: function [name email] [
     ]
 ]
 
-validate_ai_chat_payload: function [provider model prompt temperature] [
+validate_ai_chat_payload: function [provider model prompt temperature options] [
     pCheck: ensure_text provider "provider"
     mCheck: ensure_text model "model"
     qCheck: ensure_text prompt "prompt"
@@ -84,6 +84,55 @@ validate_ai_chat_payload: function [provider model prompt temperature] [
         ]
     ]
 
+    cleanOptions: #[]
+    if notEqual? options null [
+        if notEqual? (type options) :dictionary [
+            errors: errors ++ @[
+                #[
+                    ok: false
+                    field: "options"
+                    message: "options must be an object/dictionary"
+                ]
+            ]
+        ]
+        if equal? (type options) :dictionary [
+            cleanOptions: options
+            if key? cleanOptions "max_tokens" [
+                maxTokens: to :integer cleanOptions\max_tokens
+                if less? maxTokens 1 [
+                    errors: errors ++ @[
+                        #[
+                            ok: false
+                            field: "options.max_tokens"
+                            message: "max_tokens must be >= 1"
+                        ]
+                    ]
+                ]
+                if not? less? maxTokens 1 [
+                    cleanOptions\max_tokens: maxTokens
+                ]
+            ]
+            if key? cleanOptions "top_p" [
+                topP: to :floating cleanOptions\top_p
+                if any? @[less? topP 0.0 greater? topP 1.0] [
+                    errors: errors ++ @[
+                        #[
+                            ok: false
+                            field: "options.top_p"
+                            message: "top_p must be between 0.0 and 1.0"
+                        ]
+                    ]
+                ]
+                if not? any? @[less? topP 0.0 greater? topP 1.0] [
+                    cleanOptions\top_p: topP
+                ]
+            ]
+            if key? cleanOptions "system" [
+                cleanOptions\system: to :string cleanOptions\system
+            ]
+        ]
+    ]
+
     if greater? (size errors) 0 [
         return #[
             ok: false
@@ -98,6 +147,138 @@ validate_ai_chat_payload: function [provider model prompt temperature] [
             model: mCheck\value
             prompt: qCheck\value
             temperature: tempNum
+            options: cleanOptions
+        ]
+    ]
+]
+
+ensure_password: function [value fieldName] [
+    check: ensure_text value fieldName
+    if not? check\ok [
+        return check
+    ]
+    if less? (size check\value) 8 [
+        return #[
+            ok: false
+            field: fieldName
+            message: fieldName ++ " must be at least 8 characters"
+        ]
+    ]
+    #[
+        ok: true
+        field: fieldName
+        value: check\value
+    ]
+]
+
+validate_auth_signup_payload: function [email password] [
+    emailCheck: ensure_email email "email"
+    passCheck: ensure_password password "password"
+    errors: []
+    if not? emailCheck\ok [ errors: errors ++ @[emailCheck] ]
+    if not? passCheck\ok [ errors: errors ++ @[passCheck] ]
+    if greater? (size errors) 0 [
+        return #[
+            ok: false
+            errors: errors
+        ]
+    ]
+    #[
+        ok: true
+        data: #[
+            email: emailCheck\value
+            password: passCheck\value
+        ]
+    ]
+]
+
+validate_auth_login_payload: function [email password] [
+    validate_auth_signup_payload email password
+]
+
+validate_auth_email_payload: function [email] [
+    emailCheck: ensure_email email "email"
+    if not? emailCheck\ok [
+        return #[
+            ok: false
+            errors: @[emailCheck]
+        ]
+    ]
+    #[
+        ok: true
+        data: #[
+            email: emailCheck\value
+        ]
+    ]
+]
+
+validate_auth_password_change_payload: function [oldPassword newPassword] [
+    oldCheck: ensure_password oldPassword "old_password"
+    newCheck: ensure_password newPassword "new_password"
+    errors: []
+    if not? oldCheck\ok [ errors: errors ++ @[oldCheck] ]
+    if not? newCheck\ok [ errors: errors ++ @[newCheck] ]
+    if greater? (size errors) 0 [
+        return #[
+            ok: false
+            errors: errors
+        ]
+    ]
+    #[
+        ok: true
+        data: #[
+            old_password: oldCheck\value
+            new_password: newCheck\value
+        ]
+    ]
+]
+
+validate_auth_role_payload: function [role] [
+    roleCheck: ensure_text role "role"
+    if not? roleCheck\ok [
+        return #[
+            ok: false
+            errors: @[roleCheck]
+        ]
+    ]
+    roleVal: lower roleCheck\value
+    if not? in? roleVal ["admin" "user"] [
+        return #[
+            ok: false
+            errors: @[
+                #[
+                    ok: false
+                    field: "role"
+                    message: "role must be admin or user"
+                ]
+            ]
+        ]
+    ]
+    #[
+        ok: true
+        data: #[
+            role: roleVal
+        ]
+    ]
+]
+
+validate_auth_mfa_payload: function [challengeId code] [
+    idCheck: ensure_text challengeId "challenge_id"
+    codeCheck: ensure_text code "code"
+    errors: []
+    if not? idCheck\ok [ errors: errors ++ @[idCheck] ]
+    if not? codeCheck\ok [ errors: errors ++ @[codeCheck] ]
+    if greater? (size errors) 0 [
+        return #[
+            ok: false
+            errors: errors
+        ]
+    ]
+    #[
+        ok: true
+        data: #[
+            challenge_id: to :integer idCheck\value
+            code: codeCheck\value
         ]
     ]
 ]

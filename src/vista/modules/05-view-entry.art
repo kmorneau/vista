@@ -1,15 +1,11 @@
-; View function: generate full HTML and serve
-view: function [layoutBlock] [
+; Host split: render HTML independently from host delivery side effects.
+view_render_html: function [layoutBlock] [
     apply_arturo_header
     vista_state\webview_open: false
-    fullHtml: build_full_html layoutBlock
-    htmlOnly: false
-    if attr? "returnHtml" [
-        htmlOnly: true
-    ]
-    if htmlOnly [
-        return fullHtml
-    ]
+    build_full_html layoutBlock
+]
+
+view_host_options: function [] [
     noWebview: false
     if attr? "noWebview" [
         noWebview: true
@@ -21,31 +17,43 @@ view: function [layoutBlock] [
     if key? env_vars "NO_WEBVIEW" [
         noWebview: true
     ]
-    if not? webview_enabled [
-        noWebview: true
-    ]
     filePath: attr "file"
-    switch notEqual? filePath null [
-        pathStr: to :string filePath
-        absPath: relative pathStr
-        write fullHtml absPath
-        if noWebview [
-            vista_state\webview_open: false
-            return fullHtml
-        ]
-        vista_state\webview_open: true
-        webview fullHtml
-        vista_state\webview_open: false
-    ][
-        write fullHtml "ui.html"
-        if noWebview [
-            vista_state\webview_open: false
-            return fullHtml
-        ]
-        vista_state\webview_open: true
-        webview fullHtml
-        vista_state\webview_open: false
+    fileName: "ui.html"
+    if notEqual? filePath null [
+        fileName: to :string filePath
     ]
+    #[
+        noWebview: noWebview
+        absPath: absolute fileName
+    ]
+]
+
+view_host_deliver_default: function [fullHtml hostOptions] [
+    absPath: hostOptions\absPath
+    noWebview: hostOptions\noWebview
+    write fullHtml absPath
+    if noWebview [
+        vista_state\webview_open: false
+        return fullHtml
+    ]
+    safePath: replace absPath "\"" "\\\""
+    openCmd: "open \"" ++ safePath ++ "\" >/dev/null 2>&1 &"
+    if error? err: <= try [
+        execute openCmd
+    ] [
+        ; If browser launch fails, keep behavior non-blocking and still return HTML.
+    ]
+    fullHtml
+]
+
+; View function: generate full HTML and serve through the default host adapter.
+view: function [layoutBlock] [
+    fullHtml: view_render_html layoutBlock
+    if attr? "returnHtml" [
+        return fullHtml
+    ]
+    hostOptions: view_host_options
+    view_host_deliver_default fullHtml hostOptions
 ]
 
 vid: function [layoutBlock] [
@@ -76,6 +84,82 @@ vid: function [layoutBlock] [
     ]
     vista_vid_mode: prev
     result
+]
+
+vista_runtime_webview_inject: function [js] [
+    if not? webview_enabled [
+        return false
+    ]
+    if not? vista_state\webview_open [
+        return false
+    ]
+    env_vars: env
+    if any? @[key? env_vars "VISTA_NO_WEBVIEW" key? env_vars "NO_WEBVIEW"] [
+        return false
+    ]
+    webview .inject: js ""
+    true
+]
+
+alert: function [message] [
+    msg: to :string message
+    js: "window.alert('" ++ js_escape_single msg ++ "');"
+    if vista_runtime_webview_inject js [
+        return true
+    ]
+    print msg
+    true
+]
+
+dialog: function [layoutOrText] [
+    if equal? (type layoutOrText) :block [
+        innerHtml: layout layoutOrText
+        js: "(()=>{var old=document.getElementById('__vistaRuntimeDialog');if(old){old.remove();}var host=document.createElement('div');host.id='__vistaRuntimeDialog';host.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;z-index:99999;padding:18px;';var card=document.createElement('div');card.style.cssText='background:#fff;border:1px solid #ded6c2;border-radius:12px;min-width:320px;max-width:860px;max-height:86vh;overflow:auto;padding:14px;box-shadow:0 18px 40px rgba(0,0,0,.22);';card.innerHTML='" ++ js_escape_single innerHtml ++ "';host.appendChild(card);host.addEventListener('click',function(e){if(e.target===host){host.remove();}});document.body.appendChild(host);})();"
+        if vista_runtime_webview_inject js [
+            return true
+        ]
+    ]
+    alert layoutOrText
+    true
+]
+
+clip: function [facePath] [
+    value: to :string facePath
+    clipTmp: absolute ".vista-clip.tmp"
+    write value clipTmp
+    safePath: replace clipTmp "\"" "\\\""
+    if not? error? err: <= try [
+        execute "cat \"" ++ safePath ++ "\" | pbcopy"
+    ] [
+        return true
+    ]
+    if not? error? err: <= try [
+        execute "cat \"" ++ safePath ++ "\" | xclip -selection clipboard"
+    ] [
+        return true
+    ]
+    if not? error? err: <= try [
+        execute "cat \"" ++ safePath ++ "\" | wl-copy"
+    ] [
+        return true
+    ]
+    false
+]
+
+unclip: function [] [
+    if not? error? err: <= try [
+        return execute "pbpaste"
+    ] [
+    ]
+    if not? error? err: <= try [
+        return execute "xclip -selection clipboard -o"
+    ] [
+    ]
+    if not? error? err: <= try [
+        return execute "wl-paste"
+    ] [
+    ]
+    ""
 ]
 
 ; Runtime helpers for rate/feel semantics

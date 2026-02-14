@@ -1,0 +1,45 @@
+#[
+  "title": "Draw Model"
+  "layout": "docpage"
+  "category": "Concepts"
+  "tags": ["graphics", "concepts", "draw", "model", "dialect"]
+  "body": {
+    <h1>Draw Model</h1>
+
+    <p>The Draw Model is Vista Graphics' declarative drawing dialect for creating 2D graphics on canvas elements.</p>
+
+    <h2>Draw Block Structure</h2>
+    <pre><code>draw canvas [
+    pen red
+    fill blue
+    circle 100 100 50
+]</code></pre>
+
+    <h2>Drawing State</h2>
+    <p>The draw model maintains state for:</p>
+    <ul>
+      <li><strong>pen</strong>: Current outline color/style</li>
+      <li><strong>fill</strong>: Current fill color/style</li>
+      <li><strong>font</strong>: Current text font</li>
+      <li><strong>transform</strong>: Current transformation matrix</li>
+    </ul>
+
+    <h2>Push/Pop State</h2>
+    <pre><code>draw canvas [
+    pen red
+    box 0 0 100 100
+    push [
+        pen blue
+        rotate 45
+        box 0 0 100 100
+    ]
+    box 100 100 100 100
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/drawing/">Drawing</a> - Drawing reference</li>
+      <li><a href="/wiki/graphics/concepts/coordinate-systems/">Coordinate Systems</a> - Coordinates</li>
+    </ul>
+  }
+]

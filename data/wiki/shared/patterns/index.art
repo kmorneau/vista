@@ -1,0 +1,31 @@
+#[
+  "title": "Patterns"
+  "layout": "docpage"
+  "category": "Patterns"
+  "tags": ["patterns", "best-practices", "anti-patterns", "design"]
+  "body": {
+    <h1>Patterns</h1>
+
+    <p>Documentation for common design patterns and anti-patterns in Vista applications.</p>
+
+    <h2>Pattern Topics</h2>
+    <ul>
+      <li><a href="/wiki/shared/patterns/common-patterns/">Common Patterns</a> - Reusable patterns</li>
+      <li><a href="/wiki/shared/patterns/anti-patterns/">Anti-Patterns</a> - What to avoid</li>
+    </ul>
+
+    <h2>Common Patterns</h2>
+    <ul>
+      <li>Component composition</li>
+      <li>State management patterns</li>
+      <li>Event handling patterns</li>
+      <li>Layout patterns</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/styles/">Styles</a> - Styling patterns</li>
+      <li><a href="/wiki/shared/migration/">Migration</a> - Migration patterns</li>
+    </ul>
+  }
+]

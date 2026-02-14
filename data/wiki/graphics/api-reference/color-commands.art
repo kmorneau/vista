@@ -1,0 +1,39 @@
+#[
+  "title": "Color Commands"
+  "layout": "docpage"
+  "category": "API Reference"
+  "tags": ["graphics", "api", "reference", "colors"]
+  "body": {
+    <h1>Color Commands</h1>
+
+    <p>Complete reference for Vista Graphics color and gradient commands.</p>
+
+    <h2>Color Functions</h2>
+    <ul>
+      <li><strong>rgb</strong>: Create RGB color</li>
+      <li><strong>rgba</strong>: Create RGBA color with alpha</li>
+      <li><strong>hsl</strong>: Create HSL color</li>
+      <li><strong>hsla</strong>: Create HSLA color</li>
+    </ul>
+
+    <h2>Gradient Functions</h2>
+    <ul>
+      <li><strong>linear</strong>: Create linear gradient</li>
+      <li><strong>radial</strong>: Create radial gradient</li>
+      <li><strong>conic</strong>: Create conic gradient</li>
+    </ul>
+
+    <h2>Color Utilities</h2>
+    <ul>
+      <li><strong>lerpColor</strong>: Interpolate between colors</li>
+      <li><strong>color-to-hex</strong>: Convert to hex</li>
+      <li><strong>hex-to-color</strong>: Convert from hex</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/api-reference/">API Reference</a> - All graphics APIs</li>
+      <li><a href="/wiki/graphics/colors/">Colors</a> - Color reference</li>
+    </ul>
+  }
+]

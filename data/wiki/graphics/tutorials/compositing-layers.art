@@ -1,0 +1,48 @@
+#[
+  "title": "Compositing & Layers"
+  "layout": "docpage"
+  "category": "Tutorials"
+  "tags": ["graphics", "tutorials", "compositing", "layers", "push", "pop"]
+  "body": {
+    <h1>Compositing & Layers</h1>
+
+    <p>Learn how to manage drawing state and create layered graphics with push/pop.</p>
+
+    <h2>Push/Pop State</h2>
+    <pre><code>draw canvas [
+    pen red
+    box 0 0 100 100
+    
+    push [
+        pen blue
+        rotate 45
+        box 50 50 100 100
+    ]
+    
+    pen green
+    circle 150 150 50
+]</code></pre>
+
+    <h2>Saved State</h2>
+    <p>The push command saves:</p>
+    <ul>
+      <li>Current pen color/style</li>
+      <li>Current fill color/style</li>
+      <li>Current transformation matrix</li>
+      <li>Current font settings</li>
+    </ul>
+
+    <h2>Layering Tips</h2>
+    <ul>
+      <li>Use push/pop to isolate transformation effects</li>
+      <li>Draw background elements first</li>
+      <li>Use transparency for overlapping effects</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/concepts/draw-model/">Draw Model</a> - Drawing concepts</li>
+      <li><a href="/wiki/graphics/drawing/">Drawing</a> - Drawing reference</li>
+    </ul>
+  }
+]

@@ -1,0 +1,43 @@
+#[
+  "title": "Pixel Art Mode"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["graphics", "pixel-art", "retro", "games"]
+  "body": {
+    <h1>Pixel Art Mode</h1>
+
+    <p>Vista Graphics supports pixel art rendering mode for crisp, retro-style graphics.</p>
+
+    <h2>Enable Pixel Art Mode</h2>
+    <pre><code>draw canvas [
+    pixel-art on
+    image "sprite.png" 100 100
+]</code></pre>
+
+    <h2>Pixel Art Settings</h2>
+    <ul>
+      <li><strong>pixel-art on</strong>: Enable nearest-neighbor interpolation</li>
+      <li><strong>pixel-art off</strong>: Disable (use smooth scaling)</li>
+      <li><strong>pixel-ratio</strong>: Set pixel ratio for canvas</li>
+    </ul>
+
+    <h2>Best Practices</h2>
+    <ul>
+      <li>Use when scaling pixel art sprites</li>
+      <li>Set canvas size to match pixel art dimensions</li>
+      <li>Disable anti-aliasing for crisp edges</li>
+    </ul>
+
+    <h2>Example: Pixel Art Game Sprite</h2>
+    <pre><code>draw canvas [
+    pixel-art on
+    image "character.png" 16 16 64 64
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/images/image-scaling/">Image Scaling</a> - Scaling images</li>
+      <li><a href="/wiki/graphics/images/sprite-sheets/">Sprite Sheets</a> - Sprite animation</li>
+    </ul>
+  }
+]

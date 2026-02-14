@@ -1,0 +1,43 @@
+#[
+  "title": "Mouse Events"
+  "layout": "docpage"
+  "category": "Events"
+  "tags": ["events", "mouse", "hover", "interactions"]
+  "body": {
+    <h1>Mouse Events</h1>
+
+    <p>Mouse events are triggered when users interact with elements using the mouse pointer.</p>
+
+    <h2>Event Types</h2>
+    <ul>
+      <li><strong>on-over</strong>: Triggered when mouse enters the element</li>
+      <li><strong>on-out</strong>: Triggered when mouse leaves the element</li>
+      <li><strong>on-down</strong>: Triggered when mouse button is pressed</li>
+      <li><strong>on-up</strong>: Triggered when mouse button is released</li>
+    </ul>
+
+    <h2>Example</h2>
+    <pre><code>view .html [
+    box red 200x200 [
+        on-over [print "Mouse entered"]
+        on-out [print "Mouse left"]
+        on-down [print "Mouse down"]
+        on-up [print "Mouse up"]
+    ]
+]</code></pre>
+
+    <h2>Components Supporting Mouse Events</h2>
+    <ul>
+      <li>All visual components</li>
+      <li>box</li>
+      <li>panel</li>
+      <li>canvas</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/events/event-overview/">Event Overview</a> - Introduction to events</li>
+      <li><a href="/wiki/core/events/click-events/">Click Events</a> - Click event handling</li>
+    </ul>
+  }
+]

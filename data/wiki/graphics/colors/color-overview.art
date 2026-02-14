@@ -1,0 +1,41 @@
+#[
+  "title": "Color Overview"
+  "layout": "docpage"
+  "category": "Colors"
+  "tags": ["graphics", "colors", "overview", "introduction"]
+  "body": {
+    <h1>Color Overview</h1>
+
+    <p>Vista Graphics provides multiple ways to specify colors for drawing operations.</p>
+
+    <h2>Color Specification Methods</h2>
+    <ul>
+      <li><strong>Named Colors</strong>: CSS color names (red, blue, green)</li>
+      <li><strong>RGB</strong>: Red, Green, Blue values (0-255)</li>
+      <li><strong>RGBA</strong>: RGB with alpha transparency</li>
+      <li><strong>Hex</strong>: Hexadecimal color values (#FF0000)</li>
+      <li><strong>HSL</strong>: Hue, Saturation, Lightness</li>
+    </ul>
+
+    <h2>Quick Reference</h2>
+    <pre><code>draw canvas [
+    pen red
+    fill blue
+    box 0 0 100 100
+]</code></pre>
+
+    <h2>Color Applications</h2>
+    <ul>
+      <li><strong>pen</strong>: Outline color</li>
+      <li><strong>fill</strong>: Fill color</li>
+      <li><strong>font-color</strong>: Text color</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/colors/named-colors/">Named Colors</a> - Named color reference</li>
+      <li><a href="/wiki/graphics/colors/rgb-rgba/">RGB & RGBA</a> - RGB color reference</li>
+      <li><a href="/wiki/graphics/colors/gradient-fills/">Gradient Fills</a> - Gradient colors</li>
+    </ul>
+  }
+]

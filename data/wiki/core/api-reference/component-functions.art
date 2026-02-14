@@ -1,0 +1,52 @@
+#[
+  "title": "Component Functions"
+  "layout": "docpage"
+  "category": "API Reference"
+  "tags": ["api", "reference", "components", "functions"]
+  "body": {
+    <h1>Component Functions</h1>
+
+    <p>Complete reference for Vista's component creation functions.</p>
+
+    <h2>Text Components</h2>
+    <ul>
+      <li><strong>title</strong>: Display large heading text</li>
+      <li><strong>subtitle</strong>: Display smaller heading text</li>
+      <li><strong>text</strong>: Display regular text</li>
+      <li><strong>label</strong>: Display label text</li>
+    </ul>
+
+    <h2>Button Components</h2>
+    <ul>
+      <li><strong>button</strong>: Create a clickable button</li>
+      <li><strong>key_button</strong>: Create a keyboard button</li>
+    </ul>
+
+    <h2>Input Components</h2>
+    <ul>
+      <li><strong>field</strong>: Single-line text input</li>
+      <li><strong>textarea</strong>: Multi-line text input</li>
+      <li><strong>select</strong>: Dropdown selection</li>
+    </ul>
+
+    <h2>Selection Components</h2>
+    <ul>
+      <li><strong>checkbox</strong>: Checkbox control</li>
+      <li><strong>toggle</strong>: Toggle switch</li>
+      <li><strong>radio</strong>: Radio button</li>
+    </ul>
+
+    <h2>Container Components</h2>
+    <ul>
+      <li><strong>box</strong>: Basic container box</li>
+      <li><strong>panel</strong>: Panel container</li>
+      <li><strong>group</strong>: Grouped container</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/components/">Components</a> - Component documentation</li>
+      <li><a href="/wiki/core/api-reference/face-functions/">Face Functions</a> - Face manipulation</li>
+    </ul>
+  }
+]

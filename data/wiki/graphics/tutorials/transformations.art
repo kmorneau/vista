@@ -1,0 +1,46 @@
+#[
+  "title": "Transformations"
+  "layout": "docpage"
+  "category": "Tutorials"
+  "tags": ["graphics", "tutorials", "transforms", "rotate", "scale", "translate"]
+  "body": {
+    <h1>Transformations</h1>
+
+    <p>Learn how to apply geometric transformations to your graphics.</p>
+
+    <h2>Translation</h2>
+    <pre><code>draw canvas [
+    translate 50 50
+    box 0 0 100 100
+]</code></pre>
+
+    <h2>Rotation</h2>
+    <pre><code>draw canvas [
+    rotate 45
+    box 0 0 100 100
+]</code></pre>
+
+    <h2>Scaling</h2>
+    <pre><code>draw canvas [
+    scale 2 2
+    box 0 0 50 50
+]</code></pre>
+
+    <h2>Combined Transforms</h2>
+    <pre><code>draw canvas [
+    translate 100 100
+    rotate 30
+    scale 1.5 1.5
+    circle 0 0 50
+]</code></pre>
+
+    <h2>Transform Order</h2>
+    <p>Transformations are applied in reverse order of declaration.</p>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/transforms/">Transforms</a> - Transform reference</li>
+      <li><a href="/wiki/graphics/concepts/coordinate-systems/">Coordinate Systems</a> - Coordinates</li>
+    </ul>
+  }
+]

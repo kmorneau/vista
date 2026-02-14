@@ -280,6 +280,28 @@ layout_state: function [block] [
                                                 ]
                                         ]
                                 ]
+                                "script" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: info\attrs
+                                        body: ""
+                                        if greater? (size info\args) 0 [
+                                                bodyVal: get info\args 0
+                                                switch is_raw_html bodyVal [
+                                                        body: bodyVal\value
+                                                ][
+                                                        body: to :string bodyVal
+                                                ]
+                                        ]
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "script" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        set_face_meta faces faceId #[content: body]
+                                        faceHtml: script_face body attrs
+                                        html: html ++ faceHtml
+                                        set_face_html faces faceId faceHtml
+                                ]
                                 "scope" -> [
                                         info: parse_args_from block (i + 1)
                                         i: info\next
@@ -1583,6 +1605,76 @@ layout_state: function [block] [
                                                 ]
                                         ]
                                 ]
+                                "audio" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "audio" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        if not? key? attrs "controls" [
+                                                attrs\controls: true
+                                        ]
+                                        set_face_attrs_and_name faces faceId attrs
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        attrStr: attrs_to_html attrs
+                                                        faceHtml: "<audio data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></audio>"
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        attrs\src: to :string arg0
+                                                        faceHtml: audio_face attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ] [
+                                                faceHtml: audio_face attrs
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ]
+                                ]
+                                "video" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "video" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        if not? key? attrs "controls" [
+                                                attrs\controls: true
+                                        ]
+                                        set_face_attrs_and_name faces faceId attrs
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        attrStr: attrs_to_html attrs
+                                                        faceHtml: "<video data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></video>"
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ][
+                                                        attrs\src: to :string arg0
+                                                        faceHtml: video_face attrs
+                                                        html: html ++ faceHtml
+                                                        set_face_html faces faceId faceHtml
+                                                ]
+                                        ] [
+                                                faceHtml: video_face attrs
+                                                html: html ++ faceHtml
+                                                set_face_html faces faceId faceHtml
+                                        ]
+                                ]
                                 "icon" -> [
                                         info: parse_args_from block (i + 1)
                                         i: info\next
@@ -2249,15 +2341,21 @@ layout: function [block] [
         result\html
 ]
 
-build_full_html: function [layoutBlock] [
+compile_layout: function [layoutBlock] [
     vista_state\face_counter: 0
     vista_state\face_names: #[]
     result: layout_state layoutBlock
     vista_state\last_faces: result\faces
     vista_state\last_root: result\root
     vista_state\last_bindings: result\bindings
-    htmlContent: result\html
-    script: render_script result\bindings
+    result
+]
+
+render_html_document: function [compileResult] [
+    htmlContent: compileResult\html
+    bindings: compileResult\bindings
+    faces: compileResult\faces
+    script: render_script bindings
     tabsScript: tabs_script
     menuScript: menubar_script
     tableScript: table_script
@@ -2271,28 +2369,55 @@ build_full_html: function [layoutBlock] [
     if vista_vid_mode [
         css: css ++ vista_vid_css
     ]
+    effectiveTitle: webview_title
+    if all? @[key? vista_state "webview_title" notEqual? vista_state\webview_title ""] [
+        effectiveTitle: to :string vista_state\webview_title
+    ]
+    effectiveLogoPath: vista_app_logo_path
+    if all? @[key? vista_state "app_logo_path" notEqual? vista_state\app_logo_path ""] [
+        effectiveLogoPath: to :string vista_state\app_logo_path
+    ]
+    effectivePrimaryColor: "#f2c230"
+    if all? @[key? vista_state "app_primary_color" notEqual? vista_state\app_primary_color ""] [
+        effectivePrimaryColor: to :string vista_state\app_primary_color
+    ]
+    effectiveBackgroundColor: "#f7f6f1"
+    if all? @[key? vista_state "app_background_color" notEqual? vista_state\app_background_color ""] [
+        effectiveBackgroundColor: to :string vista_state\app_background_color
+    ]
+    effectiveTextColor: "#141414"
+    if all? @[key? vista_state "app_text_color" notEqual? vista_state\app_text_color ""] [
+        effectiveTextColor: to :string vista_state\app_text_color
+    ]
+    effectiveTitleColor: "#141414"
+    if all? @[key? vista_state "app_title_color" notEqual? vista_state\app_title_color ""] [
+        effectiveTitleColor: to :string vista_state\app_title_color
+    ]
+    css: css ++ ":root{--arturo-primary:" ++ effectivePrimaryColor ++ ";--arturo-bg:" ++ effectiveBackgroundColor ++ ";--arturo-ink:" ++ effectiveTextColor ++ ";}"
+    css: css ++ ".vista-app-title{color:" ++ effectiveTitleColor ++ ";}"
     html: "<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>"
-    html: html ++ "<title>" ++ webview_title ++ "</title><style>" ++ css ++ "</style></head>"
-    appTitle: html_escape_text webview_title
-    titleHtml: ""
+    html: html ++ "<title>" ++ effectiveTitle ++ "</title><style>" ++ css ++ "</style></head>"
+    appTitle: html_escape_text effectiveTitle
+    headerTextHtml: "<div class='vista-app-mark'>ARTURO/VISTA</div>"
     if not? equal? appTitle "ARTURO/VISTA" [
-        titleHtml: "<div class='vista-app-title'>" ++ appTitle ++ "</div>"
+        headerTextHtml: "<div class='vista-app-title'>" ++ appTitle ++ "</div>"
     ]
     logoHtml: ""
-    if not? any? @[equal? vista_app_logo_path null equal? vista_app_logo_path ""] [
-        logoSrc: html_escape_attr (logo_data_url (to :string vista_app_logo_path))
-        logoHtml: "<img class='vista-app-logo' src='" ++ logoSrc ++ "' alt='ARTURO'>"
+    if not? any? @[equal? effectiveLogoPath null equal? effectiveLogoPath ""] [
+        logoSrc: html_escape_attr (logo_data_url effectiveLogoPath)
+        logoAlt: html_escape_attr effectiveTitle
+        logoHtml: "<img class='vista-app-logo' src='" ++ logoSrc ++ "' alt='" ++ logoAlt ++ "'>"
     ]
-    appHeader: "<header class='vista-app-header'><div class='vista-app-header-inner'>" ++ logoHtml ++ "<div class='vista-app-mark'>ARTURO/VISTA</div>" ++ titleHtml ++ "</div></header>"
+    appHeader: "<header class='vista-app-header'><div class='vista-app-header-inner'>" ++ logoHtml ++ headerTextHtml ++ "</div></header>"
     html: html ++ bodyOpen
     html: html ++ appHeader
     canvasScript: ""
-    facesKeys: keys vista_state\last_faces
+    facesKeys: keys faces
     fk_len: size facesKeys
     fi: 0
     while [less? fi fk_len] [
         fid: get facesKeys fi
-        face: vista_state\last_faces\[fid]
+        face: faces\[fid]
         if equal? face\type "canvas" [
             canvasScript: canvasScript ++ canvas_draw_script face
         ]
@@ -2308,6 +2433,11 @@ build_full_html: function [layoutBlock] [
     html: html ++ reloadScript
     html: html ++ "</body></html>"
     html
+]
+
+build_full_html: function [layoutBlock] [
+    compileResult: compile_layout layoutBlock
+    render_html_document compileResult
 ]
 
 show: function [face] [
@@ -2454,6 +2584,12 @@ render_face: function [face] [
             attrStr: attrs_to_html face\attrs
             "<img" ++ attrStr ++ ">"
         ]
+        "audio" -> [
+            audio_face face\attrs
+        ]
+        "video" -> [
+            video_face face\attrs
+        ]
         "icon" -> [
             attrStr: attrs_to_html face\attrs
             "<img" ++ attrStr ++ ">"
@@ -2465,6 +2601,13 @@ render_face: function [face] [
         "progress" -> [
             attrStr: attrs_to_html face\attrs
             "<progress" ++ attrStr ++ "></progress>"
+        ]
+        "script" -> [
+            content: ""
+            if key? meta "content" [
+                content: meta\content
+            ]
+            script_face content face\attrs
         ]
         "button" -> [
             labelHtml: ""

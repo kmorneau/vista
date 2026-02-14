@@ -1,0 +1,133 @@
+#[
+  "title": "Anti-Patterns"
+  "layout": "docpage"
+  "category": "Patterns"
+  "tags": ["patterns", "anti-patterns", "avoid", "mistakes"]
+  "body": {
+    <h1>Anti-Patterns</h1>
+
+    <p>Common mistakes and patterns to avoid when building Vista applications.</p>
+
+    <h2>Hardcoding Values</h2>
+    <p class="bad">❌ Don't:</p>
+    <pre><code class="language-arturo">button "Submit" [
+  color: #FF0000
+  width: 200
+  height: 50
+]</code></pre>
+    <p class="good">✓ Do:</p>
+    <pre><code class="language-arturo">button "Submit" [
+  color: theme.primary
+  width: theme.buttonWidth
+  height: theme.buttonHeight
+]</code></pre>
+
+    <h2>Deep Nesting</h2>
+    <p class="bad">❌ Don't:</p>
+    <pre><code class="language-arturo">panel [
+  row [
+    column [
+      panel [
+        row [
+          column [ text "Deep" ]
+        ]
+      ]
+    ]
+  ]
+]</code></pre>
+    <p class="good">✓ Do:</p>
+    <pre><code class="language-arturo">MyCard: [
+  row [ column [ text "Shallow" ] ]
+]
+
+panel [
+  row [ column [ MyCard ] ]
+]</code></pre>
+
+    <h2>Inline Event Handlers</h2>
+    <p class="bad">❌ Don't:</p>
+    <pre><code class="language-arturo">button "Click" [
+  on:click [
+    do: [ 
+      print "clicked"
+      someLongAction
+      anotherAction
+      yetAnother
+    ]
+  ]
+]</code></pre>
+    <p class="good">✓ Do:</p>
+    <pre><code class="language-arturo">handleClick: [
+  print "clicked"
+  someLongAction
+  anotherAction
+  yetAnother
+]
+
+button "Click" [ on:click -> handleClick ]</code></pre>
+
+    <h2>Ignoring Cleanup</h2>
+    <p class="bad">❌ Don't:</p>
+    <pre><code class="language-arturo">on:create [
+  timer: setInterval [...1000]
+  ; No cleanup!
+]</code></pre>
+    <p class="good">✓ Do:</p>
+    <pre><code class="language-arturo">on:create [
+  timer: setInterval [ doSomething 1000 ]
+]
+
+on:destroy [
+  clearInterval timer
+]</code></pre>
+
+    <h2>Mutating Props Directly</h2>
+    <p class="bad">❌ Don't:</p>
+    <pre><code class="language-arturo">component: [
+  data: passedProp
+  data.message: "Modified" ; Mutating parent state!
+]</code></pre>
+    <p class="good">✓ Do:</p>
+    <pre><code class="language-arturo">component: [
+  localData: copy passedProp
+  localData.message: "Modified"
+]</code></pre>
+
+    <h2>Using Magic Numbers</h2>
+    <p class="bad">❌ Don't:</p>
+    <pre><code class="language-arturo">position: 42 + 24 * 2 - 8</code></pre>
+    <p class="good">✓ Do:</p>
+    <pre><code class="language-arturo">padding: theme.spacing.md
+position: basePosition + offset * 2 - margin</code></pre>
+
+    <h2>Not Using Layout System</h2>
+    <p class="bad">❌ Don't:</p>
+    <pre><code class="language-arturo">text "First" [ offset: 0x0 ]
+text "Second" [ offset: 0x30 ]
+text "Third" [ offset: 0x60 ]</code></pre>
+    <p class="good">✓ Do:</p>
+    <pre><code class="language-arturo">column [
+  text "First"
+  text "Second"
+  text "Third"
+]</code></pre>
+
+    <h2>Excessive State</h2>
+    <p class="bad">❌ Don't:</p>
+    <pre><code class="language-arturo">count: 0
+doubleCount: 0
+tripleCount: 0
+derivedValue: 0</code></pre>
+    <p class="good">✓ Do:</p>
+    <pre><code class="language-arturo">count: 0
+doubleCount: => count * 2
+tripleCount: => count * 3
+derivedValue: => calculateDerived count</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/patterns/common-patterns/">Common Patterns</a> - Recommended patterns</li>
+      <li><a href="/wiki/shared/troubleshooting/common-issues/">Common Issues</a> - Troubleshooting guide</li>
+    </ul>
+  }
+]

@@ -1,5 +1,8 @@
 import "api/routes/users.art"!
 import "api/routes/ai_chat.art"!
+import "api/routes/auth.art"!
+import "api/routes/security.art"!
+import "api/security/security_core.art"!
 
 api_port: 18969
 
@@ -20,10 +23,41 @@ serve.verbose .port:api_port [
                 "POST /api/users/:name/:email"
                 "PUT /api/users/:id/:name/:email"
                 "DELETE /api/users/:id"
+                "POST /api/auth/signup/:email/:password"
+                "POST /api/auth/login/:email/:password"
+                "POST /api/auth/mfa/verify/:challenge/:code"
+                "POST /api/auth/logout/:token"
+                "GET /api/auth/me/:token"
+                "PUT /api/auth/password/:token/:old/:new"
+                "PUT /api/auth/email/:token/:email"
+                "PUT /api/auth/role/:token/:userId/:role"
+                "POST /api/auth/mfa/enable/:token"
+                "POST /api/auth/mfa/disable/:token"
+                "GET /api/auth/users/:token"
+                "DELETE /api/auth/account/:token"
+                "POST /api/auth/bootstrap/:secret/:email"
+                "GET /api/v2/security/csrf/:clientId"
+                "POST /api/v2/auth/signup/:clientId/:csrf/:payload"
+                "POST /api/v2/auth/login/:clientId/:csrf/:payload"
+                "POST /api/v2/auth/mfa/verify/:clientId/:csrf/:payload"
+                "PUT /api/v2/auth/email/:clientId/:csrf/:payload"
+                "PUT /api/v2/auth/password/:clientId/:csrf/:payload"
+                "POST /api/v2/auth/logout/:clientId/:csrf/:payload"
+                "GET /api/security/headers"
+                "GET /api/security/audit/:token/:limit"
+                "POST /api/security/runtime/clear/:token"
                 "GET /api/ai/providers"
+                "GET /api/ai/providers-script/:requestId"
+                "GET /api/ai/settings"
+                "POST /api/ai/settings/:provider/:model/:temperature/:topP/:maxTokens"
+                "GET /api/ai/settings-script/:requestId"
+                "GET /api/ai/settings-script/:requestId/:provider/:model/:temperature/:topP/:maxTokens"
                 "POST /api/ai/chat/:provider/:model/:temperature/:prompt"
+                "POST /api/ai/chat/:provider/:model/:temperature/:topP/:maxTokens/:prompt"
+                "GET /api/ai/chat-script/:requestId/:provider/:model/:temperature/:prompt"
+                "GET /api/ai/chat-script/:requestId/:provider/:model/:temperature/:topP/:maxTokens/:prompt"
             ]
-            note: "POST/PUT use path params in this starter scaffold; switch to JSON body parsing in production."
+            note: "v1 uses path params. v2 uses encoded JSON payload + CSRF path token (until body/header access is available in this server adapter)."
         ] ø
     ]
 
@@ -57,11 +91,135 @@ serve.verbose .port:api_port [
         users_delete_handler id
     ]
 
+    POST "/api/auth/signup/(?<email>[^/]+)/(?<password>.+)" $[email password][
+        auth_signup_handler email password
+    ]
+
+    POST "/api/auth/login/(?<email>[^/]+)/(?<password>.+)" $[email password][
+        auth_login_handler email password
+    ]
+
+    POST "/api/auth/mfa/verify/(?<challengeId>[^/]+)/(?<mfaCode>[^/]+)" $[challengeId mfaCode][
+        auth_mfa_verify_handler challengeId mfaCode
+    ]
+
+    POST "/api/auth/logout/(?<token>.+)" $[token][
+        auth_logout_handler token
+    ]
+
+    GET "/api/auth/me/(?<token>.+)" $[token][
+        auth_me_handler token
+    ]
+
+    PUT "/api/auth/password/(?<token>[^/]+)/(?<oldPassword>[^/]+)/(?<newPassword>.+)" $[token oldPassword newPassword][
+        auth_password_handler token oldPassword newPassword
+    ]
+
+    PUT "/api/auth/email/(?<token>[^/]+)/(?<email>.+)" $[token email][
+        auth_email_handler token email
+    ]
+
+    PUT "/api/auth/role/(?<token>[^/]+)/(?<userId>[^/]+)/(?<role>.+)" $[token userId role][
+        auth_role_handler token userId role
+    ]
+
+    POST "/api/auth/mfa/enable/(?<token>.+)" $[token][
+        auth_mfa_enable_handler token
+    ]
+
+    POST "/api/auth/mfa/disable/(?<token>.+)" $[token][
+        auth_mfa_disable_handler token
+    ]
+
+    GET "/api/auth/users/(?<token>.+)" $[token][
+        auth_list_users_handler token
+    ]
+
+    DELETE "/api/auth/account/(?<token>.+)" $[token][
+        auth_delete_account_handler token
+    ]
+
+    POST "/api/auth/bootstrap/(?<secret>[^/]+)/(?<email>.+)" $[secret email][
+        auth_bootstrap_handler secret email
+    ]
+
+    GET "/api/v2/security/csrf/(?<clientId>[^/]+)" $[clientId][
+        auth_csrf_token_handler clientId
+    ]
+
+    POST "/api/v2/auth/signup/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
+        auth_signup_json_handler clientId csrf payload
+    ]
+
+    POST "/api/v2/auth/login/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
+        auth_login_json_handler clientId csrf payload
+    ]
+
+    POST "/api/v2/auth/mfa/verify/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
+        auth_mfa_verify_json_handler clientId csrf payload
+    ]
+
+    PUT "/api/v2/auth/email/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
+        auth_email_json_handler clientId csrf payload
+    ]
+
+    PUT "/api/v2/auth/password/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
+        auth_password_json_handler clientId csrf payload
+    ]
+
+    POST "/api/v2/auth/logout/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
+        auth_logout_json_handler clientId csrf payload
+    ]
+
+    GET "/api/security/headers" [
+        ok sec_default_headers
+    ]
+
+    GET "/api/security/audit/(?<token>[^/]+)/(?<limit>[0-9]+)" $[token limit][
+        security_audit_handler token limit
+    ]
+
+    POST "/api/security/runtime/clear/(?<token>[^/]+)" $[token][
+        security_runtime_clear_handler token
+    ]
+
     GET "/api/ai/providers" [
         ai_providers_handler
     ]
 
+    GET "/api/ai/providers-script/(?<requestId>[^/]+)" $[requestId][
+        ai_providers_script_handler requestId
+    ]
+
+    GET "/api/ai/settings" [
+        ai_settings_handler
+    ]
+
+    POST "/api/ai/settings/(?<provider>[^/]+)/(?<model>[^/]+)/(?<temperature>[0-9.]+)/(?<topP>[0-9.]+)/(?<maxTokens>[0-9]+)" $[provider model temperature topP maxTokens][
+        ai_settings_save_handler provider model temperature topP maxTokens
+    ]
+
+    GET "/api/ai/settings-script/(?<requestId>[^/]+)" $[requestId][
+        ai_settings_script_handler requestId
+    ]
+
+    GET "/api/ai/settings-script/(?<requestId>[^/]+)/(?<provider>[^/]+)/(?<model>[^/]+)/(?<temperature>[0-9.]+)/(?<topP>[0-9.]+)/(?<maxTokens>[0-9]+)" $[requestId provider model temperature topP maxTokens][
+        ai_settings_save_script_handler requestId provider model temperature topP maxTokens
+    ]
+
     POST "/api/ai/chat/(?<provider>[^/]+)/(?<model>[^/]+)/(?<temperature>[0-9.]+)/(?<prompt>.+)" $[provider model temperature prompt][
         ai_chat_handler provider model temperature prompt
+    ]
+
+    POST "/api/ai/chat/(?<provider>[^/]+)/(?<model>[^/]+)/(?<temperature>[0-9.]+)/(?<topP>[0-9.]+)/(?<maxTokens>[0-9]+)/(?<prompt>.+)" $[provider model temperature topP maxTokens prompt][
+        ai_chat_options_handler provider model temperature topP maxTokens prompt
+    ]
+
+    GET "/api/ai/chat-script/(?<requestId>[^/]+)/(?<provider>[^/]+)/(?<model>[^/]+)/(?<temperature>[0-9.]+)/(?<prompt>.+)" $[requestId provider model temperature prompt][
+        ai_chat_script_handler requestId provider model temperature prompt
+    ]
+
+    GET "/api/ai/chat-script/(?<requestId>[^/]+)/(?<provider>[^/]+)/(?<model>[^/]+)/(?<temperature>[0-9.]+)/(?<topP>[0-9.]+)/(?<maxTokens>[0-9]+)/(?<prompt>.+)" $[requestId provider model temperature topP maxTokens prompt][
+        ai_chat_options_script_handler requestId provider model temperature topP maxTokens prompt
     ]
 ]

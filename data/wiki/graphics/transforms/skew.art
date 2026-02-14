@@ -1,0 +1,35 @@
+#[
+  "title": "Skew"
+  "layout": "docpage"
+  "category": "Transforms"
+  "tags: ["graphics", "transforms", "skew", "shear"]
+  "body": {
+    <h1>Skew</h1>
+
+    <p>Skew (shear) subsequent drawing operations.</p>
+
+    <h2>Basic Skew</h2>
+    <pre><code>draw canvas [
+    skew 20 0
+    box 0 0 100 100
+]</code></pre>
+
+    <h2>Parameters</h2>
+    <ul>
+      <li><strong>x-skew</strong>: Horizontal skew angle in degrees</li>
+      <li><strong>y-skew</strong>: Vertical skew angle in degrees</li>
+    </ul>
+
+    <h2>Combined Skew</h2>
+    <pre><code>draw canvas [
+    skew 15 10
+    box 0 0 100 100
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/transforms/">Transforms</a> - Transform overview</li>
+      <li><a href="/wiki/graphics/transforms/rotate/">Rotate</a> - Rotation transforms</li>
+    </ul>
+  }
+]

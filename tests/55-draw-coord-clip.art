@@ -1,0 +1,32 @@
+; Test for coord-system modes and expanded clip forms (polygon + Path2D string)
+
+import "vista.art"!
+
+html: view .returnHtml [
+    title "Canvas Coord + Clip"
+    canvas .id:"draw-coord-clip" .width: 380 .height: 240 [
+        pen "#334155"
+        line-width 2
+
+        coord-system "center"
+        line [-60 0] [60 0]
+
+        coord-system "math"
+        line [10 10] [120 80]
+
+        coord-system "vid" [180 40]
+        fill-pen "#e2e8f0"
+        box [0 0] [80 40]
+
+        reset-matrix
+        clip [ [220 20] [340 20] [340 100] [220 100] ]
+        fill-pen "#f59e0b"
+        box [200 0] [360 140]
+
+        reset-matrix
+        clip "M20 120 L140 120 L80 210 Z"
+        fill-pen "#22c55e"
+        box [0 100] [160 220]
+    ]
+]
+print html

@@ -1,0 +1,32 @@
+#[
+  "title": "Styles"
+  "layout": "docpage"
+  "category": "Styles"
+  "tags": ["styles", "css", "theming", "responsive"]
+  "body": {
+    <h1>Styles</h1>
+
+    <p>Reference documentation for styling, theming, and responsive design in Vista.</p>
+
+    <h2>Style Topics</h2>
+    <ul>
+      <li><a href="/wiki/shared/styles/css-classes/">CSS Classes</a> - All CSS classes reference</li>
+      <li><a href="/wiki/shared/styles/theme-variables/">Theme Variables</a> - Theme customization</li>
+      <li><a href="/wiki/shared/styles/responsive-design/">Responsive Design</a> - Responsive considerations</li>
+    </ul>
+
+    <h2>Style Example</h2>
+    <pre><code>; Using theme variables
+theme.primary: #007bff
+theme.spacing: 8px
+
+; CSS classes
+.divider { border: 1px solid #ccc; }</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/patterns/">Patterns</a> - Design patterns</li>
+      <li><a href="/wiki/shared/troubleshooting/">Troubleshooting</a> - Common issues</li>
+    </ul>
+  }
+]

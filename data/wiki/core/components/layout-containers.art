@@ -1,0 +1,50 @@
+#[
+  "title": "Layout Containers"
+  "layout": "docpage"
+  "category": "Components"
+  "tags": ["components", "layout", "containers", "row", "col", "grid"]
+  "body": {
+    <h1>Layout Containers</h1>
+
+    <p>Layout containers are specialized components designed to organize and arrange child elements.</p>
+
+    <h2>Row</h2>
+    <pre><code>view .html [
+    row [
+        text "Item 1"
+        text "Item 2"
+        text "Item 3"
+    ]
+]</code></pre>
+
+    <h2>Column</h2>
+    <pre><code>view .html [
+    col [
+        text "Item 1"
+        text "Item 2"
+        text "Item 3"
+    ]
+]</code></pre>
+
+    <h2>Grid</h2>
+    <pre><code>view .html [
+    grid [
+        text "A1" "B1" "C1"
+        text "A2" "B2" "C2"
+    ]
+]</code></pre>
+
+    <h2>Container Attributes</h2>
+    <ul>
+      <li><strong>spacing</strong>: Space between children</li>
+      <li><strong>align</strong>: Horizontal alignment</li>
+      <li><strong>valign</strong>: Vertical alignment</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/layout/">Layout</a> - Layout system</li>
+      <li><a href="/wiki/core/components/containers/">Containers</a> - General containers</li>
+    </ul>
+  }
+]

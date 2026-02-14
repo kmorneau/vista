@@ -1,32 +1,52 @@
 import "api/services/users_service.art"!
 import "api/http/responses.art"!
+import "api/security/security_core.art"!
 
 users_index_handler: function [] [
+    c1: sec_check_rate_limit "users-index" "public" 120 60
+    gate: sec_chain_checks @[c1]
+    if not? gate\ok [ return sec_to_http_error gate ]
     result: service_list_users
+    sec_audit_log "users.index" "public" true #[]
     ok result\data
 ]
 
 users_show_handler: function [id] [
+    c1: sec_check_rate_limit "users-show" "public" 180 60
+    gate: sec_chain_checks @[c1]
+    if not? gate\ok [ return sec_to_http_error gate ]
     result: service_get_user id
     if result\ok [
+        sec_audit_log "users.show" "public" true #[id: id]
         return ok result\data
     ]
+    sec_audit_log "users.show" "public" false #[id: id]
     not_found result\message result\details
 ]
 
 users_create_handler: function [name email] [
+    c1: sec_check_rate_limit "users-create" (lower to :string email) 40 60
+    gate: sec_chain_checks @[c1]
+    if not? gate\ok [ return sec_to_http_error gate ]
     result: service_create_user name email
     if result\ok [
+        sec_audit_log "users.create" (lower to :string email) true #[]
         return created result\data
     ]
+    sec_audit_log "users.create" (lower to :string email) false #[]
     bad_request result\message result\details
 ]
 
 users_update_handler: function [id name email] [
+    c1: sec_check_rate_limit "users-update" (to :string id) 50 60
+    gate: sec_chain_checks @[c1]
+    if not? gate\ok [ return sec_to_http_error gate ]
     result: service_update_user id name email
     if result\ok [
+        sec_audit_log "users.update" (to :string id) true #[]
         return ok result\data
     ]
+    sec_audit_log "users.update" (to :string id) false #[]
     switch equal? result\code "bad_request" [
         bad_request result\message result\details
     ][
@@ -35,9 +55,14 @@ users_update_handler: function [id name email] [
 ]
 
 users_delete_handler: function [id] [
+    c1: sec_check_rate_limit "users-delete" (to :string id) 30 60
+    gate: sec_chain_checks @[c1]
+    if not? gate\ok [ return sec_to_http_error gate ]
     result: service_delete_user id
     if result\ok [
+        sec_audit_log "users.delete" (to :string id) true #[]
         return no_content
     ]
+    sec_audit_log "users.delete" (to :string id) false #[]
     not_found result\message result\details
 ]

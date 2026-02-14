@@ -1,0 +1,29 @@
+{
+  "name": "vista",
+  "version": "1.0.0",
+  "description": "Vista provides a Rebol/View-inspired UI layer for Arturo, rendered to HTML/WebView.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "lib": "lib",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kmorneau/vista.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kmorneau/vista/issues"
+  },
+  "homepage": "https://github.com/kmorneau/vista#readme",
+  "devDependencies": {
+    "jsdom": "^20.0.3"
+  }
+}

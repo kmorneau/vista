@@ -1,0 +1,47 @@
+#[
+  "title": "Vista Graphics Library"
+  "layout": "page"
+  "category": "Graphics"
+  "tags": ["graphics", "drawing", "canvas", "vista"]
+  "body": {
+    <h1>Vista Graphics Library</h1>
+
+    <p>The Vista Graphics Library provides powerful 2D drawing capabilities for creating custom graphics, visualizations, and interactive canvas-based applications.</p>
+
+    <h2>Graphics Features</h2>
+    <ul>
+      <li><strong>Drawing Primitives</strong>: Lines, shapes, polygons, paths</li>
+      <li><strong>Transformations</strong>: Rotate, scale, translate, skew</li>
+      <li><strong>Colors & Gradients</strong>: RGB, RGBA, named colors, linear/radial gradients</li>
+      <li><strong>Text Rendering</strong>: Text with fonts and alignment</li>
+      <li><strong>Image Support</strong>: Image drawing, scaling, sprite sheets</li>
+      <li><strong>Animation</strong>: Frame-based animation and transitions</li>
+    </ul>
+
+    <h2>Documentation Sections</h2>
+    <ul>
+      <li><a href="/wiki/graphics/concepts/">Concepts</a> - Graphics fundamentals</li>
+      <li><a href="/wiki/graphics/tutorials/">Tutorials</a> - Step-by-step guides</li>
+      <li><a href="/wiki/graphics/drawing/">Drawing</a> - Drawing primitives and operations</li>
+      <li><a href="/wiki/graphics/text-fonts/">Text & Fonts</a> - Text rendering</li>
+      <li><a href="/wiki/graphics/images/">Images</a> - Image handling</li>
+      <li><a href="/wiki/graphics/transforms/">Transforms</a> - Transformations</li>
+      <li><a href="/wiki/graphics/colors/">Colors</a> - Color and gradient reference</li>
+      <li><a href="/wiki/graphics/animation/">Animation</a> - Animation techniques</li>
+      <li><a href="/wiki/graphics/api-reference/">API Reference</a> - Complete function reference</li>
+    </ul>
+
+    <h2>Quick Start</h2>
+    <pre><code>draw canvas [
+    pen red
+    fill blue
+    circle 100 100 50
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/">Vista Core</a> - UI framework</li>
+      <li><a href="/wiki/getting-started/">Getting Started</a> - Quick start guide</li>
+    </ul>
+  }
+]

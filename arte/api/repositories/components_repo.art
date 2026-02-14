@@ -1,0 +1,118 @@
+import "arte/api/db/grafito.art"!
+
+clean_component_record: function [raw] [
+    if notEqual? (type raw) :dictionary [
+        return null
+    ]
+    if not? key? raw "properties" [
+        return null
+    ]
+    props: raw\properties
+    if notEqual? (type props) :dictionary [
+        return null
+    ]
+    if not? key? props "component_id" [
+        return null
+    ]
+    #[
+        id: to :string props\component_id
+        page_id: to :string props\page_id
+        type: to :string props\type
+        props: to :string props\props
+        order: to :integer props\order
+    ]
+]
+
+repo_next_component_id: function [items] [
+    maxId: 0
+    i: 0
+    blen: size items
+    while [less? i blen] [
+        item: get items i
+        if all? @[equal? (type item) :dictionary key? item "id"] [
+            cid: to :integer item\id
+            if greater? cid maxId [
+                maxId: cid
+            ]
+        ]
+        i: i + 1
+    ]
+    maxId + 1
+]
+
+repo_list_components: function [pageId] [
+    rows: with_arte_db [
+        fetch 'component ø
+    ]
+    out: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        item: clean_component_record (get rows i)
+        if all? @[notEqual? item null equal? item\page_id to :string pageId] [
+            out: out ++ @[item]
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+repo_delete_components_by_page: function [pageId] [
+    rows: with_arte_db [
+        fetch 'component ø
+    ]
+    removeNodeIds: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        cleaned: clean_component_record row
+        if all? @[notEqual? cleaned null equal? cleaned\page_id to :string pageId key? row "id"] [
+            removeNodeIds: removeNodeIds ++ @[to :integer row\id]
+        ]
+        i: i + 1
+    ]
+    if equal? (size removeNodeIds) 0 [
+        return 0
+    ]
+    with_arte_db [
+        i: 0
+        blen: size removeNodeIds
+        while [less? i blen] [
+            unput (get removeNodeIds i)
+            i: i + 1
+        ]
+    ]
+    size removeNodeIds
+]
+
+repo_replace_components: function [pageId components] [
+    repo_delete_components_by_page pageId
+    list: []
+    i: 0
+    blen: size components
+    while [less? i blen] [
+        item: get components i
+        if equal? (type item) :dictionary [
+            typeVal: ""
+            propsVal: ""
+            if key? item "type" [ typeVal: to :string item\type ]
+            if key? item "props" [ propsVal: to :string item\props ]
+            newId: repo_next_component_id list
+            with_arte_db [
+                put 'component [component_id: newId page_id: to :string pageId type: typeVal props: propsVal order: i]
+            ]
+            list: list ++ @[
+                #[
+                    id: to :string newId
+                    page_id: to :string pageId
+                    type: typeVal
+                    props: propsVal
+                    order: i
+                ]
+            ]
+        ]
+        i: i + 1
+    ]
+    list
+]

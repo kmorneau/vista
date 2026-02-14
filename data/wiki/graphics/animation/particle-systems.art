@@ -1,0 +1,44 @@
+#[
+  "title": "Particle Systems"
+  "layout": "docpage"
+  "category": "Animation"
+  "tags": ["graphics", "animation", "particles", "effects"]
+  "body": {
+    <h1>Particle Systems</h1>
+
+    <p>Vista Graphics supports particle systems for creating visual effects like fire, smoke, and sparks.</p>
+
+    <h2>Basic Particle</h2>
+    <pre><code>particles: []
+add-particle particles x y vx vy life color
+
+animate [
+    update-particles particles
+    draw-particles particles
+]</code></pre>
+
+    <h2>Particle Properties</h2>
+    <ul>
+      <li><strong>Position</strong>: x, y coordinates</li>
+      <li><strong>Velocity</strong>: vx, vy speed</li>
+      <li><strong>Life</strong>: How long particle lasts</li>
+      <li><strong>Color</strong>: Particle color</li>
+      <li><strong>Size</strong>: Particle size</li>
+    </ul>
+
+    <h2>Particle Effects</h2>
+    <ul>
+      <li>Fire effect</li>
+      <li>Smoke effect</li>
+      <li>Sparks effect</li>
+      <li>Rain effect</li>
+      <li>Snow effect</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/animation/animation-basics/">Animation Basics</a> - Fundamentals</li>
+      <li><a href="/wiki/graphics/animation/transition-effects/">Transition Effects</a> - Transitions</li>
+    </ul>
+  }
+]

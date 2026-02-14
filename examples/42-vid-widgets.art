@@ -7,11 +7,15 @@ ARTURO [
     Height: 560
 ]
 
+status: "Out"
+
 view [
     info statusText
     rotary volume
     icon "icon.png"
     anim "spinner.gif"
+    text "Status:"
+    text status
     sensor .on-click:[print "tap"] [
         text "Sensor area"
     ]

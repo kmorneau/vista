@@ -1,0 +1,191 @@
+#[
+  "title": "Migration from REBOL View"
+  "layout": "docpage"
+  "category": "Shared > Migration"
+  "tags": ["migration", "rebol", "view", "rebol-view", "vid", "guide"]
+  "body": {
+    <h1>Migration from REBOL View</h1>
+
+    <p>This guide helps REBOL/View developers transition to Vista. Vista inherits the declarative layout philosophy of VID while targeting modern web technologies.</p>
+
+    <h2>Core Philosophy</h2>
+
+    <p>Like REBOL/View, Vista uses:</p>
+    <ul>
+      <li>Declarative face definitions</li>
+      <li>Layout words (<code>across</code>, <code>below</code>, <code>return</code>)</li>
+      <li>Data binding via word references</li>
+      <li>Action blocks for interactivity</li>
+    </ul>
+
+    <h2>Layout Keywords</h2>
+
+    <h3>REBOL/View to Vista</h3>
+    <table>
+      <tr><th>REBOL/View</th><th>Vista</th></tr>
+      <tr><td><code>across</code></td><td><code>across</code></td></tr>
+      <tr><td><code>below</code></td><td><code>below</code></td></tr>
+      <tr><td><code>return</code></td><td><code>return</code></td></tr>
+      <tr><td><code>end</code></td><td><code>end</code></td></tr>
+      <tr><td><code>pad</code></td><td><code>.pad:</code></td></tr>
+      <tr><td><code>space</code></td><td><code>.space:</code></td></tr>
+    </table>
+
+    <h2>Layout Examples</h2>
+
+    <h3>REBOL/View</h3>
+    <pre><code>
+    view layout [
+        across
+        field "Name"
+        button "Save" [save-data]
+        return
+        field "Email"
+        button "Cancel" [close]
+    ]
+    </code></pre>
+
+    <h3>Vista</h3>
+    <pre><code>
+    view [
+        across
+        field "Name"
+        button "Save" [save-data]
+        return
+        field "Email"
+        button "Cancel" [close]
+    ]
+    </code></pre>
+
+    <h2>Face Mapping</h2>
+
+    <table>
+      <tr><th>REBOL/View</th><th>Vista</th><th>Notes</th></tr>
+      <tr><td><code>text</code></td><td><code>text</code></td><td>Same syntax</td></tr>
+      <tr><td><code>field</code></td><td><code>field</code></td><td>Same syntax</td></tr>
+      <tr><td><code>button</code></td><td><code>button</code></td><td>Same syntax</td></tr>
+      <tr><td><code>toggle</code></td><td><code>toggle</code></td><td>Same syntax</td></tr>
+      <tr><td><code>checkbox</code></td><td><code>checkbox</code></td><td>Same syntax</td></tr>
+      <tr><td><code>radio</code></td><td><code>radio</code></td><td>Same syntax</td></tr>
+      <tr><td><code>slider</code></td><td><code>slider</code></td><td>Same syntax</td></tr>
+      <tr><td><code>drop-list</code></td><td><code>drop-list</code></td><td>Same syntax</td></tr>
+      <tr><td><code>area</code></td><td><code>textarea</code></td><td>Renamed</td></tr>
+      <tr><td><code>list</code></td><td><code>text_list</code></td><td>Use <code>text_list</code> (list is reserved)</td></tr>
+      <tr><td><code>panel</code></td><td><code>panel</code></td><td>Same syntax</td></tr>
+      <tr><td><code>box</code></td><td><code>box</code></td><td>Same syntax</td></tr>
+    </table>
+
+    <h2>Data Binding</h2>
+
+    <h3>REBOL/View</h3>
+    <pre><code>
+    name: "World"
+    view layout [
+        field name
+        text name
+    ]
+    </code></pre>
+
+    <h3>Vista</h3>
+    <pre><code>
+    name: "World"
+    view [
+        field name
+        text name
+    ]
+    </code></pre>
+
+    <h2>Actions</h2>
+
+    <h3>REBOL/View</h3>
+    <pre><code>
+    button "Click" [print "Hello"]
+    </code></pre>
+
+    <h3>Vista</h3>
+    <pre><code>
+    button "Click" [print "Hello"]
+    </code></pre>
+
+    <p>Action blocks work the same way. Vista compiles them to JavaScript.</p>
+
+    <h2>VID Style Features</h2>
+
+    <p>Enable VID compatibility mode for closer REBOL/View behavior:</p>
+    <pre><code>
+    vista_layout_vid_mode: true
+
+    view [
+        across
+        text "A"
+        text "B"
+    ]
+    </code></pre>
+
+    <h2>Draw Graphics</h2>
+
+    <p>Vista supports Draw blocks for canvas rendering:</p>
+    <pre><code>
+    canvas .width:240 .height:140 [
+        pen "#1f5cff"
+        line-width 3
+        line [20 20] [200 20]
+        fill-pen "#f0f4ff"
+        box [20 40] [200 120]
+    ]
+    </code></pre>
+
+    <h2>Common REBOL/View Idioms</h2>
+
+    <h3>Skin/Feel</h3>
+    <p>Vista uses CSS instead of VID skins. Use classes and styles:</p>
+    <pre><code>
+    button "Primary" .class:"btn-primary" [action]
+    box .style:"border: 2px solid #999" [...]
+    </code></pre>
+
+    <h3>Style Sheets</h3>
+    <p>Define reusable styles:</p>
+    <pre><code>
+    style card [
+        box [
+            title "Title"
+            text "Body"
+        ]
+    ]
+    </code></pre>
+
+    <h2>What's Different</h2>
+
+    <ul>
+      <li>Output is HTML/WebView, not native</li>
+      <li>No <code>face</code> object - uses DOM elements</li>
+      <li><code>show</code> uses JavaScript render cycle</li>
+      <li>Some VID words are reserved in Arturo (use alternatives)</li>
+      <li>Event system uses HTML event attributes</li>
+    </ul>
+
+    <h2>Quick Reference</h2>
+
+    <pre><code>
+    ; REBOL/View
+    view layout [across field name button "OK" [do something]]
+
+    ; Vista
+    view [across field name button "OK" [do something]]
+
+    ; Same for:
+    ; - field, button, text, label
+    ; - checkbox, toggle, radio
+    ; - slider, drop-list, select
+    ; - box, panel, group
+    ; - across, below, return, end
+    </code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/vid-overview/">VID Overview</a> - VID concepts in Vista</li>
+      <li><a href="/wiki/getting-started/">Getting Started</a> - Quick start guide</li>
+      <li><a href="/wiki/shared/troubleshooting/common-issues/">Common Issues</a> - Migration troubleshooting</li>
+    </ul>
+]

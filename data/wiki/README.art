@@ -1,0 +1,53 @@
+#[
+  "title": "Vista Documentation"
+  "layout": "page"
+  "category": "Home"
+  "tags": ["index", "overview", "documentation"]
+  "body": {
+    <h1>Vista Documentation</h1>
+
+    <p>Welcome to the Vista documentation. Vista is a declarative UI framework for Arturo inspired by Rebol/View.</p>
+
+    <h2>Libraries</h2>
+    <ul>
+      <li><strong>Vista Core</strong> - UI components, layout, data binding, events</li>
+      <li><strong>Vista Graphics</strong> - Canvas 2D graphics and drawing</li>
+    </ul>
+
+    <h2>Getting Started</h2>
+    <ul>
+      <li><a href="/wiki/getting-started/">Getting Started</a> - Quick start guide</li>
+      <li><a href="/wiki/core/tutorials/hello-world/">Hello World Tutorial</a> - Your first Vista app</li>
+      <li><a href="/wiki/core/concepts/vid-overview/">VID Overview</a> - Introduction to the VID dialect</li>
+    </ul>
+
+    <h2>Vista Core</h2>
+    <ul>
+      <li><a href="/wiki/core/concepts/">Concepts</a> - Architecture and design</li>
+      <li><a href="/wiki/core/tutorials/">Tutorials</a> - Step-by-step guides</li>
+      <li><a href="/wiki/core/components/">Components</a> - UI component reference</li>
+      <li><a href="/wiki/core/layout/">Layout</a> - Layout system reference</li>
+      <li><a href="/wiki/core/data-binding/">Data Binding</a> - State and binding</li>
+      <li><a href="/wiki/core/events/">Events</a> - Event handling</li>
+    </ul>
+
+    <h2>Vista Graphics</h2>
+    <ul>
+      <li><a href="/wiki/graphics/concepts/">Concepts</a> - Graphics fundamentals</li>
+      <li><a href="/wiki/graphics/tutorials/">Tutorials</a> - Graphics guides</li>
+      <li><a href="/wiki/graphics/drawing/">Drawing</a> - Drawing commands</li>
+      <li><a href="/wiki/graphics/transforms/">Transforms</a> - Transformations</li>
+      <li><a href="/wiki/graphics/colors/">Colors</a> - Colors and gradients</li>
+      <li><a href="/wiki/graphics/animation/">Animation</a> - Animation techniques</li>
+    </ul>
+
+    <h2>Building the Docs</h2>
+    <p>Edit files in <code>data/wiki/</code> and rebuild:</p>
+    <pre><code>
+    arturo tools/build.art
+    </code></pre>
+
+    <h2>File Format</h2>
+    <p>Wiki pages use Arturo block comments. See <a href="/wiki/wiki-template/">wiki-template.art</a> for a template.</p>
+  }
+]

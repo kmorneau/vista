@@ -1,0 +1,52 @@
+#[
+  "title": "Typography Tips"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["graphics", "typography", "tips", "best-practices"]
+  "body": {
+    <h1>Typography Tips</h1>
+
+    <p>Best practices for working with text in Vista Graphics.</p>
+
+    <h2>Font Selection</h2>
+    <ul>
+      <li>Use readable fonts for body text (Arial, Helvetica, Georgia)</li>
+      <li>Limit font families to 2-3 per design</li>
+      <li>Consider web-safe fonts or provide fallbacks</li>
+    </ul>
+
+    <h2>Font Sizing</h2>
+    <ul>
+      <li>Use relative sizes for accessibility</li>
+      <li>Maintain clear hierarchy (title > subtitle > body)</li>
+      <li>Avoid very small text (below 10px for body)</li>
+    </ul>
+
+    <h2>Color Contrast</h2>
+    <ul>
+      <li>Ensure adequate contrast between text and background</li>
+      <li>WCAG recommends 4.5:1 ratio for normal text</li>
+      <li>Test text readability on different backgrounds</li>
+    </ul>
+
+    <h2>Spacing</h2>
+    <ul>
+      <li>Use appropriate line height (1.4-1.6 for body text)</li>
+      <li>Add space between paragraphs</li>
+      <li>Consider letter spacing for headings</li>
+    </ul>
+
+    <h2>Performance</h2>
+    <ul>
+      <li>Limit custom web fonts</li>
+      <li>Preload critical fonts</li>
+      <li>Use font-display: swap for fallback</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/text-fonts/font-settings/">Font Settings</a> - Font reference</li>
+      <li><a href="/wiki/graphics/text-fonts/text-alignment/">Text Alignment</a> - Alignment options</li>
+    </ul>
+  }
+]

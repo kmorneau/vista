@@ -1,0 +1,519 @@
+import "api/repositories/auth_repo.art"!
+import "api/services/auth_utils.art"!
+import "api/http/validation.art"!
+
+auth_user_payload: function [row] [
+    if equal? row null [return null]
+    if not? key? row "properties" [return null]
+    props: row\properties
+    #[
+        id: to :integer props\user_id
+        email: to :string props\email
+        role: to :string props\role
+        mfa_enabled: props\mfa_enabled
+        created_at: props\created_at
+        updated_at: props\updated_at
+    ]
+]
+
+auth_session_user: function [token] [
+    tokenHash: auth_hash_token token
+    session: repo_find_session_by_token_hash tokenHash
+    if equal? session null [
+        return null
+    ]
+    props: session\properties
+    if not? key? props "user_id" [
+        return null
+    ]
+    repo_find_auth_user_by_id props\user_id
+]
+
+auth_require_session: function [token] [
+    userRow: auth_session_user token
+    if equal? userRow null [
+        return #[
+            ok: false
+            code: "unauthorized"
+            message: "Invalid session token"
+            details: #[token: token]
+        ]
+    ]
+    #[
+        ok: true
+        user: userRow
+    ]
+]
+
+auth_require_admin: function [token] [
+    sessionCheck: auth_require_session token
+    if not? sessionCheck\ok [
+        return sessionCheck
+    ]
+    props: sessionCheck\user\properties
+    if notEqual? (to :string props\role) "admin" [
+        return #[
+            ok: false
+            code: "forbidden"
+            message: "Admin role required"
+            details: #[role: props\role]
+        ]
+    ]
+    sessionCheck
+]
+
+auth_bootstrap_secret: function [] [
+    if key? env "SECURITY_BOOTSTRAP_SECRET" [
+        fromEnv: strip to :string env\SECURITY_BOOTSTRAP_SECRET
+        if not? equal? fromEnv "" [
+            return fromEnv
+        ]
+    ]
+    "vista-bootstrap-dev-secret"
+]
+
+service_auth_seed_roles: function [] [
+    users: repo_list_auth_users
+    i: 0
+    blen: size users
+    updatedCount: 0
+    while [less? i blen] [
+        user: get users i
+        roleVal: lower to :string user\role
+        if not? in? roleVal ["admin" "user"] [
+            updated: repo_update_auth_user user\id #[role: "user"]
+            if not? equal? updated null [
+                updatedCount: updatedCount + 1
+            ]
+        ]
+        i: i + 1
+    ]
+    updatedCount
+]
+
+service_auth_signup: function [email password] [
+    valid: validate_auth_signup_payload email password
+    if not? valid\ok [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "Validation failed"
+            details: valid\errors
+        ]
+    ]
+    clean: valid\data
+    if notEqual? (repo_find_auth_user_by_email clean\email) null [
+        return #[
+            ok: false
+            code: "conflict"
+            message: "Email already registered"
+            details: #[email: clean\email]
+        ]
+    ]
+    salt: auth_generate_salt
+    iters: auth_password_iterations
+    hashVal: auth_hash_password clean\password salt iters
+    row: repo_insert_auth_user clean\email hashVal salt iters "user" false
+    #[
+        ok: true
+        created: true
+        data: auth_user_payload row
+    ]
+]
+
+service_auth_bootstrap_admin: function [secret email] [
+    expectedSecret: auth_bootstrap_secret
+    providedSecret: to :string secret
+    if not? equal? providedSecret expectedSecret [
+        return #[
+            ok: false
+            code: "unauthorized"
+            message: "Invalid bootstrap secret"
+            details: #[]
+        ]
+    ]
+    valid: validate_auth_email_payload email
+    if not? valid\ok [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "Validation failed"
+            details: valid\errors
+        ]
+    ]
+    seedFixed: service_auth_seed_roles
+    clean: valid\data
+    row: repo_find_auth_user_by_email clean\email
+    if equal? row null [
+        return #[
+            ok: false
+            code: "not_found"
+            message: "User not found for bootstrap"
+            details: #[email: clean\email]
+        ]
+    ]
+    props: row\properties
+    roleVal: lower to :string props\role
+    users: repo_list_auth_users
+    adminCount: 0
+    i: 0
+    blen: size users
+    while [less? i blen] [
+        u: get users i
+        if equal? (lower to :string u\role) "admin" [
+            adminCount: adminCount + 1
+        ]
+        i: i + 1
+    ]
+    if all? @[greater? adminCount 0 notEqual? roleVal "admin"] [
+        return #[
+            ok: false
+            code: "conflict"
+            message: "Admin already seeded"
+            details: #[admins: adminCount]
+        ]
+    ]
+    if equal? roleVal "admin" [
+        return #[
+            ok: true
+            data: #[
+                seeded: false
+                roles_seeded: seedFixed
+                user: auth_user_payload row
+            ]
+        ]
+    ]
+    updated: repo_update_auth_user props\user_id #[role: "admin"]
+    #[
+        ok: true
+        data: #[
+            seeded: true
+            roles_seeded: seedFixed
+            user: auth_user_payload updated
+        ]
+    ]
+]
+
+service_auth_login: function [email password] [
+    valid: validate_auth_login_payload email password
+    if not? valid\ok [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "Validation failed"
+            details: valid\errors
+        ]
+    ]
+    clean: valid\data
+    row: repo_find_auth_user_by_email clean\email
+    if equal? row null [
+        return #[
+            ok: false
+            code: "unauthorized"
+            message: "Invalid credentials"
+            details: #[email: clean\email]
+        ]
+    ]
+    props: row\properties
+    iters: to :integer props\password_iters
+    if not? auth_verify_password clean\password props\password_salt iters props\password_hash [
+        return #[
+            ok: false
+            code: "unauthorized"
+            message: "Invalid credentials"
+            details: #[email: clean\email]
+        ]
+    ]
+    if props\mfa_enabled [
+        code: auth_generate_mfa_code
+        codeSalt: auth_generate_code_salt
+        codeHash: auth_hash_code code codeSalt
+        expiresAt: null
+        challengeId: repo_insert_mfa_challenge props\user_id codeHash codeSalt expiresAt
+        return #[
+            ok: true
+            mfa_required: true
+            data: #[
+                challenge_id: challengeId
+                ; For development, return the code so it can be delivered by the client.
+                mfa_code: code
+                expires_in: auth_code_expires_in
+            ]
+        ]
+    ]
+    token: auth_generate_token props\email
+    tokenHash: auth_hash_token token
+    repo_insert_session props\user_id tokenHash
+    #[
+        ok: true
+        data: #[
+            token: token
+            user: auth_user_payload row
+        ]
+    ]
+]
+
+service_auth_mfa_verify: function [challengeId code] [
+    valid: validate_auth_mfa_payload challengeId code
+    if not? valid\ok [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "Validation failed"
+            details: valid\errors
+        ]
+    ]
+    clean: valid\data
+    row: repo_find_mfa_challenge_by_id clean\challenge_id
+    if equal? row null [
+        return #[
+            ok: false
+            code: "unauthorized"
+            message: "MFA challenge not found"
+            details: #[challenge_id: clean\challenge_id]
+        ]
+    ]
+    props: row\properties
+    if props\used [
+        return #[
+            ok: false
+            code: "unauthorized"
+            message: "MFA challenge already used"
+            details: #[challenge_id: clean\challenge_id]
+        ]
+    ]
+    if all? @[not? equal? props\expires_at null not? equal? (to :string props\expires_at) ""] [
+        if greater? now props\expires_at [
+            return #[
+                ok: false
+                code: "unauthorized"
+                message: "MFA challenge expired"
+                details: #[challenge_id: clean\challenge_id]
+            ]
+        ]
+    ]
+    expectHash: auth_hash_code clean\code props\code_salt
+    if not? equal? expectHash props\code_hash [
+        return #[
+            ok: false
+            code: "unauthorized"
+            message: "Invalid MFA code"
+            details: #[challenge_id: clean\challenge_id]
+        ]
+    ]
+    repo_mark_mfa_challenge_used clean\challenge_id
+    userRow: repo_find_auth_user_by_id props\user_id
+    if equal? userRow null [
+        return #[
+            ok: false
+            code: "server_error"
+            message: "User not found"
+            details: #[user_id: props\user_id]
+        ]
+    ]
+    userProps: userRow\properties
+    token: auth_generate_token userProps\email
+    tokenHash: auth_hash_token token
+    repo_insert_session userProps\user_id tokenHash
+    #[
+        ok: true
+        data: #[
+            token: token
+            user: auth_user_payload userRow
+        ]
+    ]
+]
+
+service_auth_logout: function [token] [
+    tokenHash: auth_hash_token token
+    session: repo_find_session_by_token_hash tokenHash
+    removed: false
+    if not? equal? session null [
+        props: session\properties
+        if key? props "user_id" [
+            removed: greater? (repo_delete_sessions_for_user props\user_id) 0
+        ]
+    ]
+    #[
+        ok: true
+        data: #[revoked: removed]
+    ]
+]
+
+service_auth_me: function [token] [
+    sessionCheck: auth_require_session token
+    if not? sessionCheck\ok [
+        return sessionCheck
+    ]
+    #[
+        ok: true
+        data: auth_user_payload sessionCheck\user
+    ]
+]
+
+service_auth_update_password: function [token oldPassword newPassword] [
+    sessionCheck: auth_require_session token
+    if not? sessionCheck\ok [
+        return sessionCheck
+    ]
+    valid: validate_auth_password_change_payload oldPassword newPassword
+    if not? valid\ok [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "Validation failed"
+            details: valid\errors
+        ]
+    ]
+    userRow: sessionCheck\user
+    props: userRow\properties
+    iters: to :integer props\password_iters
+    if not? auth_verify_password oldPassword props\password_salt iters props\password_hash [
+        return #[
+            ok: false
+            code: "unauthorized"
+            message: "Invalid password"
+            details: #[]
+        ]
+    ]
+    salt: auth_generate_salt
+    iters: auth_password_iterations
+    hashVal: auth_hash_password newPassword salt iters
+    updated: repo_update_auth_user props\user_id #[
+        password_hash: hashVal
+        password_salt: salt
+        password_iters: iters
+    ]
+    #[
+        ok: true
+        data: auth_user_payload updated
+    ]
+]
+
+service_auth_update_email: function [token email] [
+    sessionCheck: auth_require_session token
+    if not? sessionCheck\ok [
+        return sessionCheck
+    ]
+    valid: validate_auth_email_payload email
+    if not? valid\ok [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "Validation failed"
+            details: valid\errors
+        ]
+    ]
+    clean: valid\data
+    userRow: sessionCheck\user
+    props: userRow\properties
+    existing: repo_find_auth_user_by_email clean\email
+    if not? equal? existing null [
+        exProps: existing\properties
+        if not? equal? (to :integer exProps\user_id) (to :integer props\user_id) [
+            return #[
+                ok: false
+                code: "conflict"
+                message: "Email already registered"
+                details: #[email: clean\email]
+            ]
+        ]
+    ]
+    updated: repo_update_auth_user props\user_id #[
+        email: clean\email
+    ]
+    #[
+        ok: true
+        data: auth_user_payload updated
+    ]
+]
+
+service_auth_set_role: function [token userId role] [
+    adminCheck: auth_require_admin token
+    if not? adminCheck\ok [
+        return adminCheck
+    ]
+    valid: validate_auth_role_payload role
+    if not? valid\ok [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "Validation failed"
+            details: valid\errors
+        ]
+    ]
+    updated: repo_update_auth_user userId #[
+        role: valid\data\role
+    ]
+    if equal? updated null [
+        return #[
+            ok: false
+            code: "not_found"
+            message: "User not found"
+            details: #[id: userId]
+        ]
+    ]
+    #[
+        ok: true
+        data: auth_user_payload updated
+    ]
+]
+
+service_auth_enable_mfa: function [token] [
+    sessionCheck: auth_require_session token
+    if not? sessionCheck\ok [
+        return sessionCheck
+    ]
+    userRow: sessionCheck\user
+    props: userRow\properties
+    updated: repo_update_auth_user props\user_id #[
+        mfa_enabled: true
+        mfa_mode: "otp"
+    ]
+    #[
+        ok: true
+        data: auth_user_payload updated
+    ]
+]
+
+service_auth_disable_mfa: function [token] [
+    sessionCheck: auth_require_session token
+    if not? sessionCheck\ok [
+        return sessionCheck
+    ]
+    userRow: sessionCheck\user
+    props: userRow\properties
+    updated: repo_update_auth_user props\user_id #[
+        mfa_enabled: false
+    ]
+    #[
+        ok: true
+        data: auth_user_payload updated
+    ]
+]
+
+service_auth_list_users: function [token] [
+    adminCheck: auth_require_admin token
+    if not? adminCheck\ok [
+        return adminCheck
+    ]
+    #[
+        ok: true
+        data: repo_list_auth_users
+    ]
+]
+
+service_auth_delete_account: function [token] [
+    sessionCheck: auth_require_session token
+    if not? sessionCheck\ok [
+        return sessionCheck
+    ]
+    userRow: sessionCheck\user
+    props: userRow\properties
+    repo_delete_sessions_for_user props\user_id
+    removed: repo_delete_auth_user props\user_id
+    #[
+        ok: true
+        data: #[deleted: removed]
+    ]
+]

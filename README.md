@@ -96,6 +96,25 @@ tests/run_behavior.sh
 
 See `vista_tutorial.md` for the Rebol/View translation guide and state/event best practices.
 
+## Auth Helpers
+
+Vista ships UI helpers for auth flows (splash, login/signup forms, account tools). Usage:
+
+```arturo
+import "vista.art"!
+
+email: ""
+password: ""
+code: ""
+
+view [
+    auth_splash "Welcome" "Sign in to continue"
+    auth_login email password code [
+        print ["Login with" email password code]
+    ]
+]
+```
+
 ## Draw (HTML5 Canvas)
 
 Vista includes a Rebol/View Draw-style helper module in `src/vista/graphics/vista-graphics.art`. The `canvas` face accepts a Draw block as its first argument and renders it to HTML5 Canvas at runtime.

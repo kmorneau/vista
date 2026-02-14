@@ -1,0 +1,160 @@
+import "arte/api/db/grafito.art"!
+
+clean_page_record: function [raw] [
+    if notEqual? (type raw) :dictionary [
+        return null
+    ]
+    if not? key? raw "properties" [
+        return null
+    ]
+    props: raw\properties
+    if notEqual? (type props) :dictionary [
+        return null
+    ]
+    if not? key? props "page_id" [
+        return null
+    ]
+    #[
+        id: to :string props\page_id
+        app_id: to :string props\app_id
+        name: to :string props\name
+        route: to :string props\route
+        created_at: to :string props\created_at
+        updated_at: to :string props\updated_at
+    ]
+]
+
+repo_next_page_id: function [pages] [
+    maxId: 0
+    i: 0
+    blen: size pages
+    while [less? i blen] [
+        item: get pages i
+        if all? @[equal? (type item) :dictionary key? item "id"] [
+            pid: to :integer item\id
+            if greater? pid maxId [
+                maxId: pid
+            ]
+        ]
+        i: i + 1
+    ]
+    maxId + 1
+]
+
+repo_list_pages: function [appId] [
+    rows: with_arte_db [
+        fetch 'page ø
+    ]
+    out: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        item: clean_page_record (get rows i)
+        if all? @[notEqual? item null equal? item\app_id to :string appId] [
+            out: out ++ @[item]
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+repo_find_page_by_id: function [id] [
+    needle: to :integer id
+    rows: with_arte_db [
+        fetch 'page ø
+    ]
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        cleaned: clean_page_record row
+        if all? @[notEqual? cleaned null equal? (to :integer cleaned\id) needle] [
+            return cleaned
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+repo_insert_page: function [appId name route] [
+    pages: repo_list_pages appId
+    newId: repo_next_page_id pages
+    nameVal: to :string name
+    routeVal: to :string route
+    appIdVal: to :string appId
+    createdVal: to :string now
+    updatedVal: to :string now
+    with_arte_db [
+        put 'page [page_id: newId app_id: appIdVal name: nameVal route: routeVal created_at: createdVal updated_at: updatedVal]
+    ]
+    repo_find_page_by_id newId
+]
+
+repo_update_page: function [id name route] [
+    needle: to :integer id
+    nameVal: to :string name
+    routeVal: to :string route
+    rows: with_arte_db [
+        fetch 'page ø
+    ]
+    removeNodeIds: []
+    found: false
+    appIdVal: ""
+    createdVal: to :string now
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        cleaned: clean_page_record row
+        if all? @[notEqual? cleaned null equal? (to :integer cleaned\id) needle key? row "id"] [
+            found: true
+            appIdVal: cleaned\app_id
+            createdVal: cleaned\created_at
+            removeNodeIds: removeNodeIds ++ @[to :integer row\id]
+        ]
+        i: i + 1
+    ]
+    if not? found [
+        return null
+    ]
+    with_arte_db [
+        i: 0
+        blen: size removeNodeIds
+        while [less? i blen] [
+            unput (get removeNodeIds i)
+            i: i + 1
+        ]
+        put 'page [page_id: needle app_id: appIdVal name: nameVal route: routeVal created_at: createdVal updated_at: to :string now]
+    ]
+    repo_find_page_by_id needle
+]
+
+repo_delete_page: function [id] [
+    needle: to :integer id
+    rows: with_arte_db [
+        fetch 'page ø
+    ]
+    removeNodeIds: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        cleaned: clean_page_record row
+        if all? @[notEqual? cleaned null equal? (to :integer cleaned\id) needle key? row "id"] [
+            removeNodeIds: removeNodeIds ++ @[to :integer row\id]
+        ]
+        i: i + 1
+    ]
+    if equal? (size removeNodeIds) 0 [
+        return false
+    ]
+    with_arte_db [
+        i: 0
+        blen: size removeNodeIds
+        while [less? i blen] [
+            unput (get removeNodeIds i)
+            i: i + 1
+        ]
+    ]
+    true
+]

@@ -1,0 +1,37 @@
+#[
+  "title": "Translate"
+  "layout": "docpage"
+  "category": "Transforms"
+  "tags": ["graphics", "transforms", "translate", "position"]
+  "body": {
+    <h1>Translate</h1>
+
+    <p>Move the origin point for subsequent drawing operations.</p>
+
+    <h2>Basic Translation</h2>
+    <pre><code>draw canvas [
+    translate 100 50
+    box 0 0 100 100
+]</code></pre>
+
+    <h2>Parameters</h2>
+    <ul>
+      <li><strong>x</strong>: Horizontal offset</li>
+      <li><strong>y</strong>: Vertical offset</li>
+    </ul>
+
+    <h2>Relative Translation</h2>
+    <pre><code>draw canvas [
+    translate 50 50
+    box 0 0 50 50
+    translate 50 50
+    box 0 0 50 50
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/transforms/">Transforms</a> - Transform overview</li>
+      <li><a href="/wiki/graphics/transforms/rotate/">Rotate</a> - Rotation transforms</li>
+    </ul>
+  }
+]

@@ -49,6 +49,14 @@ conflict: function [message details] [
     error_response "conflict" message details
 ]
 
+unauthorized: function [message details] [
+    error_response "unauthorized" message details
+]
+
+forbidden: function [message details] [
+    error_response "forbidden" message details
+]
+
 server_error: function [message details] [
     error_response "server_error" message details
 ]

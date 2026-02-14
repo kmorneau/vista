@@ -21,7 +21,8 @@ draw_js_token: function [token] [
         if equal? t :null [
                 return "null"
         ]
-        return "'" ++ js_escape_single (to :string token) ++ "'"
+        ; Use template literals to avoid quote-escaping corruption in generated draw scripts.
+        return "`" ++ (to :string token) ++ "`"
 ]
 
 draw_point: function [val] [
@@ -72,7 +73,7 @@ draw_to_canvas: function [canvasId drawBlock] [
         if notEqual? (type drawBlock) :block [
                 return ""
         ]
-        js: "var c=document.getElementById('" ++ js_escape_single canvasId ++ "');if(!c){return;}var ctx=c.getContext('2d');"
+        js: "var c=document.getElementById(" ++ (draw_js_token canvasId) ++ ");if(!c){return;}var ctx=c.getContext('2d');"
         i: 0
         blen: size drawBlock
         gradCount: 0
@@ -607,6 +608,15 @@ vista_state: #[
     face_names: #[]
     last_bindings: #[]
     webview_open: false
+    webview_title: "ARTURO/VISTA"
+    webview_width: 900
+    webview_height: 600
+    app_header: #[]
+    app_logo_path: "arturo-vista.png"
+    app_primary_color: "#f2c230"
+    app_background_color: "#f7f6f1"
+    app_text_color: "#141414"
+    app_title_color: "#141414"
     layout_pending_attrs: #[]
     layout_scope_stack: @[]
     tabs_id_counter: 0
@@ -781,4 +791,3 @@ stylize: function [blk] [
         ]
         styles
 ]
-

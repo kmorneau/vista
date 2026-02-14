@@ -1,0 +1,536 @@
+; Security core for Arturo/Vista APIs.
+; Provides composable guard checks and middleware-style helpers.
+
+import "api/http/responses.art"!
+import "api/db/grafito.art"!
+
+sec_config: #[
+    require_csrf: true
+    trusted_origins: []
+    mutating_methods: ["POST" "PUT" "PATCH" "DELETE"]
+    default_rate_limit: 60
+    default_rate_window_secs: 60
+    rate_limit_backend: "grafito"
+    csrf_secret: "vista-dev-csrf-secret-change-me"
+    audit_backend: "grafito"
+]
+
+sec_rate_state: #[]
+sec_audit_events: []
+
+sec_result_ok: function [details] [
+    #[
+        ok: true
+        code: "ok"
+        message: ""
+        details: details
+    ]
+]
+
+sec_result_fail: function [code message details] [
+    #[
+        ok: false
+        code: to :string code
+        message: to :string message
+        details: details
+    ]
+]
+
+sec_now_unix: function [] [
+    to :integer strip execute "date +%s"
+]
+
+sec_rate_fetch_rows: function [] [
+    rows: []
+    if error? err: <= try [
+        rows: with_api_db [
+            fetch 'security_rate_limit ø
+        ]
+    ] [
+        rows: []
+    ]
+    rows
+]
+
+sec_rate_find_grafito_row: function [keyValue] [
+    rows: sec_rate_fetch_rows
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "key" equal? (to :string props\key) (to :string keyValue)] [
+                return row
+            ]
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+sec_find_grafito_row_by_key: function [label keyField keyValue] [
+    rows: []
+    if error? err: <= try [
+        rows: with_api_db [ fetch label ø ]
+    ] [
+        return null
+    ]
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props keyField equal? (to :string props\[keyField]) (to :string keyValue)] [
+                return row
+            ]
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+sec_rate_read_entry: function [keyValue] [
+    backend: lower to :string sec_config\rate_limit_backend
+    if equal? backend "memory" [
+        if key? sec_rate_state keyValue [
+            return sec_rate_state\[keyValue]
+        ]
+        return null
+    ]
+    row: sec_rate_find_grafito_row keyValue
+    if equal? row null [ return null ]
+    props: row\properties
+    #[
+        count: to :integer props\count
+        reset_at: to :integer props\reset_at
+    ]
+]
+
+sec_rate_write_entry: function [keyValue countVal resetAtVal] [
+    backend: lower to :string sec_config\rate_limit_backend
+    if equal? backend "memory" [
+        sec_rate_state\[keyValue]: #[
+            count: to :integer countVal
+            reset_at: to :integer resetAtVal
+        ]
+        return true
+    ]
+    row: sec_rate_find_grafito_row keyValue
+    if not? equal? row null [
+        if key? row "id" [
+            with_api_db [ unput to :integer row\id ]
+        ]
+    ]
+    with_api_db [
+        put 'security_rate_limit #[
+            key: to :string keyValue
+            count: to :integer countVal
+            reset_at: to :integer resetAtVal
+            updated_at: to :string now
+        ]
+    ]
+    true
+]
+
+sec_set_config: function [updates] [
+    if notEqual? (type updates) :dictionary [
+        return sec_result_fail "bad_request" "security config updates must be a dictionary" #[]
+    ]
+    ks: keys updates
+    i: 0
+    klen: size ks
+    while [less? i klen] [
+        k: get ks i
+        sec_config\[k]: updates\[k]
+        i: i + 1
+    ]
+    sec_result_ok sec_config
+]
+
+sec_chain_checks: function [checks] [
+    if notEqual? (type checks) :block [
+        return sec_result_fail "bad_request" "checks must be a block" #[]
+    ]
+    i: 0
+    blen: size checks
+    while [less? i blen] [
+        check: get checks i
+        if notEqual? (type check) :dictionary [
+            return sec_result_fail "server_error" "security check returned invalid shape" #[index: i]
+        ]
+        if not? key? check "ok" [
+            return sec_result_fail "server_error" "security check missing ok field" #[index: i]
+        ]
+        if not? check\ok [
+            return check
+        ]
+        i: i + 1
+    ]
+    sec_result_ok #[]
+]
+
+sec_to_http_error: function [check] [
+    code: to :string check\code
+    if equal? code "unauthorized" [
+        return unauthorized check\message check\details
+    ]
+    if equal? code "forbidden" [
+        return forbidden check\message check\details
+    ]
+    if equal? code "conflict" [
+        return conflict check\message check\details
+    ]
+    if equal? code "not_found" [
+        return not_found check\message check\details
+    ]
+    if equal? code "rate_limited" [
+        return error_response "rate_limited" check\message check\details
+    ]
+    if equal? code "invalid_origin" [
+        return error_response "invalid_origin" check\message check\details
+    ]
+    if equal? code "invalid_csrf" [
+        return error_response "invalid_csrf" check\message check\details
+    ]
+    bad_request check\message check\details
+]
+
+sec_enforce: function [checks onPass] [
+    gate: sec_chain_checks checks
+    if not? gate\ok [
+        return sec_to_http_error gate
+    ]
+    do onPass
+]
+
+sec_check_required_token: function [token fieldName] [
+    if any? @[equal? token null equal? token ""] [
+        return sec_result_fail "unauthorized" (fieldName ++ " is required") #[field: fieldName]
+    ]
+    sec_result_ok #[field: fieldName]
+]
+
+sec_check_origin: function [origin allowedOrigins] [
+    if any? @[equal? allowedOrigins null equal? (size allowedOrigins) 0] [
+        return sec_result_ok #[mode: "disabled"]
+    ]
+    if in? origin allowedOrigins [
+        return sec_result_ok #[origin: origin]
+    ]
+    sec_result_fail "invalid_origin" "Origin is not allowed" #[origin: origin]
+]
+
+sec_check_csrf: function [method csrfHeader expectedToken] [
+    mutating: sec_config\mutating_methods
+    m: upper to :string method
+    if not? in? m mutating [
+        return sec_result_ok #[method: m skipped: true]
+    ]
+    if not? sec_config\require_csrf [
+        return sec_result_ok #[method: m mode: "disabled"]
+    ]
+    if any? @[equal? csrfHeader null equal? csrfHeader "" equal? expectedToken null equal? expectedToken ""] [
+        return sec_result_fail "invalid_csrf" "CSRF token is missing" #[method: m]
+    ]
+    if not? equal? (to :string csrfHeader) (to :string expectedToken) [
+        return sec_result_fail "invalid_csrf" "CSRF token mismatch" #[method: m]
+    ]
+    sec_result_ok #[method: m]
+]
+
+sec_require_role: function [user requiredRole] [
+    if equal? user null [
+        return sec_result_fail "unauthorized" "User session is required" #[]
+    ]
+    role: ""
+    if all? @[equal? (type user) :dictionary key? user "role"] [
+        role: lower to :string user\role
+    ]
+    wanted: lower to :string requiredRole
+    if equal? role wanted [
+        return sec_result_ok #[role: role]
+    ]
+    sec_result_fail "forbidden" "Insufficient role" #[required: wanted actual: role]
+]
+
+sec_check_rate_limit: function [bucket subject limit windowSecs] [
+    b: to :string bucket
+    s: to :string subject
+    if equal? s "" [
+        return sec_result_fail "bad_request" "rate-limit subject is required" #[bucket: b]
+    ]
+
+    lim: to :integer limit
+    win: to :integer windowSecs
+    if any? @[less? lim 1 less? win 1] [
+        return sec_result_fail "bad_request" "rate-limit limit/window must be >= 1" #[limit: lim window: win]
+    ]
+
+    nowTs: sec_now_unix
+    key: b ++ "::" ++ s
+    entry: #[count: 0 reset_at: nowTs + win]
+    stored: sec_rate_read_entry key
+    if not? equal? stored null [
+        entry: stored
+    ]
+
+    if greater? nowTs entry\reset_at [
+        entry: #[count: 0 reset_at: nowTs + win]
+    ]
+
+    nextCount: entry\count + 1
+    entry\count: nextCount
+    sec_rate_write_entry key entry\count entry\reset_at
+
+    if greater? nextCount lim [
+        retryAfter: entry\reset_at - nowTs
+        if less? retryAfter 0 [ retryAfter: 0 ]
+        return sec_result_fail "rate_limited" "Rate limit exceeded" #[
+            bucket: b
+            subject: s
+            limit: lim
+            window_secs: win
+            retry_after_secs: retryAfter
+        ]
+    ]
+
+    sec_result_ok #[
+        bucket: b
+        subject: s
+        remaining: lim - nextCount
+        reset_at: entry\reset_at
+    ]
+]
+
+sec_issue_csrf_token: function [subject] [
+    subj: to :string subject
+    if equal? subj "" [
+        return sec_result_fail "bad_request" "csrf subject is required" #[]
+    ]
+    secret: to :string sec_config\csrf_secret
+    token: digest.sha (secret ++ "::" ++ subj)
+    sec_result_ok #[token: token subject: subj]
+]
+
+sec_check_csrf_token: function [subject token] [
+    issued: sec_issue_csrf_token subject
+    if not? issued\ok [ return issued ]
+    expected: issued\details\token
+    provided: to :string token
+    if equal? provided "" [
+        return sec_result_fail "invalid_csrf" "CSRF token is missing" #[subject: subject]
+    ]
+    if not? equal? provided expected [
+        return sec_result_fail "invalid_csrf" "CSRF token mismatch" #[subject: subject]
+    ]
+    sec_result_ok #[subject: subject]
+]
+
+sec_default_headers: function [] [
+    #[
+        "X-Frame-Options": "DENY"
+        "X-Content-Type-Options": "nosniff"
+        "Referrer-Policy": "no-referrer"
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
+        "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+    ]
+]
+
+sec_audit_log: function [eventType actor success details] [
+    entry: #[
+        ts: to :string now
+        event: to :string eventType
+        actor: to :string actor
+        success: success
+        details: details
+    ]
+    sec_audit_events: sec_audit_events ++ @[entry]
+    if equal? (lower to :string sec_config\audit_backend) "grafito" [
+        with_api_db [
+            put 'security_audit #[
+                ts: entry\ts
+                event: entry\event
+                actor: entry\actor
+                success: entry\success
+                details: entry\details
+            ]
+        ]
+    ]
+    entry
+]
+
+sec_get_audit_events: function [] [
+    backend: lower to :string sec_config\audit_backend
+    if not? equal? backend "grafito" [
+        return sec_audit_events
+    ]
+    rows: []
+    if error? err: <= try [
+        rows: with_api_db [ fetch 'security_audit ø ]
+    ] [
+        return sec_audit_events
+    ]
+    out: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            out: out ++ @[
+                #[
+                    ts: props\ts
+                    event: props\event
+                    actor: props\actor
+                    success: props\success
+                    details: props\details
+                ]
+            ]
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+sec_get_audit_events_limited: function [limit] [
+    allEvents: sec_get_audit_events
+    maxN: to :integer limit
+    if less? maxN 1 [
+        return []
+    ]
+    total: size allEvents
+    if less? total maxN [
+        return allEvents
+    ]
+    start: total - maxN
+    out: []
+    i: start
+    while [less? i total] [
+        out: out ++ @[get allEvents i]
+        i: i + 1
+    ]
+    out
+]
+
+sec_auth_guard_key: function [bucket subject] [
+    to :string bucket ++ "::" ++ to :string subject
+]
+
+sec_auth_guard_read: function [bucket subject] [
+    keyVal: sec_auth_guard_key bucket subject
+    row: sec_find_grafito_row_by_key 'security_auth_guard "key" keyVal
+    if equal? row null [ return null ]
+    props: row\properties
+    #[
+        key: keyVal
+        failures: to :integer props\failures
+        first_failed_at: to :integer props\first_failed_at
+        lock_until: to :integer props\lock_until
+    ]
+]
+
+sec_auth_guard_write: function [bucket subject failures firstFailedAt lockUntil] [
+    keyVal: sec_auth_guard_key bucket subject
+    row: sec_find_grafito_row_by_key 'security_auth_guard "key" keyVal
+    if not? equal? row null [
+        if key? row "id" [
+            with_api_db [ unput to :integer row\id ]
+        ]
+    ]
+    with_api_db [
+        put 'security_auth_guard #[
+            key: keyVal
+            failures: to :integer failures
+            first_failed_at: to :integer firstFailedAt
+            lock_until: to :integer lockUntil
+            updated_at: to :string now
+        ]
+    ]
+    true
+]
+
+sec_auth_guard_clear: function [bucket subject] [
+    keyVal: sec_auth_guard_key bucket subject
+    row: sec_find_grafito_row_by_key 'security_auth_guard "key" keyVal
+    if equal? row null [ return false ]
+    if key? row "id" [
+        with_api_db [ unput to :integer row\id ]
+        return true
+    ]
+    false
+]
+
+sec_check_lockout: function [bucket subject] [
+    guard: sec_auth_guard_read bucket subject
+    if equal? guard null [
+        return sec_result_ok #[locked: false]
+    ]
+    nowTs: sec_now_unix
+    if greater? guard\lock_until nowTs [
+        retry: guard\lock_until - nowTs
+        return sec_result_fail "rate_limited" "Account temporarily locked" #[
+            bucket: bucket
+            subject: subject
+            retry_after_secs: retry
+        ]
+    ]
+    sec_result_ok #[locked: false]
+]
+
+sec_record_auth_failure: function [bucket subject maxFailures windowSecs lockoutSecs] [
+    nowTs: sec_now_unix
+    maxF: to :integer maxFailures
+    win: to :integer windowSecs
+    lockSecs: to :integer lockoutSecs
+    guard: sec_auth_guard_read bucket subject
+    failures: 1
+    firstFailedAt: nowTs
+    lockUntil: 0
+    if not? equal? guard null [
+        if less? (nowTs - guard\first_failed_at) win [
+            failures: guard\failures + 1
+            firstFailedAt: guard\first_failed_at
+        ]
+    ]
+    if greaterOrEqual? failures maxF [
+        lockUntil: nowTs + lockSecs
+    ]
+    sec_auth_guard_write bucket subject failures firstFailedAt lockUntil
+    sec_result_ok #[
+        failures: failures
+        lock_until: lockUntil
+    ]
+]
+
+sec_record_auth_success: function [bucket subject] [
+    sec_auth_guard_clear bucket subject
+    sec_result_ok #[cleared: true]
+]
+
+sec_clear_runtime_state: function [] [
+    sec_rate_state: #[]
+    sec_audit_events: []
+    with_api_db [
+        if not? error? err1: <= try [
+            rows1: fetch 'security_rate_limit ø
+            i: 0
+            while [less? i size rows1] [
+                row: get rows1 i
+                if key? row "id" [ unput to :integer row\id ]
+                i: i + 1
+            ]
+        ] [ ]
+        if not? error? err2: <= try [
+            rows2: fetch 'security_auth_guard ø
+            j: 0
+            while [less? j size rows2] [
+                row: get rows2 j
+                if key? row "id" [ unput to :integer row\id ]
+                j: j + 1
+            ]
+        ] [ ]
+    ]
+    sec_result_ok #[cleared: true]
+]

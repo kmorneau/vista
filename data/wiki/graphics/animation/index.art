@@ -1,0 +1,31 @@
+#[
+  "title": "Animation"
+  "layout": "docpage"
+  "category": "Animation"
+  "tags": ["animation", "frames", "transitions", "particles"]
+  "body": {
+    <h1>Animation</h1>
+
+    <p>Reference documentation for animation techniques in Vista Graphics.</p>
+
+    <h2>Animation Topics</h2>
+    <ul>
+      <li><a href="/wiki/graphics/animation/animation-basics/">Animation Basics</a> - Animation concepts</li>
+      <li><a href="/wiki/graphics/animation/frame-animation/">Frame Animation</a> -</li>
+       Frame-based animation<li><a href="/wiki/graphics/animation/transition-effects/">Transition Effects</a> - Smooth transitions</li>
+      <li><a href="/wiki/graphics/animation/particle-systems/">Particle Systems</a> - Particle effects</li>
+    </ul>
+
+    <h2>Animation Example</h2>
+    <pre><code>animate canvas [
+    rotate ctx 1
+    drawScene
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/transforms/">Transforms</a> - Transformation commands</li>
+      <li><a href="/wiki/graphics/tutorials/">Tutorials</a> - Learning guides</li>
+    </ul>
+  }
+]

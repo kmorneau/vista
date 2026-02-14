@@ -1,0 +1,36 @@
+#[
+  "title": "Frame Animation"
+  "layout": "docpage"
+  "category": "Animation"
+  "tags": ["graphics", "animation", "frames", "reference"]
+  "body": {
+    <h1>Frame Animation</h1>
+
+    <p>Vista Graphics supports frame-based animation for sprites and sequences.</p>
+
+    <h2>Frame Counter</h2>
+    <pre><code>draw canvas [
+    frame: frame + 1
+    sprite "animation.png" (frame % 4 * 32) 0 32 32 100 100
+]</code></pre>
+
+    <h2>Animation Speed</h2>
+    <pre><code>draw canvas [
+    frame: frame + 1
+    sprite "walk.png" ((frame / 5) % 4 * 32) 0 32 32 100 100
+]</code></pre>
+
+    <h2>Frame Control</h2>
+    <ul>
+      <li><strong>frame</strong>: Current frame counter</li>
+      <li><strong>fps</strong>: Frames per second</li>
+      <li><strong>frame-time</strong>: Time since last frame</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/animation/animation-basics/">Animation Basics</a> - Fundamentals</li>
+      <li><a href="/wiki/graphics/images/sprite-sheets/">Sprite Sheets</a> - Sprite animation</li>
+    </ul>
+  }
+]

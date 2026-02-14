@@ -1,0 +1,100 @@
+#[
+  "title": "Debugging Tips"
+  "layout": "docpage"
+  "category": "Troubleshooting"
+  "tags": ["debugging", "tips", "troubleshooting", "development"]
+  "body": {
+    <h1>Debugging Tips</h1>
+
+    <p>Techniques for debugging Vista applications.</p>
+
+    <h2>Enable Debug Mode</h2>
+    <pre><code class="language-arturo">; Enable debug logging
+set-debug true
+
+; Enable component logging
+debug:components true
+
+; Enable event logging
+debug:events true</code></pre>
+
+    <h2>Component Inspection</h2>
+    <pre><code class="language-arturo">; Inspect a component
+inspect myComponent
+
+; Print component tree
+print-tree root
+
+; Show component props
+show-props myComponent</code></pre>
+
+    <h2>Event Debugging</h2>
+    <pre><code class="language-arturo">; Log all events
+log-events true
+
+; Watch specific event
+watch-event :click
+
+; Trace event propagation
+trace-events</code></pre>
+
+    <h2>State Inspection</h2>
+    <pre><code class="language-arturo">; Print state snapshot
+snapshot state
+
+; Watch state changes
+watch state
+
+; Diff state changes
+diff-state oldState newState</code></pre>
+
+    <h2>Performance Profiling</h2>
+    <pre><code class="language-arturo">; Start profiling
+profile:start
+
+; Run your code
+do: slowOperation
+
+; Get report
+profile:report</code></pre>
+
+    <h2>Common Issues</h2>
+    <h3>Component Not Rendering</h3>
+    <ul>
+      <li>Check if component is mounted</li>
+      <li>Verify render function returns a face</li>
+      <li>Check for errors in render chain</li>
+      <li>Ensure required props are provided</li>
+    </ul>
+
+    <h3>Events Not Firing</h3>
+    <ul>
+      <li>Verify event handler is attached</li>
+      <li>Check if component has focus</li>
+      <li>Ensure event bubbling is not stopped</li>
+      <li>Check for typos in event name</li>
+    </ul>
+
+    <h3>State Not Updating</h3>
+    <ul>
+      <li>Verify state is reactive</li>
+      <li>Check if update triggers re-render</li>
+      <li>Ensure no circular dependencies</li>
+      <li>Check for mutation vs assignment</li>
+    </ul>
+
+    <h2>Browser DevTools</h2>
+    <ul>
+      <li>Use Vue/React devtools if applicable</li>
+      <li>Check console for errors</li>
+      <li>Use network tab to debug API calls</li>
+      <li>Use elements tab to inspect DOM</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/troubleshooting/performance-tips/">Performance Tips</a> - Optimization guide</li>
+      <li><a href="/wiki/shared/troubleshooting/common-issues/">Common Issues</a> - Known issues and solutions</li>
+    </ul>
+  }
+]

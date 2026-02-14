@@ -1,0 +1,42 @@
+#[
+  "title": "Sprite Sheets"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags: ["graphics", "sprites", "animation", "reference"]
+  "body": {
+    <h1>Sprite Sheets</h1>
+
+    <p>Reference for Vista Graphics sprite sheet handling and animation.</p>
+
+    <h2>Sprite Sheet Basics</h2>
+    <pre><code>draw canvas [
+    sprite "characters.png" 0 0 32 32 100 100
+]</code></pre>
+
+    <h2>Sprite Parameters</h2>
+    <ul>
+      <li><strong>Image file</strong>: Sprite sheet image</li>
+      <li><strong>Source X, Y</strong>: Position in sprite sheet</li>
+      <li><strong>Width, Height</strong>: Sprite size</li>
+      <li><strong>Dest X, Y</strong>: Position on canvas</li>
+    </ul>
+
+    <h2>Animated Sprite</h2>
+    <pre><code>draw canvas [
+    sprite "walk.png" (frame * 32) 0 32 32 100 100
+]</code></pre>
+
+    <h2>Sprite Animation Tips</h2>
+    <ul>
+      <li>Use consistent sprite sizes</li>
+      <li>Organize sprites in grid pattern</li>
+      <li>Use sprite sheet for better performance</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/images/image-drawing/">Image Drawing</a> - Basic drawing</li>
+      <li><a href="/wiki/graphics/animation/">Animation</a> - Animation reference</li>
+    </ul>
+  }
+]

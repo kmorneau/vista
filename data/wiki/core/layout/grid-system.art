@@ -1,0 +1,42 @@
+#[
+  "title": "Grid System"
+  "layout": "docpage"
+  "category": "Layout"
+  "tags": ["layout", "grid", "rows", "columns", "table"]
+  "body": {
+    <h1>Grid System</h1>
+
+    <p>The grid system provides powerful table-like layout capabilities for organizing content in rows and columns.</p>
+
+    <h2>Basic Grid</h2>
+    <pre><code>view .html [
+    grid [
+        text "A1" "B1" "C1"
+        text "A2" "B2" "C2"
+        text "A3" "B3" "C3"
+    ]
+]</code></pre>
+
+    <h2>Grid with Spanning</h2>
+    <pre><code>view .html [
+    grid [
+        title "Header" "Header" "Header"
+        text "Cell" "Cell" "Cell"
+        text "Cell" [span 2] "Cell"
+    ]
+]</code></pre>
+
+    <h2>Grid Options</h2>
+    <ul>
+      <li><strong>span</strong>: Span multiple cells</li>
+      <li><strong>header</strong>: Mark row as header</li>
+      <li><strong>footer</strong>: Mark row as footer</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/layout/across-below/">Across & Below</a> - Basic layout</li>
+      <li><a href="/wiki/core/components/data-display/">Data Display</a> - Table components</li>
+    </ul>
+  }
+]

@@ -1,0 +1,35 @@
+#[
+  "title": "Transforms"
+  "layout": "docpage"
+  "category": "Transforms"
+  "tags": ["transforms", "coordinates", "rotate", "scale"]
+  "body": {
+    <h1>Transforms</h1>
+
+    <p>Reference documentation for transformation commands in Vista Graphics.</p>
+
+    <h2>Transform Topics</h2>
+    <ul>
+      <li><a href="/wiki/graphics/transforms/transform-overview/">Transform Overview</a> - Transform system</li>
+      <li><a href="/wiki/graphics/transforms/translate/">Translate</a> - translate command</li>
+      <li><a href="/wiki/graphics/transforms/rotate/">Rotate</a> - rotate command</li>
+      <li><a href="/wiki/graphics/transforms/scale/">Scale</a> - scale command</li>
+      <li><a href="/wiki/graphics/transforms/skew/">Skew</a> - skew command</li>
+      <li><a href="/wiki/graphics/transforms/coord-systems/">Coord Systems</a> - coord-system command</li>
+    </ul>
+
+    <h2>Transform Example</h2>
+    <pre><code>draw canvas [
+    translate 100 100
+    rotate 45
+    scale 2 2
+    box 0 0 50 50
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/concepts/coordinate-systems/">Coordinate Systems</a> - Coordinate concepts</li>
+      <li><a href="/wiki/graphics/tutorials/transformations/">Transformations Tutorial</a> - Learning guide</li>
+    </ul>
+  }
+]

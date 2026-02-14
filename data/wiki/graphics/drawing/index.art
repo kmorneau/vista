@@ -1,0 +1,33 @@
+#[
+  "title": "Drawing Reference"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["drawing", "reference", "primitives", "shapes"]
+  "body": {
+    <h1>Drawing Reference</h1>
+
+    <p>Complete reference for Vista Graphics drawing commands and primitives.</p>
+
+    <h2>Drawing Categories</h2>
+    <ul>
+      <li><a href="/wiki/graphics/drawing/primitives/">Primitives</a> - Line, box, circle, ellipse</li>
+      <li><a href="/wiki/graphics/drawing/polygons/">Polygons</a> - Polygon drawing</li>
+      <li><a href="/wiki/graphics/drawing/paths/">Paths</a> - Path operations</li>
+      <li><a href="/wiki/graphics/drawing/pen-fill/">Pen & Fill</a> - Pen and fill styles</li>
+    </ul>
+
+    <h2>Basic Drawing</h2>
+    <pre><code>draw canvas [
+    line 0 0 100 100
+    box 10 10 100 100
+    circle 50 50 25
+    ellipse 150 50 30 50
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/tutorials/">Tutorials</a> - Learning guides</li>
+      <li><a href="/wiki/graphics/colors/">Colors</a> - Color and gradient reference</li>
+    </ul>
+  }
+]

@@ -1,0 +1,1270 @@
+; Arte API (scaffold v0.8)
+
+import "arte/api/repositories/apps_repo.art"!
+import "arte/api/repositories/pages_repo.art"!
+import "arte/api/repositories/components_repo.art"!
+import "arte/api/repositories/auth_repo.art"!
+import "arte/api/repositories/workspaces_repo.art"!
+import "arte/api/services/auth_utils.art"!
+
+api_port: 19010
+invite_ttl_seconds: 86400
+
+if key? env "ARTE_API_PORT" [
+    api_port: to :integer env\ARTE_API_PORT
+]
+
+json_body: function [value] [
+    write.json value ø
+]
+
+ok: function [data] [
+    json_body #[
+        ok: true
+        data: data
+    ]
+]
+
+created: function [data] [
+    json_body #[
+        ok: true
+        created: true
+        data: data
+    ]
+]
+
+bad_request: function [message details] [
+    json_body #[
+        ok: false
+        error: #[
+            code: "bad_request"
+            message: message
+            details: details
+        ]
+    ]
+]
+
+unauthorized: function [message details] [
+    json_body #[
+        ok: false
+        error: #[
+            code: "unauthorized"
+            message: message
+            details: details
+        ]
+    ]
+]
+
+not_found: function [message details] [
+    json_body #[
+        ok: false
+        error: #[
+            code: "not_found"
+            message: message
+            details: details
+        ]
+    ]
+]
+
+parse_json_body: function [] [
+    if any? @[equal? body null equal? body ""] [
+        return #[
+            ok: false
+            error: "empty_body"
+        ]
+    ]
+    if error? err: <= try [
+        read.json body
+    ] [
+        return #[
+            ok: false
+            error: "invalid_json"
+            details: err
+        ]
+    ]
+    #[
+        ok: true
+        data: err
+    ]
+]
+
+ensure_text: function [value fieldName] [
+    if any? @[equal? value null equal? value ""] [
+        return #[
+            ok: false
+            field: fieldName
+            message: fieldName ++ " is required"
+        ]
+    ]
+    #[
+        ok: true
+        field: fieldName
+        value: to :string value
+    ]
+]
+
+now_epoch: function [] [
+    to :integer now
+]
+
+slugify: function [value] [
+    textVal: lower to :string value
+    textVal: replace textVal {/[\s_]+/} "-"
+    textVal: replace textVal {/[^a-z0-9-]+/} ""
+    textVal: replace textVal {/-+/} "-"
+    textVal
+]
+
+pad_of: function [n] [
+    out: ""
+    i: 0
+    while [less? i n] [
+        out: out ++ " "
+        i: i + 1
+    ]
+    out
+]
+
+vista_escape: function [value] [
+    textVal: to :string value
+    textVal: replace textVal "\\" "\\\\"
+    textVal: replace textVal "\"" "\\\""
+    textVal
+]
+
+repo_insert_invite: function [workspaceId email role code expiresAt] [
+    with_arte_db [
+        put 'workspace_invite [
+            workspace_id: to :string workspaceId
+            email: to :string email
+            role: to :string role
+            code: to :string code
+            expires_at: to :integer expiresAt
+            used: false
+            created_at: to :string now
+        ]
+    ]
+    true
+]
+
+repo_find_invite_by_code: function [code] [
+    rows: with_arte_db [ fetch 'workspace_invite ø ]
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "code" equal? (to :string props\code) (to :string code)] [
+                return row
+            ]
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+repo_list_invites: function [workspaceId] [
+    rows: with_arte_db [ fetch 'workspace_invite ø ]
+    out: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "workspace_id" equal? (to :string props\workspace_id) (to :string workspaceId)] [
+                out: out ++ @[props]
+            ]
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+repo_mark_invite_used: function [row] [
+    if equal? row null [ return false ]
+    props: row\properties
+    updated: props
+    updated\used: true
+    updated\used_at: to :string now
+    if key? row "id" [
+        with_arte_db [ unput to :integer row\id ]
+    ]
+    with_arte_db [ put 'workspace_invite updated ]
+    true
+]
+
+repo_delete_invite_by_code: function [workspaceId code] [
+    rows: with_arte_db [ fetch 'workspace_invite ø ]
+    removeIds: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties" key? row "id"] [
+            props: row\properties
+            if all? @[
+                key? props "workspace_id"
+                equal? (to :string props\workspace_id) (to :string workspaceId)
+                key? props "code"
+                equal? (to :string props\code) (to :string code)
+            ] [
+                removeIds: removeIds ++ @[to :integer row\id]
+            ]
+        ]
+        i: i + 1
+    ]
+    if equal? (size removeIds) 0 [ return false ]
+    with_arte_db [
+        i: 0
+        blen: size removeIds
+        while [less? i blen] [
+            unput (get removeIds i)
+            i: i + 1
+        ]
+    ]
+    true
+]
+
+repo_upsert_app_member: function [appId userId role] [
+    rows: with_arte_db [ fetch 'app_member ø ]
+    foundId: null
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties" key? row "id"] [
+            props: row\properties
+            if all? @[key? props "app_id" equal? (to :string props\app_id) (to :string appId) key? props "user_id" equal? (to :integer props\user_id) (to :integer userId)] [
+                foundId: to :integer row\id
+            ]
+        ]
+        i: i + 1
+    ]
+    if notEqual? foundId null [
+        with_arte_db [ unput foundId ]
+    ]
+    with_arte_db [ put 'app_member [app_id: to :string appId user_id: to :integer userId role: to :string role] ]
+    true
+]
+
+repo_list_app_members: function [appId] [
+    rows: with_arte_db [ fetch 'app_member ø ]
+    out: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "app_id" equal? (to :string props\app_id) (to :string appId)] [
+                out: out ++ @[#[user_id: to :integer props\user_id role: to :string props\role]]
+            ]
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+repo_find_app_member_role: function [appId userId] [
+    rows: with_arte_db [ fetch 'app_member ø ]
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "app_id" equal? (to :string props\app_id) (to :string appId) key? props "user_id" equal? (to :integer props\user_id) (to :integer userId)] [
+                return to :string props\role
+            ]
+        ]
+        i: i + 1
+    ]
+    ""
+]
+
+repo_cleanup_expired_invites: function [workspaceId] [
+    rows: with_arte_db [ fetch 'workspace_invite ø ]
+    removeIds: []
+    nowVal: now_epoch
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties" key? row "id"] [
+            props: row\properties
+            if all? @[
+                key? props "workspace_id"
+                equal? (to :string props\workspace_id) (to :string workspaceId)
+                key? props "expires_at"
+                greater? (to :integer props\expires_at) 0
+                less? (to :integer props\expires_at) nowVal
+                not? props\used
+            ] [
+                removeIds: removeIds ++ @[to :integer row\id]
+            ]
+        ]
+        i: i + 1
+    ]
+    if equal? (size removeIds) 0 [ return 0 ]
+    with_arte_db [
+        i: 0
+        blen: size removeIds
+        while [less? i blen] [
+            unput (get removeIds i)
+            i: i + 1
+        ]
+    ]
+    size removeIds
+]
+
+props_as_dict: function [props] [
+    if equal? (type props) :dictionary [
+        return props
+    ]
+    if equal? (type props) :string [
+        if error? err: <= try [
+            read.json props
+        ] [
+            return #[]
+        ] [
+            if equal? (type err) :dictionary [
+                return err
+            ]
+        ]
+    ]
+    #[]
+]
+
+vista_from_item: function [item indent] [
+    if notEqual? (type item) :dictionary [
+        return ""
+    ]
+    pad: pad_of indent
+    ctype: ""
+    if key? item "type" [
+        ctype: to :string item\type
+    ]
+    propsVal: null
+    if key? item "props" [
+        propsVal: item\props
+    ]
+    propsDict: props_as_dict propsVal
+    labelVal: ""
+    if key? propsDict "label" [
+        labelVal: to :string propsDict\label
+    ]
+    placeholderVal: ""
+    if key? propsDict "placeholder" [
+        placeholderVal: to :string propsDict\placeholder
+    ]
+
+    if equal? ctype "row" [
+        if all? @[key? item "children" equal? (type item\children) :block] [
+            inner: ""
+            i: 0
+            blen: size item\children
+            while [less? i blen] [
+                inner: inner ++ vista_from_item (get item\children i) (indent + 4) ++ "\n"
+                i: i + 1
+            ]
+            return pad ++ "row [\n" ++ inner ++ pad ++ "]"
+        ]
+    ]
+
+    if equal? ctype "title" [
+        textVal: labelVal
+        if equal? textVal "" [ textVal: to :string propsVal ]
+        return pad ++ "title \"" ++ vista_escape textVal ++ "\""
+    ]
+
+    if equal? ctype "text" [
+        textVal: labelVal
+        if equal? textVal "" [ textVal: to :string propsVal ]
+        return pad ++ "text \"" ++ vista_escape textVal ++ "\""
+    ]
+
+    if equal? ctype "button" [
+        textVal: labelVal
+        if equal? textVal "" [ textVal: to :string propsVal ]
+        if equal? textVal "" [ textVal: "Button" ]
+        return pad ++ "button \"" ++ vista_escape textVal ++ "\""
+    ]
+
+    if equal? ctype "input" [
+        phVal: placeholderVal
+        if equal? phVal "" [ phVal: to :string propsVal ]
+        return pad ++ "input .placeholder:\"" ++ vista_escape phVal ++ "\" name"
+    ]
+
+    return pad ++ "text \"" ++ vista_escape ctype ++ "\""
+]
+
+vista_inner_from_layout: function [layout] [
+    if notEqual? (type layout) :block [
+        return ""
+    ]
+    inner: ""
+    i: 0
+    blen: size layout
+    while [less? i blen] [
+        inner: inner ++ vista_from_item (get layout i) 4 ++ "\n"
+        i: i + 1
+    ]
+    inner
+]
+
+vista_from_layout: function [layout] [
+    if notEqual? (type layout) :block [
+        return "view []"
+    ]
+    inner: vista_inner_from_layout layout
+    "import \"vista.art\"!\n\nview [\n" ++ inner ++ "]"
+]
+
+vista_html_from_layout: function [layout] [
+    inner: vista_inner_from_layout layout
+    code: "import \"vista.art\"!\n\nview .returnHtml [\n" ++ inner ++ "]"
+    do code
+]
+
+
+ensure_export_dir: function [] [
+    dir: "arte/exports"
+    if not? directory? dir [
+        write.directory "" dir
+    ]
+    dir
+]
+
+get_session_user: function [token] [
+    tokenHash: auth_hash_token token
+    srow: repo_find_session_by_token_hash tokenHash
+    if equal? srow null [
+        return null
+    ]
+    if not? key? srow "properties" [
+        return null
+    ]
+    props: srow\properties
+    if not? key? props "user_id" [
+        return null
+    ]
+    repo_find_auth_user_by_id props\user_id
+]
+
+app_role_allows: function [role action] [
+    if equal? role "admin" [ return true ]
+    if equal? role "builder" [
+        if in? action ["read" "create" "update" "export"] [ return true ]
+        return false
+    ]
+    if equal? role "viewer" [
+        if equal? action "read" [ return true ]
+        return false
+    ]
+    false
+]
+
+role_allows: function [userRow action] [
+    if equal? userRow null [ return false ]
+    role: to :string userRow\properties\role
+    if equal? role "admin" [ return true ]
+    if equal? role "builder" [
+        if in? action ["read" "create" "update" "export"] [ return true ]
+        return false
+    ]
+    if equal? role "viewer" [
+        if equal? action "read" [ return true ]
+        return false
+    ]
+    false
+]
+
+get_workspace_name: function [workspaceId] [
+    ws: repo_find_workspace_by_id workspaceId
+    if equal? ws null [ return "" ]
+    ws\name
+]
+
+clean_user_public: function [row] [
+    if equal? row null [ return null ]
+    if not? key? row "properties" [ return null ]
+    props: row\properties
+    #[
+        id: to :integer props\user_id
+        email: to :string props\email
+        role: to :string props\role
+        workspace_id: to :string props\workspace_id
+    ]
+]
+
+ensure_app_role: function [userRow appId action] [
+    if equal? userRow null [ return false ]
+    role: repo_find_app_member_role appId userRow\properties\user_id
+    if equal? role "" [
+        role: to :string userRow\properties\role
+    ]
+    app_role_allows role action
+]
+
+ensure_app_access: function [userRow appId] [
+    if equal? userRow null [ return null ]
+    app: repo_find_app_by_id appId
+    if equal? app null [ return null ]
+    wsId: userRow\properties\workspace_id
+    if equal? (to :string app\workspace_id) (to :string wsId) [
+        return app
+    ]
+    null
+]
+
+ensure_page_access: function [userRow pageId] [
+    if equal? userRow null [ return null ]
+    page: repo_find_page_by_id pageId
+    if equal? page null [ return null ]
+    app: repo_find_app_by_id page\app_id
+    if equal? app null [ return null ]
+    wsId: userRow\properties\workspace_id
+    if equal? (to :string app\workspace_id) (to :string wsId) [
+        return page
+    ]
+    null
+]
+
+serve.verbose .port:api_port [
+    GET "/" [
+        json_body #[
+            ok: true
+            service: "arte-api"
+            version: "v0"
+            routes: [
+                "GET /api/health"
+                "POST /api/auth/signup"
+                "POST /api/auth/login"
+                "GET /api/auth/me/:token"
+                "GET /api/apps/:token"
+                "POST /api/apps/:token"
+                "PUT /api/apps/:token/:id"
+                "DELETE /api/apps/:token/:id"
+                "GET /api/apps/:token/:id/pages"
+                "GET /api/apps/:token/:id/members"
+                "POST /api/apps/:token/:id/members"
+                "POST /api/apps/:token/:id/pages"
+                "GET /api/pages/:token/:id"
+                "PUT /api/pages/:token/:id"
+                "DELETE /api/pages/:token/:id"
+                "GET /api/pages/:token/:id/components"
+                "PUT /api/pages/:token/:id/components"
+                "POST /api/pages/:token/:id/export"
+                "POST /api/pages/:token/:id/preview"
+                "POST /api/workspaces/:token/members"
+                "GET /api/workspaces/:token/members"
+                "GET /api/workspaces/:token/invites"
+                "POST /api/workspaces/:token/invites"
+                "DELETE /api/workspaces/:token/invites/:code"
+                "POST /api/workspaces/:token/invites/cleanup"
+                "POST /api/invites/accept"
+            ]
+        ]
+    ]
+
+    GET "/api/health" [
+        ok #[
+            status: "up"
+            service: "arte-api"
+        ]
+    ]
+
+    POST "/api/auth/signup" [
+        payload: parse_json_body
+        if not? payload\ok [
+            bad_request "invalid json" #[reason: payload\error]
+        ] [
+            emailCheck: ensure_text payload\data\email "email"
+            passCheck: ensure_text payload\data\password "password"
+            if any? @[not? emailCheck\ok not? passCheck\ok] [
+                bad_request "invalid input" #[email: emailCheck pass: passCheck]
+            ] [
+                existing: repo_find_auth_user_by_email emailCheck\value
+                if notEqual? existing null [
+                    bad_request "email already exists" #[]
+                ] [
+                    salt: auth_generate_salt
+                    passHash: auth_hash_password passCheck\value salt auth_password_iterations
+                    tempUser: repo_insert_auth_user emailCheck\value passHash salt auth_password_iterations "admin" ""
+                    ws: repo_insert_workspace "Default" tempUser\properties\user_id
+                    userRow: repo_update_auth_user tempUser\properties\user_id #[workspace_id: ws\id]
+                    token: auth_generate_token emailCheck\value
+                    tokenHash: auth_hash_token token
+                    repo_insert_session userRow\properties\user_id tokenHash
+                    ok #[token: token user: clean_user_public userRow workspace: ws]
+                ]
+            ]
+        ]
+    ]
+
+    POST "/api/auth/login" [
+        payload: parse_json_body
+        if not? payload\ok [
+            bad_request "invalid json" #[reason: payload\error]
+        ] [
+            emailCheck: ensure_text payload\data\email "email"
+            passCheck: ensure_text payload\data\password "password"
+            if any? @[not? emailCheck\ok not? passCheck\ok] [
+                bad_request "invalid input" #[email: emailCheck pass: passCheck]
+            ] [
+                row: repo_find_auth_user_by_email emailCheck\value
+                if equal? row null [
+                    unauthorized "invalid credentials" #[]
+                ] [
+                    props: row\properties
+                    okPass: auth_verify_password passCheck\value props\password_salt props\password_iters props\password_hash
+                    if not? okPass [
+                        unauthorized "invalid credentials" #[]
+                    ] [
+                        token: auth_generate_token emailCheck\value
+                        tokenHash: auth_hash_token token
+                        repo_insert_session props\user_id tokenHash
+                        ok #[token: token user: clean_user_public row]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+    POST "/api/auth/logout" [
+    payload: parse_json_body
+    if not? payload\ok [
+        bad_request "invalid json" #[reason: payload\error]
+    ] [
+        tokenCheck: ensure_text payload\data\token "token"
+        if not? tokenCheck\ok [
+            bad_request tokenCheck\message #[field: tokenCheck\field]
+        ] [
+            tokenHash: auth_hash_token tokenCheck\value
+            repo_delete_session_by_token_hash tokenHash
+            ok #[logged_out: true]
+        ]
+    ]
+]
+
+GET "/api/auth/me/(?<token>.+)" $[token][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            wsName: get_workspace_name userRow\properties\workspace_id
+            ok #[user: clean_user_public userRow workspace: #[id: userRow\properties\workspace_id name: wsName]]
+        ]
+    ]
+
+    GET "/api/apps" [
+        unauthorized "token required" #[]
+    ]
+
+    GET "/api/apps/(?<token>[^/]+)" $[token][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "read" [
+                unauthorized "forbidden" #[]
+            ] [
+                props: userRow\properties
+                ok repo_list_apps_by_workspace props\workspace_id
+            ]
+        ]
+    ]
+
+    GET "/api/apps/(?<id>[^/]+)" $[id][
+        unauthorized "token required" #[]
+    ]
+
+    POST "/api/apps" [
+        unauthorized "token required" #[]
+    ]
+
+    POST "/api/apps/(?<token>[^/]+)" $[token][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "create" [
+                unauthorized "forbidden" #[]
+            ] [
+            payload: parse_json_body
+            if not? payload\ok [
+                bad_request "invalid json" #[reason: payload\error]
+            ] [
+                nameCheck: ensure_text payload\data\name "name"
+                if not? nameCheck\ok [
+                    bad_request nameCheck\message #[field: nameCheck\field]
+                ] [
+                    slugVal: slugify nameCheck\value
+                    app: repo_insert_app_with_workspace userRow\properties\workspace_id nameCheck\value slugVal
+                    created app
+                ]
+            ]
+            ]
+        ]
+    ]
+
+    PUT "/api/apps/(?<id>[^/]+)" $[id][
+        unauthorized "token required" #[]
+    ]
+
+    PUT "/api/apps/(?<token>[^/]+)/(?<id>[^/]+)" $[token id][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "update" [
+                unauthorized "forbidden" #[]
+            ] [
+            appAccess: ensure_app_access userRow id
+            if equal? appAccess null [
+                not_found "app not found" #[id: id]
+            ] [
+                payload: parse_json_body
+                if not? payload\ok [
+                    bad_request "invalid json" #[reason: payload\error]
+                ] [
+                    nameCheck: ensure_text payload\data\name "name"
+                    if not? nameCheck\ok [
+                        bad_request nameCheck\message #[field: nameCheck\field]
+                    ] [
+                        slugVal: slugify nameCheck\value
+                        app: repo_update_app id nameCheck\value slugVal
+                        if notEqual? app null [
+                            ok app
+                        ] [
+                            not_found "app not found" #[id: id]
+                        ]
+                    ]
+                ]
+            ]
+            ]
+        ]
+    ]
+
+    DELETE "/api/apps/(?<id>[^/]+)" $[id][
+        unauthorized "token required" #[]
+    ]
+
+    DELETE "/api/apps/(?<token>[^/]+)/(?<id>[^/]+)" $[token id][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "delete" [
+                unauthorized "forbidden" #[]
+            ] [
+            appAccess: ensure_app_access userRow id
+            if equal? appAccess null [
+                not_found "app not found" #[id: id]
+            ] [
+                okDelete: repo_delete_app id
+                if okDelete [
+                    ok #[deleted: true]
+                ] [
+                    not_found "app not found" #[id: id]
+                ]
+            ]
+            ]
+        ]
+    ]
+
+    GET "/api/apps/(?<id>[^/]+)/pages" $[id][
+        unauthorized "token required" #[]
+    ]
+
+    GET "/api/apps/(?<token>[^/]+)/(?<id>[^/]+)/members" $[token id][
+    userRow: get_session_user token
+    if equal? userRow null [
+        unauthorized "invalid token" #[]
+    ] [
+        if not? ensure_app_role userRow id "read" [
+            unauthorized "forbidden" #[]
+        ] [
+            ok repo_list_app_members id
+        ]
+    ]
+]
+
+POST "/api/apps/(?<token>[^/]+)/(?<id>[^/]+)/members" $[token id][
+    userRow: get_session_user token
+    if equal? userRow null [
+        unauthorized "invalid token" #[]
+    ] [
+        if not? ensure_app_role userRow id "update" [
+            unauthorized "forbidden" #[]
+        ] [
+            payload: parse_json_body
+            if not? payload\ok [
+                bad_request "invalid json" #[reason: payload\error]
+            ] [
+                userIdCheck: ensure_text payload\data\user_id "user_id"
+                roleCheck: ensure_text payload\data\role "role"
+                if any? @[not? userIdCheck\ok not? roleCheck\ok] [
+                    bad_request "invalid input" #[user: userIdCheck role: roleCheck]
+                ] [
+                    roleVal: lower roleCheck\value
+                    if not? in? roleVal ["admin" "builder" "viewer"] [
+                        bad_request "invalid role" #[role: roleVal]
+                    ] [
+                        repo_upsert_app_member id (to :integer userIdCheck\value) roleVal
+                        ok #[user_id: userIdCheck\value role: roleVal]
+                    ]
+                ]
+            ]
+        ]
+    ]
+]
+
+GET "/api/apps/(?<token>[^/]+)/(?<id>[^/]+)/pages" $[token id][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "read" [
+                unauthorized "forbidden" #[]
+            ] [
+            appAccess: ensure_app_access userRow id
+            if equal? appAccess null [
+                not_found "app not found" #[id: id]
+            ] [
+                ok repo_list_pages id
+            ]
+            ]
+        ]
+    ]
+
+    POST "/api/apps/(?<id>[^/]+)/pages" $[id][
+        unauthorized "token required" #[]
+    ]
+
+    POST "/api/apps/(?<token>[^/]+)/(?<id>[^/]+)/pages" $[token id][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "create" [
+                unauthorized "forbidden" #[]
+            ] [
+            appAccess: ensure_app_access userRow id
+            if equal? appAccess null [
+                not_found "app not found" #[id: id]
+            ] [
+                payload: parse_json_body
+                if not? payload\ok [
+                    bad_request "invalid json" #[reason: payload\error]
+                ] [
+                    nameCheck: ensure_text payload\data\name "name"
+                    if not? nameCheck\ok [
+                        bad_request nameCheck\message #[field: nameCheck\field]
+                    ] [
+                        routeVal: slugify nameCheck\value
+                        page: repo_insert_page id nameCheck\value routeVal
+                        created page
+                    ]
+                ]
+            ]
+            ]
+        ]
+    ]
+
+    GET "/api/pages/(?<id>[^/]+)" $[id][
+        unauthorized "token required" #[]
+    ]
+
+    GET "/api/pages/(?<token>[^/]+)/(?<id>[^/]+)" $[token id][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "read" [
+                unauthorized "forbidden" #[]
+            ] [
+            page: ensure_page_access userRow id
+            if notEqual? page null [
+                ok page
+            ] [
+                not_found "page not found" #[id: id]
+            ]
+            ]
+        ]
+    ]
+
+    PUT "/api/pages/(?<id>[^/]+)" $[id][
+        unauthorized "token required" #[]
+    ]
+
+    PUT "/api/pages/(?<token>[^/]+)/(?<id>[^/]+)" $[token id][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "update" [
+                unauthorized "forbidden" #[]
+            ] [
+            pageAccess: ensure_page_access userRow id
+            if equal? pageAccess null [
+                not_found "page not found" #[id: id]
+            ] [
+                payload: parse_json_body
+                if not? payload\ok [
+                    bad_request "invalid json" #[reason: payload\error]
+                ] [
+                    nameCheck: ensure_text payload\data\name "name"
+                    if not? nameCheck\ok [
+                        bad_request nameCheck\message #[field: nameCheck\field]
+                    ] [
+                        routeVal: slugify nameCheck\value
+                        page: repo_update_page id nameCheck\value routeVal
+                        if notEqual? page null [
+                            ok page
+                        ] [
+                            not_found "page not found" #[id: id]
+                        ]
+                    ]
+                ]
+            ]
+            ]
+        ]
+    ]
+
+    DELETE "/api/pages/(?<id>[^/]+)" $[id][
+        unauthorized "token required" #[]
+    ]
+
+    DELETE "/api/pages/(?<token>[^/]+)/(?<id>[^/]+)" $[token id][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "delete" [
+                unauthorized "forbidden" #[]
+            ] [
+            pageAccess: ensure_page_access userRow id
+            if equal? pageAccess null [
+                not_found "page not found" #[id: id]
+            ] [
+                okDelete: repo_delete_page id
+                if okDelete [
+                    ok #[deleted: true]
+                ] [
+                    not_found "page not found" #[id: id]
+                ]
+            ]
+            ]
+        ]
+    ]
+
+    GET "/api/pages/(?<id>[^/]+)/components" $[id][
+        unauthorized "token required" #[]
+    ]
+
+    GET "/api/pages/(?<token>[^/]+)/(?<id>[^/]+)/components" $[token id][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "read" [
+                unauthorized "forbidden" #[]
+            ] [
+            pageAccess: ensure_page_access userRow id
+            if equal? pageAccess null [
+                not_found "page not found" #[id: id]
+            ] [
+                ok repo_list_components id
+            ]
+            ]
+        ]
+    ]
+
+    PUT "/api/pages/(?<id>[^/]+)/components" $[id][
+        unauthorized "token required" #[]
+    ]
+
+    PUT "/api/pages/(?<token>[^/]+)/(?<id>[^/]+)/components" $[token id][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "update" [
+                unauthorized "forbidden" #[]
+            ] [
+            pageAccess: ensure_page_access userRow id
+            if equal? pageAccess null [
+                not_found "page not found" #[id: id]
+            ] [
+                payload: parse_json_body
+                if not? payload\ok [
+                    bad_request "invalid json" #[reason: payload\error]
+                ] [
+                    comps: payload\data\components
+                    if notEqual? (type comps) :block [
+                        bad_request "components must be a list" #[field: "components"]
+                    ] [
+                        ok repo_replace_components id comps
+                    ]
+                ]
+            ]
+            ]
+        ]
+    ]
+
+    POST "/api/pages/(?<id>[^/]+)/export" $[id][
+        unauthorized "token required" #[]
+    ]
+
+    POST "/api/workspaces/(?<token>[^/]+)/invites" $[token][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? equal? (to :string userRow\properties\role) "admin" [
+                unauthorized "forbidden" #[]
+            ] [
+                payload: parse_json_body
+                if not? payload\ok [
+                    bad_request "invalid json" #[reason: payload\error]
+                ] [
+                    emailCheck: ensure_text payload\data\email "email"
+                    roleCheck: ensure_text payload\data\role "role"
+                    if any? @[not? emailCheck\ok not? roleCheck\ok] [
+                        bad_request "invalid input" #[email: emailCheck role: roleCheck]
+                    ] [
+                        roleVal: lower roleCheck\value
+                        if not? in? roleVal ["admin" "builder" "viewer"] [
+                            bad_request "invalid role" #[role: roleVal]
+                        ] [
+                            code: invite_generate_code emailCheck\value
+                            expires: now_epoch + invite_ttl_seconds
+                            repo_insert_invite userRow\properties\workspace_id emailCheck\value roleVal code expires
+                            ok #[code: code email: emailCheck\value role: roleVal]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+    POST "/api/workspaces/(?<token>[^/]+)/members" $[token][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? equal? (to :string userRow\properties\role) "admin" [
+                unauthorized "forbidden" #[]
+            ] [
+                payload: parse_json_body
+                if not? payload\ok [
+                    bad_request "invalid json" #[reason: payload\error]
+                ] [
+                    emailCheck: ensure_text payload\data\email "email"
+                    roleCheck: ensure_text payload\data\role "role"
+                    if any? @[not? emailCheck\ok not? roleCheck\ok] [
+                        bad_request "invalid input" #[email: emailCheck role: roleCheck]
+                    ] [
+                        roleVal: lower roleCheck\value
+                        if not? in? roleVal ["admin" "builder" "viewer"] [
+                            bad_request "invalid role" #[role: roleVal]
+                        ] [
+                            existing: repo_find_auth_user_by_email emailCheck\value
+                            userId: null
+                            if equal? existing null [
+                                salt: auth_generate_salt
+                                tempPass: "temp-" ++ auth_generate_token emailCheck\value
+                                passHash: auth_hash_password tempPass salt auth_password_iterations
+                                newUser: repo_insert_auth_user emailCheck\value passHash salt auth_password_iterations roleVal userRow\properties\workspace_id
+                                userId: newUser\properties\user_id
+                                repo_upsert_workspace_member userRow\properties\workspace_id userId roleVal emailCheck\value
+                                ok #[user_id: userId email: emailCheck\value role: roleVal temp_password: tempPass]
+                            ] [
+                                userId: existing\properties\user_id
+                                repo_update_auth_user userId #[workspace_id: userRow\properties\workspace_id role: roleVal]
+                                repo_upsert_workspace_member userRow\properties\workspace_id userId roleVal emailCheck\value
+                                ok #[user_id: userId email: emailCheck\value role: roleVal]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+    POST "/api/invites/accept" [
+        payload: parse_json_body
+        if not? payload\ok [
+            bad_request "invalid json" #[reason: payload\error]
+        ] [
+            codeCheck: ensure_text payload\data\code "code"
+            passCheck: ensure_text payload\data\password "password"
+            if any? @[not? codeCheck\ok not? passCheck\ok] [
+                bad_request "invalid input" #[code: codeCheck pass: passCheck]
+            ] [
+                row: repo_find_invite_by_code codeCheck\value
+                if equal? row null [
+                    not_found "invite not found" #[]
+                ] [
+                    props: row\properties
+                    if props\used [
+                        bad_request "invite already used" #[]
+                    ] [
+                        if all? @[key? props "expires_at" greater? (to :integer props\expires_at) 0 less? (to :integer props\expires_at) now_epoch] [
+                            bad_request "invite expired" #[]
+                        ] [
+                            email: to :string props\email
+                            roleVal: to :string props\role
+                            wsId: to :string props\workspace_id
+                            existing: repo_find_auth_user_by_email email
+                            salt: auth_generate_salt
+                            passHash: auth_hash_password passCheck\value salt auth_password_iterations
+                            userRow: null
+                            if equal? existing null [
+                                userRow: repo_insert_auth_user email passHash salt auth_password_iterations roleVal wsId
+                            ] [
+                                userRow: repo_update_auth_user existing\properties\user_id #[password_hash: passHash password_salt: salt password_iters: auth_password_iterations workspace_id: wsId role: roleVal]
+                            ]
+                            repo_upsert_workspace_member wsId userRow\properties\user_id roleVal email
+                            repo_mark_invite_used row
+                            token: auth_generate_token email
+                            tokenHash: auth_hash_token token
+                            repo_insert_session userRow\properties\user_id tokenHash
+                            ok #[token: token user: clean_user_public userRow]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+    GET "/api/workspaces/(?<token>[^/]+)/invites" $[token][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? equal? (to :string userRow\properties\role) "admin" [
+                unauthorized "forbidden" #[]
+            ] [
+                repo_cleanup_expired_invites userRow\properties\workspace_id
+                ok repo_list_invites userRow\properties\workspace_id
+            ]
+        ]
+    ]
+
+    POST "/api/workspaces/(?<token>[^/]+)/invites/cleanup" $[token][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? equal? (to :string userRow\properties\role) "admin" [
+                unauthorized "forbidden" #[]
+            ] [
+                removedCount: repo_cleanup_expired_invites userRow\properties\workspace_id
+                ok #[removedCount: removedCount]
+            ]
+        ]
+    ]
+
+    DELETE "/api/workspaces/(?<token>[^/]+)/invites/(?<code>[^/]+)" $[token code][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? equal? (to :string userRow\properties\role) "admin" [
+                unauthorized "forbidden" #[]
+            ] [
+                removed: repo_delete_invite_by_code userRow\properties\workspace_id code
+                if removed [
+                    ok #[revoked: true]
+                ] [
+                    not_found "invite not found" #[]
+                ]
+            ]
+        ]
+    ]
+
+    GET "/api/workspaces/(?<token>[^/]+)/members" $[token][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? equal? (to :string userRow\properties\role) "admin" [
+                unauthorized "forbidden" #[]
+            ] [
+                ok repo_list_workspace_members_with_emails userRow\properties\workspace_id
+            ]
+        ]
+    ]
+
+    POST "/api/pages/(?<token>[^/]+)/(?<id>[^/]+)/preview" $[token id][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "read" [
+                unauthorized "forbidden" #[]
+            ] [
+                pageAccess: ensure_page_access userRow id
+                if equal? pageAccess null [
+                    not_found "page not found" #[id: id]
+                ] [
+                    payload: parse_json_body
+                    if not? payload\ok [
+                        bad_request "invalid json" #[reason: payload\error]
+                    ] [
+                        layout: payload\data\layout
+                        if notEqual? (type layout) :block [
+                            bad_request "layout must be a list" #[field: "layout"]
+                        ] [
+                            html: vista_html_from_layout layout
+                            ok #[html: html]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+    POST "/api/pages/(?<token>[^/]+)/(?<id>[^/]+)/export" $[token id][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "export" [
+                unauthorized "forbidden" #[]
+            ] [
+                pageAccess: ensure_page_access userRow id
+                if equal? pageAccess null [
+                    not_found "page not found" #[id: id]
+                ] [
+                    payload: parse_json_body
+                    if not? payload\ok [
+                        bad_request "invalid json" #[reason: payload\error]
+                    ] [
+                        layout: payload\data\layout
+                        if notEqual? (type layout) :block [
+                            bad_request "layout must be a list" #[field: "layout"]
+                        ] [
+                            app: repo_find_app_by_id pageAccess\app_id
+                            vista: vista_from_layout layout
+                            outDir: ensure_export_dir
+                            appSlug: "app"
+                            pageSlug: "page"
+                            if notEqual? app null [ appSlug: app\slug ]
+                            pageSlug: pageAccess\route
+                            outPath: outDir ++ "/" ++ appSlug ++ "-" ++ pageSlug ++ ".art"
+                            write vista outPath
+                            ok #[path: outPath vista: vista]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+]
+]

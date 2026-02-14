@@ -23,7 +23,7 @@ button: function [text action attrs] [
             html: html ++ ">"
         ][
             html: html ++ " onclick=\""
-            html: html ++ actionStr
+            html: html ++ html_escape_attr actionStr
             html: html ++ "\">"
         ]
         html ++ textStr ++ "</button>"
@@ -183,6 +183,15 @@ tool_group_face: function [content attrs] [
         merged: merge_class_attr attrs "vista-tool-group"
         attrStr: attrs_to_html merged\attrs
         "<div class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</div>"
+]
+
+script_face: function [content attrs] [
+        attrStr: attrs_to_html attrs
+        body: ""
+        if notEqual? content null [
+                body: to :string content
+        ]
+        "<script" ++ attrStr ++ ">" ++ body ++ "</script>"
 ]
 
 canvas_face: function [attrs] [
@@ -514,7 +523,7 @@ radio_group: function [bindName attrs options bindings] [
             opt_label: ""
             label_block: false
             opt_attrs: #[]
-            if equal? opt_norm_type :block [
+            switch equal? opt_norm_type :block [
                 opt_len2: size opt_norm
                 if greaterOrEqual? opt_len2 2 [
                     opt_value: to :string (get opt_norm 0)
@@ -544,7 +553,7 @@ radio_group: function [bindName attrs options bindings] [
                     opt_value: to :string opt_norm
                     opt_label: html_text opt_norm
                 ]
-            ] [
+            ][
                 opt_value: to :string opt
                 opt_label: html_text opt
             ]
@@ -574,6 +583,24 @@ image_face: function [src attrs] [
         attrStr: attrs_to_html attrs
         srcStr: html_escape_attr (to :string src)
         "<img src='" ++ srcStr ++ "'" ++ attrStr ++ ">"
+]
+
+audio_face: function [attrs] [
+        attrsVal: attrs
+        if not? key? attrsVal "controls" [
+            attrsVal\controls: true
+        ]
+        attrStr: attrs_to_html attrsVal
+        "<audio" ++ attrStr ++ "></audio>"
+]
+
+video_face: function [attrs] [
+        attrsVal: attrs
+        if not? key? attrsVal "controls" [
+            attrsVal\controls: true
+        ]
+        attrStr: attrs_to_html attrsVal
+        "<video" ++ attrStr ++ "></video>"
 ]
 
 progress_face: function [value attrs] [
@@ -645,7 +672,19 @@ vista_css: "*{box-sizing:border-box;}" ++
     ".vista-tab-panel.is-active{display:block;}" ++
     ".vista-key{min-width:120px;}" ++
     ".vista-radio-group{display:flex;flex-direction:column;gap:6px;}" ++
-    ".vista-radio-item{display:flex;align-items:center;gap:6px;}"
+    ".vista-radio-item{display:flex;align-items:center;gap:6px;}" ++
+    ".vista-auth-splash{min-height:60vh;display:flex;align-items:center;justify-content:center;padding:24px;}" ++
+    ".vista-auth-splash-card{max-width:520px;width:100%;text-align:center;padding:24px;border:1px solid var(--arturo-border);border-radius:14px;background:var(--arturo-panel);box-shadow:0 10px 30px rgba(0,0,0,0.08);}" ++
+    ".vista-auth-title{font-size:28px;font-weight:800;margin:0 0 8px;}" ++
+    ".vista-auth-subtitle{color:var(--arturo-muted);margin:0;}" ++
+    ".vista-auth-card{max-width:520px;margin:0 auto;}" ++
+    ".vista-auth-meta{color:var(--arturo-muted);margin-bottom:6px;}" ++
+    "html{-webkit-text-size-adjust:100%;}" ++
+    "img,video,canvas{max-width:100%;height:auto;}" ++
+    "textarea{max-width:100%;}" ++
+    "@media (max-width:900px){.vista-app-header-inner,.vista-app-body{padding-left:12px;padding-right:12px;}.vista-app-title{font-size:16px;}.vista-split{flex-direction:column;}.vista-split-pane{flex-basis:auto !important;}.vista-grid{grid-template-columns:1fr !important;}.vista-row,.vista-layout-across,.vista-layout-row{flex-direction:column;align-items:stretch;}.vista-toolbar,.vista-menubar,.vista-tool-group{flex-wrap:wrap;}.vista-panel-body,.vista-box{padding:10px;}.vista-auth-splash{padding:14px;}.vista-auth-splash-card{padding:16px;}}" ++
+    "@media (max-width:640px){.vista-app-header-inner,.vista-app-body{padding-left:10px;padding-right:10px;}.vista-app-logo{height:22px;}.vista-app-title{font-size:15px;}.vista-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}.vista-tab-btn{width:100%;text-align:left;}}" ++
+    "@media (pointer:coarse){button,input,select,textarea{min-height:40px;}}"
 vista_vid_css: "body.vista-vid{background:#e5e5e5;}" ++
     "body.vista-vid .vista-panel{border-radius:6px;border-color:#a9a9a9;}" ++
     "body.vista-vid .vista-panel-title{background:#d6d6d6;}" ++
@@ -653,4 +692,3 @@ vista_vid_css: "body.vista-vid{background:#e5e5e5;}" ++
     "body.vista-vid .vista-box{border-radius:4px;border-color:#a9a9a9;}" ++
     "body.vista-vid .vista-tab-btn{background:#efefef;}" ++
     "body.vista-vid .vista-tab-btn.is-active{background:#cfe0ff;}"
-

@@ -1,0 +1,44 @@
+#[
+  "title": "Vista Core Library"
+  "layout": "page"
+  "category": "Core"
+  "tags": ["core", "ui", "library", "vista"]
+  "body": {
+    <h1>Vista Core Library</h1>
+
+    <p>The Vista Core Library provides the foundational UI framework for building desktop and web applications using Arturo's VID (Visual Interface Dialect).</p>
+
+    <h2>Core Features</h2>
+    <ul>
+      <li><strong>Declarative UI</strong>: Build user interfaces using the VID syntax</li>
+      <li><strong>Component System</strong>: Rich set of pre-built UI components</li>
+      <li><strong>Layout Engine</strong>: Flexible layout system with rows, columns, and grids</li>
+      <li><strong>Data Binding</strong>: Automatic state synchronization with UI</li>
+      <li><strong>Event System</strong>: Comprehensive event handling model</li>
+    </ul>
+
+    <h2>Documentation Sections</h2>
+    <ul>
+      <li><a href="/wiki/core/concepts/">Concepts</a> - Core concepts and architecture</li>
+      <li><a href="/wiki/core/tutorials/">Tutorials</a> - Step-by-step learning guides</li>
+      <li><a href="/wiki/core/components/">Components</a> - UI component reference</li>
+      <li><a href="/wiki/core/layout/">Layout</a> - Layout system documentation</li>
+      <li><a href="/wiki/core/data-binding/">Data Binding</a> - State management and binding</li>
+      <li><a href="/wiki/core/events/">Events</a> - Event handling documentation</li>
+      <li><a href="/wiki/core/api-reference/">API Reference</a> - Complete function reference</li>
+    </ul>
+
+    <h2>Quick Start</h2>
+    <pre><code>view .html [
+    title "My Application"
+    text "Welcome to Vista!"
+    button "Click Me" [print "Clicked!"]
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/getting-started/">Getting Started</a> - Quick start guide</li>
+      <li><a href="/wiki/graphics/">Vista Graphics</a> - Graphics and drawing library</li>
+    </ul>
+  }
+]

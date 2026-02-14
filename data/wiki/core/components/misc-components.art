@@ -1,0 +1,106 @@
+#[
+  "title": "Miscellaneous Components"
+  "layout": "docpage"
+  "category": "Components"
+  "tags": ["canvas", "divider", "split", "image", "progress", "misc"]
+  "body": {
+    <h1>Miscellaneous Components</h1>
+
+    <p>Additional UI components for specialized use cases including canvas drawing, visual organization, and media display.</p>
+
+    <h2>Canvas</h2>
+    <p>An HTML5 canvas element for custom graphics:</p>
+    <pre><code>
+    canvas .id: "my-canvas" .width: 400 .height: 300
+    </code></pre>
+    <p>With draw script for rendering:</p>
+    <pre><code>
+    canvas_face .id: "drawing" .width: 200 .height: 200
+    ; Use canvas_draw_script to generate JavaScript for the canvas
+    </code></pre>
+
+    <h2>Divider</h2>
+    <p>A horizontal rule for visual separation:</p>
+    <pre><code>
+    divider
+    </code></pre>
+    <p>With custom styling:</p>
+    <pre><code>
+    divider .class: "thick-divider"
+    </code></pre>
+
+    <h2>Split View</h2>
+    <p>A two-pane split layout with configurable ratio:</p>
+    <pre><code>
+    split "Left content" "Right content" 30
+    </code></pre>
+    <p>The ratio (30) means the left pane takes 30% width.</p>
+    <p>With custom attributes:</p>
+    <pre><code>
+    split
+        [text "Navigation"]
+        [text "Content"]
+        25
+        .class: "main-split"
+    </code></pre>
+
+    <h2>Image</h2>
+    <p>Displays an image from a URL:</p>
+    <pre><code>
+    image "https://example.com/photo.png"
+    </code></pre>
+    <p>With dimensions:</p>
+    <pre><code>
+    image "photo.png" .width: 100 .height: 100
+    </code></pre>
+    <p>With data binding for dynamic images:</p>
+    <pre><code>
+    ; Bind to state variable for dynamic updates
+    image "" .data: [bind: "profileImage"]
+    </code></pre>
+
+    <h2>Progress Bar</h2>
+    <p>Shows completion progress (0-100):</p>
+    <pre><code>
+    progress 50
+    </code></pre>
+    <p>With data binding:</p>
+    <pre><code>
+    progress 0 .data: [bind: "uploadProgress"]
+    </code></pre>
+    <p>The bound state variable will update the progress bar automatically.</p>
+
+    <h2>Example</h2>
+    <pre><code>
+    view .html [
+        title "Media Viewer"
+
+        split
+            [image "thumbnail.png" .width: 150]
+            [
+                subtitle "Details"
+                text "Image description here"
+                progress 75
+            ]
+            30
+
+        divider
+
+        canvas .id: "preview" .width: 400 .height: 300
+    ]
+    </code></pre>
+
+    <h2>CSS Classes</h2>
+    <ul>
+      <li><code>vista-canvas</code> - Canvas element</li>
+      <li><code>vista-divider</code> - Horizontal rule</li>
+      <li><code>vista-split</code> - Split container</li>
+      <li><code>vista-split-pane</code> - Individual pane in split</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/concepts/graphics-overview/">Graphics Overview</a> - Canvas drawing</li>
+      <li><a href="/wiki/core/components/containers/">Container Components</a> - Layout containers</li>
+    </ul>
+]

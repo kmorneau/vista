@@ -1,0 +1,40 @@
+#[
+  "title": "Components"
+  "layout": "docpage"
+  "category": "Components"
+  "tags": ["components", "ui", "widgets", "reference"]
+  "body": {
+    <h1>UI Components</h1>
+
+    <p>Vista provides a comprehensive library of pre-built UI components for building modern user interfaces.</p>
+
+    <h2>Component Categories</h2>
+    <ul>
+      <li><a href="/wiki/core/components/text-components/">Text Components</a> - Labels, titles, subtitles</li>
+      <li><a href="/wiki/core/components/button-controls/">Button Controls</a> - Buttons and key buttons</li>
+      <li><a href="/wiki/core/components/input-fields/">Input Fields</a> - Text inputs, textareas, selects</li>
+      <li><a href="/wiki/core/components/selection-controls/">Selection Controls</a> - Checkboxes, toggles, radio groups</li>
+      <li><a href="/wiki/core/components/sliders-choice/">Sliders & Choice</a> - Sliders, rotary, drop lists</li>
+      <li><a href="/wiki/core/components/containers/">Containers</a> - Boxes, panels, groups</li>
+      <li><a href="/wiki/core/components/layout-containers/">Layout Containers</a> - Rows, columns, grids</li>
+      <li><a href="/wiki/core/components/navigation-components/">Navigation</a> - Tabs, toolbar, menubar</li>
+      <li><a href="/wiki/core/components/data-display/">Data Display</a> - Lists, tables</li>
+      <li><a href="/wiki/core/components/visual-divider/">Visual Dividers</a> - Dividers, spacers, splits</li>
+      <li><a href="/wiki/core/components/canvas-artifacts/">Canvas</a> - Canvas elements</li>
+    </ul>
+
+    <h2>Basic Usage</h2>
+    <pre><code>view .html [
+    text "Hello, World!"
+    button "Click Me" [print "Clicked!"]
+    field "Enter text..." []
+    checkbox "Accept terms" []
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/layout/">Layout</a> - Layout system</li>
+      <li><a href="/wiki/core/events/">Events</a> - Event handling</li>
+    </ul>
+  }
+]

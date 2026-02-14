@@ -1,0 +1,84 @@
+#[
+  "title": "VID Compatibility"
+  "layout": "docpage"
+  "category": "Migration"
+  "tags": ["migration", "vid", "compatibility", "legacy"]
+  "body": {
+    <h1>VID Compatibility</h1>
+
+    <p>Vista maintains backward compatibility with VID (View It Desktop) syntax.</p>
+
+    <h2>Supported VID Features</h2>
+    <ul>
+      <li><strong>Face definitions</strong>: All VID face types are supported</li>
+      <li><strong>Layout keywords</strong>: across, below, pad, space</li>
+      <li><strong>Styling</strong>: colors, fonts, sizes</li>
+      <li><strong>Actions</strong>: on-click, on-change, etc.</li>
+    </ul>
+
+    <h2>Automatic Conversion</h2>
+    <pre><code class="language-arturo">; VID syntax (automatically converted)
+view [
+  button "Hello" [ print "Hi" ]
+  field "Enter text"
+]</code></pre>
+
+    <h2>Deprecated Features</h2>
+    <table>
+      <tr>
+        <th>Feature</th>
+        <th>Status</th>
+        <th>Alternative</th>
+      </tr>
+      <tr>
+        <td>vid: dialect</td>
+        <td>Deprecated</td>
+        <td>Use view directly</td>
+      </tr>
+      <tr>
+        <td>feel: object</td>
+        <td>Deprecated</td>
+        <td>Use on: events</td>
+      </tr>
+      <tr>
+        <td>facets: [...]</td>
+        <td>Deprecated</td>
+        <td>Use attribute: syntax</td>
+      </tr>
+      <tr>
+        <td>actor: [...]</td>
+        <td>Deprecated</td>
+        <td>Use on: events</td>
+      </tr>
+    </table>
+
+    <h2>Compatibility Mode</h2>
+    <pre><code class="language-arturo">; Enable full VID compatibility
+useVIDCompatibility []
+
+view/legacy [
+  button "Old style" [ print "works" ]
+]</code></pre>
+
+    <h2>Known Differences</h2>
+    <ul>
+      <li>Event handler syntax is more flexible in Vista</li>
+      <li>State binding is automatic in Vista</li>
+      <li>Layout system uses flexbox by default</li>
+    </ul>
+
+    <h2>Migration Checklist</h2>
+    <ul>
+      <li>☐ Replace feel: with on: events</li>
+      <li>☐ Update actor: to on: handlers</li>
+      <li>☐ Remove vid: dialect wrapper</li>
+      <li>☐ Add state bindings where needed</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/migration/vid-parity/">VID Parity</a> - Full feature comparison</li>
+      <li><a href="/wiki/shared/migration/from-rebol-view/">From Rebol/View</a> - Migration from Rebol</li>
+    </ul>
+  }
+]

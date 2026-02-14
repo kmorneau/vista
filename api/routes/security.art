@@ -1,0 +1,45 @@
+import "api/security/security_core.art"!
+import "api/services/auth_service.art"!
+import "api/http/responses.art"!
+
+security_require_admin_token: function [token] [
+    sessionCheck: auth_require_session token
+    if not? sessionCheck\ok [
+        return sessionCheck
+    ]
+    props: sessionCheck\user\properties
+    if notEqual? (to :string props\role) "admin" [
+        return #[
+            ok: false
+            code: "forbidden"
+            message: "Admin role required"
+            details: #[role: props\role]
+        ]
+    ]
+    #[ok: true user: sessionCheck\user]
+]
+
+security_audit_handler: function [token limit] [
+    admin: security_require_admin_token token
+    if not? admin\ok [
+        if equal? admin\code "unauthorized" [return unauthorized admin\message admin\details]
+        return forbidden admin\message admin\details
+    ]
+    maxN: to :integer limit
+    if less? maxN 1 [ maxN: 1 ]
+    if greater? maxN 500 [ maxN: 500 ]
+    ok #[
+        items: sec_get_audit_events_limited maxN
+        count: size sec_get_audit_events_limited maxN
+    ]
+]
+
+security_runtime_clear_handler: function [token] [
+    admin: security_require_admin_token token
+    if not? admin\ok [
+        if equal? admin\code "unauthorized" [return unauthorized admin\message admin\details]
+        return forbidden admin\message admin\details
+    ]
+    result: sec_clear_runtime_state
+    ok result\details
+]

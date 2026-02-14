@@ -1,0 +1,36 @@
+#[
+  "title": "Coordinate Systems"
+  "layout": "docpage"
+  "category": "Transforms"
+  "tags: ["graphics", "coordinates", "systems", "reference"]
+  "body": {
+    <h1>Coordinate Systems</h1>
+
+    <p>Vista Graphics supports multiple coordinate systems for different use cases.</p>
+
+    <h2>Coordinate System Types</h2>
+    <ul>
+      <li><strong>Math Coordinates</strong>: Origin at center, Y points up</li>
+      <li><strong>VID Coordinates</strong>: Origin at top-left, Y points down</li>
+      <li><strong>Canvas Coordinates</strong>: Pixel-based positioning</li>
+    </ul>
+
+    <h2>Switching Coordinate Systems</h2>
+    <pre><code>draw canvas [
+    coord-system 'math
+    box 0 0 100 100
+    
+    coord-system 'vid
+    box 0 0 100 100
+]</code></pre>
+
+    <h2>Default System</h2>
+    <p>VID coordinates are the default system in Vista.</p>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/concepts/coordinate-systems/">Coordinate Systems Concepts</a> - Detailed overview</li>
+      <li><a href="/wiki/graphics/transforms/">Transforms</a> - Transform overview</li>
+    </ul>
+  }
+]

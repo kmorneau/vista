@@ -1,0 +1,108 @@
+#[
+  "title": "Common Patterns"
+  "layout": "docpage"
+  "category": "Patterns"
+  "tags": ["patterns", "best-practices", "examples"]
+  "body": {
+    <h1>Common Patterns</h1>
+
+    <p>Best practices and common patterns for building Vista applications.</p>
+
+    <h2>Component Pattern</h2>
+    <pre><code class="language-arturo">MyComponent: [
+  on:create [
+    ; Initialize component state
+    self\data: #{}
+    self\isLoading: true
+  ]
+
+  render: [
+    panel [
+      if self\isLoading [
+        text "Loading..."
+      ]
+      else [
+        ; Render content
+        text self\data\message
+      ]
+    ]
+  ]
+]</code></pre>
+
+    <h2>State Management Pattern</h2>
+    <pre><code class="language-arturo">; Create store
+store: state #{
+  count: 0
+  items: []
+}
+
+; Update state
+increment: [
+  store.count: store.count + 1
+]
+
+; Subscribe to changes
+store\subscribe \count -> print ["Count changed:" store.count]</code></pre>
+
+    <h2>Event Handling Pattern</h2>
+    <pre><code class="language-arturo">button "Click me" [
+  on:click [
+    print "Button clicked!"
+    do: someAction
+  ]
+]</code></pre>
+
+    <h2>Layout Pattern</h2>
+    <pre><code class="language-arturo">container [
+  row [
+    column [ text "Left" ]
+    column [ text "Right" ]
+  ]
+]</code></pre>
+
+    <h2>Data Binding Pattern</h2>
+    <pre><code class="language-arturo">inputField [
+  bind: myValue
+  on:change [
+    myValue: event\value
+  ]
+]
+
+text [ display: myValue ]</code></pre>
+
+    <h2>Async Pattern</h2>
+    <pre><code class="language-arturo">loadData: async [
+  response: await: fetch "/api/data"
+  return: response\json
+]</code></pre>
+
+    <h2>Modal Dialog Pattern</h2>
+    <pre><code class="language-arturo">showModal: [
+  dialog: modal [
+    title: "Confirm"
+    body: "Are you sure?"
+    buttons: [
+      button "Cancel" [ close:dialog ]
+      button "OK" [ do:confirm close:dialog ]
+    ]
+  ]
+]</code></pre>
+
+    <h2>Form Pattern</h2>
+    <pre><code class="language-arturo">form [
+  input "Name" [ bind: formData.name ]
+  input "Email" [ bind: formData.email ]
+  button "Submit" [
+    validate: formData
+    submit: formData
+  ]
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/patterns/anti-patterns/">Anti-Patterns</a> - Patterns to avoid</li>
+      <li><a href="/wiki/core/concepts/state-management/">State Management</a> - State patterns</li>
+      <li><a href="/wiki/core/events/event-overview/">Events</a> - Event patterns</li>
+    </ul>
+  }
+]

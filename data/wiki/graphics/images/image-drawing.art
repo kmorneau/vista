@@ -1,0 +1,47 @@
+#[
+  "title": "Image Drawing"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["graphics", "images", "drawing", "reference"]
+  "body": {
+    <h1>Image Drawing</h1>
+
+    <p>Reference for Vista Graphics image drawing commands.</p>
+
+    <h2>Basic Image Drawing</h2>
+    <pre><code>draw canvas [
+    image "photo.jpg" 100 100
+]</code></pre>
+
+    <h2>Image with Size</h2>
+    <pre><code>draw canvas [
+    image "photo.jpg" 100 100 200 150
+]</code></pre>
+
+    <h2>Image Commands</h2>
+    <ul>
+      <li><strong>image</strong>: Draw image at position</li>
+      <li><strong>image-size</strong>: Get image dimensions</li>
+      <li><strong>crop</strong>: Draw portion of image</li>
+    </ul>
+
+    <h2>Cropped Image</h2>
+    <pre><code>draw canvas [
+    crop "photo.jpg" 0 0 100 100 200 200
+]</code></pre>
+
+    <h2>Supported Formats</h2>
+    <ul>
+      <li>PNG (recommended for graphics)</li>
+      <li>JPEG (for photographs)</li>
+      <li>GIF (animated images supported)</li>
+      <li>SVG (vector images)</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/images/image-scaling/">Image Scaling</a> - Scaling images</li>
+      <li><a href="/wiki/graphics/images/sprite-sheets/">Sprite Sheets</a> - Sprite animation</li>
+    </ul>
+  }
+]

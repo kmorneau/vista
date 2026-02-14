@@ -1,0 +1,49 @@
+#[
+  "title": "Scope & Nesting"
+  "layout": "docpage"
+  "category": "Layout"
+  "tags": ["layout", "scope", "nesting", "containers", "groups"]
+  "body": {
+    <h1>Scope & Nesting</h1>
+
+    <p>Understand how to properly nest and scope layouts for complex UI structures.</p>
+
+    <h2>Nesting Basics</h2>
+    <pre><code>view .html [
+    panel [
+        across [
+            text "Left"
+            below [
+                text "Top"
+                text "Bottom"
+            ]
+            text "Right"
+        ]
+    ]
+]</code></pre>
+
+    <h2>Scope</h2>
+    <pre><code>view .html [
+    scope [
+        across [
+            text "Scoped 1"
+            text "Scoped 2"
+        ]
+    ]
+]</code></pre>
+
+    <h2>Nesting Best Practices</h2>
+    <ul>
+      <li>Keep nesting depth reasonable (3-4 levels max)</li>
+      <li>Use scope to isolate layout contexts</li>
+      <li>Group related components together</li>
+      <li>Consider using named faces for complex hierarchies</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/layout/across-below/">Across & Below</a> - Basic layout</li>
+      <li><a href="/wiki/core/components/containers/">Containers</a> - Container components</li>
+    </ul>
+  }
+]

@@ -1,0 +1,32 @@
+#[
+  "title": "Migration"
+  "layout": "docpage"
+  "category": "Migration"
+  "tags": ["migration", "rebol", "compatibility", "upgrade"]
+  "body": {
+    <h1>Migration</h1>
+
+    <p>Guides for migrating from other frameworks and maintaining compatibility.</p>
+
+    <h2>Migration Topics</h2>
+    <ul>
+      <li><a href="/wiki/shared/migration/from-rebol-view/">From Rebol View</a> - Migration from Rebol</li>
+      <li><a href="/wiki/shared/migration/vid-compatibility/">VID Compatibility</a> - VID compatibility guide</li>
+      <li><a href="/wiki/shared/migration/vid-parity/">VID Parity</a> - VID parity status</li>
+    </ul>
+
+    <h2>Migration Process</h2>
+    <ol>
+      <li>Review the migration guide for your source framework</li>
+      <li>Identify components that need updating</li>
+      <li>Update event handlers and data binding</li>
+      <li>Test the converted application</li>
+    </ol>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/patterns/">Patterns</a> - Design patterns</li>
+      <li><a href="/wiki/shared/troubleshooting/">Troubleshooting</a> - Common issues</li>
+    </ul>
+  }
+]

@@ -1,0 +1,47 @@
+#[
+  "title": "Image Scaling"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["graphics", "images", "scaling", "resize", "reference"]
+  "body": {
+    <h1>Image Scaling</h1>
+
+    <p>Reference for Vista Graphics image scaling commands.</p>
+
+    <h2>Scale to Size</h2>
+    <pre><code>draw canvas [
+    image "photo.jpg" 100 100 200 150
+]</code></pre>
+
+    <h2>Maintain Aspect Ratio</h2>
+    <pre><code>draw canvas [
+    image "photo.jpg" 100 100 200
+]</code></pre>
+
+    <h2>Stretch to Fill</h2>
+    <pre><code>draw canvas [
+    image "photo.jpg" 0 0 400x300
+]</code></pre>
+
+    <h2>Scaling Modes</h2>
+    <ul>
+      <li><strong>fit</strong>: Scale to fit within bounds (maintains aspect ratio)</li>
+      <li><strong>fill</strong>: Scale to fill bounds (may crop)</li>
+      <li><strong>stretch</strong>: Stretch to fill bounds (distorts)</li>
+      <li><strong>none</strong>: No scaling (use original size)</li>
+    </ul>
+
+    <h2>Performance Tips</h2>
+    <ul>
+      <li>Use appropriately sized images (don't scale up small images)</li>
+      <li>Consider image formats (PNG for graphics, JPEG for photos)</li>
+      <li>Preload images when possible</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/images/image-drawing/">Image Drawing</a> - Basic drawing</li>
+      <li><a href="/wiki/graphics/images/sprite-sheets/">Sprite Sheets</a> - Sprite animation</li>
+    </ul>
+  }
+]

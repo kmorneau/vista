@@ -1,0 +1,49 @@
+#[
+  "title": "Event Functions"
+  "layout": "docpage"
+  "category": "API Reference"
+  "tags": ["api", "reference", "events", "functions"]
+  "body": {
+    <h1>Event Functions</h1>
+
+    <p>Complete reference for Vista's event handling functions.</p>
+
+    <h2>Event Handlers</h2>
+    <ul>
+      <li><strong>on-click</strong>: Handle click events</li>
+      <li><strong>on-change</strong>: Handle change events</li>
+      <li><strong>on-input</strong>: Handle input events</li>
+      <li><strong>on-over</strong>: Handle mouse enter events</li>
+      <li><strong>on-out</strong>: Handle mouse leave events</li>
+      <li><strong>on-down</strong>: Handle mouse down events</li>
+      <li><strong>on-up</strong>: Handle mouse up events</li>
+      <li><strong>on-key</strong>: Handle keyboard events</li>
+      <li><strong>on-focus</strong>: Handle focus events</li>
+      <li><strong>on-blur</strong>: Handle blur events</li>
+    </ul>
+
+    <h2>Global Events</h2>
+    <ul>
+      <li><strong>key</strong>: Global keyboard shortcut</li>
+      <li><strong>on-key-down</strong>: Global key down</li>
+      <li><strong>on-key-up</strong>: Global key up</li>
+    </ul>
+
+    <h2>Event Control</h2>
+    <ul>
+      <li><strong>prevent</strong>: Prevent default event behavior</li>
+      <li><strong>stop</strong>: Stop event propagation</li>
+    </ul>
+
+    <h2>Example</h2>
+    <pre><code>button "Click Me" [
+    print "Clicked!"
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/events/">Events</a> - Event documentation</li>
+      <li><a href="/wiki/core/api-reference/face-functions/">Face Functions</a> - Face manipulation</li>
+    </ul>
+  }
+]

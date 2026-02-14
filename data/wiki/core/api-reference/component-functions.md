@@ -49,6 +49,8 @@ Complete reference for Vista's component creation functions.
 
 - **group**: Grouped container
 
+- **script**: Inline script tag
+
 ## See Also
 
 - [Components](/wiki/core/components/) - Component documentation

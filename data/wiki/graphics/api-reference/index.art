@@ -1,0 +1,35 @@
+#[
+  "title": "Graphics API Reference"
+  "layout": "docpage"
+  "category": "API Reference"
+  "tags": ["graphics", "api", "reference", "functions"]
+  "body": {
+    <h1>Graphics API Reference</h1>
+
+    <p>Complete reference documentation for Vista Graphics API functions.</p>
+
+    <h2>API Categories</h2>
+    <ul>
+      <li><a href="/wiki/graphics/api-reference/draw-commands/">Draw Commands</a> - All draw commands</li>
+      <li><a href="/wiki/graphics/api-reference/transform-commands/">Transform Commands</a> - Transform commands</li>
+      <li><a href="/wiki/graphics/api-reference/color-commands/">Color Commands</a> - Color and gradient commands</li>
+      <li><a href="/wiki/graphics/api-reference/graphics-functions/">Graphics Functions</a> - Helper functions</li>
+    </ul>
+
+    <h2>Quick Reference</h2>
+    <pre><code>; Draw commands
+line, box, circle, ellipse, polygon, ...
+
+; Transform commands
+translate, rotate, scale, skew, ...
+
+; Color commands
+pen, fill, rgb, rgba, gradient, ...</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/">Vista Graphics</a> - Main graphics documentation</li>
+      <li><a href="/wiki/graphics/concepts/">Concepts</a> - Graphics fundamentals</li>
+    </ul>
+  }
+]

@@ -1,0 +1,41 @@
+#[
+  "title": "Gradient Fills"
+  "layout": "docpage"
+  "category": "Colors"
+  "tags": ["graphics", "colors", "gradients", "fills", "reference"]
+  "body": {
+    <h1>Gradient Fills</h1>
+
+    <p>Vista Graphics supports linear and radial gradient fills.</p>
+
+    <h2>Linear Gradient</h2>
+    <pre><code>draw canvas [
+    fill linear 0 0 200 0 red orange yellow green
+    box 0 0 200 100
+]</code></pre>
+
+    <h2>Radial Gradient</h2>
+    <pre><code>draw canvas [
+    fill radial 100 100 80 white blue purple
+    circle 100 100 80
+]</code></pre>
+
+    <h2>Parameters</h2>
+    <ul>
+      <li><strong>Linear</strong>: x1 y1 x2 y2 color1 color2 ...</li>
+      <li><strong>Radial</strong>: x y r color1 color2 ...</li>
+    </ul>
+
+    <h2>Multiple Color Stops</h2>
+    <pre><code>draw canvas [
+    fill linear 0 0 200 0 red orange yellow green blue purple
+    box 0 0 200 100
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/colors/color-overview/">Color Overview</a> - Color introduction</li>
+      <li><a href="/wiki/graphics/tutorials/gradients-fills/">Gradients Tutorial</a> - Learning guide</li>
+    </ul>
+  }
+]

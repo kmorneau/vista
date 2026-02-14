@@ -1,0 +1,62 @@
+; Auth utilities (hashing, token generation, MFA codes)
+; NOTE: Uses built-in digest.sha for hashing. Swap to bcrypt/argon2 for production.
+
+auth_password_iterations: 10000
+auth_token_iterations: 1
+auth_mfa_code_ttl_seconds: 300
+
+auth_now_string: function [] [
+    to :string now
+]
+
+auth_random_int: function [min max] [
+    random min max
+]
+
+auth_generate_salt: function [] [
+    rand_s: to :string (auth_random_int 100000 999999)
+    digest.sha (auth_now_string ++ "-" ++ rand_s)
+]
+
+auth_hash_password: function [password salt iterations] [
+    value: to :string password ++ ":" ++ to :string salt
+    i: 0
+    while [less? i iterations][
+        value: digest.sha value
+        i: i + 1
+    ]
+    value
+]
+
+auth_verify_password: function [password salt iterations expected] [
+    hashVal: auth_hash_password password salt iterations
+    equal? hashVal expected
+]
+
+auth_generate_token: function [seed] [
+    rand_s: to :string (auth_random_int 100000 999999)
+    seed_s: to :string seed
+    digest.sha (auth_now_string ++ "-" ++ rand_s ++ "-" ++ seed_s)
+]
+
+auth_hash_token: function [token] [
+    digest.sha token
+]
+
+auth_generate_mfa_code: function [] [
+    code: to :string (auth_random_int 100000 999999)
+    code
+]
+
+auth_generate_code_salt: function [] [
+    rand_s: to :string (auth_random_int 100000 999999)
+    digest.sha (auth_now_string ++ "-mfa-" ++ rand_s)
+]
+
+auth_hash_code: function [code salt] [
+    digest.sha (to :string code ++ ":" ++ to :string salt)
+]
+
+auth_code_expires_in: function [] [
+    auth_mfa_code_ttl_seconds
+]

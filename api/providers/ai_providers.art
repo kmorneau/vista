@@ -1,4 +1,4 @@
-; Generic AI provider adapters (OpenAI, Gemini, Kilo, Echo)
+; Generic AI provider adapters (OpenAI, Gemini, Echo)
 
 url_decode_basic: function [value] [
     out: to :string value
@@ -14,15 +14,38 @@ url_decode_basic: function [value] [
 
 provider_catalog: function [] [
     #[
-        openai: #[requiresKey: true modelHint: "gpt-4o-mini"]
-        gemini: #[requiresKey: true modelHint: "gemini-1.5-flash"]
-        kilo: #[requiresKey: true modelHint: "kilo-chat-1"]
-        echo: #[requiresKey: false modelHint: "echo-v1"]
+        openai: #[
+            label: "OpenAI"
+            requiresKey: true
+            default_model: "gpt-4o-mini"
+            models: ["gpt-4o-mini" "gpt-4.1-mini" "gpt-4.1"]
+            temperature_options: ["0.0" "0.2" "0.4" "0.7" "1.0"]
+            top_p_options: ["0.7" "0.9" "1.0"]
+            max_tokens_options: ["64" "128" "256" "512" "1024"]
+        ]
+        gemini: #[
+            label: "Gemini"
+            requiresKey: true
+            default_model: "gemini-2.0-flash"
+            models: ["gemini-2.0-flash" "gemini-2.0-flash-lite"]
+            temperature_options: ["0.0" "0.2" "0.4" "0.7" "1.0"]
+            top_p_options: ["0.7" "0.9" "1.0"]
+            max_tokens_options: ["64" "128" "256" "512" "1024"]
+        ]
+        echo: #[
+            label: "Echo (test)"
+            requiresKey: false
+            default_model: "echo-v1"
+            models: ["echo-v1"]
+            temperature_options: ["0.0" "0.2" "0.4" "0.7" "1.0"]
+            top_p_options: ["0.7" "0.9" "1.0"]
+            max_tokens_options: ["64" "128" "256" "512"]
+        ]
     ]
 ]
 
 provider_names: function [] [
-    ["openai" "gemini" "kilo" "echo"]
+    ["openai" "gemini" "echo"]
 ]
 
 provider_supported?: function [provider] [
@@ -36,6 +59,114 @@ provider_missing_key: function [provider] [
         message: "Missing API key for provider"
         details: #[provider: provider]
     ]
+]
+
+normalize_key_value: function [rawValue] [
+    keyValue: strip to :string rawValue
+    if equal? keyValue "" [
+        return ""
+    ]
+    if all? @[greater? (size keyValue) 7 equal? (slice keyValue 0 7) "export "] [
+        keyValue: strip slice keyValue 7 (size keyValue)
+    ]
+    eqPos: index keyValue "="
+    if notEqual? eqPos null [
+        if less? eqPos (size keyValue) [
+            keyValue: strip slice keyValue (eqPos + 1) (size keyValue)
+        ]
+    ]
+    if greater? (size keyValue) 1 [
+        firstCh: slice keyValue 0 1
+        lastFrom: size keyValue
+        lastFrom: lastFrom - 1
+        lastCh: slice keyValue lastFrom (size keyValue)
+        if all? @[equal? firstCh "\"" equal? lastCh "\""] [
+            keyValue: slice keyValue 1 lastFrom
+        ]
+        if all? @[equal? firstCh "'" equal? lastCh "'"] [
+            keyValue: slice keyValue 1 lastFrom
+        ]
+    ]
+    keyValue
+]
+
+load_provider_key: function [envName fileName] [
+    keyValue: ""
+    if all? @[equal? envName "OPENAI_API_KEY" key? env "OPENAI_API_KEY"] [
+        keyValue: to :string env\OPENAI_API_KEY
+    ]
+    if all? @[equal? envName "GEMINI_API_KEY" key? env "GEMINI_API_KEY"] [
+        keyValue: to :string env\GEMINI_API_KEY
+    ]
+    keyValue: normalize_key_value keyValue
+    if notEqual? keyValue "" [
+        return keyValue
+    ]
+    candidate: fileName
+    if exists? candidate [
+        if error? err: <= try [
+            keyValue: normalize_key_value read.string candidate
+        ] [
+            keyValue: ""
+        ]
+        if notEqual? keyValue "" [
+            return keyValue
+        ]
+    ]
+    candidate: "../" ++ fileName
+    if exists? candidate [
+        if error? err: <= try [
+            keyValue: normalize_key_value read.string candidate
+        ] [
+            keyValue: ""
+        ]
+        if notEqual? keyValue "" [
+            return keyValue
+        ]
+    ]
+    keyValue
+]
+
+provider_request_error: function [provider message resp] [
+    #[
+        ok: false
+        code: "provider_error"
+        message: message
+        details: #[
+            provider: provider
+            raw: resp
+        ]
+    ]
+]
+
+normalize_provider_json: function [resp] [
+    if notEqual? (type resp) :dictionary [
+        return resp
+    ]
+    if not? key? resp "body" [
+        return resp
+    ]
+    bodyVal: resp\body
+    if notEqual? (type bodyVal) :string [
+        return resp
+    ]
+    parsed: null
+    if error? err: <= try [
+        parsed: read.json bodyVal
+    ] [
+        return resp
+    ]
+    parsed
+]
+
+json_escape_text: function [value] [
+    out: to :string value
+    out: replace out "\\" "\\\\"
+    out: replace out "\"" "\\\""
+    out: replace out "\n" "\\n"
+    out: replace out "\r" "\\r"
+    out: replace out "\t" "\\t"
+    out
 ]
 
 extract_openai_text: function [resp] [
@@ -67,6 +198,53 @@ extract_openai_text: function [resp] [
         return ""
     ]
     to :string msg\content
+]
+
+extract_openai_text_from_body: function [bodyText] [
+    marker: "\"content\": \""
+    startIdx: index bodyText marker
+    if equal? startIdx null [
+        return ""
+    ]
+    startPos: startIdx + size marker
+    if greater? startPos (size bodyText) [
+        return ""
+    ]
+    rest: slice bodyText startPos (size bodyText)
+    endIdx: index rest "\""
+    if equal? endIdx null [
+        return ""
+    ]
+    out: slice rest 0 (endIdx - 1)
+    out: replace out "\\n" "\n"
+    out: replace out "\\\"" "\""
+    out
+]
+
+extract_gemini_text_from_body: function [bodyText] [
+    startScope: index bodyText "\"candidates\""
+    searchText: bodyText
+    if notEqual? startScope null [
+        searchText: slice bodyText startScope (size bodyText)
+    ]
+    marker: "\"text\": \""
+    startIdx: index searchText marker
+    if equal? startIdx null [
+        return ""
+    ]
+    startPos: startIdx + size marker
+    if greater? startPos (size searchText) [
+        return ""
+    ]
+    rest: slice searchText startPos (size searchText)
+    endIdx: index rest "\""
+    if equal? endIdx null [
+        return ""
+    ]
+    out: slice rest 0 (endIdx - 1)
+    out: replace out "\\n" "\n"
+    out: replace out "\\\"" "\""
+    out
 ]
 
 extract_gemini_text: function [resp] [
@@ -130,11 +308,8 @@ extract_kilo_text: function [resp] [
     extract_openai_text resp
 ]
 
-call_openai: function [model prompt temperature] [
-    apiKey: ""
-    if key? env "OPENAI_API_KEY" [
-        apiKey: to :string env\OPENAI_API_KEY
-    ]
+call_openai: function [model prompt temperature options] [
+    apiKey: load_provider_key "OPENAI_API_KEY" "OPENAI_API_KEY"
     if equal? apiKey "" [
         return provider_missing_key "openai"
     ]
@@ -144,24 +319,35 @@ call_openai: function [model prompt temperature] [
     ]
     payload: #[
         model: model
-        messages: [
-            #[role: "user" content: prompt]
+        messages: @[
+            #[
+                role: "user"
+                content: prompt
+            ]
         ]
         temperature: temperature
     ]
-    resp: request.post.json url .headers:#[
-        authorization: "Bearer " ++ apiKey
-        content-type: "application/json"
+    if all? @[notEqual? options null equal? (type options) :dictionary key? options "max_tokens"] [
+        payload\max_tokens: to :integer options\max_tokens
+    ]
+    if all? @[notEqual? options null equal? (type options) :dictionary key? options "top_p"] [
+        payload\top_p: to :floating options\top_p
+    ]
+
+    respRaw: request.post.json url .headers:#[
+        "authorization": "Bearer " ++ apiKey
     ] payload
+    resp: normalize_provider_json respRaw
     if notEqual? (type resp) :dictionary [
-        return #[
-            ok: false
-            code: "provider_error"
-            message: "OpenAI request failed"
-            details: #[provider: "openai"]
-        ]
+        return provider_request_error "openai" "OpenAI request failed" resp
+    ]
+    if key? resp "error" [
+        return provider_request_error "openai" "OpenAI provider returned an error" resp
     ]
     text: extract_openai_text resp
+    if all? @[equal? text "" equal? (type respRaw) :dictionary key? respRaw "body"] [
+        text: extract_openai_text_from_body to :string respRaw\body
+    ]
     #[
         ok: true
         data: #[
@@ -173,11 +359,8 @@ call_openai: function [model prompt temperature] [
     ]
 ]
 
-call_gemini: function [model prompt temperature] [
-    apiKey: ""
-    if key? env "GEMINI_API_KEY" [
-        apiKey: to :string env\GEMINI_API_KEY
-    ]
+call_gemini: function [model prompt temperature options] [
+    apiKey: load_provider_key "GEMINI_API_KEY" "GEMINI_API_KEY"
     if equal? apiKey "" [
         return provider_missing_key "gemini"
     ]
@@ -187,27 +370,43 @@ call_gemini: function [model prompt temperature] [
     ]
     url: baseUrl ++ model ++ ":generateContent?key=" ++ apiKey
     payload: #[
-        contents: [
+        contents: @[
             #[
-                parts: [#[text: prompt]]
+                parts: @[#[text: prompt]]
             ]
         ]
         generationConfig: #[
             temperature: temperature
         ]
     ]
-    resp: request.post.json url .headers:#[
-        content-type: "application/json"
-    ] payload
-    if notEqual? (type resp) :dictionary [
-        return #[
-            ok: false
-            code: "provider_error"
-            message: "Gemini request failed"
-            details: #[provider: "gemini"]
+    if all? @[notEqual? options null equal? (type options) :dictionary key? options "max_tokens"] [
+        payload\generationConfig\maxOutputTokens: to :integer options\max_tokens
+    ]
+    if all? @[notEqual? options null equal? (type options) :dictionary key? options "top_p"] [
+        payload\generationConfig\topP: to :floating options\top_p
+    ]
+    if all? @[notEqual? options null equal? (type options) :dictionary key? options "system"] [
+        systemText: to :string options\system
+        if notEqual? systemText "" [
+            payload\systemInstruction: #[
+                parts: @[#[text: systemText]]
+            ]
         ]
     ]
+    body: write.json payload ø
+
+    respRaw: request.post.json url payload
+    resp: normalize_provider_json respRaw
+    if notEqual? (type resp) :dictionary [
+        return provider_request_error "gemini" "Gemini request failed" resp
+    ]
+    if key? resp "error" [
+        return provider_request_error "gemini" "Gemini provider returned an error" resp
+    ]
     text: extract_gemini_text resp
+    if all? @[equal? text "" equal? (type respRaw) :dictionary key? respRaw "body"] [
+        text: extract_gemini_text_from_body to :string respRaw\body
+    ]
     #[
         ok: true
         data: #[
@@ -219,7 +418,7 @@ call_gemini: function [model prompt temperature] [
     ]
 ]
 
-call_kilo: function [model prompt temperature] [
+call_kilo: function [model prompt temperature options] [
     apiKey: ""
     if key? env "KILO_API_KEY" [
         apiKey: to :string env\KILO_API_KEY
@@ -239,24 +438,39 @@ call_kilo: function [model prompt temperature] [
             details: #[provider: "kilo"]
         ]
     ]
+    messages: @[
+        #[role: "user" content: prompt]
+    ]
+    if all? @[notEqual? options null equal? (type options) :dictionary key? options "system"] [
+        systemText: to :string options\system
+        if notEqual? systemText "" [
+            messages: @[
+                #[role: "system" content: systemText]
+                #[role: "user" content: prompt]
+            ]
+        ]
+    ]
+
     payload: #[
         model: model
-        messages: [
-            #[role: "user" content: prompt]
-        ]
+        messages: messages
         temperature: temperature
     ]
-    resp: request.post.json url .headers:#[
-        authorization: "Bearer " ++ apiKey
-        content-type: "application/json"
+    if all? @[notEqual? options null equal? (type options) :dictionary key? options "max_tokens"] [
+        payload\max_tokens: to :integer options\max_tokens
+    ]
+    if all? @[notEqual? options null equal? (type options) :dictionary key? options "top_p"] [
+        payload\top_p: to :floating options\top_p
+    ]
+    respRaw: request.post.json url .headers:#[
+        "authorization": "Bearer " ++ apiKey
     ] payload
+    resp: normalize_provider_json respRaw
     if notEqual? (type resp) :dictionary [
-        return #[
-            ok: false
-            code: "provider_error"
-            message: "Kilo request failed"
-            details: #[provider: "kilo"]
-        ]
+        return provider_request_error "kilo" "Kilo request failed" resp
+    ]
+    if key? resp "error" [
+        return provider_request_error "kilo" "Kilo provider returned an error" resp
     ]
     text: extract_kilo_text resp
     #[
@@ -270,7 +484,7 @@ call_kilo: function [model prompt temperature] [
     ]
 ]
 
-call_echo: function [model prompt temperature] [
+call_echo: function [model prompt temperature options] [
     #[
         ok: true
         data: #[
@@ -280,24 +494,22 @@ call_echo: function [model prompt temperature] [
             raw: #[
                 temperature: temperature
                 provider: "echo"
+                options: options
             ]
         ]
     ]
 ]
 
-call_ai_provider: function [provider model prompt temperature] [
+call_ai_provider: function [provider model prompt temperature options] [
     p: lower (to :string provider)
     if equal? p "openai" [
-        return call_openai model prompt temperature
+        return call_openai model prompt temperature options
     ]
     if equal? p "gemini" [
-        return call_gemini model prompt temperature
-    ]
-    if equal? p "kilo" [
-        return call_kilo model prompt temperature
+        return call_gemini model prompt temperature options
     ]
     if equal? p "echo" [
-        return call_echo model prompt temperature
+        return call_echo model prompt temperature options
     ]
     #[
         ok: false

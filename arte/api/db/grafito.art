@@ -1,0 +1,16 @@
+import "grafito"!
+
+arte_db_name: "arte_api"
+arte_db_file: arte_db_name ++ ".graf"
+
+with_arte_db: function [blk] [
+    switch not? exists? arte_db_file [
+        initBlk: [
+            updateMeta 'colors Grafito\nodeColors
+            updateMeta 'palette Grafito\Palette
+        ] ++ blk
+        graph .create arte_db_name initBlk
+    ][
+        graph arte_db_name blk
+    ]
+]

@@ -1,0 +1,45 @@
+#[
+  "title": "Input Events"
+  "layout": "docpage"
+  "category": "Events"
+  "tags": ["events", "input", "change", "field"]
+  "body": {
+    <h1>Input Events</h1>
+
+    <p>Input events are triggered when users interact with input fields and other controls that accept user input.</p>
+
+    <h2>Event Types</h2>
+    <ul>
+      <li><strong>on-change</strong>: Triggered when the value changes and focus is lost</li>
+      <li><strong>on-input</strong>: Triggered immediately when the value changes</li>
+    </ul>
+
+    <h2>Example</h2>
+    <pre><code>view .html [
+    field "Enter text..." [
+        print "Changed to: " + value
+    ]
+    textarea [
+        on-change [print "Final value: " + value]
+        on-input [print "Current: " + value]
+    ]
+]</code></pre>
+
+    <h2>Components Supporting Input Events</h2>
+    <ul>
+      <li>field</li>
+      <li>input</li>
+      <li>textarea</li>
+      <li>select</li>
+    </ul>
+
+    <h2>Event Object</h2>
+    <p>Input events provide access to the current value through the face's value property.</p>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/events/event-overview/">Event Overview</a> - Introduction to events</li>
+      <li><a href="/wiki/core/components/input-fields/">Input Fields</a> - Input component reference</li>
+    </ul>
+  }
+]

@@ -1,0 +1,329 @@
+import "api/db/grafito.art"!
+
+auth_merge_props: function [base updates] [
+    merged: #[]
+    keysList: keys base
+    i: 0
+    klen: size keysList
+    while [less? i klen][
+        k: get keysList i
+        merged\[k]: base\[k]
+        i: i + 1
+    ]
+    keysList: keys updates
+    i: 0
+    klen: size keysList
+    while [less? i klen][
+        k: get keysList i
+        merged\[k]: updates\[k]
+        i: i + 1
+    ]
+    merged
+]
+
+clean_auth_user_record: function [raw] [
+    if notEqual? (type raw) :dictionary [
+        return null
+    ]
+    if not? key? raw "properties" [
+        return null
+    ]
+    props: raw\properties
+    if notEqual? (type props) :dictionary [
+        return null
+    ]
+    if not? key? props "user_id" [
+        return null
+    ]
+    #[
+        id: to :integer props\user_id
+        email: to :string props\email
+        role: to :string props\role
+        mfa_enabled: props\mfa_enabled
+        created_at: props\created_at
+        updated_at: props\updated_at
+    ]
+]
+
+auth_rows: function [label] [
+    with_api_db [
+        fetch label ø
+    ]
+]
+
+auth_next_id: function [rows idKey] [
+    maxId: 0
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if key? props idKey [
+                rid: to :integer props\[idKey]
+                if greater? rid maxId [
+                    maxId: rid
+                ]
+            ]
+        ]
+        i: i + 1
+    ]
+    maxId + 1
+]
+
+repo_find_auth_user_by_id: function [id] [
+    needle: to :integer id
+    rows: auth_rows 'auth_user
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "user_id" equal? (to :integer props\user_id) needle] [
+                return row
+            ]
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+repo_find_auth_user_by_email: function [email] [
+    needle: lower to :string email
+    rows: auth_rows 'auth_user
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if key? props "email" [
+                if equal? (lower to :string props\email) needle [
+                    return row
+                ]
+            ]
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+repo_list_auth_users: function [] [
+    rows: auth_rows 'auth_user
+    out: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        item: clean_auth_user_record (get rows i)
+        if notEqual? item null [
+            out: out ++ @[item]
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+repo_insert_auth_user: function [email passwordHash passwordSalt passwordIters role mfaEnabled] [
+    rows: auth_rows 'auth_user
+    newId: auth_next_id rows "user_id"
+    nowStr: to :string now
+    with_api_db [
+        put 'auth_user [
+            user_id: newId
+            email: to :string email
+            password_hash: to :string passwordHash
+            password_salt: to :string passwordSalt
+            password_iters: to :integer passwordIters
+            role: to :string role
+            mfa_enabled: mfaEnabled
+            mfa_mode: "otp"
+            created_at: nowStr
+            updated_at: nowStr
+        ]
+    ]
+    repo_find_auth_user_by_id newId
+]
+
+repo_update_auth_user: function [id updates] [
+    row: repo_find_auth_user_by_id id
+    if equal? row null [
+        return null
+    ]
+    props: row\properties
+    merged: auth_merge_props props updates
+    merged\updated_at: to :string now
+    if key? row "id" [
+        with_api_db [
+            unput to :integer row\id
+        ]
+    ]
+    with_api_db [
+        put 'auth_user merged
+    ]
+    repo_find_auth_user_by_id id
+]
+
+repo_delete_auth_user: function [id] [
+    row: repo_find_auth_user_by_id id
+    if equal? row null [
+        return false
+    ]
+    if key? row "id" [
+        with_api_db [
+            unput to :integer row\id
+        ]
+        return true
+    ]
+    false
+]
+
+repo_insert_session: function [userId tokenHash] [
+    rows: auth_rows 'auth_session
+    newId: auth_next_id rows "session_id"
+    with_api_db [
+        put 'auth_session [
+            session_id: newId
+            user_id: to :integer userId
+            token_hash: to :string tokenHash
+            created_at: to :string now
+        ]
+    ]
+    newId
+]
+
+repo_find_session_by_token_hash: function [tokenHash] [
+    rows: auth_rows 'auth_session
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "token_hash" equal? (to :string props\token_hash) (to :string tokenHash)] [
+                return row
+            ]
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+repo_delete_session_by_token_hash: function [tokenHash] [
+    rows: auth_rows 'auth_session
+    removeIds: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "token_hash" equal? (to :string props\token_hash) (to :string tokenHash) key? row "id"] [
+                removeIds: removeIds ++ @[to :integer row\id]
+            ]
+        ]
+        i: i + 1
+    ]
+    if equal? (size removeIds) 0 [
+        return false
+    ]
+    with_api_db [
+        i: 0
+        blen: size removeIds
+        while [less? i blen] [
+            unput (get removeIds i)
+            i: i + 1
+        ]
+    ]
+    true
+]
+
+repo_delete_sessions_for_user: function [userId] [
+    rows: auth_rows 'auth_session
+    removeIds: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "user_id" equal? (to :integer props\user_id) (to :integer userId) key? row "id"] [
+                removeIds: removeIds ++ @[to :integer row\id]
+            ]
+        ]
+        i: i + 1
+    ]
+    if equal? (size removeIds) 0 [
+        return 0
+    ]
+    with_api_db [
+        i: 0
+        blen: size removeIds
+        while [less? i blen] [
+            unput (get removeIds i)
+            i: i + 1
+        ]
+    ]
+    size removeIds
+]
+
+repo_insert_mfa_challenge: function [userId codeHash codeSalt expiresAt] [
+    newId: random 100000 999999999
+    expiresVal: expiresAt
+    if equal? expiresVal null [
+        expiresVal: ""
+    ]
+    with_api_db [
+        put 'auth_mfa [
+            challenge_id: newId
+            user_id: to :integer userId
+            code_hash: to :string codeHash
+            code_salt: to :string codeSalt
+            created_at: to :string now
+            expires_at: expiresVal
+            used: false
+        ]
+    ]
+    newId
+]
+
+repo_find_mfa_challenge_by_id: function [challengeId] [
+    needle: to :integer challengeId
+    rows: []
+    if error? err: <= try [
+        rows: auth_rows 'auth_mfa
+    ] [
+        return null
+    ]
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "challenge_id" equal? (to :integer props\challenge_id) needle] [
+                return row
+            ]
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+repo_mark_mfa_challenge_used: function [challengeId] [
+    row: repo_find_mfa_challenge_by_id challengeId
+    if equal? row null [
+        return false
+    ]
+    props: row\properties
+    updated: auth_merge_props props #[used: true used_at: to :string now]
+    if key? row "id" [
+        with_api_db [
+            unput to :integer row\id
+        ]
+    ]
+    with_api_db [
+        put 'auth_mfa updated
+    ]
+    true
+]

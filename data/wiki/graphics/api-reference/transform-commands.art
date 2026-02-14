@@ -1,0 +1,38 @@
+#[
+  "title": "Transform Commands"
+  "layout": "docpage"
+  "category": "API Reference"
+  "tags: ["graphics", "api", "reference", "transforms"]
+  "body": {
+    <h1>Transform Commands</h1>
+
+    <p>Complete reference for Vista Graphics transform commands.</p>
+
+    <h2>Transform Functions</h2>
+    <ul>
+      <li><strong>translate</strong>: Translate coordinate system</li>
+      <li><strong>rotate</strong>: Rotate coordinate system</li>
+      <li><strong>scale</strong>: Scale coordinate system</li>
+      <li><strong>skew</strong>: Skew coordinate system</li>
+    </ul>
+
+    <h2>Matrix Operations</h2>
+    <ul>
+      <li><strong>reset-transform</strong>: Reset transformation matrix</li>
+      <li><strong>save-transform</strong>: Save transformation matrix</li>
+      <li><strong>restore-transform</strong>: Restore transformation matrix</li>
+    </ul>
+
+    <h2>Coordinate System</h2>
+    <ul>
+      <li><strong>coord-system</strong>: Set coordinate system type</li>
+      <li><strong>origin</strong>: Set origin point</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/api-reference/">API Reference</a> - All graphics APIs</li>
+      <li><a href="/wiki/graphics/transforms/">Transforms</a> - Transform reference</li>
+    </ul>
+  }
+]

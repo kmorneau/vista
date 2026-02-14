@@ -1,0 +1,40 @@
+; Auth utilities (hashing, token generation)
+; NOTE: Uses digest.sha; swap to bcrypt/argon2 in production.
+
+auth_password_iterations: 10000
+auth_token_iterations: 1
+
+auth_now_string: function [] [
+    to :string now
+]
+
+auth_random_int: function [min max] [
+    random min max
+]
+
+auth_generate_salt: function [] [
+    digest.sha (auth_now_string ++ "-" ++ to :string auth_random_int 100000 999999)
+]
+
+auth_hash_password: function [password salt iterations] [
+    value: to :string password ++ ":" ++ to :string salt
+    i: 0
+    while [less? i iterations][
+        value: digest.sha value
+        i: i + 1
+    ]
+    value
+]
+
+auth_verify_password: function [password salt iterations expected] [
+    hashVal: auth_hash_password password salt iterations
+    equal? hashVal expected
+]
+
+auth_generate_token: function [seed] [
+    digest.sha (auth_now_string ++ "-" ++ to :string auth_random_int 100000 999999 ++ "-" ++ to :string seed)
+]
+
+auth_hash_token: function [token] [
+    digest.sha token
+]

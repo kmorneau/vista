@@ -1,0 +1,99 @@
+#[
+  "title": "Responsive Design"
+  "layout": "docpage"
+  "category": "Styles"
+  "tags": ["styles", "responsive", "media-queries", "mobile"]
+  "body": {
+    <h1>Responsive Design</h1>
+
+    <p>Vista provides responsive utilities and breakpoints.</p>
+
+    <h2>Breakpoints</h2>
+    <pre><code class="language-css">/* Small devices (landscape phones, 576px and up) */
+--bp-sm: 576px;
+
+/* Medium devices (tablets, 768px and up) */
+--bp-md: 768px;
+
+/* Large devices (desktops, 992px and up) */
+--bp-lg: 992px;
+
+/* Extra large devices (large desktops, 1200px and up) */
+--bp-xl: 1200px;</code></pre>
+
+    <h2>Media Query Mixins</h2>
+    <pre><code class="language-css">/* Mobile-first approach */
+.my-component {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .my-component {
+    width: 50%;
+  }
+}
+
+@media (min-width: 992px) {
+  .my-component {
+    width: 33.33%;
+  }
+}</code></pre>
+
+    <h2>Responsive Classes</h2>
+    <ul>
+      <li><strong>.visible-sm</strong>, <strong>.hidden-sm</strong>: Show/hide on small</li>
+      <li><strong>.visible-md</strong>, <strong>.hidden-md</strong>: Show/hide on medium</li>
+      <li><strong>.visible-lg</strong>, <strong>.hidden-lg</strong>: Show/hide on large</li>
+    </ul>
+
+    <h2>Fluid Typography</h2>
+    <pre><code class="language-css">.responsive-text {
+  font-size: clamp(14px, 4vw, 24px);
+}</code></pre>
+
+    <h2>Flex Responsive</h2>
+    <pre><code class="language-css">.responsive-flex {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .responsive-flex {
+    flex-direction: row;
+  }
+}</code></pre>
+
+    <h2>Grid Responsive</h2>
+    <pre><code class="language-css">.responsive-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 576px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 992px) {
+  .responsive-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}</code></pre>
+
+    <h2>Best Practices</h2>
+    <ul>
+      <li>Use mobile-first CSS (min-width queries)</li>
+      <li>Test on actual devices</li>
+      <li>Use relative units (rem, em, %)</li>
+      <li>Consider touch targets (minimum 44x44px)</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/styles/css-classes/">CSS Classes</a> - Available styling classes</li>
+      <li><a href="/wiki/shared/styles/theme-variables/">Theme Variables</a> - Theme customization</li>
+    </ul>
+  }
+]

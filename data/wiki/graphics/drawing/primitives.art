@@ -1,0 +1,47 @@
+#[
+  "title": "Drawing Primitives"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["graphics", "drawing", "primitives", "shapes", "reference"]
+  "body": {
+    <h1>Drawing Primitives</h1>
+
+    <p>Reference for Vista Graphics basic drawing primitives.</p>
+
+    <h2>Line</h2>
+    <pre><code>draw canvas [
+    line 0 0 100 100
+]</code></pre>
+
+    <h2>Box (Rectangle)</h2>
+    <pre><code>draw canvas [
+    box 10 10 100 100
+]</code></pre>
+
+    <h2>Circle</h2>
+    <pre><code>draw canvas [
+    circle 100 100 50
+]</code></pre>
+
+    <h2>Ellipse</h2>
+    <pre><code>draw canvas [
+    ellipse 100 100 50 30
+]</code></pre>
+
+    <h2>Arc</h2>
+    <pre><code>draw canvas [
+    arc 100 100 50 0 90
+]</code></pre>
+
+    <h2>Point</h2>
+    <pre><code>draw canvas [
+    point 100 100
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/drawing/polygons/">Polygons</a> - Polygon drawing</li>
+      <li><a href="/wiki/graphics/tutorials/drawing-primitives/">Drawing Primitives Tutorial</a> - Learning guide</li>
+    </ul>
+  }
+]

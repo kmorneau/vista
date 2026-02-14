@@ -1,0 +1,39 @@
+#[
+  "title": "Core Tutorials"
+  "layout": "docpage"
+  "category": "Tutorials"
+  "tags": ["tutorials", "learning", "guides", "examples"]
+  "body": {
+    <h1>Core Tutorials</h1>
+
+    <p>Step-by-step tutorials to help you learn Vista's core concepts and build your first applications.</p>
+
+    <h2>Tutorials</h2>
+    <ul>
+      <li><a href="/wiki/core/tutorials/hello-world/">Hello World</a> - Your first Vista application</li>
+      <li>Forms Basics - Building forms with input fields</li>
+      <li>Dynamic Interfaces - Live updates and reactivity</li>
+      <li>Complex Layouts - Advanced layout techniques</li>
+    </ul>
+
+    <h2>Hello World Example</h2>
+    <pre><code>view .html [
+    title "Hello, Vista!"
+    text "Welcome to the world of declarative UI."
+    button "Get Started" [print "Getting started..."]
+]</code></pre>
+
+    <h2>Prerequisites</h2>
+    <ul>
+      <li>Arturo installed (version 0.9.82 or later)</li>
+      <li>Basic understanding of Arturo syntax</li>
+      <li>Familiarity with UI concepts</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/concepts/">Concepts</a> - Core concepts reference</li>
+      <li><a href="/wiki/core/components/">Components</a> - Component reference</li>
+    </ul>
+  }
+]

@@ -1,0 +1,40 @@
+#[
+  "title": "API Reference"
+  "layout": "docpage"
+  "category": "API Reference"
+  "tags": ["api", "reference", "functions", "docs"]
+  "body": {
+    <h1>API Reference</h1>
+
+    <p>Complete reference documentation for Vista's core API functions.</p>
+
+    <h2>API Categories</h2>
+    <ul>
+      <li><a href="/wiki/core/api-reference/component-functions/">Component Functions</a> - Component creation and manipulation</li>
+      <li><a href="/wiki/core/api-reference/layout-functions/">Layout Functions</a> - Layout control functions</li>
+      <li><a href="/wiki/core/api-reference/state-functions/">State Functions</a> - State management functions</li>
+      <li><a href="/wiki/core/api-reference/event-functions/">Event Functions</a> - Event handling functions</li>
+      <li><a href="/wiki/core/api-reference/face-functions/">Face Functions</a> - Face manipulation functions</li>
+      <li><a href="/wiki/core/api-reference/render-scripts/">Render Scripts</a> - Rendering control</li>
+    </ul>
+
+    <h2>Quick Reference</h2>
+    <pre><code>; Component functions
+text, button, field, checkbox, ...
+
+; Layout functions
+row, col, grid, across, below, ...
+
+; State functions
+set-state, get-state, observe, ...
+
+; Event functions
+on-click, on-change, on-key, ...</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/components/">Components</a> - Component usage</li>
+      <li><a href="/wiki/core/layout/">Layout</a> - Layout system</li>
+    </ul>
+  }
+]

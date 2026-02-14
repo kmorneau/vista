@@ -1,0 +1,319 @@
+import "api/services/auth_service.art"!
+import "api/http/responses.art"!
+import "api/security/security_core.art"!
+
+auth_parse_json_payload: function [payloadEncoded] [
+    if any? @[equal? payloadEncoded null equal? payloadEncoded ""] [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "payload is required"
+            details: #[field: "payload"]
+        ]
+    ]
+    tokenVal: to :string payloadEncoded
+    tokenVal: replace tokenVal "-" "+"
+    tokenVal: replace tokenVal "_" "/"
+    padLen: 4 - (mod (size tokenVal) 4)
+    if not? equal? padLen 4 [
+        i: 0
+        while [less? i padLen] [
+            tokenVal: tokenVal ++ "="
+            i: i + 1
+        ]
+    ]
+    payloadRaw: decode.base64 tokenVal
+    parsed: null
+    if error? err: <= try [
+        parsed: read.json payloadRaw
+    ] [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "payload must be valid JSON"
+            details: #[error: to :string err]
+        ]
+    ]
+    if notEqual? (type parsed) :dictionary [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "payload must decode to a JSON object"
+            details: #[]
+        ]
+    ]
+    #[
+        ok: true
+        data: parsed
+    ]
+]
+
+auth_result_to_http: function [result successIsCreated] [
+    if result\ok [
+        if successIsCreated [
+            return created result\data
+        ]
+        return ok result\data
+    ]
+    if equal? result\code "unauthorized" [
+        return unauthorized result\message result\details
+    ]
+    if equal? result\code "forbidden" [
+        return forbidden result\message result\details
+    ]
+    if equal? result\code "not_found" [
+        return not_found result\message result\details
+    ]
+    if equal? result\code "conflict" [
+        return conflict result\message result\details
+    ]
+    if equal? result\code "server_error" [
+        return server_error result\message result\details
+    ]
+    bad_request result\message result\details
+]
+
+auth_signup_handler: function [email password] [
+    c1: sec_check_rate_limit "auth-signup" (lower to :string email) 20 60
+    sec_enforce @[c1] [
+        result: service_auth_signup email password
+        auth_result_to_http result true
+    ]
+]
+
+auth_login_handler: function [email password] [
+    c1: sec_check_rate_limit "auth-login" (lower to :string email) 30 60
+    lock: sec_check_lockout "auth-login" (lower to :string email)
+    gate: sec_chain_checks @[c1 lock]
+    if not? gate\ok [
+        sec_audit_log "auth.login" (lower to :string email) false #[reason: gate\code]
+        return sec_to_http_error gate
+    ]
+    result: service_auth_login email password
+    if result\ok [
+        sec_record_auth_success "auth-login" (lower to :string email)
+        sec_audit_log "auth.login" (lower to :string email) true #[]
+    ]
+    if not? result\ok [
+        if all? @[key? result "code" equal? result\code "unauthorized"] [
+            sec_record_auth_failure "auth-login" (lower to :string email) 5 300 900
+            sec_audit_log "auth.login" (lower to :string email) false #[reason: "unauthorized"]
+        ]
+    ]
+    auth_result_to_http result false
+]
+
+auth_mfa_verify_handler: function [challengeId code] [
+    result: service_auth_mfa_verify challengeId code
+    if result\ok [
+        return ok result\data
+    ]
+    if equal? result\code "unauthorized" [
+        return unauthorized result\message result\details
+    ]
+    if equal? result\code "server_error" [
+        return server_error result\message result\details
+    ]
+    bad_request result\message result\details
+]
+
+auth_logout_handler: function [token] [
+    result: service_auth_logout token
+    ok result\data
+]
+
+auth_me_handler: function [token] [
+    result: service_auth_me token
+    if result\ok [
+        return ok result\data
+    ]
+    unauthorized result\message result\details
+]
+
+auth_password_handler: function [token oldPassword newPassword] [
+    result: service_auth_update_password token oldPassword newPassword
+    if result\ok [
+        return ok result\data
+    ]
+    if equal? result\code "unauthorized" [
+        return unauthorized result\message result\details
+    ]
+    bad_request result\message result\details
+]
+
+auth_email_handler: function [token email] [
+    result: service_auth_update_email token email
+    if result\ok [
+        return ok result\data
+    ]
+    if equal? result\code "unauthorized" [
+        return unauthorized result\message result\details
+    ]
+    if equal? result\code "conflict" [
+        return conflict result\message result\details
+    ]
+    bad_request result\message result\details
+]
+
+auth_role_handler: function [token userId role] [
+    result: service_auth_set_role token userId role
+    if result\ok [
+        return ok result\data
+    ]
+    if equal? result\code "unauthorized" [
+        return unauthorized result\message result\details
+    ]
+    if equal? result\code "forbidden" [
+        return forbidden result\message result\details
+    ]
+    if equal? result\code "not_found" [
+        return not_found result\message result\details
+    ]
+    bad_request result\message result\details
+]
+
+auth_mfa_enable_handler: function [token] [
+    result: service_auth_enable_mfa token
+    if result\ok [
+        return ok result\data
+    ]
+    unauthorized result\message result\details
+]
+
+auth_mfa_disable_handler: function [token] [
+    result: service_auth_disable_mfa token
+    if result\ok [
+        return ok result\data
+    ]
+    unauthorized result\message result\details
+]
+
+auth_list_users_handler: function [token] [
+    result: service_auth_list_users token
+    if result\ok [
+        return ok result\data
+    ]
+    if equal? result\code "unauthorized" [
+        return unauthorized result\message result\details
+    ]
+    if equal? result\code "forbidden" [
+        return forbidden result\message result\details
+    ]
+    unauthorized result\message result\details
+]
+
+auth_delete_account_handler: function [token] [
+    result: service_auth_delete_account token
+    if result\ok [
+        return ok result\data
+    ]
+    unauthorized result\message result\details
+]
+
+auth_bootstrap_handler: function [secret email] [
+    c1: sec_check_rate_limit "auth-bootstrap" "global" 10 60
+    gate: sec_chain_checks @[c1]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    result: service_auth_bootstrap_admin secret email
+    sec_audit_log "auth.bootstrap" (to :string email) result\ok #[]
+    auth_result_to_http result false
+]
+
+; v2 payload helpers
+; NOTE: Arturo's current HTTP server route API does not expose request body/headers directly.
+; v2 accepts URL-safe base64 JSON payload and CSRF token as path params.
+; payload example: eyJlbWFpbCI6ImFAYi5jb20iLCJwYXNzd29yZCI6IlNlY3JldDEyMyJ9
+
+auth_csrf_token_handler: function [clientId] [
+    issued: sec_issue_csrf_token clientId
+    if not? issued\ok [
+        return sec_to_http_error issued
+    ]
+    ok issued\details
+]
+
+auth_signup_json_handler: function [clientId csrf payload] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "auth-signup-v2" (to :string clientId) 30 60
+    gate: sec_chain_checks @[c1 c2]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    parsed: auth_parse_json_payload payload
+    if not? parsed\ok [ return auth_result_to_http parsed false ]
+    data: parsed\data
+    result: service_auth_signup data\email data\password
+    sec_audit_log "auth.signup.v2" (to :string data\email) result\ok #[client: clientId]
+    auth_result_to_http result true
+]
+
+auth_login_json_handler: function [clientId csrf payload] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "auth-login-v2" (to :string clientId) 40 60
+    parsed: auth_parse_json_payload payload
+    if not? parsed\ok [ return auth_result_to_http parsed false ]
+    loginEmail: ""
+    if key? parsed\data "email" [ loginEmail: lower to :string parsed\data\email ]
+    lock: sec_check_lockout "auth-login-v2" loginEmail
+    gate: sec_chain_checks @[c1 c2 lock]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    data: parsed\data
+    result: service_auth_login data\email data\password
+    if result\ok [
+        sec_record_auth_success "auth-login-v2" loginEmail
+    ]
+    if not? result\ok [
+        if all? @[key? result "code" equal? result\code "unauthorized"] [
+            sec_record_auth_failure "auth-login-v2" loginEmail 5 300 900
+        ]
+    ]
+    sec_audit_log "auth.login.v2" loginEmail result\ok #[client: clientId]
+    auth_result_to_http result false
+]
+
+auth_mfa_verify_json_handler: function [clientId csrf payload] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "auth-mfa-verify-v2" (to :string clientId) 40 60
+    gate: sec_chain_checks @[c1 c2]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    parsed: auth_parse_json_payload payload
+    if not? parsed\ok [ return auth_result_to_http parsed false ]
+    data: parsed\data
+    result: service_auth_mfa_verify data\challenge_id data\code
+    auth_result_to_http result false
+]
+
+auth_email_json_handler: function [clientId csrf payload] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "auth-email-v2" (to :string clientId) 30 60
+    gate: sec_chain_checks @[c1 c2]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    parsed: auth_parse_json_payload payload
+    if not? parsed\ok [ return auth_result_to_http parsed false ]
+    data: parsed\data
+    result: service_auth_update_email data\token data\email
+    auth_result_to_http result false
+]
+
+auth_password_json_handler: function [clientId csrf payload] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "auth-password-v2" (to :string clientId) 20 60
+    gate: sec_chain_checks @[c1 c2]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    parsed: auth_parse_json_payload payload
+    if not? parsed\ok [ return auth_result_to_http parsed false ]
+    data: parsed\data
+    result: service_auth_update_password data\token data\old_password data\new_password
+    auth_result_to_http result false
+]
+
+auth_logout_json_handler: function [clientId csrf payload] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "auth-logout-v2" (to :string clientId) 80 60
+    gate: sec_chain_checks @[c1 c2]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    parsed: auth_parse_json_payload payload
+    if not? parsed\ok [ return auth_result_to_http parsed false ]
+    data: parsed\data
+    result: service_auth_logout data\token
+    sec_audit_log "auth.logout.v2" (to :string clientId) result\ok #[]
+    auth_result_to_http result false
+]

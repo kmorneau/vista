@@ -1,0 +1,54 @@
+#[
+  "title": "Text Alignment"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["graphics", "text", "alignment", "reference"]
+  "body": {
+    <h1>Text Alignment</h1>
+
+    <p>Reference for Vista Graphics text alignment commands.</p>
+
+    <h2>Horizontal Alignment</h2>
+    <pre><code>draw canvas [
+    text-align 'left
+    text "Left" 100 50
+    
+    text-align 'center
+    text "Center" 100 100
+    
+    text-align 'right
+    text "Right" 100 150
+]</code></pre>
+
+    <h2>Vertical Alignment</h2>
+    <pre><code>draw canvas [
+    text-baseline 'top
+    text "Top" 100 100
+    
+    text-baseline 'middle
+    text "Middle" 200 100
+    
+    text-baseline 'bottom
+    text "Bottom" 300 100
+]</code></pre>
+
+    <h2>Alignment Values</h2>
+    <ul>
+      <li><strong>Horizontal</strong>: left, center, right</li>
+      <li><strong>Vertical</strong>: top, middle, bottom, alphabetic</li>
+    </ul>
+
+    <h2>Combined Alignment</h2>
+    <pre><code>draw canvas [
+    text-align 'center
+    text-baseline 'middle
+    text "Centered" 200 100
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/text-fonts/text-rendering/">Text Rendering</a> - Text rendering</li>
+      <li><a href="/wiki/graphics/text-fonts/font-settings/">Font Settings</a> - Font reference</li>
+    </ul>
+  }
+]

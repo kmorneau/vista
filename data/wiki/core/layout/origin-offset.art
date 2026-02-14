@@ -1,0 +1,48 @@
+#[
+  "title": "Origin & Offset"
+  "layout": "docpage"
+  "category": "Layout"
+  "tags": ["layout", "origin", "offset", "position", "coordinates"]
+  "body": {
+    <h1>Origin & Offset</h1>
+
+    <p>Control the precise positioning of components using origin and offset attributes.</p>
+
+    <h2>Origin</h2>
+    <pre><code>view .html [
+    box red 100x100 [
+        origin: 10x10
+    ]
+]</code></pre>
+
+    <h2>Offset</h2>
+    <pre><code>view .html [
+    box blue 100x100 [
+        offset: 50x50
+    ]
+]</code></pre>
+
+    <h2>Combined Usage</h2>
+    <pre><code>view .html [
+    panel [
+        origin: 20x20
+        offset: 10x10
+        text "Positioned content"
+    ]
+]</code></pre>
+
+    <h2>Use Cases</h2>
+    <ul>
+      <li>Precise component positioning</li>
+      <li>Creating custom layouts</li>
+      <li>Implementing drag-and-drop</li>
+      <li>Building overlay systems</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/layout/alignment-valign/">Alignment</a> - Alignment options</li>
+      <li><a href="/wiki/core/layout/scope-nesting/">Scope & Nesting</a> - Scoped layouts</li>
+    </ul>
+  }
+]

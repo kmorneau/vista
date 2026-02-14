@@ -1,0 +1,55 @@
+#[
+  "title": "Alignment"
+  "layout": "docpage"
+  "category": "Layout"
+  "tags": ["layout", "alignment", "valign", "center", "position"]
+  "body": {
+    <h1>Alignment</h1>
+
+    <p>Control the alignment of content within containers using align and valign attributes.</p>
+
+    <h2>Horizontal Alignment</h2>
+    <pre><code>view .html [
+    row [
+        align: 'left
+        text "Left"
+    ]
+    row [
+        align: 'center
+        text "Center"
+    ]
+    row [
+        align: 'right
+        text "Right"
+    ]
+]</code></pre>
+
+    <h2>Vertical Alignment</h2>
+    <pre><code>view .html [
+    row [
+        valign: 'top
+        text "Top"
+    ]
+    row [
+        valign: 'middle
+        text "Middle"
+    ]
+    row [
+        valign: 'bottom
+        text "Bottom"
+    ]
+]</code></pre>
+
+    <h2>Alignment Values</h2>
+    <ul>
+      <li><strong>Horizontal</strong>: left, center, right, justify</li>
+      <li><strong>Vertical</strong>: top, middle, bottom</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/layout/spacing-pad/">Spacing & Padding</a> - Spacing control</li>
+      <li><a href="/wiki/core/layout/origin-offset/">Origin & Offset</a> - Positioning control</li>
+    </ul>
+  }
+]

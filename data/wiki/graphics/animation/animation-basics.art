@@ -1,0 +1,47 @@
+#[
+  "title": "Animation Basics"
+  "layout": "docpage"
+  "category": "Animation"
+  "tags": ["graphics", "animation", "basics", "tutorials"]
+  "body": {
+    <h1>Animation Basics</h1>
+
+    <p>Learn the fundamentals of creating animations in Vista Graphics.</p>
+
+    <h2>Animation Loop</h2>
+    <pre><code>draw canvas [
+    on-frame [
+        frame: frame + 1
+        drawScene
+    ]
+]</code></pre>
+
+    <h2>Animation Principles</h2>
+    <ul>
+      <li><strong>Frame Rate</strong>: Control animation smoothness</li>
+      <li><strong>Timing</strong>: Use delta time for consistent speed</li>
+      <li><strong>Easing</strong>: Apply easing functions for natural motion</li>
+    </ul>
+
+    <h2>Simple Animation</h2>
+    <pre><code>draw canvas [
+    animate [
+        rotate: angle
+        drawCircle
+    ]
+]</code></pre>
+
+    <h2>Best Practices</h2>
+    <ul>
+      <li>Use requestAnimationFrame for smooth animations</li>
+      <li>Calculate positions based on time, not frame count</li>
+      <li>Optimize redraw operations</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/animation/frame-animation/">Frame Animation</a> - Frame-based animation</li>
+      <li><a href="/wiki/graphics/animation/transition-effects/">Transition Effects</a> - Transitions</li>
+    </ul>
+  }
+]

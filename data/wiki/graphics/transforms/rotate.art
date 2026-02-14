@@ -1,0 +1,36 @@
+#[
+  "title": "Rotate"
+  "layout": "docpage"
+  "category": "Transforms"
+  "tags: ["graphics", "transforms", "rotate", "rotation"]
+  "body": {
+    <h1>Rotate</h1>
+
+    <p>Rotate subsequent drawing operations around the origin.</p>
+
+    <h2>Basic Rotation</h2>
+    <pre><code>draw canvas [
+    rotate 45
+    box 0 0 100 100
+]</code></pre>
+
+    <h2>Parameters</h2>
+    <ul>
+      <li><strong>angle</strong>: Rotation angle in degrees</li>
+    </ul>
+
+    <h2>Rotate Around Point</h2>
+    <pre><code>draw canvas [
+    translate 100 100
+    rotate 45
+    translate -50 -50
+    box 0 0 100 100
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/transforms/">Transforms</a> - Transform overview</li>
+      <li><a href="/wiki/graphics/transforms/scale/">Scale</a> - Scale transforms</li>
+    </ul>
+  }
+]

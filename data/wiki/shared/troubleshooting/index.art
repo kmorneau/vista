@@ -1,0 +1,32 @@
+#[
+  "title": "Troubleshooting"
+  "layout": "docpage"
+  "category": "Troubleshooting"
+  "tags": ["troubleshooting", "debugging", "issues", "solutions"]
+  "body": {
+    <h1>Troubleshooting</h1>
+
+    <p>Guides for debugging, resolving common issues, and optimizing performance.</p>
+
+    <h2>Troubleshooting Topics</h2>
+    <ul>
+      <li><a href="/wiki/shared/troubleshooting/common-issues/">Common Issues</a> - Common problems and solutions</li>
+      <li><a href="/wiki/shared/troubleshooting/debugging-tips/">Debugging Tips</a> - Debugging techniques</li>
+      <li><a href="/wiki/shared/troubleshooting/performance-tips/">Performance Tips</a> - Performance optimization</li>
+    </ul>
+
+    <h2>Getting Help</h2>
+    <ul>
+      <li>Check the common issues first</li>
+      <li>Use debugging tools to identify problems</li>
+      <li>Review performance tips for optimization</li>
+      <li>Search existing issues and documentation</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/patterns/">Patterns</a> - Best practices</li>
+      <li><a href="/wiki/shared/migration/">Migration</a> - Migration issues</li>
+    </ul>
+  }
+]

@@ -1,0 +1,39 @@
+#[
+  "title": "Named Colors"
+  "layout": "docpage"
+  "category": "Colors"
+  "tags": ["graphics", "colors", "named", "css"]
+  "body": {
+    <h1>Named Colors</h1>
+
+    <p>Vista Graphics supports CSS named colors for easy color specification.</p>
+
+    <h2>Basic Colors</h2>
+    <pre><code>draw canvas [
+    pen red
+    fill blue
+    box 0 0 100 100
+]</code></pre>
+
+    <h2>Common Named Colors</h2>
+    <ul>
+      <li><strong>Primary</strong>: red, blue, green, yellow, orange, purple</li>
+      <li><strong>Neutral</strong>: black, white, gray, grey</li>
+      <li><strong>Status</strong>: success, warning, error, info</li>
+    </ul>
+
+    <h2>Extended Colors</h2>
+    <pre><code>draw canvas [
+    fill tomato
+    circle 100 100 50
+    fill steelblue
+    circle 200 100 50
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/colors/color-overview/">Color Overview</a> - Color introduction</li>
+      <li><a href="/wiki/graphics/colors/rgb-rgba/">RGB & RGBA</a> - RGB color reference</li>
+    </ul>
+  }
+]

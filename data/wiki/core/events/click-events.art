@@ -1,0 +1,38 @@
+#[
+  "title": "Click Events"
+  "layout": "docpage"
+  "category": "Events"
+  "tags": ["events", "click", "button", "interactions"]
+  "body": {
+    <h1>Click Events</h1>
+
+    <p>Click events are triggered when users click or tap on interactive components like buttons.</p>
+
+    <h2>Syntax</h2>
+    <pre><code>component [event-handler]</code></pre>
+
+    <h2>Example</h2>
+    <pre><code>view .html [
+    button "Click Me" [
+        print "Button clicked!"
+    ]
+]</code></pre>
+
+    <h2>Components Supporting Click Events</h2>
+    <ul>
+      <li>button</li>
+      <li>key_button</li>
+      <li>checkbox (when used as toggle)</li>
+      <li>tab</li>
+    </ul>
+
+    <h2>Event Object</h2>
+    <p>Click events don't provide additional event data.</p>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/events/event-overview/">Event Overview</a> - Introduction to events</li>
+      <li><a href="/wiki/core/events/input-events/">Input Events</a> - Input event handling</li>
+    </ul>
+  }
+]

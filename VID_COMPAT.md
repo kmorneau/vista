@@ -21,10 +21,12 @@ Note: `vid_view` has been removed. Use the flags above with `view`.
 ## Supported (High-Level)
 
 - Layout words: `across`, `below`, `return`, `end`, `pad`, `space`, `align`, `valign`, `size`, `origin`, `offset`, `indent`, `guide`, `do`, `scope`
-- Faces: `text`, `label`, `title`, `subtitle`, `field`, `info`, `button`, `key`, `checkbox`, `toggle`, `radio`, `slider`, `rotary`, `textarea`, `select`, `drop-list`, `image`, `icon`, `anim`, `progress`, `box`, `panel`, `grid`, `row`, `col`, `group`, `table*`, `toolbar`, `menubar`, `split`, `canvas`, `divider`, `sensor`, `tabs`/`tab`
+- Faces: `text`, `label`, `title`, `subtitle`, `field`, `info`, `button`, `key`, `checkbox`, `toggle`, `radio`, `slider`, `rotary`, `textarea`, `select`, `drop-list`, `image`, `audio`, `video`, `icon`, `anim`, `progress`, `box`, `panel`, `grid`, `row`, `col`, `group`, `table*`, `toolbar`, `menubar`, `split`, `canvas`, `divider`, `sensor`, `tabs`/`tab`
 - Draw dialect (HTML5 Canvas) via `src/vista/graphics/vista-graphics.art` and `canvas [draw-block]`
 - Face registry + debug helpers + overlay inspector
 - State bindings, live updates, and optional UI->Arturo sync
+- Runtime UI helpers: `alert`, `dialog`, `clip`, `unclip`
+  `clip`/`unclip` map to clipboard copy/paste semantics.
 
 ## Facets (MVP)
 
@@ -47,3 +49,4 @@ Note: `vid_view` has been removed. Use the flags above with `view`.
 - More accurate size/spacing metrics vs. classic VID.
 - Text metrics for auto-sizing based on font/para.
 - Full strict classic VID behavioral parity for all edge cases.
+- `dialog` is currently HTML/CSS modal emulation (or alert fallback), not native desktop dialog parity.

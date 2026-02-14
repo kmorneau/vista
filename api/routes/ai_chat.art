@@ -1,28 +1,146 @@
 import "api/services/ai_chat_service.art"!
 import "api/http/responses.art"!
+import "api/security/security_core.art"!
+
+ai_chat_payload_from_result: function [result] [
+    if result\ok [
+        return #[
+            ok: true
+            data: result\data
+        ]
+    ]
+    code: result\code
+    if any? @[
+        equal? code "bad_request"
+        equal? code "unsupported_provider"
+        equal? code "missing_api_key"
+        equal? code "missing_provider_url"
+    ] [
+        return #[
+            ok: false
+            error: #[
+                code: "bad_request"
+                message: result\message
+                details: result\details
+            ]
+        ]
+    ]
+    #[
+        ok: false
+        error: #[
+            code: "server_error"
+            message: result\message
+            details: result\details
+        ]
+    ]
+]
+
+ai_jsonp_response: function [requestId payload] [
+    rid: to :string requestId
+    rid: replace rid "\\" "\\\\"
+    rid: replace rid "\"" "\\\""
+    payloadJson: write.json payload ø
+    "__vistaAiJsonp&&__vistaAiJsonp(\"" ++ rid ++ "\"," ++ payloadJson ++ ");"
+]
 
 ai_providers_handler: function [] [
+    c1: sec_check_rate_limit "ai-providers" "public" 120 60
+    gate: sec_chain_checks @[c1]
+    if not? gate\ok [ return sec_to_http_error gate ]
     result: service_list_ai_providers
+    sec_audit_log "ai.providers" "public" true #[]
     ok result\data
 ]
 
-ai_chat_handler: function [provider model temperature prompt] [
-    result: service_ai_chat provider model prompt temperature
+ai_providers_script_handler: function [requestId] [
+    result: service_list_ai_providers
+    ai_jsonp_response requestId #[
+        ok: true
+        data: result\data
+    ]
+]
+
+ai_settings_payload_from_result: function [result] [
     if result\ok [
-        return ok result\data
+        return #[
+            ok: true
+            data: result\data
+        ]
     ]
-    code: result\code
-    if equal? code "bad_request" [
-        return bad_request result\message result\details
+    errCode: "server_error"
+    if equal? result\code "bad_request" [
+        errCode: "bad_request"
     ]
-    if equal? code "unsupported_provider" [
-        return bad_request result\message result\details
+    #[
+        ok: false
+        error: #[
+            code: errCode
+            message: result\message
+            details: result\details
+        ]
     ]
-    if equal? code "missing_api_key" [
-        return bad_request result\message result\details
+]
+
+ai_settings_handler: function [] [
+    c1: sec_check_rate_limit "ai-settings-get" "public" 120 60
+    gate: sec_chain_checks @[c1]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    result: service_get_ai_settings
+    sec_audit_log "ai.settings.get" "public" true #[]
+    write.json ai_settings_payload_from_result result ø
+]
+
+ai_settings_save_handler: function [provider model temperature topP maxTokens] [
+    c1: sec_check_rate_limit "ai-settings-save" "public" 40 60
+    gate: sec_chain_checks @[c1]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    result: service_save_ai_settings provider model temperature topP maxTokens
+    sec_audit_log "ai.settings.save" "public" result\ok #[provider: provider model: model]
+    write.json ai_settings_payload_from_result result ø
+]
+
+ai_settings_script_handler: function [requestId] [
+    result: service_get_ai_settings
+    ai_jsonp_response requestId ai_settings_payload_from_result result
+]
+
+ai_settings_save_script_handler: function [requestId provider model temperature topP maxTokens] [
+    result: service_save_ai_settings provider model temperature topP maxTokens
+    ai_jsonp_response requestId ai_settings_payload_from_result result
+]
+
+ai_chat_handler: function [provider model temperature prompt] [
+    c1: sec_check_rate_limit "ai-chat" (to :string provider) 80 60
+    gate: sec_chain_checks @[c1]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    result: service_ai_chat provider model prompt temperature null
+    sec_audit_log "ai.chat" (to :string provider) result\ok #[model: model]
+    write.json ai_chat_payload_from_result result ø
+]
+
+ai_chat_options_handler: function [provider model temperature topP maxTokens prompt] [
+    c1: sec_check_rate_limit "ai-chat-options" (to :string provider) 80 60
+    gate: sec_chain_checks @[c1]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    options: #[
+        top_p: to :floating topP
+        max_tokens: to :integer maxTokens
     ]
-    if equal? code "missing_provider_url" [
-        return bad_request result\message result\details
+    result: service_ai_chat provider model prompt temperature options
+    sec_audit_log "ai.chat.options" (to :string provider) result\ok #[model: model]
+    write.json ai_chat_payload_from_result result ø
+]
+
+ai_chat_script_handler: function [requestId provider model temperature prompt] [
+    result: service_ai_chat provider model prompt temperature null
+    ai_jsonp_response requestId ai_chat_payload_from_result result
+]
+
+ai_chat_options_script_handler: function [requestId provider model temperature topP maxTokens prompt] [
+    options: #[
+        top_p: to :floating topP
+        max_tokens: to :integer maxTokens
     ]
-    server_error result\message result\details
+    result: service_ai_chat provider model prompt temperature options
+    ai_jsonp_response requestId ai_chat_payload_from_result result
 ]

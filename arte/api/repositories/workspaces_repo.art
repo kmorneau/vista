@@ -1,0 +1,141 @@
+import "arte/api/repositories/auth_repo.art"!
+import "arte/api/db/grafito.art"!
+
+clean_workspace_record: function [raw] [
+    if notEqual? (type raw) :dictionary [
+        return null
+    ]
+    if not? key? raw "properties" [
+        return null
+    ]
+    props: raw\properties
+    if notEqual? (type props) :dictionary [
+        return null
+    ]
+    if not? key? props "workspace_id" [
+        return null
+    ]
+    #[
+        id: to :string props\workspace_id
+        name: to :string props\name
+        owner_user_id: to :integer props\owner_user_id
+        created_at: to :string props\created_at
+    ]
+]
+
+repo_next_workspace_id: function [] [
+    rows: with_arte_db [ fetch 'workspace ø ]
+    maxId: 0
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if key? props "workspace_id" [
+                wid: to :integer props\workspace_id
+                if greater? wid maxId [ maxId: wid ]
+            ]
+        ]
+        i: i + 1
+    ]
+    maxId + 1
+]
+
+repo_insert_workspace: function [name ownerUserId] [
+    newId: repo_next_workspace_id
+    nowStr: to :string now
+    with_arte_db [
+        put 'workspace [
+            workspace_id: newId
+            name: to :string name
+            owner_user_id: to :integer ownerUserId
+            created_at: nowStr
+        ]
+    ]
+    #[id: to :string newId name: to :string name owner_user_id: to :integer ownerUserId created_at: nowStr]
+]
+
+repo_find_workspace_by_id: function [id] [
+    needle: to :integer id
+    rows: with_arte_db [ fetch 'workspace ø ]
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        cleaned: clean_workspace_record row
+        if all? @[notEqual? cleaned null equal? (to :integer cleaned\id) needle] [
+            return cleaned
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+repo_list_workspace_members: function [workspaceId] [
+    rows: with_arte_db [ fetch 'workspace_member ø ]
+    out: []
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "workspace_id" equal? (to :string props\workspace_id) (to :string workspaceId)] [
+                emailVal: ""
+                if key? props "email" [ emailVal: to :string props\email ]
+                out: out ++ @[#[user_id: to :integer props\user_id role: to :string props\role email: emailVal]]
+            ]
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+repo_upsert_workspace_member: function [workspaceId userId role email] [
+    rows: with_arte_db [ fetch 'workspace_member ø ]
+    foundId: null
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties" key? row "id"] [
+            props: row\properties
+            if all? @[key? props "workspace_id" equal? (to :string props\workspace_id) (to :string workspaceId) key? props "user_id" equal? (to :integer props\user_id) (to :integer userId)] [
+                foundId: to :integer row\id
+            ]
+        ]
+        i: i + 1
+    ]
+    if notEqual? foundId null [
+        with_arte_db [ unput foundId ]
+    ]
+    with_arte_db [
+        put 'workspace_member [workspace_id: to :string workspaceId user_id: to :integer userId role: to :string role email: to :string email]
+    ]
+    true
+]
+
+repo_list_workspace_members_with_emails: function [workspaceId] [
+    members: repo_list_workspace_members workspaceId
+    out: []
+    i: 0
+    blen: size members
+    while [less? i blen] [
+        m: get members i
+        emailVal: ""
+        if all? @[equal? (type m) :dictionary key? m "email" equal? (to :string m\email) ""] [
+            if key? m "user_id" [
+                urow: repo_find_auth_user_by_id m\user_id
+                if notEqual? urow null [
+                    emailVal: to :string urow\properties\email
+                ]
+            ]
+        ] [
+            if key? m "email" [ emailVal: to :string m\email ]
+        ]
+        out: out ++ @[#[user_id: m\user_id role: m\role email: emailVal]]
+        i: i + 1
+    ]
+    out
+]

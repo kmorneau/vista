@@ -1,0 +1,33 @@
+#[
+  "title": "Graphics Concepts"
+  "layout": "docpage"
+  "category": "Concepts"
+  "tags": ["graphics", "concepts", "fundamentals", "drawing"]
+  "body": {
+    <h1>Graphics Concepts</h1>
+
+    <p>Understanding the fundamental concepts of Vista Graphics is essential for creating effective custom graphics and visualizations.</p>
+
+    <h2>Key Concepts</h2>
+    <ul>
+      <li><a href="/wiki/graphics/concepts/graphics-overview/">Graphics Overview</a> - Introduction to Vista Graphics</li>
+      <li><a href="/wiki/graphics/concepts/draw-model/">Draw Model</a> - Drawing dialect concepts</li>
+      <li><a href="/wiki/graphics/concepts/coordinate-systems/">Coordinate Systems</a> - Math, center, and VID coordinates</li>
+      <li><a href="/wiki/graphics/concepts/canvas-basics/">Canvas Basics</a> - Canvas setup and usage</li>
+    </ul>
+
+    <h2>Coordinate Systems</h2>
+    <p>Vista Graphics supports multiple coordinate systems:
+    <ul>
+      <li><strong>Math Coordinates</strong>: Origin at center, Y points up</li>
+      <li><strong>VID Coordinates</strong>: Origin at top-left, Y points down</li>
+      <li><strong>Canvas Coordinates</strong>: Pixel-based positioning</li>
+    </ul></p>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/tutorials/">Tutorials</a> - Learning guides</li>
+      <li><a href="/wiki/graphics/drawing/">Drawing</a> - Drawing reference</li>
+    </ul>
+  }
+]

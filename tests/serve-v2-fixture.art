@@ -1,0 +1,33 @@
+; Fixture route map for future serve.v2 core implementation.
+; This is a reference script for validating request/response object behavior.
+; Run (after serve.v2 exists):
+;   arturo tests/serve-v2-fixture.art
+; Then:
+;   SERVE_V2_BASE=http://localhost:19010 bash tests/serve-v2-contract.sh
+
+serve.v2 .port:19010 .max_body_bytes:1048576 [
+    GET "/__servev2/health" $[req res][
+        res\json 200 #[
+            ok: true
+            data: #[
+                status: "up"
+                method: req\method
+            ]
+        ]
+    ]
+
+    POST "/__servev2/echo/(?<id>[^/]+)" $[req res][
+        res\json 200 #[
+            ok: true
+            data: #[
+                method: req\method
+                path: req\path
+                params: req\params
+                query: req\query
+                headers: req\headers
+                body_raw: req\body_raw
+                body_json: req\body_json
+            ]
+        ]
+    ]
+]

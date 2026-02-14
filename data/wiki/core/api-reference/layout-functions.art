@@ -1,0 +1,49 @@
+#[
+  "title": "Layout Functions"
+  "layout": "docpage"
+  "category": "API Reference"
+  "tags": ["api", "reference", "layout", "functions"]
+  "body": {
+    <h1>Layout Functions</h1>
+
+    <p>Complete reference for Vista's layout control functions.</p>
+
+    <h2>Layout Containers</h2>
+    <ul>
+      <li><strong>across</strong>: Arrange children horizontally</li>
+      <li><strong>below</strong>: Arrange children vertically</li>
+      <li><strong>row</strong>: Row layout container</li>
+      <li><strong>col</strong>: Column layout container</li>
+      <li><strong>grid</strong>: Grid layout container</li>
+    </ul>
+
+    <h2>Layout Control</h2>
+    <ul>
+      <li><strong>spacing</strong>: Set space between children</li>
+      <li><strong>padding</strong>: Set internal padding</li>
+      <li><strong>margin</strong>: Set external margin</li>
+      <li><strong>align</strong>: Set horizontal alignment</li>
+      <li><strong>valign</strong>: Set vertical alignment</li>
+    </ul>
+
+    <h2>Positioning</h2>
+    <ul>
+      <li><strong>origin</strong>: Set origin position</li>
+      <li><strong>offset</strong>: Set offset position</li>
+      <li><strong>size</strong>: Set component size</li>
+    </ul>
+
+    <h2>Nesting</h2>
+    <ul>
+      <li><strong>scope</strong>: Create isolated layout scope</li>
+      <li><strong>panel</strong>: Create panel container</li>
+      <li><strong>group</strong>: Create group container</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/layout/">Layout</a> - Layout documentation</li>
+      <li><a href="/wiki/core/api-reference/component-functions/">Component Functions</a> - Component reference</li>
+    </ul>
+  }
+]

@@ -1,0 +1,204 @@
+#[
+  "title": "VID Parity"
+  "layout": "docpage"
+  "category": "Migration"
+  "tags": ["migration", "vid", "parity", "comparison", "feature-matrix"]
+  "body": {
+    <h1>VID Parity</h1>
+
+    <p>Feature comparison between VID (View It Desktop) and Vista.</p>
+
+    <h2>Feature Matrix</h2>
+    <table>
+      <tr>
+        <th>Feature</th>
+        <th>VID</th>
+        <th>Vista</th>
+        <th>Notes</th>
+      </tr>
+      <tr>
+        <td>Button</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Enhanced in Vista</td>
+      </tr>
+      <tr>
+        <td>Field</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Enhanced input handling</td>
+      </tr>
+      <tr>
+        <td>Area</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Multi-line support</td>
+      </tr>
+      <tr>
+        <td>Text</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Rich text in Vista</td>
+      </tr>
+      <tr>
+        <td>Image</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>SVG support in Vista</td>
+      </tr>
+      <tr>
+        <td>Panel</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Enhanced styling</td>
+      </tr>
+      <tr>
+        <td>Tabs</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Dynamic tabs in Vista</td>
+      </tr>
+      <tr>
+        <td>Slider</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Range sliders in Vista</td>
+      </tr>
+      <tr>
+        <td>Progress</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Animated in Vista</td>
+      </tr>
+      <tr>
+        <td>Drop-down</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Searchable in Vista</td>
+      </tr>
+    </table>
+
+    <h2>Layout Features</h2>
+    <table>
+      <tr>
+        <th>Feature</th>
+        <th>VID</th>
+        <th>Vista</th>
+        <th>Notes</th>
+      </tr>
+      <tr>
+        <td>across</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Same behavior</td>
+      </tr>
+      <tr>
+        <td>below</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Same behavior</td>
+      </tr>
+      <tr>
+        <td>pad</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Extended syntax</td>
+      </tr>
+      <tr>
+        <td>space</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Same behavior</td>
+      </tr>
+      <tr>
+        <td>indent</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td>Use margin/padding</td>
+      </tr>
+      <tr>
+        <td>guide</td>
+        <td>✅</td>
+        <td>❌</td>
+        <td>Use align attributes</td>
+      </tr>
+      <tr>
+        <td>center</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Same behavior</td>
+      </tr>
+    </table>
+
+    <h2>Event Handling</h2>
+    <table>
+      <tr>
+        <th>Feature</th>
+        <th>VID</th>
+        <th>Vista</th>
+        <th>Notes</th>
+      </tr>
+      <tr>
+        <td>on-click</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Same syntax</td>
+      </tr>
+      <tr>
+        <td>on-change</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Same syntax</td>
+      </tr>
+      <tr>
+        <td>on-focus</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Same syntax</td>
+      </tr>
+      <tr>
+        <td>on-key</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Enhanced key codes</td>
+      </tr>
+      <tr>
+        <td>on-drag</td>
+        <td>✅</td>
+        <td>✅</td>
+        <td>Enhanced in Vista</td>
+      </tr>
+      <tr>
+        <td>on-draw</td>
+        <td>❌</td>
+        <td>✅</td>
+        <td>Canvas events</td>
+      </tr>
+    </table>
+
+    <h2>New Features in Vista</h2>
+    <ul>
+      <li><strong>Auto-sync</strong>: Automatic state synchronization</li>
+      <li><strong>Data binding</strong>: Declarative data flow</li>
+      <li><strong>Computed state</strong>: Derived values</li>
+      <li><strong>Canvas API</strong>: Direct drawing</li>
+      <li><strong>Animation</strong>: Built-in animation system</li>
+      <li><strong>Theming</strong>: CSS-based theming</li>
+      <li><strong>Responsive</strong>: Responsive layout support</li>
+    </ul>
+
+    <h2>Deprecated in Vista</h2>
+    <ul>
+      <li>feel: object (use on: events)</li>
+      <li>actor: [...] (use on: handlers)</li>
+      <li>facets: [...] (use attribute: syntax)</li>
+      <li>vid: dialect (use view directly)</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/migration/vid-compatibility/">VID Compatibility</a> - Compatibility guide</li>
+      <li><a href="/wiki/shared/migration/from-rebol-view/">From Rebol/View</a> - Migration from Rebol</li>
+    </ul>
+  }
+]

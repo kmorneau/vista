@@ -1,0 +1,53 @@
+#[
+  "title": "Pen & Fill"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["graphics", "drawing", "pen", "fill", "styles", "reference"]
+  "body": {
+    <h1>Pen & Fill</h1>
+
+    <p>Reference for Vista Graphics pen and fill styles.</p>
+
+    <h2>Pen Styles</h2>
+    <ul>
+      <li><strong>pen</strong>: Set outline color/style</li>
+      <li><strong>pen-width</strong>: Set outline width</li>
+      <li><strong>pen-cap</strong>: Set line cap style</li>
+      <li><strong>pen-join</strong>: Set line join style</li>
+    </ul>
+
+    <h2>Fill Styles</h2>
+    <ul>
+      <li><strong>fill</strong>: Set fill color/style</li>
+      <li><strong>no-fill</strong>: Disable fill</li>
+    </ul>
+
+    <h2>Example</h2>
+    <pre><code>draw canvas [
+    pen red
+    pen-width 3
+    fill blue
+    box 10 10 100 100
+]</code></pre>
+
+    <h2>Line Caps</h2>
+    <ul>
+      <li><strong>butt</strong>: Flat end</li>
+      <li><strong>round</strong>: Round end</li>
+      <li><strong>square</strong>: Square end</li>
+    </ul>
+
+    <h2>Line Joins</h2>
+    <ul>
+      <li><strong>miter</strong>: Sharp corner</li>
+      <li><strong>round</strong>: Round corner</li>
+      <li><strong>bevel</strong>: Beveled corner</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/colors/">Colors</a> - Color reference</li>
+      <li><a href="/wiki/graphics/drawing/primitives/">Primitives</a> - Drawing primitives</li>
+    </ul>
+  }
+]

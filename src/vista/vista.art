@@ -8,3 +8,4 @@ import "src/vista/graphics/vista-graphics.art"!
 import "src/vista/modules/03-styles-aliases.art"!
 import "src/vista/modules/04-layout-core.art"!
 import "src/vista/modules/05-view-entry.art"!
+import "src/vista/modules/06-auth-ui.art"!

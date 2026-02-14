@@ -42,7 +42,7 @@ draw_to_canvas: function [canvasId drawBlock] [
     if notEqual? (type drawBlock) :block [
         return ""
     ]
-    js: "var c=document.getElementById('" ++ vg_js_escape_single canvasId ++ "');if(!c){return;}var ctx=c.getContext('2d');ctx.__vistaFillRule='nonzero';"
+    js: "var c=document.getElementById(" ++ (draw_js_token canvasId) ++ ");if(!c){return;}var ctx=c.getContext('2d');ctx.__vistaFillRule='nonzero';"
     i: 0
     blen: size drawBlock
     gradCount: 0
@@ -217,9 +217,74 @@ draw_to_canvas: function [canvasId drawBlock] [
                     ]
                 ]
                 "coord-system" -> [
-                    ; Placeholder; currently accepted for compatibility.
                     if less? (i + 1) blen [
-                        i: i + 2
+                        modeVal: get drawBlock (i + 1)
+                        modeStr: lower (to :string modeVal)
+                        origin: null
+                        if less? (i + 2) blen [
+                            maybeOrigin: vg_point (get drawBlock (i + 2))
+                            if notEqual? maybeOrigin null [
+                                origin: maybeOrigin
+                            ]
+                        ]
+                        if equal? modeStr "vid" [
+                            if notEqual? origin null [
+                                js: js ++ "ctx.setTransform(1,0,0,1," ++ (to :string origin\x) ++ "," ++ (to :string origin\y) ++ ");"
+                            ] [
+                                js: js ++ "ctx.setTransform(1,0,0,1,0,0);"
+                            ]
+                            if notEqual? origin null [
+                                i: i + 3
+                            ] [
+                                i: i + 2
+                            ]
+                            continue
+                        ]
+                        if equal? modeStr "math" [
+                            if notEqual? origin null [
+                                js: js ++ "ctx.setTransform(1,0,0,-1," ++ (to :string origin\x) ++ "," ++ (to :string origin\y) ++ ");"
+                            ] [
+                                js: js ++ "ctx.setTransform(1,0,0,-1,0,c.height);"
+                            ]
+                            if notEqual? origin null [
+                                i: i + 3
+                            ] [
+                                i: i + 2
+                            ]
+                            continue
+                        ]
+                        if equal? modeStr "center" [
+                            if notEqual? origin null [
+                                js: js ++ "ctx.setTransform(1,0,0,1," ++ (to :string origin\x) ++ "," ++ (to :string origin\y) ++ ");"
+                            ] [
+                                js: js ++ "ctx.setTransform(1,0,0,1,c.width/2,c.height/2);"
+                            ]
+                            if notEqual? origin null [
+                                i: i + 3
+                            ] [
+                                i: i + 2
+                            ]
+                            continue
+                        ]
+                        if equal? modeStr "center-math" [
+                            if notEqual? origin null [
+                                js: js ++ "ctx.setTransform(1,0,0,-1," ++ (to :string origin\x) ++ "," ++ (to :string origin\y) ++ ");"
+                            ] [
+                                js: js ++ "ctx.setTransform(1,0,0,-1,c.width/2,c.height/2);"
+                            ]
+                            if notEqual? origin null [
+                                i: i + 3
+                            ] [
+                                i: i + 2
+                            ]
+                            continue
+                        ]
+                        ; Unknown mode: keep compatibility and consume argument.
+                        if notEqual? origin null [
+                            i: i + 3
+                        ] [
+                            i: i + 2
+                        ]
                     ] [
                         i: i + 1
                     ]
@@ -256,6 +321,37 @@ draw_to_canvas: function [canvasId drawBlock] [
                     continue
                 ]
                 "clip" -> [
+                    if less? (i + 1) blen [
+                        clipVal: get drawBlock (i + 1)
+                        if equal? (type clipVal) :string [
+                            js: js ++ "try{var __cp=new Path2D(" ++ (draw_js_token clipVal) ++ ");ctx.clip(__cp);}catch(__e){}"
+                            i: i + 2
+                            continue
+                        ]
+                        if equal? (type clipVal) :block [
+                            clipAsPoint: vg_point clipVal
+                            if equal? clipAsPoint null [
+                                plen: size clipVal
+                                if greater? plen 0 [
+                                    first: vg_point (get clipVal 0)
+                                    if notEqual? first null [
+                                        js: js ++ "ctx.beginPath();ctx.moveTo(" ++ (to :string first\x) ++ "," ++ (to :string first\y) ++ ");"
+                                        pi: 1
+                                        while [less? pi plen][
+                                            p: vg_point (get clipVal pi)
+                                            if notEqual? p null [
+                                                js: js ++ "ctx.lineTo(" ++ (to :string p\x) ++ "," ++ (to :string p\y) ++ ");"
+                                            ]
+                                            pi: pi + 1
+                                        ]
+                                        js: js ++ "ctx.closePath();ctx.clip();"
+                                        i: i + 2
+                                        continue
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
                     if less? (i + 2) blen [
                         p1: vg_point (get drawBlock (i + 1))
                         p2: vg_point (get drawBlock (i + 2))

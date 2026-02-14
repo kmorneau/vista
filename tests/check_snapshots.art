@@ -59,6 +59,9 @@ files: [
     "tests/52-face-inspector.art"
     "tests/53-canvas-styles.art"
     "tests/54-draw-arc-curve-flood.art"
+    "tests/55-draw-coord-clip.art"
+    "tests/56-audio-video.art"
+    "tests/57-feature-coverage-smoke.art"
 ]
 
 snap_dir: "tests/snapshots/snapshots"
@@ -82,6 +85,16 @@ read_snapshot: function [path][
         return read path
     ]
     return null
+]
+
+normalize_html: function [text] [
+    if equal? text null [
+        return ""
+    ]
+    out: to :string text
+    out: replace out "\r\n" "\n"
+    out: replace out "\r" "\n"
+    strip out
 ]
 
 diff_preview: function [a b maxLines][
@@ -115,11 +128,11 @@ diff_preview: function [a b maxLines][
 ]
 
 compare_one: function [file][
-    current: execute ("VISTA_NO_WEBVIEW=1 arturo " ++ file)
+    current: normalize_html (execute ("VISTA_NO_WEBVIEW=1 arturo " ++ file))
     name: replace file "tests/" ""
     name: replace name ".art" ".html"
     snap_path: snap_dir ++ "/" ++ name
-    expected: read_snapshot snap_path
+    expected: normalize_html (read_snapshot snap_path)
     if equal? expected null [
         print ["MISSING" snap_path]
         if update [
@@ -128,7 +141,8 @@ compare_one: function [file][
         ]
         return false
     ]
-    if notEqual? expected current [
+    same: equal? (digest.sha expected) (digest.sha current)
+    if not? same [
         print ["DIFF" file]
         if update [
             write current snap_path
@@ -166,6 +180,14 @@ if update [
         ]
     ]
     write.json manifest manifest_path
+]
+
+if all_ok [
+    coverageOut: execute "arturo tests/check_feature_coverage.art"
+    print coverageOut
+    if contains? coverageOut "FEATURE COVERAGE FAIL" [
+        all_ok: false
+    ]
 ]
 
 if all_ok [

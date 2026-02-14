@@ -1,0 +1,47 @@
+#[
+  "title": "CSS Classes"
+  "layout": "docpage"
+  "category": "Styles"
+  "tags": ["styles", "css", "classes", "reference"]
+  "body": {
+    <h1>CSS Classes</h1>
+
+    <p>Vista provides CSS classes for styling components.</p>
+
+    <h2>Layout Classes</h2>
+    <ul>
+      <li><strong>.row</strong>: Display as row</li>
+      <li><strong>.col</strong>: Display as column</li>
+      <li><strong>.center</strong>: Center content</li>
+      <li><strong>.flex</strong>: Flexbox container</li>
+    </ul>
+
+    <h2>Spacing Classes</h2>
+    <ul>
+      <li><strong>.m-1</strong> to <strong>.m-5</strong>: Margin</li>
+      <li><strong>.p-1</strong> to <strong>.p-5</strong>: Padding</li>
+    </ul>
+
+    <h2>Text Classes</h2>
+    <ul>
+      <li><strong>.text-left</strong>: Left align</li>
+      <li><strong>.text-center</strong>: Center align</li>
+      <li><strong>.text-right</strong>: Right align</li>
+      <li><strong>.bold</strong>: Bold text</li>
+      <li><strong>.italic</strong>: Italic text</li>
+    </ul>
+
+    <h2>Color Classes</h2>
+    <ul>
+      <li><strong>.bg-primary</strong>: Primary background</li>
+      <li><strong>.text-primary</strong>: Primary text</li>
+      <li><strong>.text-muted</strong>: Muted text</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/shared/styles/theme-variables/">Theme Variables</a> - Theme customization</li>
+      <li><a href="/wiki/shared/styles/responsive-design/">Responsive Design</a> - Responsive utilities</li>
+    </ul>
+  }
+]
