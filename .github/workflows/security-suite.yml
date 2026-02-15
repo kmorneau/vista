@@ -1,0 +1,34 @@
+name: Security Suite
+
+on:
+  push:
+    paths:
+      - "api/**"
+      - "src/vista/**"
+      - "tests/**"
+      - ".github/workflows/security-suite.yml"
+  pull_request:
+    paths:
+      - "api/**"
+      - "src/vista/**"
+      - "tests/**"
+      - ".github/workflows/security-suite.yml"
+  workflow_dispatch:
+
+jobs:
+  security-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure Arturo is available
+        run: |
+          if ! command -v arturo >/dev/null 2>&1; then
+            echo "arturo binary not found on PATH"
+            exit 1
+          fi
+          arturo -v
+
+      - name: Run security suite
+        run: bash tests/security-suite.sh
