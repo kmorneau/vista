@@ -1,0 +1,9 @@
+# Local secrets / env
+.env
+.env.*
+OPENAI_API_KEY
+GEMINI_API_KEY
+
+# Runtime/log output
+*.log
+vista_api.graf

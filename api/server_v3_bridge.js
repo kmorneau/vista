@@ -7,6 +7,7 @@ const { URL } = require("url");
 const PORT = Number(process.env.API_V3_PORT || process.env.API_PORT || 18979);
 const BACKEND_BASE = (process.env.API_BACKEND_BASE || "http://localhost:18969").replace(/\/+$/, "");
 const MAX_BODY_BYTES = Number(process.env.API_V3_MAX_BODY_BYTES || 1048576);
+const SENSITIVE_HEADERS = new Set(["authorization", "cookie", "set-cookie", "x-auth-token", "x-api-key"]);
 
 const json = (res, status, payload) => {
   const body = JSON.stringify(payload);
@@ -22,16 +23,28 @@ const b64url = (value) => Buffer.from(value, "utf8").toString("base64").replace(
 const readJsonBody = (req) =>
   new Promise((resolve, reject) => {
     let data = "";
+    let bytes = 0;
+    let done = false;
     req.on("data", (chunk) => {
-      data += chunk.toString("utf8");
-      if (data.length > MAX_BODY_BYTES) {
+      bytes += chunk.length;
+      if (bytes > MAX_BODY_BYTES) {
         const err = new Error("request body too large");
         err.code = "payload_too_large";
         err.status = 413;
+        done = true;
+        req.destroy();
         reject(err);
+        return;
       }
+      if (done) {
+        return;
+      }
+      data += chunk.toString("utf8");
     });
     req.on("end", () => {
+      if (done) {
+        return;
+      }
       if (!data.trim()) {
         resolve({});
         return;
@@ -47,6 +60,8 @@ const readJsonBody = (req) =>
     });
     req.on("error", reject);
   });
+
+const redactHeader = (name, value) => (SENSITIVE_HEADERS.has(name) ? "[REDACTED]" : value);
 
 const callBackend = async (method, path) => {
   const response = await fetch(`${BACKEND_BASE}${path}`, { method });
@@ -129,7 +144,9 @@ const server = http.createServer(async (req, res) => {
       }
       const headers = {};
       for (const [k, v] of Object.entries(req.headers || {})) {
-        headers[String(k).toLowerCase()] = Array.isArray(v) ? v.join(",") : String(v || "");
+        const key = String(k).toLowerCase();
+        const val = Array.isArray(v) ? v.join(",") : String(v || "");
+        headers[key] = redactHeader(key, val);
       }
       const query = {};
       for (const [k, v] of u.searchParams.entries()) {

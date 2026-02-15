@@ -57,6 +57,10 @@ auth_hash_code: function [code salt] [
     digest.sha (to :string code ++ ":" ++ to :string salt)
 ]
 
+auth_now_unix: function [] [
+    to :integer strip execute "date +%s"
+]
+
 auth_code_expires_in: function [] [
     auth_mfa_code_ttl_seconds
 ]

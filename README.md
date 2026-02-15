@@ -22,6 +22,13 @@ view [
 ]
 ```
 
+## Secrets
+
+- Do not commit API keys or `.env` files.
+- Use environment variables (`OPENAI_API_KEY`, `GEMINI_API_KEY`) for local runs.
+- Start from `/Users/kmorneau/Documents/GitHub/vista/.env.example` and create a local `.env` file.
+- For CI, use GitHub Actions repository/org secrets and reference them via `${{ secrets.NAME }}`.
+
 ### Local development
 
 Use the local file import when working in this repo without installing the package:

@@ -59,6 +59,17 @@ Optional live OpenAI check:
 OPENAI_API_KEY=... bash api/smoke_ai.sh
 ```
 
+Local secret setup:
+
+- Copy `/Users/kmorneau/Documents/GitHub/vista/.env.example` to `.env` and set real values.
+- Load it in your shell before running API scripts:
+
+```bash
+set -a; source .env; set +a
+```
+
+- In CI, inject `OPENAI_API_KEY` and `GEMINI_API_KEY` from GitHub Actions secrets.
+
 ## Endpoints (v1 scaffold)
 
 - `GET /api/health`
@@ -101,7 +112,7 @@ OPENAI_API_KEY=... bash api/smoke_ai.sh
 - Auth uses salted, iterated SHA1 via the built-in Crypto module. For production, swap in a stronger KDF.
 - Admin bootstrap:
   - `POST /api/auth/bootstrap/:secret/:email` promotes one user to `admin`.
-  - Secret comes from `SECURITY_BOOTSTRAP_SECRET` (defaults to `vista-bootstrap-dev-secret` for local dev).
+  - Secret comes from `SECURITY_BOOTSTRAP_SECRET` and must be set explicitly.
   - Bootstrap is single-seed: once an admin exists, promoting a different user via bootstrap returns conflict.
 - v2 auth routes use URL-safe base64 JSON payload + CSRF token in the path as an interim pattern.
   - Reason: current `serve` handler API does not expose request body/headers directly.
@@ -123,7 +134,8 @@ OPENAI_API_KEY=... bash api/smoke_ai.sh
 ## MFA flow (OTP)
 
 - `POST /api/auth/login/:email/:password` returns `mfa_required` when MFA is enabled.
-- The response includes `challenge_id` and a development `mfa_code` (the client should deliver it out-of-band).
+- The response includes `challenge_id` and `expires_in`.
+- Set `AUTH_EXPOSE_MFA_CODE=true` only in local development if you need `mfa_code` echoed for manual testing.
 - Verify with `POST /api/auth/mfa/verify/:challenge/:code` to obtain a session token.
 - AI providers:
   - `openai` uses `OPENAI_API_KEY` (+ optional `AI_OPENAI_URL`)

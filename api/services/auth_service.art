@@ -36,7 +36,7 @@ auth_require_session: function [token] [
             ok: false
             code: "unauthorized"
             message: "Invalid session token"
-            details: #[token: token]
+            details: #[]
         ]
     ]
     #[
@@ -69,7 +69,7 @@ auth_bootstrap_secret: function [] [
             return fromEnv
         ]
     ]
-    "vista-bootstrap-dev-secret"
+    ""
 ]
 
 service_auth_seed_roles: function [] [
@@ -89,6 +89,13 @@ service_auth_seed_roles: function [] [
         i: i + 1
     ]
     updatedCount
+]
+
+auth_expose_mfa_code?: function [] [
+    if key? env "AUTH_EXPOSE_MFA_CODE" [
+        return equal? (lower strip to :string env\AUTH_EXPOSE_MFA_CODE) "true"
+    ]
+    false
 ]
 
 service_auth_signup: function [email password] [
@@ -123,6 +130,14 @@ service_auth_signup: function [email password] [
 
 service_auth_bootstrap_admin: function [secret email] [
     expectedSecret: auth_bootstrap_secret
+    if equal? expectedSecret "" [
+        return #[
+            ok: false
+            code: "server_error"
+            message: "Bootstrap secret is not configured"
+            details: #[]
+        ]
+    ]
     providedSecret: to :string secret
     if not? equal? providedSecret expectedSecret [
         return #[
@@ -228,17 +243,20 @@ service_auth_login: function [email password] [
         code: auth_generate_mfa_code
         codeSalt: auth_generate_code_salt
         codeHash: auth_hash_code code codeSalt
-        expiresAt: null
+        expiresAt: auth_now_unix + auth_code_expires_in
         challengeId: repo_insert_mfa_challenge props\user_id codeHash codeSalt expiresAt
+        mfaData: #[
+            challenge_id: challengeId
+            expires_in: auth_code_expires_in
+        ]
+        if auth_expose_mfa_code? [
+            ; Development-only debugging hook.
+            mfaData\mfa_code: code
+        ]
         return #[
             ok: true
             mfa_required: true
-            data: #[
-                challenge_id: challengeId
-                ; For development, return the code so it can be delivered by the client.
-                mfa_code: code
-                expires_in: auth_code_expires_in
-            ]
+            data: mfaData
         ]
     ]
     token: auth_generate_token props\email
@@ -283,7 +301,8 @@ service_auth_mfa_verify: function [challengeId code] [
         ]
     ]
     if all? @[not? equal? props\expires_at null not? equal? (to :string props\expires_at) ""] [
-        if greater? now props\expires_at [
+        expTs: to :integer props\expires_at
+        if greater? auth_now_unix expTs [
             return #[
                 ok: false
                 code: "unauthorized"
@@ -384,9 +403,15 @@ service_auth_update_password: function [token oldPassword newPassword] [
         password_salt: salt
         password_iters: iters
     ]
+    repo_delete_sessions_for_user props\user_id
+    token: auth_generate_token props\email
+    tokenHash: auth_hash_token token
+    repo_insert_session props\user_id tokenHash
+    dataOut: auth_user_payload updated
+    dataOut\token: token
     #[
         ok: true
-        data: auth_user_payload updated
+        data: dataOut
     ]
 ]
 
@@ -422,9 +447,15 @@ service_auth_update_email: function [token email] [
     updated: repo_update_auth_user props\user_id #[
         email: clean\email
     ]
+    repo_delete_sessions_for_user props\user_id
+    token: auth_generate_token clean\email
+    tokenHash: auth_hash_token token
+    repo_insert_session props\user_id tokenHash
+    dataOut: auth_user_payload updated
+    dataOut\token: token
     #[
         ok: true
-        data: auth_user_payload updated
+        data: dataOut
     ]
 ]
 
