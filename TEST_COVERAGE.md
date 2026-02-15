@@ -2,7 +2,7 @@
 
 ## Coverage Summary
 
-This project uses snapshot tests plus behavior smoke tests.
+This project uses snapshot tests.
 
 - Snapshot generator input list: `tests/run_tests.art`
 - Snapshot output: `tests/snapshots/snapshots/*.html`
@@ -32,13 +32,10 @@ NO_WEBVIEW=1 arturo tests/run_tests.art
 # Check for regressions
 arturo tests/check_snapshots.art
 
-# Run behavior smoke tests
-./tests/run_behavior.sh
 ```
 
 ## Running Tests
 
 All tests should pass. If tests fail:
 1. Check that Arturo is installed
-2. Ensure jsdom is installed: `npm install --save-dev jsdom`
-3. Run snapshot generation with `NO_WEBVIEW=1` for headless testing
+2. Run snapshot generation with `NO_WEBVIEW=1` for headless testing

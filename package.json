@@ -22,8 +22,5 @@
   "bugs": {
     "url": "https://github.com/kmorneau/vista/issues"
   },
-  "homepage": "https://github.com/kmorneau/vista#readme",
-  "devDependencies": {
-    "jsdom": "^20.0.3"
-  }
+  "homepage": "https://github.com/kmorneau/vista#readme"
 }

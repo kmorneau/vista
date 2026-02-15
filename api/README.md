@@ -41,18 +41,6 @@ Security smoke test:
 arturo tests/security-smoke.art
 ```
 
-v3 JSON body/header smoke test:
-
-```bash
-bash api/smoke_v3.sh
-```
-
-Arturo `serve.v2` adapter smoke test:
-
-```bash
-bash tests/serve-v2-smoke.sh
-```
-
 Optional live OpenAI check:
 
 ```bash
@@ -168,16 +156,3 @@ Run bridge:
 ```bash
 API_BACKEND_BASE=http://localhost:18969 API_V3_PORT=18979 node api/server_v3_bridge.js
 ```
-
-## Arturo serve.v2 adapter
-
-Launch via Arturo:
-
-```bash
-API_BACKEND_BASE=http://localhost:18969 API_V3_PORT=19010 arturo api/serve_v2.art
-```
-
-Contract test endpoints exposed by the adapter:
-
-- `GET /__servev2/health`
-- `POST /__servev2/echo/:id`

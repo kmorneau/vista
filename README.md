@@ -82,13 +82,6 @@ Verify snapshots:
 arturo tests/check_snapshots.art
 ```
 
-Behavior smoke tests (requires `jsdom`):
-
-```sh
-npm install --save-dev jsdom
-tests/run_behavior.sh
-```
-
 ## Docs
 
 - `vista_tutorial.md`
