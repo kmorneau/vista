@@ -30,5 +30,26 @@ jobs:
           fi
           arturo -v
 
-      - name: Run security suite
-        run: bash tests/security-suite.sh
+      - name: Start API server
+        run: |
+          nohup arturo api/server.art > /tmp/vista-api.log 2>&1 &
+          echo $! > /tmp/vista-api.pid
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:18969/api/health >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API server failed to become healthy"
+          cat /tmp/vista-api.log || true
+          exit 1
+
+      - name: Run security smoke
+        run: arturo tests/security-smoke.art
+
+      - name: Stop API server
+        if: always()
+        run: |
+          if [ -f /tmp/vista-api.pid ]; then
+            kill "$(cat /tmp/vista-api.pid)" || true
+          fi
