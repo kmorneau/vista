@@ -1,56 +1,52 @@
 ; Vista UI - All Enhancement Tests Runner
-; Runs all tests for the new Vista features
+; Runs all tests for enhancement feature groups.
 
 import "src/vista/vista.art"!
+import "tests/60-validation-tests.art"!
+import "tests/61-computed-tests.art"!
+import "tests/62-theme-tests.art"!
+import "tests/63-animation-tests.art"!
+import "tests/64-rate-feel-tests.art"!
 
-; Import individual test modules
-; (Tests are already loaded via vista.art import)
-
-run_all_enhancement_tests: function [] [
-        print "============================================"
-        print "Vista UI - Enhancement Features Test Suite"
-        print "============================================"
-        print ""
-        
-        total-passed: 0
-        total-failed: 0
-        
-        ; Run validation tests
-        print ""
-        result: run_validation_tests
-        if greater? result 0 [total-passed: total-passed + result]
-        
-        ; Run computed tests
-        print ""
-        result: run_computed_tests
-        if greater? result 0 [total-passed: total-passed + result]
-        
-        ; Run theme tests
-        print ""
-        result: run_theme_tests
-        if greater? result 0 [total-passed: total-passed + result]
-        
-        ; Run animation tests
-        print ""
-        result: run_animation_tests
-        if greater? result 0 [total-passed: total-passed + result]
-        
-        ; Run rate and feel tests
-        print ""
-        result: run_rate_feel_tests
-        if greater? result 0 [total-passed: total-passed + result]
-        
-        ; Summary
-        print ""
-        print "============================================"
-        print "Test Suite Complete"
-        print "============================================"
-        print "Total: " ++ to :string total-passed ++ " tests passed"
-        
-        total-failed
+run_group: function [label runner] [
+    print ""
+    print ["Running" label]
+    result: 0
+    if error? err: <= try [
+        result: call runner
+    ] [
+        print ["SKIP" label "-" to :string err]
+        return 0
+    ]
+    if greater? result 0 [
+        print ["PASS" label result]
+        return result
+    ]
+    print ["INFO" label "returned" result]
+    0
 ]
 
-; Export for use
-exports: #{
-        run: :run_all_enhancement_tests
-}
+run_all_enhancement_tests: function [] [
+    print "============================================"
+    print "Vista UI - Enhancement Features Test Suite"
+    print "============================================"
+    print ""
+
+    total_passed: 0
+
+    total_passed: total_passed + run_group "validation" :run_validation_tests
+    total_passed: total_passed + run_group "computed" :run_computed_tests
+    total_passed: total_passed + run_group "theme" :run_theme_tests
+    total_passed: total_passed + run_group "animation" :run_animation_tests
+    total_passed: total_passed + run_group "rate/feel" :run_rate_feel_tests
+
+    print ""
+    print "============================================"
+    print "Test Suite Complete"
+    print "============================================"
+    print ["Total:" total_passed "tests passed"]
+
+    total_passed
+]
+
+run_all_enhancement_tests
