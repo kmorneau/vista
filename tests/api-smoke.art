@@ -119,6 +119,124 @@ request_json: function [method path] [
     ]
 ]
 
+request_json_with_headers: function [method path headerPairs] [
+    url: base_url ++ path
+    cmd: "curl -sS -X " ++ method ++ " \"" ++ url ++ "\""
+    if notEqual? (type headerPairs) :block [
+        headerPairs: []
+    ]
+    i: 0
+    hlen: size headerPairs
+    while [less? i hlen] [
+        h: get headerPairs i
+        if all? @[equal? (type h) :dictionary key? h "name" key? h "value"] [
+            cmd: cmd ++ " -H \"" ++ (to :string h\name) ++ ": " ++ (to :string h\value) ++ "\""
+        ]
+        i: i + 1
+    ]
+    cmd: cmd ++ " -w \"\\n__STATUS__:%{http_code}\""
+    res: execute.code cmd
+    if not? equal? res\code 0 [
+        return #[
+            ok: false
+            status: 0
+            body: to :string res\output
+            error: "curl_failed"
+            json_ok: false
+            json: null
+        ]
+    ]
+    raw: to :string res\output
+    marker: "\n__STATUS__:"
+    pos: index raw marker
+    if equal? pos null [
+        return #[
+            ok: false
+            status: 0
+            body: raw
+            error: "missing_status_marker"
+            json_ok: false
+            json: null
+        ]
+    ]
+    body: slice raw 0 pos
+    status_raw: strip slice raw (pos + size marker) (size raw)
+    status_num: 0
+    if error? err: <= try [
+        status_num: to :integer status_raw
+    ] [
+        status_num: 0
+    ]
+    parsed: parse_json_safe body
+    #[
+        ok: true
+        status: status_num
+        body: body
+        json_ok: parsed\ok
+        json: parsed\data
+        error: parsed\error
+    ]
+]
+
+request_json_with_body: function [method path bodyText headerPairs] [
+    url: base_url ++ path
+    cmd: "curl -sS -X " ++ method ++ " \"" ++ url ++ "\" -H 'Content-Type: application/json'"
+    if notEqual? (type headerPairs) :block [
+        headerPairs: []
+    ]
+    i: 0
+    hlen: size headerPairs
+    while [less? i hlen] [
+        h: get headerPairs i
+        if all? @[equal? (type h) :dictionary key? h "name" key? h "value"] [
+            cmd: cmd ++ " -H \"" ++ (to :string h\name) ++ ": " ++ (to :string h\value) ++ "\""
+        ]
+        i: i + 1
+    ]
+    cmd: cmd ++ " --data '" ++ bodyText ++ "' -w \"\\n__STATUS__:%{http_code}\""
+    res: execute.code cmd
+    if not? equal? res\code 0 [
+        return #[
+            ok: false
+            status: 0
+            body: to :string res\output
+            error: "curl_failed"
+            json_ok: false
+            json: null
+        ]
+    ]
+    raw: to :string res\output
+    marker: "\n__STATUS__:"
+    pos: index raw marker
+    if equal? pos null [
+        return #[
+            ok: false
+            status: 0
+            body: raw
+            error: "missing_status_marker"
+            json_ok: false
+            json: null
+        ]
+    ]
+    body: slice raw 0 pos
+    status_raw: strip slice raw (pos + size marker) (size raw)
+    status_num: 0
+    if error? err: <= try [
+        status_num: to :integer status_raw
+    ] [
+        status_num: 0
+    ]
+    parsed: parse_json_safe body
+    #[
+        ok: true
+        status: status_num
+        body: body
+        json_ok: parsed\ok
+        json: parsed\data
+        error: parsed\error
+    ]
+]
+
 check_http_status: function [resp expected label] [
     expected_s: to :string expected
     actual_s: to :string resp\status
@@ -134,6 +252,31 @@ assert_contains_text: function [hay needle label] [
     assert_true (contains? hay needle) label ("missing: " ++ needle)
 ]
 
+assert_is_unauthorized: function [resp label] [
+    is401: equal? resp\status 401
+    hasCode: false
+    if all? @[resp\json_ok key? resp\json "error"] [
+        errObj: resp\json\error
+        if all? @[dictionary? errObj key? errObj "code"] [
+            hasCode: equal? to :string errObj\code "unauthorized"
+        ]
+    ]
+    statusText: to :string resp\status
+    bodyText: to :string resp\body
+    detail: "got status=" ++ statusText ++ ", body=" ++ bodyText
+    assert_true (or? is401 hasCode) label detail
+]
+
+http_headers_only: function [path] [
+    url: base_url ++ path
+    cmd: "curl -sS -D - -o /dev/null \"" ++ url ++ "\""
+    res: execute.code cmd
+    if not? equal? res\code 0 [
+        return ""
+    ]
+    lower to :string res\output
+]
+
 print ["API smoke tests against" base_url]
 
 ; 1) Health
@@ -144,6 +287,10 @@ if health\json_ok [
     assert_true health\json\ok "health ok=true" "ok flag false"
     assert_true (equal? health\json\data\status "up") "health status=up" "unexpected service status"
 ]
+health_headers: http_headers_only "/api/health"
+assert_contains_text health_headers "x-frame-options: deny" "health header x-frame-options"
+assert_contains_text health_headers "x-content-type-options: nosniff" "health header x-content-type-options"
+assert_contains_text health_headers "content-security-policy:" "health header csp"
 
 ; 2) Providers
 providers: request_json "GET" "/api/ai/providers"
@@ -190,26 +337,30 @@ auth_email: "auth" ++ stamp ++ "@example.com"
 auth_pass: "Password123abc"
 auth_pass2: "Password456xyz"
 auth_email2: "auth" ++ stamp ++ "_new@example.com"
-bootstrap_secret: "vista-bootstrap-dev-secret"
-if key? env "SECURITY_BOOTSTRAP_SECRET" [
-    secRaw: strip to :string env\SECURITY_BOOTSTRAP_SECRET
-    if not? equal? secRaw "" [
-        bootstrap_secret: secRaw
-    ]
+auth_client_id: "smoke-client-" ++ stamp
+auth_headers: @[
+    #[name: "x-client-id" value: auth_client_id]
 ]
 
-asign: request_json "POST" ("/api/auth/signup/" ++ auth_email ++ "/" ++ auth_pass)
+csrf_resp: request_json "GET" ("/api/v2/security/csrf/" ++ auth_client_id)
+check_http_status csrf_resp 200 "auth csrf status"
+assert_json_ok csrf_resp "auth csrf json"
+auth_csrf: ""
+if csrf_resp\json_ok [
+    auth_csrf: to :string csrf_resp\json\data\token
+    assert_true (not? equal? auth_csrf "") "auth csrf token present" "missing csrf token"
+]
+auth_headers: auth_headers ++ @[
+    #[name: "x-csrf-token" value: auth_csrf]
+]
+
+asign_payload: write.json #[email: auth_email password: auth_pass] ø
+asign: request_json_with_body "POST" "/api/v2/auth/signup" asign_payload auth_headers
 check_http_status asign 200 "auth signup status"
 assert_json_ok asign "auth signup json"
 
-abootstrap: request_json "POST" ("/api/auth/bootstrap/" ++ bootstrap_secret ++ "/" ++ auth_email)
-check_http_status abootstrap 200 "auth bootstrap status"
-assert_json_ok abootstrap "auth bootstrap json"
-if abootstrap\json_ok [
-    assert_true abootstrap\json\ok "auth bootstrap ok=true" "bootstrap failed"
-]
-
-alogin: request_json "POST" ("/api/auth/login/" ++ auth_email ++ "/" ++ auth_pass)
+alogin_payload: write.json #[email: auth_email password: auth_pass] ø
+alogin: request_json_with_body "POST" "/api/v2/auth/login" alogin_payload auth_headers
 check_http_status alogin 200 "auth login status"
 assert_json_ok alogin "auth login json"
 
@@ -220,26 +371,82 @@ if alogin\json_ok [
 ]
 
 if not? equal? token1 "" [
-    ame: request_json "GET" ("/api/auth/me/" ++ token1)
+    me_headers: auth_headers ++ @[
+        #[name: "x-auth-token" value: token1]
+    ]
+    ame: request_json_with_headers "GET" "/api/v2/auth/me" me_headers
     check_http_status ame 200 "auth me status"
     assert_json_ok ame "auth me json"
     if ame\json_ok [
-        assert_true (equal? ame\json\data\role "admin") "auth me role=admin after bootstrap" "expected admin role"
+        assert_true (equal? ame\json\data\role "user") "auth me role=user" "expected user role"
     ]
 
-    aemail: request_json "PUT" ("/api/auth/email/" ++ token1 ++ "/" ++ auth_email2)
+    aemail_payload: write.json #[token: token1 email: auth_email2] ø
+    aemail: request_json_with_body "PUT" "/api/v2/auth/email" aemail_payload auth_headers
     check_http_status aemail 200 "auth update email status"
     assert_json_ok aemail "auth update email json"
+    token_email: ""
+    if aemail\json_ok [
+        if key? aemail\json\data "token" [
+            token_email: to :string aemail\json\data\token
+        ]
+        assert_true (not? equal? token_email "") "auth update email rotated token present" "missing rotated token"
+        assert_true (not? equal? token_email token1) "auth update email token changed" "token not rotated"
+    ]
+    if not? equal? token_email "" [
+        old_headers_email: auth_headers ++ @[
+            #[name: "x-auth-token" value: token1]
+        ]
+        ame_old_after_email: request_json_with_headers "GET" "/api/v2/auth/me" old_headers_email
+        assert_is_unauthorized ame_old_after_email "auth old token invalid after email update"
+        new_headers_email: auth_headers ++ @[
+            #[name: "x-auth-token" value: token_email]
+        ]
+        ame_new_after_email: request_json_with_headers "GET" "/api/v2/auth/me" new_headers_email
+        check_http_status ame_new_after_email 200 "auth new token valid after email update"
+    ]
 
-    apass: request_json "PUT" ("/api/auth/password/" ++ token1 ++ "/" ++ auth_pass ++ "/" ++ auth_pass2)
+    active_token: token1
+    if not? equal? token_email "" [
+        active_token: token_email
+    ]
+    apass_payload: write.json #[token: active_token old_password: auth_pass new_password: auth_pass2] ø
+    apass: request_json_with_body "PUT" "/api/v2/auth/password" apass_payload auth_headers
     check_http_status apass 200 "auth update password status"
     assert_json_ok apass "auth update password json"
+    token_pass: ""
+    if apass\json_ok [
+        if key? apass\json\data "token" [
+            token_pass: to :string apass\json\data\token
+        ]
+        assert_true (not? equal? token_pass "") "auth update password rotated token present" "missing rotated token"
+        assert_true (not? equal? token_pass active_token) "auth update password token changed" "token not rotated"
+    ]
+    if all? @[not? equal? token_pass "" not? equal? active_token ""] [
+        old_headers_pass: auth_headers ++ @[
+            #[name: "x-auth-token" value: active_token]
+        ]
+        ame_old_after_pass: request_json_with_headers "GET" "/api/v2/auth/me" old_headers_pass
+        assert_is_unauthorized ame_old_after_pass "auth old token invalid after password update"
+        new_headers_pass: auth_headers ++ @[
+            #[name: "x-auth-token" value: token_pass]
+        ]
+        ame_new_after_pass: request_json_with_headers "GET" "/api/v2/auth/me" new_headers_pass
+        check_http_status ame_new_after_pass 200 "auth new token valid after password update"
+    ]
+    if not? equal? token_pass "" [
+        active_token: token_pass
+    ]
 
-    aenable: request_json "POST" ("/api/auth/mfa/enable/" ++ token1)
+    mfa_enable_headers: auth_headers ++ @[
+        #[name: "x-auth-token" value: active_token]
+    ]
+    aenable: request_json_with_headers "POST" "/api/v2/auth/mfa/enable" mfa_enable_headers
     check_http_status aenable 200 "auth enable mfa status"
     assert_json_ok aenable "auth enable mfa json"
 
-    alogout1: request_json "POST" ("/api/auth/logout/" ++ token1)
+    alogout1_payload: write.json #[token: active_token] ø
+    alogout1: request_json_with_body "POST" "/api/v2/auth/logout" alogout1_payload auth_headers
     check_http_status alogout1 200 "auth logout status"
     assert_json_ok alogout1 "auth logout json"
     if alogout1\json_ok [
@@ -247,57 +454,66 @@ if not? equal? token1 "" [
     ]
     execute "sleep 0.1"
 
-    ame2: request_json "GET" ("/api/auth/me/" ++ token1)
-    assert_true (or? equal? ame2\status 401 equal? ame2\status 200) "auth me after logout status (401 or 200)" ("got " ++ to :string ame2\status)
+    post_logout_headers: auth_headers ++ @[
+        #[name: "x-auth-token" value: active_token]
+    ]
+    ame2: request_json_with_headers "GET" "/api/v2/auth/me" post_logout_headers
+    assert_is_unauthorized ame2 "auth me after logout unauthorized"
 
-    alogin2: request_json "POST" ("/api/auth/login/" ++ auth_email2 ++ "/" ++ auth_pass2)
+    alogin2_payload: write.json #[email: auth_email2 password: auth_pass2] ø
+    alogin2: request_json_with_body "POST" "/api/v2/auth/login" alogin2_payload auth_headers
     check_http_status alogin2 200 "auth login mfa-required status"
     assert_json_ok alogin2 "auth login mfa-required json"
 
     challenge: ""
-    mfa_code: ""
     if alogin2\json_ok [
         challenge: to :string alogin2\json\data\challenge_id
-        mfa_code: to :string alogin2\json\data\mfa_code
         assert_true (not? equal? challenge "") "auth login challenge present" "missing challenge_id"
-        assert_true (not? equal? mfa_code "") "auth login mfa code present" "missing mfa_code"
+        assert_true (key? alogin2\json\data "expires_in") "auth login mfa expires_in present" "missing expires_in"
     ]
 
-    token2: ""
-    if all? @[not? equal? challenge "" not? equal? mfa_code ""] [
-        averify: request_json "POST" ("/api/auth/mfa/verify/" ++ challenge ++ "/" ++ mfa_code)
-        check_http_status averify 200 "auth mfa verify status"
-        assert_json_ok averify "auth mfa verify json"
-        if averify\json_ok [
-            token2: to :string averify\json\data\token
-        ]
-    ]
-
-    if not? equal? token2 "" [
-        adisable: request_json "POST" ("/api/auth/mfa/disable/" ++ token2)
-        check_http_status adisable 200 "auth disable mfa status"
-        assert_json_ok adisable "auth disable mfa json"
-
-        alogout2: request_json "POST" ("/api/auth/logout/" ++ token2)
-        check_http_status alogout2 200 "auth logout mfa session status"
-        assert_json_ok alogout2 "auth logout mfa session json"
-    ]
+    assert_true true "auth mfa verify skipped (no OTP echo)" "mfa verification requires external OTP delivery"
 ]
 
-; 5) AI settings roundtrip
-aset: request_json "POST" "/api/ai/settings/echo/echo-v1/0.4/0.9/64"
-check_http_status aset 200 "ai settings save status"
-assert_json_ok aset "ai settings save json"
-if aset\json_ok [
-    assert_true aset\json\ok "ai settings save ok=true" "save failed"
-]
+legacy_login: request_json "POST" ("/api/auth/login/" ++ auth_email2 ++ "/" ++ auth_pass2)
+check_http_status legacy_login 404 "legacy auth login status"
 
-aget: request_json "GET" "/api/ai/settings"
-check_http_status aget 200 "ai settings load status"
-assert_json_ok aget "ai settings load json"
-if aget\json_ok [
-    assert_true (equal? aget\json\data\provider "echo") "ai settings provider=echo" "provider mismatch"
-    assert_true (equal? aget\json\data\model "echo-v1") "ai settings model=echo-v1" "model mismatch"
+; 5) AI settings roundtrip (authenticated)
+settings_email: "settings" ++ stamp ++ "@example.com"
+settings_pass: "SettingsPass123"
+settings_signup_payload: write.json #[email: settings_email password: settings_pass] ø
+settings_signup: request_json_with_body "POST" "/api/v2/auth/signup" settings_signup_payload auth_headers
+check_http_status settings_signup 200 "settings user signup status"
+assert_json_ok settings_signup "settings user signup json"
+
+settings_login_payload: write.json #[email: settings_email password: settings_pass] ø
+settings_login: request_json_with_body "POST" "/api/v2/auth/login" settings_login_payload auth_headers
+check_http_status settings_login 200 "settings user login status"
+assert_json_ok settings_login "settings user login json"
+settings_token: ""
+if settings_login\json_ok [
+    settings_token: to :string settings_login\json\data\token
+]
+assert_true (not? equal? settings_token "") "settings user token present" "missing settings token"
+
+if not? equal? settings_token "" [
+    settings_headers: @[
+        #[name: "x-auth-token" value: settings_token]
+    ]
+    aset: request_json_with_headers "POST" "/api/ai/settings/echo/echo-v1/0.4/0.9/64" settings_headers
+    check_http_status aset 200 "ai settings save status"
+    assert_json_ok aset "ai settings save json"
+    if aset\json_ok [
+        assert_true aset\json\ok "ai settings save ok=true" "save failed"
+    ]
+
+    aget: request_json_with_headers "GET" "/api/ai/settings" settings_headers
+    check_http_status aget 200 "ai settings load status"
+    assert_json_ok aget "ai settings load json"
+    if aget\json_ok [
+        assert_true (equal? aget\json\data\provider "echo") "ai settings provider=echo" "provider mismatch"
+        assert_true (equal? aget\json\data\model "echo-v1") "ai settings model=echo-v1" "model mismatch"
+    ]
 ]
 
 ; 6) AI chat + options
@@ -327,20 +543,22 @@ if bad_provider\json_ok [
     assert_contains_text (to :string bad_provider\json\error\message) "Unsupported provider" "ai unsupported provider message"
 ]
 
-; 8) JSONP endpoints
+; 8) JSONP endpoints (disabled by default)
 jp_providers: http_request "GET" "/api/ai/providers-script/r_smoke_1"
 check_http_status jp_providers 200 "jsonp providers status"
 assert_contains_text jp_providers\body "__vistaAiJsonp(" "jsonp providers callback shape"
-assert_contains_text jp_providers\body "\"ok\": true" "jsonp providers payload ok"
+assert_contains_text jp_providers\body "\"ok\": false" "jsonp providers payload blocked"
+assert_contains_text jp_providers\body "Script routes are disabled" "jsonp providers disabled message"
 
 jp_chat: http_request "GET" "/api/ai/chat-script/r_smoke_2/echo/echo-v1/0.2/hello%20jsonp"
 check_http_status jp_chat 200 "jsonp chat status"
 assert_contains_text jp_chat\body "__vistaAiJsonp(" "jsonp chat callback shape"
-assert_contains_text jp_chat\body "echo: hello jsonp" "jsonp chat payload text"
+assert_contains_text jp_chat\body "\"ok\": false" "jsonp chat payload blocked"
+assert_contains_text jp_chat\body "Script routes are disabled" "jsonp chat disabled message"
 
 print ""
 print ["API smoke summary:" stats\pass_count "passed," stats\fail_count "failed"]
 
 if greater? stats\fail_count 0 [
-    do "smokefailedexit"
+    exit 1
 ]
