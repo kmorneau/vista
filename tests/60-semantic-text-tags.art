@@ -1,0 +1,20 @@
+; Test semantic tag overrides for title/subtitle/text/label
+
+import "vista.art"!
+
+main_title: "Bound Title"
+body_text: "Bound body"
+caption_text: "Bound caption"
+
+html: view .returnHtml [
+    title "Literal Main" .as:"h3"
+    subtitle "Literal Sub" .as:"h4"
+    text "Literal paragraph" .as:"p"
+    label "Literal label-as-span" .as:"span"
+
+    title main_title .as:"h2"
+    text body_text .as:"p"
+    label caption_text .as:"span"
+]
+
+print html

@@ -1,0 +1,15 @@
+; Test for audio/video faces with literal and bound src values
+
+import "vista.art"!
+
+audioSrc: "https://example.com/sample.mp3"
+videoSrc: "https://example.com/sample.mp4"
+
+html: view .returnHtml [
+    title "Audio + Video"
+    audio "https://example.com/intro.mp3" .preload:"none"
+    video "https://example.com/trailer.mp4" .width: 320 .height: 180 .preload:"metadata"
+    audio audioSrc .id:"bound-audio"
+    video videoSrc .id:"bound-video" .width: 240
+]
+print html

@@ -9,6 +9,7 @@ required_core: @[
     "drop-list" "radio" "radio-group" "tabs" "tab"
     "image" "audio" "video" "icon" "anim" "progress"
     "box" "panel" "row" "col" "grid" "group" "spacer" "divider" "split"
+    "details" "summary" "dialog" "template"
     "list" "text-list" "table" "table-row" "table-cell" "table-head"
     "table-body" "table-foot" "table-header"
     "toolbar" "menubar" "tool-group" "canvas" "sensor"

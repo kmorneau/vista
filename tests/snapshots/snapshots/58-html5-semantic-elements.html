@@ -1,0 +1,23 @@
+
+[0;31m══╡ [1;31mType Error[0;31m ╞════════════════════════════════════════════════════ <script> ══[0m
+
+  Erroneous type found[0m
+
+  Cannot call function:
+      [1msub[0m valueA valueB[0;31m ◄[0m
+  
+  Wrong argument (at position 2): 
+      [1;32mnull[0;90m :null[0m
+  
+  Expected: 
+      :integer, :floating, :complex, :rational, :quantity, :color, :object
+
+  [0;90m┃ [1;90mFile: [0;90msrc/vista/modules/05-view-entry.art
+  [0;90m┃ [1;90mLine: [0;90m221
+  [0;90m┃ [0m
+  [0;90m┃  219 ║      if key? feelDef "click" [ attrs\onclick: compile feelDef\["click"] ][0m
+  [0;90m┃  220 ║      if key? feelDef "down" [ attrs\onmousedown: compile feelDef\["down"] ][0m
+  [0;90m┃ [1;90m 221[0;90m ║[0;31m►[0;90m [1;90m    if key? feelDef "up" [ attrs\onmouseup: compile feelDef\["up"] ][0;90m[0m
+  [0;90m┃  222 ║      if key? feelDef "move" [ attrs\onmousemove: compile feelDef\["move"] ][0m
+  [0;90m┃  223 ║      if key? feelDef "input" [ attrs\oninput: compile feelDef\["input"] ][0m
+

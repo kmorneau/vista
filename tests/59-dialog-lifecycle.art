@@ -1,0 +1,22 @@
+; Test for dialog lifecycle helpers and action command wiring
+
+import "vista.art"!
+
+status: "idle"
+dialog_reason: ""
+
+html: view .returnHtml [
+    title "Dialog Lifecycle"
+    row [
+        button "Open Settings" [dialog_open #[dialog_id:"settings-dialog" status_key:"status" close_reason_key:"dialog_reason"]]
+        button "Close Settings" [dialog_close #[dialog_id:"settings-dialog" reason:"close-click" status_key:"status" close_reason_key:"dialog_reason"]]
+        text status
+    ]
+    dialog .id:"settings-dialog" [
+        subtitle "Settings"
+        text "Dialog content"
+        button "Done" [dialog_close #[dialog_id:"settings-dialog" reason:"done" status_key:"status" close_reason_key:"dialog_reason"]]
+    ]
+]
+
+print html

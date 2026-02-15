@@ -1,0 +1,232 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "VistaTop"
+    Logo: "arturo-vista.png"
+    Width: 1280
+    Height: 760
+]
+
+vista_vid_mode: true
+vista_layout_vid_mode: true
+
+appName: "VistaTop"
+search: ""
+status: "Ready"
+section: "Overview"
+selectedNav: "Overview"
+navItems: ["Overview" "Examples" "Tests" "Coverage" "Docs" "Release"]
+messages: [
+    "Assistant: Workspace loaded."
+    "Assistant: Select a section to continue."
+]
+quickItems: ["Open examples" "Run tests" "Check parity" "Review docs"]
+cpu: "18%"
+mem: "42%"
+latency: "26 ms"
+
+view .file:"vistatop.html" [
+    menubar [
+        text "File"
+        text "View"
+        text "Tools"
+        text "Help"
+    ]
+
+    toolbar .class:"vt-toolbar" [
+        title appName .class:"vt-title"
+        spacer .class:"vt-flex"
+        field search .size:[220 32] .class:"vt-search"
+        button "Open" [status: "Open requested"] .class:"vt-btn"
+        button "Run" [status: "Run requested"] .class:"vt-btn"
+        button "Sync" [status: "Sync requested"] .class:"vt-btn"
+    ]
+
+    split .ratio:22 .class:"vt-main" [
+        panel "Navigation" .class:"vt-panel" [
+            text "Sections" .class:"vt-label"
+            list selectedNav navItems .size:[220 260] .class:"vt-list"
+            return
+            text "Quick Actions" .class:"vt-label"
+            list section quickItems .size:[220 140] .class:"vt-list"
+        ]
+    ] [
+        split .ratio:68 .class:"vt-content-split" [
+            panel "Workspace" .class:"vt-panel" [
+                row .space:10 [
+                    text "Current:" .class:"vt-label"
+                    text selectedNav .class:"vt-chip"
+                    spacer .class:"vt-flex"
+                    button "Refresh" [status: "Workspace refreshed"] .class:"vt-btn"
+                ]
+                return
+                table .class:"vt-table" [
+                    table-header "Metric"
+                    table-header "Value"
+                    table-header "State"
+                    table-row [
+                        table-cell "CPU"
+                        table-cell cpu
+                        table-cell "Normal"
+                    ]
+                    table-row [
+                        table-cell "Memory"
+                        table-cell mem
+                        table-cell "Normal"
+                    ]
+                    table-row [
+                        table-cell "Latency"
+                        table-cell latency
+                        table-cell "Watch"
+                    ]
+                ]
+                return
+                box .class:"vt-note" [
+                    text "Use this shell as a starting point for docs, tests, and examples dashboards."
+                ]
+            ]
+        ] [
+            panel "AI Chat" .class:"vt-panel" [
+                text "Session" .class:"vt-label"
+                text_list messages .class:"vt-chat-log"
+                return
+                textarea search .size:[260 120] .class:"vt-chat-input"
+                button "Send" [status: "Message queued"] .class:"vt-btn vt-send"
+            ]
+        ]
+    ]
+
+    box .class:"vt-status" [
+        row .space:10 [
+            text "Status:" .class:"vt-label"
+            text status .class:"vt-status-text"
+            spacer .class:"vt-flex"
+            text "Selection:" .class:"vt-label"
+            text selectedNav .class:"vt-status-text"
+        ]
+    ]
+
+    raw {<style>
+        :root{
+            --vt-primary:#f2c230;
+            --vt-ink:#141414;
+            --vt-bg:#f7f6f1;
+            --vt-panel:#ffffff;
+            --vt-border:#1f1f1f;
+            --vt-muted:#3f3f3f;
+        }
+        body{
+            background:var(--vt-bg);
+            color:var(--vt-ink);
+            font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+        }
+        .vista-app-body{
+            max-width:none;
+            padding:14px;
+        }
+        .vt-toolbar{
+            border:1px solid var(--vt-border);
+            background:var(--vt-primary);
+            border-radius:8px;
+            padding:8px;
+        }
+        .vt-main{
+            min-height:520px;
+            gap:10px;
+        }
+        .vt-content-split{
+            gap:10px;
+        }
+        .vt-panel{
+            border:1px solid var(--vt-border);
+            background:var(--vt-panel);
+            border-radius:8px;
+        }
+        .vt-panel .vista-panel-title{
+            background:var(--vt-primary);
+            border-bottom:1px solid var(--vt-border);
+        }
+        .vt-title{
+            font-size:18px;
+            font-weight:800;
+            letter-spacing:0.04em;
+        }
+        .vt-label{
+            font-size:12px;
+            font-weight:700;
+            letter-spacing:0.08em;
+            text-transform:uppercase;
+            color:var(--vt-muted);
+        }
+        .vt-search,
+        .vt-chat-input{
+            border:1px solid var(--vt-border);
+            border-radius:6px;
+            background:#fff;
+        }
+        .vt-btn{
+            border:1px solid var(--vt-border);
+            background:var(--vt-primary);
+            border-radius:6px;
+            font-weight:700;
+            color:var(--vt-ink);
+        }
+        .vt-btn:hover{
+            background:#e6b722;
+        }
+        .vt-flex{
+            flex:1;
+        }
+        .vt-list{
+            border:1px solid var(--vt-border);
+            border-radius:6px;
+            background:#fff;
+        }
+        .vt-table,
+        .vt-table th,
+        .vt-table td{
+            border-color:var(--vt-border);
+        }
+        .vt-table th{
+            background:var(--vt-primary);
+        }
+        .vt-chip{
+            border:1px solid var(--vt-border);
+            background:var(--vt-primary);
+            padding:2px 8px;
+            border-radius:999px;
+            font-weight:700;
+        }
+        .vt-note{
+            border:1px solid var(--vt-border);
+            background:#fff;
+            border-radius:6px;
+            padding:10px;
+        }
+        .vt-chat-log{
+            border:1px solid var(--vt-border);
+            border-radius:6px;
+            background:#fff;
+            padding:8px;
+            margin-bottom:8px;
+        }
+        .vt-send{
+            margin-top:8px;
+            width:100%;
+        }
+        .vt-status{
+            margin-top:10px;
+            border:1px solid var(--vt-border);
+            background:var(--vt-primary);
+            border-radius:8px;
+            padding:8px;
+        }
+        .vt-status-text{
+            font-weight:700;
+        }
+        @media (max-width: 980px){
+            .vt-main{display:block;}
+            .vt-content-split{display:block;}
+        }
+    </style>}
+]

@@ -33,8 +33,8 @@ Notes:
 ### HTML core surface (Vista)
 - Total mapped areas: 14
 - Full: 7 (50.0%)
-- Partial: 5 (35.7%)
-- Gap: 2 (14.3%)
+- Partial: 6 (42.9%)
+- Gap: 1 (7.1%)
 
 ### Graphics surface (Vista Graphics / Canvas-oriented)
 - Total mapped areas: 17
@@ -45,8 +45,8 @@ Notes:
 ### Combined
 - Total mapped areas: 31
 - Full: 16 (51.6%)
-- Partial: 11 (35.5%)
-- Gap: 4 (12.9%)
+- Partial: 12 (38.7%)
+- Gap: 3 (9.7%)
 
 ## Current test-backed signals
 
@@ -69,9 +69,9 @@ Notes:
 - Partial coverage:
   - Heading/text semantics are mostly style/container-oriented
   - Media support is element-level, but advanced media semantics are thin
+  - `dialog`/`details`/`summary`/`template` now have first-class faces, but advanced dialog lifecycle helpers are still manual
   - Pointer/drag semantics are event-helper based, not full platform model parity
 - Gaps:
-  - No first-class mapping for `dialog`/`details`/`summary`/`template`
   - No first-class Web Components/Shadow DOM/custom element DSL surface
 
 ### Vista Graphics (Canvas aligned)
@@ -89,9 +89,9 @@ Notes:
 
 ## Priority gap list (recommended)
 
-1. Add first-class interactive/semantic HTML faces: `dialog`, `details`, `summary`, `template`.
-2. Define a Web Components extension layer (custom element registration and shadow root hooks).
-3. Expand pointer/touch API coverage into an explicit high-level Vista abstraction (not only mapped DOM events).
+1. Define a Web Components extension layer (custom element registration and shadow root hooks).
+2. Expand pointer/touch API coverage into an explicit high-level Vista abstraction (not only mapped DOM events).
+3. Add dialog lifecycle helpers (`showModal`, close reasons, focus trap defaults) as first-class runtime utilities.
 4. Extend graphics backend options (SVG output target and/or WebGL/WebGPU-oriented drawing mode).
 
 ## Confidence

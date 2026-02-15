@@ -1,0 +1,19 @@
+; Accessibility defaults for semantic faces
+
+import "vista.art"!
+
+status: "idle"
+reason: ""
+
+html: view .returnHtml [
+    details "Accessible details" [
+        text "Details body"
+    ]
+    dialog .id:"a11y-dialog" [
+        subtitle "A11y Dialog"
+        button "Open" [dialog_open #[dialog_id:"a11y-dialog" status_key:"status" close_reason_key:"reason"]]
+        button "Close" [dialog_close #[dialog_id:"a11y-dialog" reason:"closed" status_key:"status" close_reason_key:"reason"]]
+    ]
+]
+
+print html

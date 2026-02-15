@@ -1,0 +1,27 @@
+; Test for first-class HTML5 semantic/interactive faces
+
+import "vista.art"!
+
+html: view .returnHtml [
+    title "HTML5 Semantic Faces"
+
+    details "Release Notes" [
+        text "Details body content"
+    ]
+
+    summary "Standalone summary face"
+
+    dialog .open:true [
+        subtitle "Dialog Title"
+        text "Dialog body"
+        button "Close"
+    ]
+
+    template .id:"row-template" [
+        row [
+            text "Template row content"
+        ]
+    ]
+]
+
+print html

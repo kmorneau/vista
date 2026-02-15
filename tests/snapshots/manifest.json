@@ -1,83 +1,83 @@
 [
     {
         "name": "01-layout-flow.html",
-        "size": 977703
+        "size": 978050
     },
     {
         "name": "02-bindings.html",
-        "size": 1008269
+        "size": 1012949
     },
     {
         "name": "03-controls.html",
-        "size": 1008434
+        "size": 1013114
     },
     {
         "name": "04-form-submit.html",
-        "size": 1008471
+        "size": 1013151
     },
     {
         "name": "05-lists-boxes.html",
-        "size": 1008286
+        "size": 1012966
     },
     {
         "name": "06-advanced-controls.html",
-        "size": 1008616
+        "size": 1013296
     },
     {
         "name": "07-media-progress.html",
-        "size": 977726
+        "size": 978073
     },
     {
         "name": "08-tabs.html",
-        "size": 1008711
+        "size": 1013391
     },
     {
         "name": "09-radio-block-labels.html",
-        "size": 1008598
+        "size": 1013278
     },
     {
         "name": "10-events-layout.html",
-        "size": 1008556
+        "size": 1013236
     },
     {
         "name": "11-layout-positioning.html",
-        "size": 977916
+        "size": 978263
     },
     {
         "name": "12-list-drop-list.html",
-        "size": 1008427
+        "size": 1013107
     },
     {
         "name": "13-slider-labels.html",
-        "size": 1008277
+        "size": 1012957
     },
     {
         "name": "14-panel-grid-spacer.html",
-        "size": 978116
+        "size": 978463
     },
     {
         "name": "15-table.html",
-        "size": 977939
+        "size": 978286
     },
     {
         "name": "16-toolbar-menubar.html",
-        "size": 1008467
+        "size": 1013147
     },
     {
         "name": "17-canvas-divider.html",
-        "size": 977739
+        "size": 978086
     },
     {
         "name": "18-split.html",
-        "size": 977803
+        "size": 978150
     },
     {
         "name": "19-radio-attrs.html",
-        "size": 1008331
+        "size": 1013011
     },
     {
         "name": "20-nested-layout.html",
-        "size": 977827
+        "size": 978174
     },
     {
         "name": "21-style.html",
@@ -85,7 +85,7 @@
     },
     {
         "name": "22-tabs-update.html",
-        "size": 978084
+        "size": 978431
     },
     {
         "name": "23-face-tree.html",
@@ -97,67 +97,67 @@
     },
     {
         "name": "25-face-overlay.html",
-        "size": 977769
+        "size": 978116
     },
     {
         "name": "26-vid-phase1.html",
-        "size": 1008628
+        "size": 1013308
     },
     {
         "name": "27-layout-container-attrs.html",
-        "size": 977736
+        "size": 978083
     },
     {
         "name": "28-vid-mode.html",
-        "size": 978240
+        "size": 978587
     },
     {
         "name": "29-scope-layout.html",
-        "size": 977760
+        "size": 978107
     },
     {
         "name": "30-vid-helper.html",
-        "size": 978365
+        "size": 978712
     },
     {
         "name": "31-key-capture.html",
-        "size": 1008220
+        "size": 1012900
     },
     {
         "name": "32-list-selection.html",
-        "size": 1008410
+        "size": 1013090
     },
     {
         "name": "33-key-onchange.html",
-        "size": 1008165
+        "size": 1012845
     },
     {
         "name": "34-key-options.html",
-        "size": 1008191
+        "size": 1012871
     },
     {
         "name": "35-vid-widgets.html",
-        "size": 1008471
+        "size": 1013151
     },
     {
         "name": "36-overlay-inspector.html",
-        "size": 977575
+        "size": 977922
     },
     {
         "name": "37-layout-vid-mode.html",
-        "size": 977820
+        "size": 978167
     },
     {
         "name": "38-tabs-selected.html",
-        "size": 978090
+        "size": 978437
     },
     {
         "name": "39-edge-facets.html",
-        "size": 978140
+        "size": 978487
     },
     {
         "name": "40-events-over-out.html",
-        "size": 977656
+        "size": 978003
     },
     {
         "name": "41-mouse-events.html",
@@ -165,51 +165,51 @@
     },
     {
         "name": "41-demo-form.html",
-        "size": 1008509
+        "size": 1013189
     },
     {
         "name": "42-demo-tabs.html",
-        "size": 978273
+        "size": 978620
     },
     {
         "name": "43-demo-lists.html",
-        "size": 1008441
+        "size": 1013121
     },
     {
         "name": "44-demo-toolbar.html",
-        "size": 977906
+        "size": 978253
     },
     {
         "name": "45-demo-table.html",
-        "size": 978240
+        "size": 978587
     },
     {
         "name": "46-demo-split.html",
-        "size": 978085
+        "size": 978432
     },
     {
         "name": "47-app-header.html",
-        "size": 977571
+        "size": 977918
     },
     {
         "name": "48-smoke-app.html",
-        "size": 977559
+        "size": 977906
     },
     {
         "name": "49-draw-primitives.html",
-        "size": 978330
+        "size": 978677
     },
     {
         "name": "50-draw-gradients.html",
-        "size": 978217
+        "size": 978564
     },
     {
         "name": "51-draw-text-image.html",
-        "size": 978232
+        "size": 978579
     },
     {
         "name": "52-draw-transforms.html",
-        "size": 978392
+        "size": 978739
     },
     {
         "name": "52-face-inspector.html",
@@ -221,7 +221,7 @@
     },
     {
         "name": "54-draw-arc-curve-flood.html",
-        "size": 978564
+        "size": 978911
     },
     {
         "name": "55-draw-coord-clip.html",
@@ -229,10 +229,26 @@
     },
     {
         "name": "56-audio-video.html",
-        "size": 1008559
+        "size": 1013239
     },
     {
         "name": "57-feature-coverage-smoke.html",
         "size": 0
+    },
+    {
+        "name": "58-html5-semantic-elements.html",
+        "size": 1011
+    },
+    {
+        "name": "59-dialog-lifecycle.html",
+        "size": 1009
+    },
+    {
+        "name": "60-semantic-text-tags.html",
+        "size": 1013180
+    },
+    {
+        "name": "61-accessibility-defaults.html",
+        "size": 1009
     }
 ]

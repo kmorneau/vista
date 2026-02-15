@@ -62,18 +62,79 @@ text: function [content] [
         "<span>" ++ contentStr ++ "</span>"
 ]
 
+semantic_text_tag: function [candidate fallback] [
+        tag: lower to :string candidate
+        allowed: ["span" "p" "div" "label" "h1" "h2" "h3" "h4" "h5" "h6" "strong" "em" "small"]
+        if in? tag allowed [
+            return tag
+        ]
+        fallback
+]
+
+bound_text_face: function [bindName attrs fallbackTag defaultClass] [
+        attrsVal: attrs
+        if equal? attrsVal null [
+            attrsVal: #[]
+        ]
+        tagName: fallbackTag
+        if key? attrsVal "as" [
+            tagName: semantic_text_tag attrsVal\as fallbackTag
+            attrsVal: attrs_without attrsVal "as"
+        ]
+        if notEqual? defaultClass "" [
+            merged: merge_class_attr attrsVal defaultClass
+            attrStr: attrs_to_html merged\attrs
+            return "<" ++ tagName ++ " class='" ++ merged\class ++ "' data-bind='" ++ bindName ++ "'" ++ attrStr ++ "></" ++ tagName ++ ">"
+        ]
+        attrStr: attrs_to_html attrsVal
+        "<" ++ tagName ++ " data-bind='" ++ bindName ++ "'" ++ attrStr ++ "></" ++ tagName ++ ">"
+]
+
+text_face: function [content attrs] [
+        attrsVal: attrs
+        if equal? attrsVal null [
+            attrsVal: #[]
+        ]
+        tagName: "span"
+        if key? attrsVal "as" [
+            tagName: semantic_text_tag attrsVal\as "span"
+            attrsVal: attrs_without attrsVal "as"
+        ]
+        attrStr: attrs_to_html attrsVal
+        contentStr: html_text content
+        "<" ++ tagName ++ attrStr ++ ">" ++ contentStr ++ "</" ++ tagName ++ ">"
+]
+
 title: function [content attrs] [
-        merged: merge_class_attr attrs "vista-title"
+        attrsVal: attrs
+        if equal? attrsVal null [
+            attrsVal: #[]
+        ]
+        tagName: "h1"
+        if key? attrsVal "as" [
+            tagName: semantic_text_tag attrsVal\as "h1"
+            attrsVal: attrs_without attrsVal "as"
+        ]
+        merged: merge_class_attr attrsVal "vista-title"
         attrStr: attrs_to_html merged\attrs
         contentStr: html_text content
-        "<h1 class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</h1>"
+        "<" ++ tagName ++ " class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</" ++ tagName ++ ">"
 ]
 
 subtitle: function [content attrs] [
-        merged: merge_class_attr attrs "vista-subtitle"
+        attrsVal: attrs
+        if equal? attrsVal null [
+            attrsVal: #[]
+        ]
+        tagName: "h2"
+        if key? attrsVal "as" [
+            tagName: semantic_text_tag attrsVal\as "h2"
+            attrsVal: attrs_without attrsVal "as"
+        ]
+        merged: merge_class_attr attrsVal "vista-subtitle"
         attrStr: attrs_to_html merged\attrs
         contentStr: html_text content
-        "<h2 class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</h2>"
+        "<" ++ tagName ++ " class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ contentStr ++ "</" ++ tagName ++ ">"
 ]
 
 field: function [value] [
@@ -83,6 +144,21 @@ field: function [value] [
 label: function [content] [
         contentStr: html_text content
         "<label>" ++ contentStr ++ "</label>"
+]
+
+label_face: function [content attrs] [
+        attrsVal: attrs
+        if equal? attrsVal null [
+            attrsVal: #[]
+        ]
+        tagName: "label"
+        if key? attrsVal "as" [
+            tagName: semantic_text_tag attrsVal\as "label"
+            attrsVal: attrs_without attrsVal "as"
+        ]
+        attrStr: attrs_to_html attrsVal
+        contentStr: html_text content
+        "<" ++ tagName ++ attrStr ++ ">" ++ contentStr ++ "</" ++ tagName ++ ">"
 ]
 
 box: function [content attrs] [
@@ -100,6 +176,60 @@ panel_face: function [titleHtml bodyHtml attrs] [
         ]
         html: html ++ "<div class='vista-panel-body'>" ++ bodyHtml ++ "</div></div>"
         html
+]
+
+summary_face: function [content attrs] [
+        attrsVal: attrs
+        if equal? attrsVal null [
+            attrsVal: #[]
+        ]
+        if not? key? attrsVal "tabindex" [
+            attrsVal\tabindex: 0
+        ]
+        merged: merge_class_attr attrsVal "vista-summary"
+        attrStr: attrs_to_html merged\attrs
+        "<summary class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</summary>"
+]
+
+details_face: function [summaryHtml bodyHtml attrs] [
+        attrsVal: attrs
+        if equal? attrsVal null [
+            attrsVal: #[]
+        ]
+        attrsVal\["data-vista-details"]: "true"
+        merged: merge_class_attr attrsVal "vista-details"
+        attrStr: attrs_to_html merged\attrs
+        html: "<details class='" ++ merged\class ++ "'" ++ attrStr ++ ">"
+        if notEqual? summaryHtml "" [
+            html: html ++ summary_face summaryHtml #[]
+        ]
+        html: html ++ "<div class='vista-details-body'>" ++ bodyHtml ++ "</div>"
+        html ++ "</details>"
+]
+
+dialog_face: function [content attrs] [
+        attrsVal: attrs
+        if equal? attrsVal null [
+            attrsVal: #[]
+        ]
+        if not? key? attrsVal "role" [
+            attrsVal\role: "dialog"
+        ]
+        if not? key? attrsVal "aria-modal" [
+            attrsVal\["aria-modal"]: true
+        ]
+        if not? key? attrsVal "tabindex" [
+            attrsVal\tabindex: -1
+        ]
+        merged: merge_class_attr attrsVal "vista-dialog"
+        attrStr: attrs_to_html merged\attrs
+        "<dialog class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</dialog>"
+]
+
+template_face: function [content attrs] [
+        merged: merge_class_attr attrs "vista-template"
+        attrStr: attrs_to_html merged\attrs
+        "<template class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ content ++ "</template>"
 ]
 
 grid_face: function [content attrs cols] [
@@ -642,6 +772,10 @@ vista_css: "*{box-sizing:border-box;}" ++
     ".vista-panel{border:1px solid var(--arturo-border);background:var(--arturo-panel);border-radius:12px;overflow:hidden;}" ++
     ".vista-panel-title{padding:8px 10px;font-weight:700;background:var(--arturo-primary);border-bottom:1px solid var(--arturo-ink);}" ++
     ".vista-panel-body{padding:12px;}" ++
+    ".vista-details{border:1px solid var(--arturo-border);background:var(--arturo-panel);border-radius:10px;padding:8px 10px;}" ++
+    ".vista-summary{cursor:pointer;font-weight:700;}" ++
+    ".vista-details-body{padding-top:8px;}" ++
+    ".vista-dialog{border:1px solid var(--arturo-border);border-radius:12px;background:var(--arturo-panel);padding:16px;max-width:min(92vw,560px);}" ++
     ".vista-grid{gap:8px;}" ++
     ".vista-spacer{min-height:8px;min-width:8px;}" ++
     ".vista-table{width:100%;border-collapse:collapse;background:var(--arturo-panel);}" ++

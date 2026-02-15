@@ -418,12 +418,11 @@ layout_state: function [block] [
                                                 switch equal? arg0_type :word [
                                                         add_binding bindings arg0
                                                         arg0_str: to :string arg0
-                                                        faceHtml: "<span data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></span>"
+                                                        faceHtml: bound_text_face arg0_str attrs "span" ""
                                                         html: html ++ faceHtml
                                                         set_face_html faces faceId faceHtml
                                                 ][
-                                                        textVal: html_text arg0
-                                                        faceHtml: "<span" ++ attrStr ++ ">" ++ textVal ++ "</span>"
+                                                        faceHtml: text_face arg0 attrs
                                                         html: html ++ faceHtml
                                                         set_face_html faces faceId faceHtml
                                                 ]
@@ -445,9 +444,7 @@ layout_state: function [block] [
                                                 switch equal? arg0_type :word [
                                                         add_binding bindings arg0
                                                         arg0_str: to :string arg0
-                                                        merged: merge_class_attr attrs "vista-title"
-                                                        attrStr: attrs_to_html merged\attrs
-                                                        faceHtml: "<h1 class='" ++ merged\class ++ "' data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></h1>"
+                                                        faceHtml: bound_text_face arg0_str attrs "h1" "vista-title"
                                                         html: html ++ faceHtml
                                                         set_face_html faces faceId faceHtml
                                                 ][
@@ -473,9 +470,7 @@ layout_state: function [block] [
                                                 switch equal? arg0_type :word [
                                                         add_binding bindings arg0
                                                         arg0_str: to :string arg0
-                                                        merged: merge_class_attr attrs "vista-subtitle"
-                                                        attrStr: attrs_to_html merged\attrs
-                                                        faceHtml: "<h2 class='" ++ merged\class ++ "' data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></h2>"
+                                                        faceHtml: bound_text_face arg0_str attrs "h2" "vista-subtitle"
                                                         html: html ++ faceHtml
                                                         set_face_html faces faceId faceHtml
                                                 ][
@@ -696,12 +691,11 @@ layout_state: function [block] [
                                                 switch equal? arg0_type :word [
                                                         add_binding bindings arg0
                                                         arg0_str: to :string arg0
-                                                        faceHtml: "<label data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></label>"
+                                                        faceHtml: bound_text_face arg0_str attrs "label" ""
                                                         html: html ++ faceHtml
                                                         set_face_html faces faceId faceHtml
                                                 ][
-                                                        labelVal: html_text arg0
-                                                        faceHtml: "<label" ++ attrStr ++ ">" ++ labelVal ++ "</label>"
+                                                        faceHtml: label_face arg0 attrs
                                                         html: html ++ faceHtml
                                                         set_face_html faces faceId faceHtml
                                                 ]
@@ -766,6 +760,127 @@ layout_state: function [block] [
                                                 append_children_from_root faces faceId inner_root
                                                 set_face_meta faces faceId #[titleHtml: titleHtml]
                                                 faceHtml: panel_face titleHtml bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        ]
+                                ]
+                                "summary" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        if greater? (size args) 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "summary" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                summaryHtml: ""
+                                                switch equal? arg0_type :word [
+                                                        add_binding bindings arg0
+                                                        arg0_str: to :string arg0
+                                                        summaryHtml: "<span data-bind='" ++ arg0_str ++ "'></span>"
+                                                ][
+                                                        switch equal? arg0_type :block [
+                                                                summaryHtml: render_block_inner arg0 bindings faces faceId
+                                                        ][
+                                                                summaryHtml: html_text arg0
+                                                        ]
+                                                ]
+                                                set_face_meta faces faceId #[contentHtml: summaryHtml]
+                                                faceHtml: summary_face summaryHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        ]
+                                ]
+                                "details" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        args_len: size args
+                                        if greater? args_len 0 [
+                                                arg0: get args 0
+                                                arg0_type: type arg0
+                                                summaryHtml: ""
+                                                bodyVal: null
+                                                if greater? args_len 1 [
+                                                        bodyVal: get args 1
+                                                ]
+                                                switch equal? arg0_type :block [
+                                                        bodyVal: arg0
+                                                ][
+                                                        switch equal? arg0_type :word [
+                                                                add_binding bindings arg0
+                                                                summaryHtml: "<span data-bind='" ++ (to :string arg0) ++ "'></span>"
+                                                        ][
+                                                                summaryHtml: html_text arg0
+                                                        ]
+                                                ]
+                                                if equal? bodyVal null [
+                                                        bodyVal: []
+                                                ]
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "details" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: render_block_or_string bodyVal bindings faces faceId
+                                                set_face_meta faces faceId #[summaryHtml: summaryHtml]
+                                                faceHtml: details_face summaryHtml bodyHtml attrs
+                                                set_face_html faces faceId faceHtml
+                                                html: html ++ faceHtml
+                                        ]
+                                ]
+                                "dialog" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        bodyVal: []
+                                        if greater? (size args) 0 [
+                                                bodyVal: get args 0
+                                        ]
+                                        parentId: current_parent_id face_stack
+                                        faceId: register_face faces parentId "dialog" attrs ""
+                                        attrs: with_face_id attrs faceId
+                                        set_face_attrs_and_name faces faceId attrs
+                                        bodyHtml: ""
+                                        switch equal? (type bodyVal) :word [
+                                                add_binding bindings bodyVal
+                                                bodyHtml: "<span data-bind='" ++ (to :string bodyVal) ++ "'></span>"
+                                        ][
+                                                bodyHtml: render_block_or_string bodyVal bindings faces faceId
+                                        ]
+                                        set_face_meta faces faceId #[contentHtml: bodyHtml]
+                                        faceHtml: dialog_face bodyHtml attrs
+                                        set_face_html faces faceId faceHtml
+                                        html: html ++ faceHtml
+                                ]
+                                "template" -> [
+                                        info: parse_args_from block (i + 1)
+                                        i: info\next
+                                        attrs: prepare_attrs info\attrs bindings
+                                        args: info\args
+                                        if greater? (size args) 0 [
+                                                arg0: get args 0
+                                                parentId: current_parent_id face_stack
+                                                faceId: register_face faces parentId "template" attrs ""
+                                                attrs: with_face_id attrs faceId
+                                                set_face_attrs_and_name faces faceId attrs
+                                                bodyHtml: ""
+                                                switch equal? (type arg0) :word [
+                                                        add_binding bindings arg0
+                                                        bodyHtml: "<span data-bind='" ++ (to :string arg0) ++ "'></span>"
+                                                ][
+                                                        switch equal? (type arg0) :block [
+                                                                bodyHtml: render_block_inner arg0 bindings faces faceId
+                                                        ][
+                                                                bodyHtml: html_text arg0
+                                                        ]
+                                                ]
+                                                set_face_meta faces faceId #[contentHtml: bodyHtml]
+                                                faceHtml: template_face bodyHtml attrs
                                                 set_face_html faces faceId faceHtml
                                                 html: html ++ faceHtml
                                         ]
@@ -2509,23 +2624,13 @@ get_face: function [id] [
 ]
 
 render_face_text: function [face] [
-    textVal: html_text face\text
     attrs: face\attrs
     attrs: maybe_autosize_text_attrs attrs
-    attrStr: attrs_to_html attrs
     do case face\type [
-        "text" -> ["<span" ++ attrStr ++ ">" ++ textVal ++ "</span>"]
-        "label" -> ["<label" ++ attrStr ++ ">" ++ textVal ++ "</label>"]
-        "title" -> [
-            merged: merge_class_attr attrs "vista-title"
-            attrStr: attrs_to_html merged\attrs
-            "<h1 class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ textVal ++ "</h1>"
-        ]
-        "subtitle" -> [
-            merged: merge_class_attr attrs "vista-subtitle"
-            attrStr: attrs_to_html merged\attrs
-            "<h2 class='" ++ merged\class ++ "'" ++ attrStr ++ ">" ++ textVal ++ "</h2>"
-        ]
+        "text" -> [text_face face\text attrs]
+        "label" -> [label_face face\text attrs]
+        "title" -> [title face\text attrs]
+        "subtitle" -> [subtitle face\text attrs]
         any -> [face\html]
     ]
 ]
@@ -2711,6 +2816,32 @@ render_face: function [face] [
             titleHtml: ""
             if key? meta "titleHtml" [ titleHtml: meta\titleHtml ]
             panel_face titleHtml (face_children_html face) face\attrs
+        ]
+        "summary" -> [
+            contentHtml: ""
+            if key? meta "contentHtml" [
+                contentHtml: meta\contentHtml
+            ]
+            summary_face contentHtml face\attrs
+        ]
+        "details" -> [
+            summaryHtml: ""
+            if key? meta "summaryHtml" [ summaryHtml: meta\summaryHtml ]
+            details_face summaryHtml (face_children_html face) face\attrs
+        ]
+        "dialog" -> [
+            contentHtml: face_children_html face
+            if all? @[equal? contentHtml "" key? meta "contentHtml"] [
+                contentHtml: meta\contentHtml
+            ]
+            dialog_face contentHtml face\attrs
+        ]
+        "template" -> [
+            contentHtml: face_children_html face
+            if all? @[equal? contentHtml "" key? meta "contentHtml"] [
+                contentHtml: meta\contentHtml
+            ]
+            template_face contentHtml face\attrs
         ]
         "grid" -> [
             cols: 2

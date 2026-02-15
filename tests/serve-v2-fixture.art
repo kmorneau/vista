@@ -1,0 +1,145 @@
+; Fixture route map for serve.v2 core implementation.
+; This validates request/response object behavior plus security semantics.
+; Run:
+;   arturo tests/serve-v2-fixture.art
+; Then:
+;   SERVE_V2_BASE=http://localhost:19010 bash tests/serve-v2-contract.sh
+
+LOCKOUTS: #[]
+
+header_get: function [req name fallback] [
+    if all? @[key? req "headers" dictionary? req\headers key? req\headers name] [
+        return to :string get req\headers name
+    ]
+    fallback
+]
+
+json_response: function [status payload] [
+    #[
+        status: status
+        headers: #[
+            "Content-Type":"application/json"
+            "X-Frame-Options":"DENY"
+            "X-Content-Type-Options":"nosniff"
+            "Referrer-Policy":"no-referrer"
+            "Permissions-Policy":"camera=(), microphone=(), geolocation=()"
+            "Content-Security-Policy":"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+        ]
+        body: write.json payload ø
+    ]
+]
+
+serve.verbose .v2 .port:19010 .maxBodyBytes:1048576 [
+    GET "/__servev2/health" $[req res][
+        json_response 200 #[
+            ok: true
+            data: #[
+                status: "up"
+                method: req\method
+            ]
+        ]
+    ]
+
+    POST "/__servev2/echo/(?<id>[^/]+)" $[req res][
+        json_response 200 #[
+            ok: true
+            data: #[
+                method: req\method
+                path: req\path
+                params: req\params
+                query: req\query
+                headers: req\headers
+                body_raw: req\body_raw
+                body_json: req\body_json
+            ]
+        ]
+    ]
+
+    POST "/__servev2/secure/(?<id>[^/]+)" $[req res][
+        csrf: header_get req "x-csrf-token" ""
+        role: lower header_get req "x-role" ""
+        resp: null
+        if equal? csrf "" [
+            resp: json_response 400 #[
+                ok: false
+                error: #[
+                    code: "invalid_csrf"
+                    message: "x-csrf-token header is required"
+                    details: #[header: "x-csrf-token"]
+                ]
+            ]
+        ]
+        if all? @[null? resp not? equal? role "admin"] [
+            resp: json_response 403 #[
+                ok: false
+                error: #[
+                    code: "forbidden"
+                    message: "Admin role required"
+                    details: #[role: role]
+                ]
+            ]
+        ]
+        if null? resp [
+            resp: json_response 200 #[
+                ok: true
+                data: #[
+                    id: req\params\id
+                    role: role
+                ]
+            ]
+        ]
+        resp
+    ]
+
+    POST "/__servev2/lockout/(?<subject>[^/]+)" $[req res][
+        subject: to :string req\params\subject
+        pass: header_get req "x-pass" ""
+        attempts: 0
+        resp: null
+        if key? LOCKOUTS subject [
+            attempts: to :integer LOCKOUTS\[subject]
+        ]
+        if greaterOrEqual? attempts 3 [
+            resp: json_response 429 #[
+                ok: false
+                error: #[
+                    code: "rate_limited"
+                    message: "Account temporarily locked"
+                    details: #[subject: subject attempts: attempts]
+                ]
+            ]
+        ]
+        if all? @[null? resp equal? pass "open-sesame"] [
+            LOCKOUTS\[subject]: 0
+            resp: json_response 200 #[
+                ok: true
+                data: #[subject: subject unlocked: true]
+            ]
+        ]
+        if null? resp [
+            attempts: attempts + 1
+            LOCKOUTS\[subject]: attempts
+            if greaterOrEqual? attempts 3 [
+                resp: json_response 429 #[
+                    ok: false
+                    error: #[
+                        code: "rate_limited"
+                        message: "Account temporarily locked"
+                        details: #[subject: subject attempts: attempts]
+                    ]
+                ]
+            ]
+            if null? resp [
+                resp: json_response 401 #[
+                    ok: false
+                    error: #[
+                        code: "unauthorized"
+                        message: "Invalid credentials"
+                        details: #[subject: subject attempts: attempts]
+                    ]
+                ]
+            ]
+        ]
+        resp
+    ]
+]

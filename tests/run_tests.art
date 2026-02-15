@@ -61,6 +61,10 @@ files: [
     "tests/55-draw-coord-clip.art"
     "tests/56-audio-video.art"
     "tests/57-feature-coverage-smoke.art"
+    "tests/58-html5-semantic-elements.art"
+    "tests/59-dialog-lifecycle.art"
+    "tests/60-semantic-text-tags.art"
+    "tests/61-accessibility-defaults.art"
 ]
 
 out_dir: "tests/snapshots/snapshots"

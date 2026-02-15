@@ -1,0 +1,81 @@
+; Feature coverage gate for Vista + Vista-graphics tests.
+; Ensures snapshot test corpus references key dialect features.
+
+test_glob: "tests/[0-9]*.art"
+
+required_core: @[
+    "text" "label" "title" "subtitle" "field" "info" "button" "key"
+    "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select"
+    "drop-list" "radio" "radio-group" "tabs" "tab"
+    "image" "audio" "video" "icon" "anim" "progress"
+    "box" "panel" "row" "col" "grid" "group" "spacer" "divider" "split"
+    "list" "text-list" "table" "table-row" "table-cell" "table-head"
+    "table-body" "table-foot" "table-header"
+    "toolbar" "menubar" "tool-group" "canvas" "sensor"
+    "ai_chat" "ai_settings_load" "ai_settings_save"
+    "auth_login" "auth_signup" "auth_mfa_verify" "auth_update_email"
+    "auth_update_password" "auth_enable_mfa" "auth_disable_mfa" "auth_logout"
+    "alert" "dialog" "clip" "unclip"
+]
+
+required_graphics: @[
+    "pen" "fill-pen" "line-width" "line-cap" "line-join" "line-pattern"
+    "line" "box" "circle" "arc" "ellipse" "polygon" "curve" "flood"
+    "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew"
+    "smooth" "coord-system" "text-baseline" "text-align"
+    "linear-gradient" "radial-gradient" "anti-alias" "clip" "fill-rule"
+    "gamma" "grad-pen" "matrix" "invert-matrix" "reset-matrix" "transform"
+    "arrow" "shape" "triangle" "spline"
+]
+
+token_present?: function [token] [
+    cmd: "sh -lc \"rg -n --no-heading -F '" ++ token ++ "' " ++ test_glob ++ " || true\""
+    out: strip execute cmd
+    not? equal? out ""
+]
+
+coverage_label: ""
+
+check_tokens: function [tokens] [
+    missingTokens: []
+    missingCount: 0
+    i: 0
+    tlen: size tokens
+    while [less? i tlen][
+        tok: get tokens i
+        if not? token_present? tok [
+            missingTokens: missingTokens ++ @[tok]
+            missingCount: missingCount + 1
+        ]
+        i: i + 1
+    ]
+    if equal? missingCount 0 [
+        print [coverage_label "coverage: OK" tlen "tokens"]
+        return true
+    ][
+        print [coverage_label "coverage: MISSING" missingCount]
+        missingStr: ""
+        m: 0
+        mlen: size missingTokens
+        while [less? m mlen][
+            if not? equal? missingStr "" [
+                missingStr: missingStr ++ ", "
+            ]
+            missingStr: missingStr ++ to :string (get missingTokens m)
+            m: m + 1
+        ]
+        print missingStr
+        false
+    ]
+]
+
+coverage_label: "Vista core"
+core_ok: check_tokens required_core
+coverage_label: "Vista graphics"
+gfx_ok: check_tokens required_graphics
+
+if all? @[core_ok gfx_ok] [
+    print "FEATURE COVERAGE OK"
+][
+    print "FEATURE COVERAGE FAIL"
+]
