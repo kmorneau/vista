@@ -2,6 +2,53 @@ import "api/services/ai_chat_service.art"!
 import "api/http/responses.art"!
 import "api/security/security_core.art"!
 
+; Helper to parse base64 JSON payload (same as auth routes)
+ai_parse_json_payload: function [payloadEncoded] [
+    if any? @[equal? payloadEncoded null equal? payloadEncoded ""] [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "payload is required"
+            details: #[field: "payload"]
+        ]
+    ]
+    tokenVal: to :string payloadEncoded
+    tokenVal: replace tokenVal "-" "+"
+    tokenVal: replace tokenVal "_" "/"
+    padLen: 4 - (mod (size tokenVal) 4)
+    if not? equal? padLen 4 [
+        i: 0
+        while [less? i padLen] [
+            tokenVal: tokenVal ++ "="
+            i: i + 1
+        ]
+    ]
+    payloadRaw: decode.base64 tokenVal
+    parsed: null
+    if error? err: <= try [
+        parsed: read.json payloadRaw
+    ] [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "payload must be valid JSON"
+            details: #[error: to :string err]
+        ]
+    ]
+    if notEqual? (type parsed) :dictionary [
+        return #[
+            ok: false
+            code: "bad_request"
+            message: "payload must decode to a JSON object"
+            details: #[]
+        ]
+    ]
+    #[
+        ok: true
+        data: parsed
+    ]
+]
+
 ai_chat_payload_from_result: function [result] [
     if result\ok [
         return #[
@@ -143,4 +190,141 @@ ai_chat_options_script_handler: function [requestId provider model temperature t
     ]
     result: service_ai_chat provider model prompt temperature options
     ai_jsonp_response requestId ai_chat_payload_from_result result
+]
+
+; v2 handlers with JSON payloads
+ai_chat_v2_handler: function [clientId csrf payload] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "ai-chat-v2" (to :string clientId) 80 60
+    gate: sec_chain_checks @[c1 c2]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    parsed: ai_parse_json_payload payload
+    if not? parsed\ok [ return bad_request parsed\message parsed\details ]
+    data: parsed\data
+    ; Validate required fields
+    if not? key? data "provider" [
+        return bad_request "provider is required" #[]
+    ]
+    if not? key? data "model" [
+        return bad_request "model is required" #[]
+    ]
+    if not? key? data "prompt" [
+        return bad_request "prompt is required" #[]
+    ]
+    provider: to :string data\provider
+    model: to :string data\model
+    prompt: to :string data\prompt
+    temperature: 0.4
+    if key? data "temperature" [
+        temperature: to :floating data\temperature
+    ]
+    options: null
+    if any? @[key? data "top_p" key? data "max_tokens"] [
+        options: #[]
+        if key? data "top_p" [
+            options\top_p: to :floating data\top_p
+        ]
+        if key? data "max_tokens" [
+            options\max_tokens: to :integer data\max_tokens
+        ]
+    ]
+    result: service_ai_chat provider model prompt temperature options
+    sec_audit_log "ai.chat.v2" (to :string clientId) result\ok #[model: model]
+    write.json ai_chat_payload_from_result result ø
+]
+
+ai_settings_v2_handler: function [clientId csrf payload] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "ai-settings-v2" (to :string clientId) 40 60
+    gate: sec_chain_checks @[c1 c2]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    parsed: ai_parse_json_payload payload
+    if not? parsed\ok [ return bad_request parsed\message parsed\details ]
+    data: parsed\data
+    ; Validate required fields
+    if not? key? data "provider" [
+        return bad_request "provider is required" #[]
+    ]
+    if not? key? data "model" [
+        return bad_request "model is required" #[]
+    ]
+    provider: to :string data\provider
+    model: to :string data\model
+    temperature: 0.4
+    if key? data "temperature" [
+        temperature: to :floating data\temperature
+    ]
+    topP: 0.9
+    if key? data "top_p" [
+        topP: to :floating data\top_p
+    ]
+    maxTokens: 64
+    if key? data "max_tokens" [
+        maxTokens: to :integer data\max_tokens
+    ]
+    result: service_save_ai_settings provider model temperature topP maxTokens
+    sec_audit_log "ai.settings.v2" (to :string clientId) result\ok #[provider: provider model: model]
+    write.json ai_settings_payload_from_result result ø
+]
+
+ai_chat_script_v2_handler: function [clientId csrf requestId payload] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "ai-chat-script-v2" (to :string clientId) 80 60
+    gate: sec_chain_checks @[c1 c2]
+    if not? gate\ok [
+        return ai_jsonp_response requestId #[
+            ok: false
+            error: #[
+                code: "forbidden"
+                message: "Rate limited or invalid CSRF"
+            ]
+        ]
+    ]
+    parsed: ai_parse_json_payload payload
+    if not? parsed\ok [
+        return ai_jsonp_response requestId #[
+            ok: false
+            error: #[
+                code: "bad_request"
+                message: parsed\message
+            ]
+        ]
+    ]
+    data: parsed\data
+    provider: to :string data\provider
+    model: to :string data\model
+    prompt: to :string data\prompt
+    temperature: 0.4
+    if key? data "temperature" [
+        temperature: to :floating data\temperature
+    ]
+    options: null
+    if any? @[key? data "top_p" key? data "max_tokens"] [
+        options: #[]
+        if key? data "top_p" [
+            options\top_p: to :floating data\top_p
+        ]
+        if key? data "max_tokens" [
+            options\max_tokens: to :integer data\max_tokens
+        ]
+    ]
+    result: service_ai_chat provider model prompt temperature options
+    ai_jsonp_response requestId ai_chat_payload_from_result result
+]
+
+ai_settings_script_v2_handler: function [clientId csrf requestId] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "ai-settings-script-v2" (to :string clientId) 40 60
+    gate: sec_chain_checks @[c1 c2]
+    if not? gate\ok [
+        return ai_jsonp_response requestId #[
+            ok: false
+            error: #[
+                code: "forbidden"
+                message: "Rate limited or invalid CSRF"
+            ]
+        ]
+    ]
+    result: service_get_ai_settings
+    ai_jsonp_response requestId ai_settings_payload_from_result result
 ]
