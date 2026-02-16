@@ -1,0 +1,14 @@
+import "vista.art"!
+
+svg: draw_to_svg [
+    pen "#0b1f66"
+    fill-pen "#dce7ff"
+    line-width 2
+    box [10 10] [150 95]
+    clip [12 12] [148 93]
+    spline [[16 80] [40 28] [78 84] [120 34] [146 82]]
+    gamma 1.1
+    text [22 38] "SVG export"
+] 160 110
+
+print svg

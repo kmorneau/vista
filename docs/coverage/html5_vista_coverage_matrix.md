@@ -33,19 +33,19 @@ Status legend:
 | Canvas 2D context bootstrap | WHATWG Canvas / 2D Context | `draw_to_canvas` gets `canvas.getContext('2d')` | Full | `src/vista/graphics/drawing.art:45` | Core rendering pipeline is in place. |
 | Stroke/fill state | Canvas 2D | `pen`, `fill-pen`, `line-width`, `line-cap`, `line-join`, `line-pattern` | Full | `src/vista/graphics/drawing.art:57` | Good parity for basic paint state. |
 | Basic shapes | Canvas 2D path drawing | `line`, `box`, `circle`, `ellipse`, `polygon`, `triangle`, `arc` | Full | `src/vista/graphics/drawing.art:273` | Includes standard primitives and arc support. |
-| Curves | Canvas 2D curves | `curve` (quadratic/cubic), `spline` | Partial | `src/vista/graphics/drawing.art:429` | `spline` uses midpoint quadratic approximation. |
+| Curves | Canvas 2D curves | `curve` (quadratic/cubic), `spline` | Partial | `src/vista/graphics/drawing.art:429` | Parity: `curve` full; `spline` partial (midpoint quadratic approximation, no tension controls). |
 | Text drawing | Canvas 2D text | `text`, `font`, `text-align`, `text-baseline` | Full | `src/vista/graphics/drawing.art:117` | Uses `fillText` and text state settings. |
-| Image drawing | Canvas 2D images | `image` draw op with optional size | Partial | `src/vista/graphics/drawing.art:499` | Async image loading by `Image.onload`; no preload orchestration layer. |
+| Image drawing | Canvas 2D images | `image` draw op with optional size | Full | `src/vista/graphics/drawing.art:499` | Supports async load plus canvas-level preload orchestration (`draw_script_preload`). |
 | Transform stack | Canvas 2D transforms | `push/pop`, `translate/rotate/scale/skew`, `matrix/transform/reset/invert` | Full | `src/vista/graphics/drawing.art:174` | Broad transform support is implemented. |
-| Clip | Canvas 2D clipping region | `clip` command | Partial | `src/vista/graphics/drawing.art:258` | Rectangle clip from two points only. |
+| Clip | Canvas 2D clipping region | `clip` command | Partial | `src/vista/graphics/drawing.art:258` | Parity: rectangle/polygon/path clipping supported; no nested clip stack management API. |
 | Fill rule | Canvas 2D fill algorithm | `fill-rule` internal state (`ctx.__vistaFillRule`) | Full | `src/vista/graphics/drawing.art:157` | Applied in filled path operations. |
 | Gradients | Canvas 2D gradients | `linear-gradient`, `radial-gradient`, `grad-pen` | Full | `src/vista/graphics/drawing.art:526` | Stop lists mapped to `addColorStop`. |
 | Anti-alias controls | Canvas behavior | `smooth`, `anti-alias` -> `imageSmoothingEnabled` | Partial | `src/vista/graphics/drawing.art:141` | Affects image smoothing; not true geometric AA control. |
-| Gamma | Draw compatibility vs Canvas limits | `gamma` accepted | Partial | `src/vista/graphics/drawing.art:165` | Explicit no-op due Canvas API limitation. |
+| Gamma | Draw compatibility vs Canvas limits | `gamma` accepted | Partial | `src/vista/graphics/drawing.art:165` | Parity: accepted syntax only; no direct Canvas/SVG gamma transform (no-op). |
 | Coordinate system modes | Draw compatibility feature | `coord-system` supports `vid`, `math`, `center`, `center-math` | Full | `src/vista/graphics/drawing.art:219` | Supports optional custom origin point. |
 | Shape sub-dialect | Draw shape grammar | `shape` as Path2D string or point block | Partial | `src/vista/graphics/drawing.art:399` | Not full REBOL shape sub-dialect parity. |
 | Canvas integration in Vista UI | HTML canvas element usage | `canvas` face + script injection | Full | `src/vista/modules/01-faces.art:188`, `src/vista/modules/04-layout-core.art:2296` | Draw blocks render automatically for canvas faces with `id`. |
-| SVG 2 rendering model | SVG 2 | No SVG face/dialect mapping | Gap | `src/vista/modules`, `src/vista/graphics` | SVG can be used as image source, not as first-class vector DSL target. |
+| SVG 2 rendering model | SVG 2 | Optional draw export backend (`draw_to_svg`, `draw_svg`) | Partial | `src/vista/graphics/drawing.art` | Canvas remains default; SVG export supports static/print output for core primitives. |
 | WebGL context/model | WebGL | No WebGL dialect/runtime mapping | Gap | `src/vista/modules`, `src/vista/graphics` | No `webgl` canvas context path in draw engine. |
 
 ## Tracker Cross-check (Current Repo Metrics)
@@ -54,5 +54,5 @@ Status legend:
 - REBOL View/VID tracker: `50 full`, `5 partial`, `0 none` in `docs/coverage/rebol_view_vid_coverage.csv`.
 
 Partial items called out by trackers:
-- Draw: `shape_sub_dialect`, `clip`, `gamma`.
+- Draw: `shape_sub_dialect`, `clip`, `gamma`, `spline`.
 - VID: `tabs_keyword`, `tab_keyword`, `backcolor`, `icon`, `anim`.

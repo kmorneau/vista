@@ -67,6 +67,11 @@ files: [
     "tests/61-accessibility-defaults.art"
     "tests/65-canvas-image-preload.art"
     "tests/66-phase2-interaction-media.art"
+    "tests/67-svg-backend-export.art"
+    ; Phase 4: Compiler Architecture Tests
+    "tests/70-phase4-compiler-tests.art"
+    ; Phase 5: Performance + Developer UX Tests
+    "tests/71-phase5-performance-tests.art"
 ]
 
 out_dir: "tests/snapshots/snapshots"

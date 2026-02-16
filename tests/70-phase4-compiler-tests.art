@@ -1,0 +1,271 @@
+; Phase 4: Compiler Architecture Tests
+; Tests for IR, Dispatch Table, and Compile-time Diagnostics
+
+import "vista.art"!
+
+;=============================================================================
+; IR COMPILER TESTS
+;=============================================================================
+
+print "=== Phase 4: IR Compiler Tests ==="
+
+; Test 1: Basic IR face creation
+ir_face_test: function [] [
+    face: ir_face "button" #(
+        text: "Click Me"
+        id: "btn1"
+    )
+    
+    if not equal? face\type "button" [
+        print "FAIL: IR face type mismatch"
+        return false
+    ]
+    if not equal? face\id "btn1" [
+        print "FAIL: IR face id mismatch"
+        return false
+    ]
+    print "PASS: Basic IR face creation"
+    true
+]
+
+; Test 2: IR document creation
+ir_document_test: function [] [
+    doc: ir_document #(
+        title: "Test Page"
+        lang: "en"
+    )
+    
+    if not equal? doc\title "Test Page" [
+        print "FAIL: IR document title mismatch"
+        return false
+    ]
+    print "PASS: IR document creation"
+    true
+]
+
+; Test 3: IR validation - valid face type
+ir_validate_face_valid: function [] [
+    result: ir_validate_face_type "button"
+    if not result [
+        print "FAIL: Valid face type rejected"
+        return false
+    ]
+    print "PASS: Valid face type accepted"
+    true
+]
+
+; Test 4: IR validation - invalid face type
+ir_validate_face_invalid: function [] [
+    result: ir_validate_face_type "invalid-face-type-xyz"
+    if result [
+        print "FAIL: Invalid face type not rejected"
+        return false
+    ]
+    print "PASS: Invalid face type rejected"
+    true
+]
+
+; Test 5: IR validation - valid event type
+ir_validate_event_valid: function [] [
+    result: ir_validate_event_type "onClick"
+    if not result [
+        print "FAIL: Valid event type rejected"
+        return false
+    ]
+    print "PASS: Valid event type accepted"
+    true
+]
+
+; Test 6: IR validation - invalid event type
+ir_validate_event_invalid: function [] [
+    result: ir_validate_event_type "onInvalidEvent"
+    if result [
+        print "FAIL: Invalid event type not rejected"
+        return false
+    ]
+    print "PASS: Invalid event type rejected"
+    true
+]
+
+; Test 7: IR validation - valid layout directive
+ir_validate_layout_valid: function [] [
+    result: ir_validate_layout_directive "across"
+    if not result [
+        print "FAIL: Valid layout directive rejected"
+        return false
+    ]
+    print "PASS: Valid layout directive accepted"
+    true
+]
+
+; Test 8: Compile-time diagnostics collection
+ir_diagnostics_test: function [] [
+    clearDiagnostics []
+    
+    ir_add_diagnostic IR_DIAG_WARNING "test-face" "Test warning message"
+    
+    diags: getDiagnostics []
+    if equal? (size diags) 0 [
+        print "FAIL: Diagnostics not collected"
+        return false
+    ]
+    
+    if not equal? (get diags 0)\level IR_DIAG_WARNING [
+        print "FAIL: Diagnostic level mismatch"
+        return false
+    ]
+    
+    print "PASS: Compile-time diagnostics collection"
+    true
+]
+
+; Test 9: Check for IR compilation errors
+ir_has_errors_test: function [] [
+    clearDiagnostics []
+    
+    if ir_has_errors [] [
+        print "FAIL: Unexpected errors detected"
+        return false
+    ]
+    
+    ir_add_diagnostic IR_DIAG_ERROR "test-face" "Test error"
+    
+    if not ir_has_errors [] [
+        print "FAIL: Errors not detected"
+        return false
+    ]
+    
+    print "PASS: IR error detection"
+    true
+]
+
+;=============================================================================
+; DISPATCH TABLE TESTS
+;=============================================================================
+
+print ""
+print "=== Dispatch Table Tests ==="
+
+; Test 10: Dispatch table initialization
+dispatch_init_test: function [] [
+    table: dispatch_build_table []
+    
+    if equal? table null [
+        print "FAIL: Dispatch table not built"
+        return false
+    ]
+    
+    ; Check for required operations
+    if not key? table "set" [
+        print "FAIL: 'set' operation missing"
+        return false
+    ]
+    
+    if not key? table "toggle" [
+        print "FAIL: 'toggle' operation missing"
+        return false
+    ]
+    
+    print "PASS: Dispatch table initialization"
+    true
+]
+
+; Test 11: Dispatch handler compilation
+dispatch_compile_test: function [] [
+    handler: dispatch_compile_handler "set" "myVar" "true"
+    
+    if equal? handler null [
+        print "FAIL: Handler compilation failed"
+        return false
+    ]
+    
+    print "PASS: Dispatch handler compilation"
+    true
+]
+
+; Test 12: JS validation - safe code
+dispatch_js_validation_safe: function [] [
+    result: dispatch_validate_js "element.value = 'test'"
+    if not result [
+        print "FAIL: Safe code rejected"
+        return false
+    ]
+    print "PASS: Safe JS code accepted"
+    true
+]
+
+; Test 13: JS validation - dangerous code (eval)
+dispatch_js_validation_dangerous: function [] [
+    result: dispatch_validate_js "eval('alert(1)')"
+    if result [
+        print "FAIL: Dangerous code not rejected"
+        return false
+    ]
+    print "PASS: Dangerous JS code rejected"
+    true
+]
+
+; Test 14: JS validation - dangerous code (Function)
+dispatch_js_validation_function: function [] [
+    result: dispatch_validate_js "new Function('alert(1)')()"
+    if result [
+        print "FAIL: Function constructor not rejected"
+        return false
+    ]
+    print "PASS: Function constructor rejected"
+    true
+]
+
+; Test 15: JS validation - document.write
+dispatch_js_validation_docwrite: function [] [
+    result: dispatch_validate_js "document.write('<script>')"
+    if result [
+        print "FAIL: document.write not rejected"
+        return false
+    ]
+    print "PASS: document.write rejected"
+    true
+]
+
+;=============================================================================
+; RUN ALL TESTS
+;=============================================================================
+
+print ""
+print "=== Running All Phase 4 Tests ==="
+print ""
+
+passed: 0
+failed: 0
+
+tests: @[
+    :ir_face_test
+    :ir_document_test
+    :ir_validate_face_valid
+    :ir_validate_face_invalid
+    :ir_validate_event_valid
+    :ir_validate_event_invalid
+    :ir_validate_layout_valid
+    :ir_diagnostics_test
+    :ir_has_errors_test
+    :dispatch_init_test
+    :dispatch_compile_test
+    :dispatch_js_validation_safe
+    :dispatch_js_validation_dangerous
+    :dispatch_js_validation_function
+    :dispatch_js_validation_docwrite
+]
+
+loop tests 'test [
+    if do test [
+        passed: passed + 1
+    ][
+        failed: failed + 1
+    ]
+]
+
+print ""
+print "=== Phase 4 Test Results ==="
+print "Passed: " ++ to :string passed
+print "Failed: " ++ to :string failed
+print "Total:  " ++ to :string (passed + failed)

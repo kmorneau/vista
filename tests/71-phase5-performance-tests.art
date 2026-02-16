@@ -1,0 +1,344 @@
+; Phase 5: Performance + Developer UX Tests
+; Tests for Caching, Deterministic Output, and Source Mapping
+
+import "vista.art"!
+
+print "=== Phase 5: Performance Tests ==="
+
+;=============================================================================
+; CACHE TESTS
+;=============================================================================
+
+print ""
+print "=== Cache Tests ==="
+
+; Test 1: Compute hash for block
+cache_hash_test: function [] [
+    block: @[button "Test" id: "btn1"]
+    hash: cache_compute_hash block
+    
+    if equal? hash null [
+        print "FAIL: Hash computation failed"
+        return false
+    ]
+    
+    if not string? hash [
+        print "FAIL: Hash is not a string"
+        return false
+    ]
+    
+    ; Same block should produce same hash
+    hash2: cache_compute_hash block
+    if not equal? hash hash2 [
+        print "FAIL: Same block produced different hashes"
+        return false
+    ]
+    
+    print "PASS: Cache hash computation"
+    true
+]
+
+; Test 2: Cache get/set operations
+cache_get_set_test: function [] [
+    cache_clear []
+    
+    key: "test-key-123"
+    value: "test-value-456"
+    
+    ; Initially should be empty
+    result: cache_get key
+    if not equal? result null [
+        print "FAIL: Cache should be empty initially"
+        return false
+    ]
+    
+    ; Set value
+    cache_set key value
+    
+    ; Now should have value
+    result: cache_get key
+    if equal? result null [
+        print "FAIL: Cache get after set failed"
+        return false
+    ]
+    
+    if not equal? result value [
+        print "FAIL: Cache value mismatch"
+        return false
+    ]
+    
+    print "PASS: Cache get/set operations"
+    true
+]
+
+; Test 3: Cache invalidation
+cache_invalidate_test: function [] [
+    cache_clear []
+    
+    key: "test-key-invalidate"
+    value: "test-value"
+    
+    cache_set key value
+    
+    ; Verify it's there
+    result: cache_get key
+    if equal? result null [
+        print "FAIL: Cache set failed"
+        return false
+    ]
+    
+    ; Invalidate
+    cache_invalidate key
+    
+    ; Should be gone
+    result: cache_get key
+    if not equal? result null [
+        print "FAIL: Cache invalidation failed"
+        return false
+    ]
+    
+    print "PASS: Cache invalidation"
+    true
+]
+
+; Test 4: Cache clear
+cache_clear_test: function [] [
+    cache_set "key1" "value1"
+    cache_set "key2" "value2"
+    cache_set "key3" "value3"
+    
+    cache_clear []
+    
+    if not equal? (cache_get "key1") null [
+        print "FAIL: Cache clear failed"
+        return false
+    ]
+    
+    print "PASS: Cache clear"
+    true
+]
+
+;=============================================================================
+; DETERMINISTIC OUTPUT TESTS
+;=============================================================================
+
+print ""
+print "=== Deterministic Output Tests ==="
+
+; Test 5: Sort attributes deterministically
+deterministic_sort_attrs_test: function [] [
+    attrs: #(
+        z-index: "100"
+        class: "test"
+        id: "myId"
+        data-value: "value"
+        style: "color:red"
+    )
+    
+    sorted: deterministic_sort_attributes attrs
+    
+    ; Get sorted keys
+    keys: keys sorted
+    
+    ; Check ordering is consistent (alphabetical)
+    expected: @["class" "data-value" "id" "style" "z-index"]
+    
+    i: 0
+    for expectedKey in expected [
+        if not equal? (get keys i) expectedKey [
+            print "FAIL: Attribute sorting not deterministic"
+            return false
+        ]
+        i: i + 1
+    ]
+    
+    print "PASS: Deterministic attribute sorting"
+    true
+]
+
+; Test 6: Normalize keys deterministically
+deterministic_keys_test: function [] [
+    data: #(
+        z: 1
+        a: 2
+        m: 3
+        b: 4
+    )
+    
+    normalized: deterministic_normalize_keys data
+    
+    ; Keys should be sorted
+    sortedKeys: keys normalized
+    expected: @["a" "b" "m" "z"]
+    
+    i: 0
+    for k in sortedKeys [
+        if not equal? k (get expected i) [
+            print "FAIL: Key normalization not deterministic"
+            return false
+        ]
+        i: i + 1
+    ]
+    
+    print "PASS: Deterministic key normalization"
+    true
+]
+
+; Test 7: Face property ordering
+deterministic_face_order_test: function [] [
+    face: #(
+        z-index: "100"
+        text: "Button"
+        onClick: [action]
+        style: #()
+        id: "btn1"
+        class: "primary"
+    )
+    
+    ordered: deterministic_order_face face
+    
+    ; Check specific property order
+    props: keys ordered
+    
+    ; ID should come before class, which should come before style
+    idIdx: find props "id"
+    classIdx: find props "class"
+    styleIdx: find props "style"
+    
+    if or (equal? idIdx null) (or (equal? classIdx null) (equal? styleIdx null)) [
+        print "FAIL: Required properties missing"
+        return false
+    ]
+    
+    if or (greater? idIdx classIdx) (greater? classIdx styleIdx) [
+        print "FAIL: Face property order not deterministic"
+        return false
+    ]
+    
+    print "PASS: Deterministic face property ordering"
+    true
+]
+
+;=============================================================================
+; SOURCE MAP TESTS
+;=============================================================================
+
+print ""
+print "=== Source Map Tests ==="
+
+; Test 8: Source map initialization
+sourcemap_init_test: function [] [
+    sm: sourcemap_init "test.art"
+    
+    if equal? sm null [
+        print "FAIL: Source map initialization failed"
+        return false
+    ]
+    
+    if not equal? sm\source "test.art" [
+        print "FAIL: Source file not set correctly"
+        return false
+    ]
+    
+    print "PASS: Source map initialization"
+    true
+]
+
+; Test 9: Add mapping
+sourcemap_add_mapping_test: function [] [
+    sm: sourcemap_init "test.art"
+    
+    sourcemap_add_mapping sm 10 5 100 20
+    
+    mappings: sm\mappings
+    
+    if equal? (size mappings) 0 [
+        print "FAIL: Mapping not added"
+        return false
+    ]
+    
+    first: get mappings 0
+    
+    if not equal? first\generatedLine 10 [
+        print "FAIL: Generated line mismatch"
+        return false
+    ]
+    
+    if not equal? first\sourceLine 100 [
+        print "FAIL: Source line mismatch"
+        return false
+    ]
+    
+    print "PASS: Source map add mapping"
+    true
+]
+
+; Test 10: Emit source map JSON
+sourcemap_emit_test: function [] [
+    sm: sourcemap_init "test.art"
+    sourcemap_add_mapping sm 10 5 100 20
+    sourcemap_add_mapping sm 11 0 101 0
+    
+    json: sourcemap_emit sm
+    
+    if equal? json null [
+        print "FAIL: Source map JSON emission failed"
+        return false
+    ]
+    
+    if not string? json [
+        print "FAIL: Source map is not valid JSON string"
+        return false
+    ]
+    
+    if not contains? json "version" [
+        print "FAIL: Source map missing version"
+        return false
+    ]
+    
+    if not contains? json "mappings" [
+        print "FAIL: Source map missing mappings"
+        return false
+    ]
+    
+    print "PASS: Source map JSON emission"
+    true
+]
+
+;=============================================================================
+; RUN ALL TESTS
+;=============================================================================
+
+print ""
+print "=== Running All Phase 5 Tests ==="
+print ""
+
+passed: 0
+failed: 0
+
+tests: @[
+    :cache_hash_test
+    :cache_get_set_test
+    :cache_invalidate_test
+    :cache_clear_test
+    :deterministic_sort_attrs_test
+    :deterministic_keys_test
+    :deterministic_face_order_test
+    :sourcemap_init_test
+    :sourcemap_add_mapping_test
+    :sourcemap_emit_test
+]
+
+loop tests 'test [
+    if do test [
+        passed: passed + 1
+    ][
+        failed: failed + 1
+    ]
+]
+
+print ""
+print "=== Phase 5 Test Results ==="
+print "Passed: " ++ to :string passed
+print "Failed: " ++ to :string failed
+print "Total:  " ++ to :string (passed + failed)

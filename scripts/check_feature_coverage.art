@@ -1,0 +1,343 @@
+; Vista Feature Coverage Check
+; Phase 6: CI and Coverage Gates
+;
+; This script checks feature coverage against spec requirements
+; and reports any regressions.
+
+;=============================================================================
+; CONFIGURATION
+;=============================================================================
+
+COVERAGE_MATRIX: "docs/coverage/html5_vista_coverage_matrix.md"
+REBOL_DRAW_CSV: "docs/coverage/rebol_draw_coverage.csv"
+REBOL_VIEW_CSV: "docs/coverage/rebol_view_vid_coverage.csv"
+
+; Thresholds
+MAX_GAPS: 5
+MIN_FULL: 30
+
+;=============================================================================
+; COVERAGE PARSING
+;=============================================================================
+
+; Parse coverage matrix
+parse_coverage_matrix: function [] [
+    if not? exists? COVERAGE_MATRIX [
+        print "Coverage matrix not found: " ++ COVERAGE_MATRIX
+        return null
+    ]
+    
+    content: read COVERAGE_MATRIX
+    
+    result: #[
+        full: 0
+        partial: 0
+        gap: 0
+        entries: []
+    ]
+    
+    lines: split content "\n"
+    
+    for line in lines [
+        ; Skip header lines
+        if startsWith? line "|" [
+            if not? any? @[
+                startsWith? line "| Spec Area"
+                startsWith? line "|---"
+            ][
+                ; Parse table row
+                parts: split line "|"
+                if greaterOrEqual? (size parts) 5 [
+                    status: trim (get parts 4)
+                    
+                    switch equal? status "Full" [
+                        result\full: result\full + 1
+                    ][
+                        switch equal? status "Partial" [
+                            result\partial: result\partial + 1
+                        ][
+                            switch equal? status "Gap" [
+                                result\gap: result\gap + 1
+                            ][
+                                ; Unknown status
+                            ]
+                        ]
+                    ]
+                    
+                    entry: #[
+                        area: trim (get parts 1)
+                        spec: trim (get parts 2)
+                        mapping: trim (get parts 3)
+                        status: status
+                        evidence: trim (get parts 5)
+                        notes: trim (get parts 6)
+                    ]
+                    result\entries: result\entries ++ @[entry]
+                ]
+            ]
+        ]
+    ]
+    
+    result
+]
+
+; Parse CSV coverage file
+parse_coverage_csv: function [path] [
+    if not? exists? path [
+        return null
+    ]
+    
+    content: read path
+    lines: split content "\n"
+    
+    result: #[
+        full: 0
+        partial: 0
+        none: 0
+        entries: []
+    ]
+    
+    ; Skip header
+    li: 1
+    llen: size lines
+    while [less? li llen][
+        line: get lines li
+        if notEqual? line "" [
+            parts: split line ","
+            if greaterOrEqual? (size parts) 5 [
+                status: lower (trim (get parts 4))
+                
+                switch equal? status "yes" [
+                    result\full: result\full + 1
+                ][
+                    switch equal? status "partial" [
+                        result\partial: result\partial + 1
+                    ][
+                        switch equal? status "none" [
+                            result\none: result\none + 1
+                        ][
+                            ; Unknown status
+                        ]
+                    ]
+                ]
+            ]
+        ]
+        li: li + 1
+    ]
+    
+    result
+]
+
+;=============================================================================
+; THRESHOLD CHECKING
+;=============================================================================
+
+; Check if coverage meets thresholds
+check_thresholds: function [coverage] [
+    if equal? coverage null [
+        return #[passed: false reason: "No coverage data"]
+    ]
+    
+    passed: true
+    failures: []
+    
+    ; Check gap threshold
+    if greater? coverage\gap MAX_GAPS [
+        passed: false
+        failures: failures ++ @[#[
+            check: "max_gaps"
+            expected: MAX_GAPS
+            actual: coverage\gap
+            message: "Gap count (" ++ to :string coverage\gap ++ ") exceeds maximum (" ++ to :string MAX_GAPS ++ ")"
+        ]]
+    ]
+    
+    ; Check full threshold
+    if less? coverage\full MIN_FULL [
+        passed: false
+        failures: failures ++ @[#[
+            check: "min_full"
+            expected: MIN_FULL
+            actual: coverage\full
+            message: "Full count (" ++ to :string coverage\full ++ ") below minimum (" ++ to :string MIN_FULL ++ ")"
+        ]]
+    ]
+    
+    #[
+        passed: passed
+        failures: failures
+    ]
+]
+
+;=============================================================================
+; REPORTING
+;=============================================================================
+
+; Print coverage summary
+print_coverage_summary: function [coverage] [
+    print ""
+    print "=== Coverage Summary ==="
+    print "Full:    " ++ to :string coverage\full
+    print "Partial: " ++ to :string coverage\partial
+    print "Gap:     " ++ to :string coverage\gap
+    print ""
+    
+    total: coverage\full + coverage\partial + coverage\gap
+    if greater? total 0 [
+        fullPct: (coverage\full * 100) / total
+        partialPct: (coverage\partial * 100) / total
+        gapPct: (coverage\gap * 100) / total
+        
+        print "Percentages:"
+        print "  Full:    " ++ to :string fullPct ++ "%"
+        print "  Partial: " ++ to :string partialPct ++ "%"
+        print "  Gap:     " ++ to :string gapPct ++ "%"
+        print ""
+    ]
+]
+
+; Print detailed report
+print_detailed_report: function [coverage] [
+    print "=== Detailed Coverage Report ==="
+    print ""
+    
+    ; Group by status
+    fullEntries: []
+    partialEntries: []
+    gapEntries: []
+    
+    for entry in coverage\entries [
+        switch equal? entry\status "Full" [
+            fullEntries: fullEntries ++ @[entry]
+        ][
+            switch equal? entry\status "Partial" [
+                partialEntries: partialEntries ++ @[entry]
+            ][
+                switch equal? entry\status "Gap" [
+                    gapEntries: gapEntries ++ @[entry]
+                ][
+                    ; Unknown
+                ]
+            ]
+        ]
+    ]
+    
+    ; Print gaps (most important)
+    if greater? (size gapEntries) 0 [
+        print "Gaps (" ++ to :string (size gapEntries) ++ "):"
+        for entry in gapEntries [
+            print "  - " ++ entry\area ++ ": " ++ entry\spec
+        ]
+        print ""
+    ]
+    
+    ; Print partials
+    if greater? (size partialEntries) 0 [
+        print "Partial (" ++ to :string (size partialEntries) ++ "):"
+        for entry in partialEntries [
+            print "  - " ++ entry\area ++ ": " ++ entry\spec
+            if notEqual? entry\notes "" [
+                print "    Notes: " ++ entry\notes
+            ]
+        ]
+        print ""
+    ]
+]
+
+;=============================================================================
+; JSON OUTPUT
+;=============================================================================
+
+; Generate JSON report
+generate_json_report: function [coverage thresholdResult] [
+    json: "{\n"
+    json: json ++ "  \"timestamp\": \"" ++ to :string now ++ "\",\n"
+    json: json ++ "  \"summary\": {\n"
+    json: json ++ "    \"full\": " ++ to :string coverage\full ++ ",\n"
+    json: json ++ "    \"partial\": " ++ to :string coverage\partial ++ ",\n"
+    json: json ++ "    \"gap\": " ++ to :string coverage\gap ++ "\n"
+    json: json ++ "  },\n"
+    json: json ++ "  \"thresholds\": {\n"
+    json: json ++ "    \"maxGaps\": " ++ to :string MAX_GAPS ++ ",\n"
+    json: json ++ "    \"minFull\": " ++ to :string MIN_FULL ++ "\n"
+    json: json ++ "  },\n"
+    json: json ++ "  \"passed\": " ++ to :string thresholdResult\passed ++ "\n"
+    json: json ++ "}\n"
+    
+    json
+]
+
+;=============================================================================
+; MAIN
+;=============================================================================
+
+; Main function
+main: function [] [
+    print "Vista Feature Coverage Check"
+    print "============================="
+    print ""
+    
+    ; Parse coverage
+    coverage: parse_coverage_matrix []
+    
+    if equal? coverage null [
+        print "ERROR: Could not parse coverage matrix"
+        ; Exit 1
+        return 1
+    ]
+    
+    ; Print summary
+    print_coverage_summary coverage
+    
+    ; Check thresholds
+    thresholdResult: check_thresholds coverage
+    
+    ; Print detailed report
+    print_detailed_report coverage
+    
+    ; Print threshold results
+    print "=== Threshold Check ==="
+    if thresholdResult\passed [
+        print "PASSED: All thresholds met"
+    ][
+        print "FAILED: Threshold violations detected"
+        for failure in thresholdResult\failures [
+            print "  - " ++ failure\message
+        ]
+    ]
+    print ""
+    
+    ; Generate JSON report
+    jsonReport: generate_json_report coverage thresholdResult
+    write jsonReport "tests/results/coverage_report.json"
+    print "Report written to: tests/results/coverage_report.json"
+    
+    ; Also check REBOL coverage
+    print ""
+    print "=== REBOL Draw Coverage ==="
+    drawCoverage: parse_coverage_csv REBOL_DRAW_CSV
+    if notEqual? drawCoverage null [
+        print "Full: " ++ to :string drawCoverage\full
+        print "Partial: " ++ to :string drawCoverage\partial
+        print "None: " ++ to :string drawCoverage\none
+    ]
+    
+    print ""
+    print "=== REBOL View/VID Coverage ==="
+    viewCoverage: parse_coverage_csv REBOL_VIEW_CSV
+    if notEqual? viewCoverage null [
+        print "Full: " ++ to :string viewCoverage\full
+        print "Partial: " ++ to :string viewCoverage\partial
+        print "None: " ++ to :string viewCoverage\none
+    ]
+    
+    ; Exit with appropriate code
+    if thresholdResult\passed [
+        0
+    ][
+        1
+    ]
+]
+
+; Run main
+main []

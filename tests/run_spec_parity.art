@@ -1,0 +1,319 @@
+; Vista Spec Parity Test Runner
+; Phase 6: CI and Coverage Gates
+;
+; This script runs the spec parity test suite and generates reports.
+
+;=============================================================================
+; CONFIGURATION
+;=============================================================================
+
+TEST_DIR: "tests/spec_parity"
+RESULTS_DIR: "tests/results"
+COVERAGE_FILE: "docs/coverage/html5_vista_coverage_matrix.md"
+
+; Test categories mapped to spec areas
+TEST_CATEGORIES: #[
+    "html5-core": @[
+        "document-structure"
+        "metadata"
+        "sectioning"
+        "headings"
+        "lists"
+        "tables"
+        "forms"
+        "media"
+        "interactive"
+    ]
+    "graphics": @[
+        "canvas-2d"
+        "shapes"
+        "curves"
+        "transforms"
+        "text-drawing"
+        "gradients"
+        "svg-export"
+    ]
+    "vid-parity": @[
+        "faces"
+        "layout"
+        "events"
+        "bindings"
+        "styles"
+    ]
+]
+
+;=============================================================================
+; TEST RESULT TRACKING
+;=============================================================================
+
+test_results: #[
+    passed: 0
+    failed: 0
+    skipped: 0
+    total: 0
+    categories: #[]
+    failures: []
+]
+
+; Initialize results directory
+init_results_dir: function [] [
+    if not? exists? RESULTS_DIR [
+        make-dir RESULTS_DIR
+    ]
+    if not? exists? TEST_DIR [
+        make-dir TEST_DIR
+    ]
+]
+
+;=============================================================================
+; TEST EXECUTION
+;=============================================================================
+
+; Run a single test file
+run_test_file: function [path] [
+    if not? exists? path [
+        return #[status: "skipped" reason: "file not found"]
+    ]
+    
+    ; Load and execute test
+    result: #[status: "passed" errors: []]
+    
+    if error? err: <= try [
+        do load path
+    ] [
+        result\status: "failed"
+        result\errors: @[to :string err]
+    ]
+    
+    result
+]
+
+; Run all tests in a category
+run_category_tests: function [category] [
+    categoryResults: #[
+        passed: 0
+        failed: 0
+        skipped: 0
+        tests: []
+    ]
+    
+    tests: TEST_CATEGORIES\[category]
+    if equal? tests null [
+        return categoryResults
+    ]
+    
+    for testName in tests [
+        testFile: TEST_DIR ++ "/" ++ category ++ "/" ++ testName ++ ".art"
+        
+        testResult: run_test_file testFile
+        testResult\name: testName
+        testResult\category: category
+        
+        categoryResults\tests: categoryResults\tests ++ @[testResult]
+        
+        switch equal? testResult\status "passed" [
+            categoryResults\passed: categoryResults\passed + 1
+        ][
+            switch equal? testResult\status "failed" [
+                categoryResults\failed: categoryResults\failed + 1
+            ][
+                categoryResults\skipped: categoryResults\skipped + 1
+            ]
+        ]
+    ]
+    
+    categoryResults
+]
+
+; Run all spec parity tests
+run_all_tests: function [] [
+    init_results_dir []
+    
+    print "=== Vista Spec Parity Tests ==="
+    print ""
+    
+    categories: keys TEST_CATEGORIES
+    
+    for cat in categories [
+        print "Running category: " ++ cat
+        catResults: run_category_tests cat
+        
+        test_results\categories\[cat]: catResults
+        test_results\passed: test_results\passed + catResults\passed
+        test_results\failed: test_results\failed + catResults\failed
+        test_results\skipped: test_results\skipped + catResults\skipped
+        test_results\total: test_results\total + catResults\passed + catResults\failed + catResults\skipped
+        
+        ; Track failures
+        for test in catResults\tests [
+            if equal? test\status "failed" [
+                test_results\failures: test_results\failures ++ @[#[
+                    category: cat
+                    name: test\name
+                    errors: test\errors
+                ]]
+            ]
+        ]
+        
+        print "  Passed: " ++ to :string catResults\passed
+        print "  Failed: " ++ to :string catResults\failed
+        print "  Skipped: " ++ to :string catResults\skipped
+        print ""
+    ]
+    
+    ; Print summary
+    print "=== Summary ==="
+    print "Total: " ++ to :string test_results\total
+    print "Passed: " ++ to :string test_results\passed
+    print "Failed: " ++ to :string test_results\failed
+    print "Skipped: " ++ to :string test_results\skipped
+    print ""
+    
+    ; Print failures
+    if greater? (size test_results\failures) 0 [
+        print "=== Failures ==="
+        for f in test_results\failures [
+            print f\category ++ "/" ++ f\name ++ ":"
+            for err in f\errors [
+                print "  " ++ err
+            ]
+        ]
+    ]
+    
+    ; Write results to file
+    write_results []
+    
+    ; Return exit code
+    if greater? test_results\failed 0 [
+        ; Exit with error code
+        1
+    ][
+        0
+    ]
+]
+
+;=============================================================================
+; RESULTS OUTPUT
+;=============================================================================
+
+; Write results to JSON file
+write_results: function [] [
+    timestamp: to :string now
+    timestamp: replace timestamp ":" "-"
+    timestamp: replace timestamp " " "_"
+    
+    resultsFile: RESULTS_DIR ++ "/spec_parity_" ++ timestamp ++ ".json"
+    
+    ; Build JSON manually
+    json: "{\n"
+    json: json ++ "  \"timestamp\": \"" ++ to :string now ++ "\",\n"
+    json: json ++ "  \"summary\": {\n"
+    json: json ++ "    \"total\": " ++ to :string test_results\total ++ ",\n"
+    json: json ++ "    \"passed\": " ++ to :string test_results\passed ++ ",\n"
+    json: json ++ "    \"failed\": " ++ to :string test_results\failed ++ ",\n"
+    json: json ++ "    \"skipped\": " ++ to :string test_results\skipped ++ "\n"
+    json: json ++ "  },\n"
+    json: json ++ "  \"categories\": {\n"
+    
+    cats: keys test_results\categories
+    ci: 0
+    for cat in cats [
+        catResults: test_results\categories\[cat]
+        json: json ++ "    \"" ++ cat ++ "\": {\n"
+        json: json ++ "      \"passed\": " ++ to :string catResults\passed ++ ",\n"
+        json: json ++ "      \"failed\": " ++ to :string catResults\failed ++ ",\n"
+        json: json ++ "      \"skipped\": " ++ to :string catResults\skipped ++ "\n"
+        json: json ++ "    }"
+        if less? (ci + 1) (size cats) [
+            json: json ++ ","
+        ]
+        json: json ++ "\n"
+        ci: ci + 1
+    ]
+    
+    json: json ++ "  }\n"
+    json: json ++ "}\n"
+    
+    write json resultsFile
+    print "Results written to: " ++ resultsFile
+]
+
+;=============================================================================
+; COVERAGE THRESHOLD CHECK
+;=============================================================================
+
+; Check coverage thresholds
+check_coverage_thresholds: function [] [
+    if not? exists? COVERAGE_FILE [
+        print "Coverage file not found: " ++ COVERAGE_FILE
+        return false
+    ]
+    
+    content: read COVERAGE_FILE
+    
+    ; Count status occurrences
+    fullCount: 0
+    partialCount: 0
+    gapCount: 0
+    
+    lines: split content "\n"
+    for line in lines [
+        if contains? line "| Full |" [ fullCount: fullCount + 1 ]
+        if contains? line "| Partial |" [ partialCount: partialCount + 1 ]
+        if contains? line "| Gap |" [ gapCount: gapCount + 1 ]
+    ]
+    
+    print "=== Coverage Status ==="
+    print "Full: " ++ to :string fullCount
+    print "Partial: " ++ to :string partialCount
+    print "Gap: " ++ to :string gapCount
+    print ""
+    
+    ; Check thresholds
+    passed: true
+    
+    if greater? gapCount 5 [
+        print "FAIL: Gap count (" ++ to :string gapCount ++ ") exceeds threshold (5)"
+        passed: false
+    ]
+    
+    if less? fullCount 30 [
+        print "FAIL: Full count (" ++ to :string fullCount ++ ") below threshold (30)"
+        passed: false
+    ]
+    
+    if passed [
+        print "Coverage thresholds passed!"
+    ]
+    
+    passed
+]
+
+;=============================================================================
+; MAIN ENTRY POINT
+;=============================================================================
+
+; Run tests and check coverage
+main: function [] [
+    print "Vista Spec Parity Test Runner"
+    print "=============================="
+    print ""
+    
+    ; Run tests
+    testExitCode: run_all_tests []
+    
+    ; Check coverage
+    coveragePassed: check_coverage_thresholds []
+    
+    ; Exit with appropriate code
+    if all? @[equal? testExitCode 0 coveragePassed] [
+        print "\nAll checks passed!"
+        ; Exit 0
+    ][
+        print "\nSome checks failed!"
+        ; Exit 1
+    ]
+]
+
+; Run main
+main []

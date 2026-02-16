@@ -1,0 +1,285 @@
+; Vista Compiler - Main Module
+; Phase 4: Compiler Architecture Hardening
+;
+; This module provides the main entry point for the new IR-based
+; compilation pipeline, while maintaining backward compatibility
+; with the existing direct-to-HTML system.
+
+;=============================================================================
+; MODULE EXPORTS
+;=============================================================================
+
+; Re-export IR types and constructors
+; (These would be imported from ir.art in production)
+
+; Re-export parser functions
+; (These would be imported from parser.art in production)
+
+; Re-export emitter functions
+; (These would be imported from emitter.art in production)
+
+; Re-export dispatch functions
+; (These would be imported from dispatch.art in production)
+
+;=============================================================================
+; COMPILER CONFIGURATION
+;=============================================================================
+
+; Compiler modes
+VISTA_COMPILE_IR: "ir"           ; New IR-based pipeline
+VISTA_COMPILE_DIRECT: "direct"   ; Legacy direct-to-HTML
+
+; Default compiler mode
+vista_compile_mode: VISTA_COMPILE_DIRECT
+
+; Enable/disable compile-time diagnostics
+vista_compile_diagnostics: true
+
+; Fail on errors (vs. continue with warnings)
+vista_compile_fail_on_error: false
+
+;=============================================================================
+; MAIN COMPILATION API
+;=============================================================================
+
+; Compile a layout block using the configured mode
+compile: function [block mode] [
+    if equal? mode null [ mode: vista_compile_mode ]
+    
+    switch equal? mode VISTA_COMPILE_IR [
+        ; Use new IR-based pipeline
+        compile_ir block
+    ][
+        ; Use legacy direct pipeline
+        compile_direct block
+    ]
+]
+
+; Compile using IR pipeline
+compile_ir: function [block] [
+    ; Parse to IR
+    irDoc: parse_layout_to_ir block
+    
+    ; Check for errors
+    if vista_compile_diagnostics [
+        if ir_has_errors irDoc [
+            if vista_compile_fail_on_error [
+                ; Return error result
+                return #[
+                    success: false
+                    html: ""
+                    error: "Compilation failed with errors"
+                    diagnostics: irDoc\diagnostics
+                ]
+            ]
+        ]
+    ]
+    
+    ; Emit HTML from IR
+    emitResult: emit_document irDoc
+    
+    ; Build result
+    #[
+        success: true
+        html: emitResult\html
+        bindings: emitResult\bindings
+        faces: emitResult\faces
+        root: emitResult\root
+        diagnostics: irDoc\diagnostics
+        ir: irDoc  ; Include IR for debugging/analysis
+    ]
+]
+
+; Compile using legacy direct pipeline
+compile_direct: function [block] [
+    ; Use existing layout_state function
+    result: layout_state block
+    
+    #[
+        success: true
+        html: result\html
+        bindings: result\bindings
+        faces: result\faces
+        root: result\root
+        diagnostics: []
+    ]
+]
+
+;=============================================================================
+; FULL DOCUMENT COMPILATION
+;=============================================================================
+
+; Compile a full HTML document
+compile_document: function [block options] [
+    if equal? options null [ options: #[] ]
+    
+    mode: VISTA_COMPILE_DIRECT
+    if key? options "mode" [ mode: options\mode ]
+    
+    title: "ARTURO/VISTA"
+    if key? options "title" [ title: options\title ]
+    
+    css: ""
+    if key? options "css" [ css: options\css ]
+    
+    switch equal? mode VISTA_COMPILE_IR [
+        ; IR-based compilation
+        irDoc: parse_layout_to_ir block
+        
+        ; Emit full HTML
+        html: emit_full_html irDoc title css
+        
+        #[
+            success: true
+            html: html
+            diagnostics: irDoc\diagnostics
+        ]
+    ][
+        ; Legacy compilation
+        html: build_full_html block
+        
+        #[
+            success: true
+            html: html
+            diagnostics: []
+        ]
+    ]
+]
+
+;=============================================================================
+; DIAGNOSTIC REPORTING
+;=============================================================================
+
+; Get diagnostic report as string
+diagnostic_report: function [diagnostics] [
+    if equal? diagnostics null [ return "" ]
+    if notEqual? (type diagnostics) :block [ return "" ]
+    
+    report: ""
+    for diag in diagnostics [
+        level: diag\level
+        message: diag\message
+        source: diag\source
+        
+        levelIcon: "?"
+        if equal? level IR_DIAG_ERROR [ levelIcon: "ERROR" ]
+        if equal? level IR_DIAG_WARNING [ levelIcon: "WARN" ]
+        if equal? level IR_DIAG_INFO [ levelIcon: "INFO" ]
+        if equal? level IR_DIAG_HINT [ levelIcon: "HINT" ]
+        
+        line: "[" ++ levelIcon ++ "] " ++ message
+        if notEqual? source null [
+            line: line ++ " (" ++ to :string source ++ ")"
+        ]
+        
+        report: report ++ line ++ "\n"
+    ]
+    
+    report
+]
+
+; Print diagnostics to console
+print_diagnostics: function [diagnostics] [
+    report: diagnostic_report diagnostics
+    if notEqual? report "" [
+        print report
+    ]
+]
+
+;=============================================================================
+; COMPATIBILITY WRAPPERS
+;=============================================================================
+
+; Wrapper for existing layout function (uses IR if enabled)
+layout_ir: function [block] [
+    result: compile block vista_compile_mode
+    result\html
+]
+
+; Wrapper for existing build_full_html function
+build_full_html_ir: function [block] [
+    result: compile_document block #[mode: vista_compile_mode]
+    result\html
+]
+
+;=============================================================================
+; COMPILER INITIALIZATION
+;=============================================================================
+
+; Initialize the compiler with options
+init_compiler: function [options] [
+    if equal? options null [ options: #[] ]
+    
+    if key? options "mode" [
+        vista_compile_mode: options\mode
+    ]
+    
+    if key? options "diagnostics" [
+        vista_compile_diagnostics: options\diagnostics
+    ]
+    
+    if key? options "failOnError" [
+        vista_compile_fail_on_error: options\failOnError
+    ]
+    
+    ; Initialize dispatch runtime
+    dispatch_runtime: dispatch_runtime_script []
+    
+    #[
+        mode: vista_compile_mode
+        diagnostics: vista_compile_diagnostics
+        failOnError: vista_compile_fail_on_error
+    ]
+]
+
+;=============================================================================
+; INTEGRATION WITH EXISTING SYSTEM
+;=============================================================================
+
+; This function can be called to switch the system to use IR compilation
+enable_ir_compilation: function [] [
+    vista_compile_mode: VISTA_COMPILE_IR
+    vista_compile_diagnostics: true
+    "IR compilation enabled with diagnostics"
+]
+
+; Switch back to direct compilation
+disable_ir_compilation: function [] [
+    vista_compile_mode: VISTA_COMPILE_DIRECT
+    "IR compilation disabled, using direct mode"
+]
+
+; Check if IR compilation is enabled
+is_ir_compilation_enabled: function [] [
+    equal? vista_compile_mode VISTA_COMPILE_IR
+]
+
+;=============================================================================
+; TESTING UTILITIES
+;=============================================================================
+
+; Test compile a block and return both IR and HTML
+test_compile: function [block] [
+    irDoc: parse_layout_to_ir block
+    emitResult: emit_document irDoc
+    
+    #[
+        ir: irDoc
+        html: emitResult\html
+        diagnostics: irDoc\diagnostics
+        bindings: irDoc\bindings
+        faces: irDoc\faces
+    ]
+]
+
+; Validate a block without emitting HTML
+validate: function [block] [
+    irDoc: parse_layout_to_ir block
+    
+    #[
+        valid: not ir_has_errors irDoc
+        errors: ir_get_diagnostics irDoc IR_DIAG_ERROR
+        warnings: ir_get_diagnostics irDoc IR_DIAG_WARNING
+        allDiagnostics: irDoc\diagnostics
+    ]
+]

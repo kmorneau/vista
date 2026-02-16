@@ -1,0 +1,413 @@
+; Vista Compiler - Incremental Compilation Cache
+; Phase 5: Performance + Developer UX
+;
+; This module provides hash-based caching for unchanged subtrees,
+; enabling incremental compilation for improved performance.
+
+;=============================================================================
+; CACHE CONFIGURATION
+;=============================================================================
+
+; Global cache storage
+vista_compile_cache: #[]
+
+; Cache statistics
+vista_cache_stats: #[
+    hits: 0
+    misses: 0
+    evictions: 0
+    size: 0
+]
+
+; Maximum cache size (number of entries)
+VISTA_CACHE_MAX_SIZE: 1000
+
+; Enable/disable caching
+vista_cache_enabled: true
+
+;=============================================================================
+; HASH COMPUTATION
+;=============================================================================
+
+; Compute a hash for a value
+cache_hash_value: function [val] [
+    vtype: type val
+    
+    switch equal? vtype :string [
+        ; Simple string hash (djb2 algorithm)
+        hash: 5381
+        slen: size val
+        si: 0
+        while [less? si slen][
+            c: get val si
+            hash: ((hash * 33) + (to :integer c)) % 4294967296
+            si: si + 1
+        ]
+        to :string hash
+    ][
+        switch equal? vtype :integer [
+            to :string val
+        ][
+            switch equal? vtype :floating [
+                to :string val
+        ][
+            switch equal? vtype :logic [
+                if val [ "1" ][ "0" ]
+            ][
+                switch equal? vtype :word [
+                    to :string val
+                ][
+                    switch equal? vtype :block [
+                        ; Hash each element and combine
+                        hash: "b"
+                        blen: size val
+                        bi: 0
+                        while [less? bi blen][
+                            hash: hash ++ "_" ++ cache_hash_value (get val bi)
+                            bi: bi + 1
+                        ]
+                        hash
+                    ][
+                        switch equal? vtype :dictionary [
+                            ; Hash each key-value pair
+                            hash: "d"
+                            dkeys: keys val
+                            dlen: size dkeys
+                            di: 0
+                            while [less? di dlen][
+                                k: get dkeys di
+                                v: val\[k]
+                                hash: hash ++ "_" ++ to :string k ++ ":" ++ cache_hash_value v
+                                di: di + 1
+                            ]
+                            hash
+                        ][
+                            ; Default: convert to string
+                            to :string val
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+]
+
+; Compute hash for an IR node
+cache_hash_ir_node: function [node] [
+    if equal? node null [ return "null" ]
+    
+    nodeType: node\type
+    hash: nodeType
+    
+    switch equal? nodeType "face" [
+        ; Include face type, attrs, and children hashes
+        hash: hash ++ "_" ++ node\faceType
+        hash: hash ++ "_" ++ cache_hash_value node\attrs
+        
+        ; Hash children
+        children: node\children
+        if notEqual? children null [
+            for child in children [
+                hash: hash ++ "_" ++ cache_hash_ir_node child
+            ]
+        ]
+    ][
+        switch equal? nodeType "text" [
+            hash: hash ++ "_" ++ cache_hash_value node\content
+        ][
+            ; Default: hash the whole node
+            hash: hash ++ "_" ++ cache_hash_value node
+        ]
+    ]
+    
+    hash
+]
+
+; Compute hash for a layout block
+cache_hash_block: function [block] [
+    if equal? block null [ return "null" ]
+    if notEqual? (type block) :block [ return cache_hash_value block ]
+    
+    hash: "block_"
+    blen: size block
+    bi: 0
+    while [less? bi blen][
+        tok: get block bi
+        hash: hash ++ cache_hash_value tok
+        bi: bi + 1
+    ]
+    
+    hash
+]
+
+;=============================================================================
+; CACHE OPERATIONS
+;=============================================================================
+
+; Get a cached compilation result
+cache_get: function [hash] [
+    if not? vista_cache_enabled [ return null ]
+    
+    if key? vista_compile_cache hash [
+        vista_cache_stats\hits: vista_cache_stats\hits + 1
+        return vista_compile_cache\[hash]
+    ]
+    
+    vista_cache_stats\misses: vista_cache_stats\misses + 1
+    null
+]
+
+; Store a compilation result in cache
+cache_set: function [hash result] [
+    if not? vista_cache_enabled [ return null ]
+    
+    ; Check if we need to evict
+    if greaterOrEqual? vista_cache_stats\size VISTA_CACHE_MAX_SIZE [
+        cache_evict_oldest []
+    ]
+    
+    ; Store with timestamp
+    entry: #[
+        result: result
+        timestamp: now
+        hits: 0
+    ]
+    
+    vista_compile_cache\[hash]: entry
+    vista_cache_stats\size: vista_cache_stats\size + 1
+    
+    result
+]
+
+; Evict oldest entries
+cache_evict_oldest: function [] [
+    ; Simple eviction: clear half the cache
+    keys: keys vista_compile_cache
+    klen: size keys
+    toEvict: klen / 2
+    
+    ; Remove oldest entries (first half)
+    ei: 0
+    while [less? ei toEvict][
+        k: get keys ei
+        vista_compile_cache: attrs_without vista_compile_cache k
+        ei: ei + 1
+    ]
+    
+    vista_cache_stats\evictions: vista_cache_stats\evictions + toEvict
+    vista_cache_stats\size: size (keys vista_compile_cache)
+]
+
+; Clear the entire cache
+cache_clear: function [] [
+    vista_compile_cache: #[]
+    vista_cache_stats\hits: 0
+    vista_cache_stats\misses: 0
+    vista_cache_stats\evictions: 0
+    vista_cache_stats\size: 0
+    "Cache cleared"
+]
+
+;=============================================================================
+; INCREMENTAL COMPILATION
+;=============================================================================
+
+; Compile with caching
+compile_cached: function [block] [
+    ; Compute hash
+    hash: cache_hash_block block
+    
+    ; Check cache
+    cached: cache_get hash
+    if notEqual? cached null [
+        ; Cache hit - return cached result
+        return cached\result
+    ]
+    
+    ; Cache miss - compile
+    result: compile_ir block
+    
+    ; Store in cache
+    cache_set hash result
+    
+    result
+]
+
+; Compile a subtree with caching
+compile_subtree_cached: function [block parentHash] [
+    ; Compute hash including parent context
+    blockHash: cache_hash_block block
+    fullHash: parentHash ++ "_" ++ blockHash
+    
+    ; Check cache
+    cached: cache_get fullHash
+    if notEqual? cached null [
+        return cached\result
+    ]
+    
+    ; Parse subtree
+    result: parse_layout_to_ir block
+    
+    ; Store in cache
+    cache_set fullHash result
+    
+    result
+]
+
+;=============================================================================
+; CACHE STATISTICS
+;=============================================================================
+
+; Get cache statistics
+cache_get_stats: function [] [
+    total: vista_cache_stats\hits + vista_cache_stats\misses
+    hitRate: 0
+    if greater? total 0 [
+        hitRate: (vista_cache_stats\hits * 100) / total
+    ]
+    
+    #[
+        hits: vista_cache_stats\hits
+        misses: vista_cache_stats\misses
+        evictions: vista_cache_stats\evictions
+        size: vista_cache_stats\size
+        hitRate: hitRate
+        enabled: vista_cache_enabled
+    ]
+]
+
+; Print cache statistics
+cache_print_stats: function [] [
+    stats: cache_get_stats []
+    print "=== Vista Compile Cache Statistics ==="
+    print "Hits: " ++ to :string stats\hits
+    print "Misses: " ++ to :string stats\misses
+    print "Evictions: " ++ to :string stats\evictions
+    print "Size: " ++ to :string stats\size
+    print "Hit Rate: " ++ to :string stats\hitRate ++ "%"
+    print "Enabled: " ++ to :string stats\enabled
+]
+
+;=============================================================================
+; CACHE CONTROL
+;=============================================================================
+
+; Enable caching
+cache_enable: function [] [
+    vista_cache_enabled: true
+    "Caching enabled"
+]
+
+; Disable caching
+cache_disable: function [] [
+    vista_cache_enabled: false
+    "Caching disabled"
+]
+
+; Check if caching is enabled
+cache_is_enabled: function [] [
+    vista_cache_enabled
+]
+
+;=============================================================================
+; PERSISTENT CACHE (Optional)
+;=============================================================================
+
+; Save cache to file
+cache_save: function [path] [
+    if equal? path null [ path: ".vista-cache/art" ]
+    
+    ; Serialize cache
+    data: "# Vista Compile Cache\n"
+    data: data ++ "# Generated: " ++ to :string now ++ "\n\n"
+    
+    keys: keys vista_compile_cache
+    for k in keys [
+        entry: vista_compile_cache\[k]
+        ; Store hash and timestamp (result is too large for file)
+        data: data ++ "# " ++ k ++ " (cached at " ++ to :string entry\timestamp ++ ")\n"
+    ]
+    
+    write data path
+    "Cache metadata saved to " ++ path
+]
+
+; Load cache from file (metadata only, will recompile on demand)
+cache_load: function [path] [
+    if equal? path null [ path: ".vista-cache/art" ]
+    
+    if not? exists? path [
+        return "No cache file found"
+    ]
+    
+    ; For now, just clear and start fresh
+    ; Full implementation would track file hashes
+    cache_clear []
+    
+    "Cache loaded (fresh start)"
+]
+
+;=============================================================================
+; SUBTREE DIFFING
+;=============================================================================
+
+; Compare two blocks and identify changed subtrees
+cache_diff_blocks: function [oldBlock newBlock] [
+    if equal? oldBlock null [ return #[changed: true indices: []] ]
+    if equal? newBlock null [ return #[changed: true indices: []] ]
+    
+    oldHash: cache_hash_block oldBlock
+    newHash: cache_hash_block newBlock
+    
+    if equal? oldHash newHash [
+        return #[changed: false indices: []]
+    ]
+    
+    ; Find changed indices
+    changed: []
+    oldLen: size oldBlock
+    newLen: size newBlock
+    maxLen: oldLen
+    if greater? newLen oldLen [ maxLen: newLen ]
+    
+    i: 0
+    while [less? i maxLen][
+        oldTok: null
+        newTok: null
+        if less? i oldLen [ oldTok: get oldBlock i ]
+        if less? i newLen [ newTok: get newBlock i ]
+        
+        oldTokHash: cache_hash_value oldTok
+        newTokHash: cache_hash_value newTok
+        
+        if notEqual? oldTokHash newTokHash [
+            changed: changed ++ @[i]
+        ]
+        i: i + 1
+    ]
+    
+    #[
+        changed: true
+        indices: changed
+        oldHash: oldHash
+        newHash: newHash
+    ]
+]
+
+;=============================================================================
+; INCREMENTAL RECOMPILE
+;=============================================================================
+
+; Recompile only changed parts
+compile_incremental: function [oldBlock newBlock oldResult] [
+    diff: cache_diff_blocks oldBlock newBlock
+    
+    if not? diff\changed [
+        ; Nothing changed, return old result
+        return oldResult
+    ]
+    
+    ; For now, do a full recompile
+    ; Future: only recompile changed subtrees
+    compile_ir newBlock
+]

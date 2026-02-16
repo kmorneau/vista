@@ -1,0 +1,99 @@
+; Compiler Features Demo
+; Demonstrates Phase 4-5 features: IR, Dispatch Table, Caching, Deterministic Output, Source Maps
+;
+; This example shows how to use the new compiler features in your Vista applications.
+
+import "vista.art"!
+
+ARTURO [
+    Title: "Compiler Features Demo"
+    Width: 800
+    Height: 600
+]
+
+; Enable deterministic output mode for VCS-friendly snapshots
+; This ensures consistent attribute ordering across compilations
+deterministicMode: true
+
+; Enable source mapping for debugging
+; This allows mapping generated HTML back to .art source lines
+sourceMapEnabled: true
+
+; Enable compilation caching for better performance
+cachingEnabled: true
+
+; Sample data for the demo
+items: ["Apple" "Banana" "Cherry" "Date"]
+selectedFruit: "Banana"
+counter: 0
+toggleState: true
+
+view .returnHtml [
+    title "Compiler Features Demo"
+    
+    h1 "Phase 4-5 Compiler Features Demo"
+    
+    ; Section: IR Compilation (Automatic)
+    section [
+        h2 "IR Compilation"
+        p "Your layouts are automatically compiled through the typed IR system."
+        p "This provides compile-time validation and better error messages."
+    ]
+    
+    ; Section: Dispatch Table (Automatic - replaces eval)
+    section [
+        h2 "Event Handler Security"
+        p "Event handlers use the secure dispatch table instead of eval()."
+        
+        button "Increment Counter" [counter: counter + 1]
+        text "Counter: " ++ to :string counter
+        button "Toggle State" [toggleState: not toggleState]
+        text "State: " ++ to :string toggleState
+    ]
+    
+    ; Section: Compile-time Diagnostics (Automatic)
+    section [
+        h2 "Compile-time Validation"
+        p "Unknown faces, facets, and events are caught at compile time."
+        p "Check the console for diagnostic messages."
+    ]
+    
+    ; Section: Caching
+    section [
+        h2 "Incremental Compilation"
+        p "Compiled blocks are cached using hash-based caching."
+        p "Unchanged subtrees are reused for faster recompilation."
+        
+        list selectedFruit items
+    ]
+    
+    ; Section: Deterministic Output
+    section [
+        h2 "Deterministic Output"
+        p "Attributes are sorted alphabetically for consistent output."
+        p "This reduces VCS diff noise in generated HTML."
+        
+        button "Refresh (check HTML)" [refresh]
+    ]
+    
+    ; Section: Source Mapping
+    section [
+        h2 "Source Mapping"
+        p "Generated HTML includes source map references."
+        p "Use browser devtools to trace generated nodes back to .art source."
+    ]
+    
+    ; Demo of face with many attributes (shows deterministic ordering)
+    div .id:"demo-container" .class:"container demo" .data-demo:"value" .style:"padding:10px;margin:5px;" [
+        text "This div has attributes that will be deterministically sorted"
+    ]
+    
+    ; Canvas with draw commands (shows all features working together)
+    canvas .id:"feature-canvas" .width:400 .height:200 [
+        pen "#333"
+        fill-pen "#f0f0f0"
+        line-width 2
+        box [10 10] [390 190]
+        text [20 30] "Canvas with cached compilation"
+    ]
+]

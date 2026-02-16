@@ -695,6 +695,473 @@ draw: function [block] [
     draw_to_canvas "canvas" block
 ]
 
+svg_escape_attr: function [s] [
+    out: to :string s
+    out: replace out "&" "&amp;"
+    out: replace out "<" "&lt;"
+    out: replace out ">" "&gt;"
+    out: replace out "\"" "&quot;"
+    out: replace out "'" "&apos;"
+    out
+]
+
+svg_color_value: function [val] [
+    valStr: to :string val
+    if equal? valStr "transparent" [
+        return "rgba(0,0,0,0)"
+    ]
+    lowerName: lower valStr
+    if key? vg_named_colors lowerName [
+        return to :string vg_named_colors\[lowerName]
+    ]
+    if equal? (type val) :block [
+        if equal? (size val) 3 [
+            r: get val 0
+            g: get val 1
+            b: get val 2
+            return "rgb(" ++ to :string r ++ "," ++ to :string g ++ "," ++ to :string b ++ ")"
+        ]
+        if equal? (size val) 4 [
+            r: get val 0
+            g: get val 1
+            b: get val 2
+            a: get val 3
+            return "rgba(" ++ to :string r ++ "," ++ to :string g ++ "," ++ to :string b ++ "," ++ to :string a ++ ")"
+        ]
+    ]
+    to :string val
+]
+
+svg_state_copy: function [s] [
+    #[
+        stroke: s\stroke
+        fill: s\fill
+        line_width: s\line_width
+        line_cap: s\line_cap
+        line_join: s\line_join
+        font: s\font
+        transform: s\transform
+    ]
+]
+
+svg_shape_attrs: function [state clipRef] [
+    strokeVal: svg_escape_attr state\stroke
+    fillVal: svg_escape_attr state\fill
+    lineWidthVal: to :string (state\line_width)
+    lineCapVal: svg_escape_attr state\line_cap
+    lineJoinVal: svg_escape_attr state\line_join
+    out: " stroke='" ++ strokeVal ++ "'"
+    out: out ++ " fill='" ++ fillVal ++ "'"
+    out: out ++ " stroke-width='" ++ lineWidthVal ++ "'"
+    out: out ++ " stroke-linecap='" ++ lineCapVal ++ "'"
+    out: out ++ " stroke-linejoin='" ++ lineJoinVal ++ "'"
+    if not? equal? state\transform "" [
+        out: out ++ " transform='" ++ svg_escape_attr state\transform ++ "'"
+    ]
+    if not? equal? clipRef "" [
+        out: out ++ clipRef
+    ]
+    out
+]
+
+svg_points_attr: function [pts] [
+    out: ""
+    plen: size pts
+    pi: 0
+    while [less? pi plen][
+        p: vg_point (get pts pi)
+        if notEqual? p null [
+            if not? equal? out "" [
+                out: out ++ " "
+            ]
+            out: out ++ to :string p\x ++ "," ++ to :string p\y
+        ]
+        pi: pi + 1
+    ]
+    out
+]
+
+draw_to_svg: function [drawBlock width height] [
+    if notEqual? (type drawBlock) :block [
+        return ""
+    ]
+    block: vg_normalize_block drawBlock
+    w: width
+    h: height
+    if equal? w null [ w: 640 ]
+    if equal? h null [ h: 480 ]
+    state: #[
+        stroke: "#000000"
+        fill: "none"
+        line_width: 1
+        line_cap: "butt"
+        line_join: "miter"
+        font: "16px sans-serif"
+        transform: ""
+    ]
+    stack: []
+    defs: ""
+    body: ""
+    clipRef: ""
+    clipIndex: 0
+    i: 0
+    blen: size block
+    while [less? i blen][
+        tok: get block i
+        handled: false
+        if equal? (type tok) :word [
+            cmd: replace (to :string tok) "_" "-"
+            do case cmd [
+                "pen" -> [
+                    if less? (i + 1) blen [
+                        state\stroke: svg_color_value (get block (i + 1))
+                        i: i + 2
+                        handled: true
+                    ]
+                ]
+                "fill-pen" -> [
+                    if less? (i + 1) blen [
+                        state\fill: svg_color_value (get block (i + 1))
+                        i: i + 2
+                        handled: true
+                    ]
+                ]
+                "line-width" -> [
+                    if less? (i + 1) blen [
+                        state\line_width: get block (i + 1)
+                        i: i + 2
+                        handled: true
+                    ]
+                ]
+                "line-cap" -> [
+                    if less? (i + 1) blen [
+                        state\line_cap: to :string (get block (i + 1))
+                        i: i + 2
+                        handled: true
+                    ]
+                ]
+                "line-join" -> [
+                    if less? (i + 1) blen [
+                        state\line_join: to :string (get block (i + 1))
+                        i: i + 2
+                        handled: true
+                    ]
+                ]
+                "font" -> [
+                    if less? (i + 1) blen [
+                        state\font: to :string (get block (i + 1))
+                        i: i + 2
+                        handled: true
+                    ]
+                ]
+                "push" -> [
+                    stack: stack ++ @[svg_state_copy state]
+                    i: i + 1
+                    handled: true
+                ]
+                "pop" -> [
+                    if greater? (size stack) 0 [
+                        lastIdx: (size stack) - 1
+                        state: get stack lastIdx
+                        stack: chop stack
+                    ]
+                    i: i + 1
+                    handled: true
+                ]
+                "translate" -> [
+                    if less? (i + 2) blen [
+                        xVal: get block (i + 1)
+                        yVal: get block (i + 2)
+                        state\transform: trim state\transform ++ " translate(" ++ to :string (xVal) ++ " " ++ to :string (yVal) ++ ")"
+                        i: i + 3
+                        handled: true
+                    ]
+                ]
+                "rotate" -> [
+                    if less? (i + 1) blen [
+                        deg: get block (i + 1)
+                        state\transform: trim state\transform ++ " rotate(" ++ to :string (deg) ++ ")"
+                        i: i + 2
+                        handled: true
+                    ]
+                ]
+                "scale" -> [
+                    if less? (i + 2) blen [
+                        sx: get block (i + 1)
+                        sy: get block (i + 2)
+                        state\transform: trim state\transform ++ " scale(" ++ to :string (sx) ++ " " ++ to :string (sy) ++ ")"
+                        i: i + 3
+                        handled: true
+                    ]
+                ]
+                "skew" -> [
+                    if less? (i + 2) blen [
+                        sx: get block (i + 1)
+                        sy: get block (i + 2)
+                        state\transform: trim state\transform ++ " skewX(" ++ to :string (sx) ++ ") skewY(" ++ to :string (sy) ++ ")"
+                        i: i + 3
+                        handled: true
+                    ]
+                ]
+                "coord-system" -> [
+                    if less? (i + 1) blen [
+                        modeVal: lower (to :string (get block (i + 1)))
+                        origin: null
+                        if less? (i + 2) blen [
+                            maybeOrigin: vg_point (get block (i + 2))
+                            if notEqual? maybeOrigin null [
+                                origin: maybeOrigin
+                            ]
+                        ]
+                        if equal? modeVal "vid" [
+                            state\transform: ""
+                        ]
+                        if equal? modeVal "math" [
+                            if notEqual? origin null [
+                                state\transform: "translate(" ++ to :string (origin\x) ++ " " ++ to :string (origin\y) ++ ") scale(1 -1)"
+                            ] [
+                                state\transform: "translate(0 " ++ to :string (h) ++ ") scale(1 -1)"
+                            ]
+                        ]
+                        if equal? modeVal "center" [
+                            if notEqual? origin null [
+                                state\transform: "translate(" ++ to :string (origin\x) ++ " " ++ to :string (origin\y) ++ ")"
+                            ] [
+                                state\transform: "translate(" ++ to :string ((w / 2)) ++ " " ++ to :string ((h / 2)) ++ ")"
+                            ]
+                        ]
+                        if equal? modeVal "center-math" [
+                            if notEqual? origin null [
+                                state\transform: "translate(" ++ to :string (origin\x) ++ " " ++ to :string (origin\y) ++ ") scale(1 -1)"
+                            ] [
+                                state\transform: "translate(" ++ to :string ((w / 2)) ++ " " ++ to :string ((h / 2)) ++ ") scale(1 -1)"
+                            ]
+                        ]
+                        if notEqual? origin null [
+                            i: i + 3
+                        ] [
+                            i: i + 2
+                        ]
+                        handled: true
+                    ]
+                ]
+                "clip" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get block (i + 1))
+                        p2: vg_point (get block (i + 2))
+                        if all? @[notEqual? p1 null notEqual? p2 null] [
+                            clipIndex: clipIndex + 1
+                            cid: "vista-clip-" ++ to :string (clipIndex)
+                            x: p1\x
+                            y: p1\y
+                            rw: p2\x - p1\x
+                            rh: p2\y - p1\y
+                            defs: defs ++ "<clipPath id='" ++ cid ++ "'><rect x='" ++ to :string (x) ++ "' y='" ++ to :string (y) ++ "' width='" ++ to :string (rw) ++ "' height='" ++ to :string (rh) ++ "' /></clipPath>"
+                            clipRef: " clip-path='url(#" ++ cid ++ ")'"
+                            i: i + 3
+                            handled: true
+                        ]
+                    ]
+                    if all? @[not? handled less? (i + 1) blen equal? (type (get block (i + 1))) :block] [
+                        pts: get block (i + 1)
+                        pointsStr: svg_points_attr pts
+                        if not? equal? pointsStr "" [
+                            clipIndex: clipIndex + 1
+                            cid: "vista-clip-" ++ to :string (clipIndex)
+                            defs: defs ++ "<clipPath id='" ++ cid ++ "'><polygon points='" ++ svg_escape_attr pointsStr ++ "' /></clipPath>"
+                            clipRef: " clip-path='url(#" ++ cid ++ ")'"
+                            i: i + 2
+                            handled: true
+                        ]
+                    ]
+                ]
+                "gamma" -> [
+                    if less? (i + 1) blen [ i: i + 2 ] [ i: i + 1 ]
+                    handled: true
+                ]
+                "line" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get block (i + 1))
+                        p2: vg_point (get block (i + 2))
+                        if all? @[notEqual? p1 null notEqual? p2 null] [
+                            attrs: svg_shape_attrs state clipRef
+                            body: body ++ "<line x1='" ++ to :string (p1\x) ++ "' y1='" ++ to :string (p1\y) ++ "' x2='" ++ to :string (p2\x) ++ "' y2='" ++ to :string (p2\y) ++ "'" ++ attrs ++ " />"
+                            i: i + 3
+                            handled: true
+                        ]
+                    ]
+                ]
+                "box" -> [
+                    if less? (i + 2) blen [
+                        p1: vg_point (get block (i + 1))
+                        p2: vg_point (get block (i + 2))
+                        if all? @[notEqual? p1 null notEqual? p2 null] [
+                            x: p1\x
+                            y: p1\y
+                            rw: p2\x - p1\x
+                            rh: p2\y - p1\y
+                            attrs: svg_shape_attrs state clipRef
+                            body: body ++ "<rect x='" ++ to :string (x) ++ "' y='" ++ to :string (y) ++ "' width='" ++ to :string (rw) ++ "' height='" ++ to :string (rh) ++ "'" ++ attrs ++ " />"
+                            i: i + 3
+                            handled: true
+                        ]
+                    ]
+                ]
+                "circle" -> [
+                    if less? (i + 2) blen [
+                        p: vg_point (get block (i + 1))
+                        r: get block (i + 2)
+                        if notEqual? p null [
+                            attrs: svg_shape_attrs state clipRef
+                            body: body ++ "<circle cx='" ++ to :string (p\x) ++ "' cy='" ++ to :string (p\y) ++ "' r='" ++ to :string (r) ++ "'" ++ attrs ++ " />"
+                            i: i + 3
+                            handled: true
+                        ]
+                    ]
+                ]
+                "ellipse" -> [
+                    if less? (i + 2) blen [
+                        p: vg_point (get block (i + 1))
+                        rxy: vg_point (get block (i + 2))
+                        if all? @[notEqual? p null notEqual? rxy null] [
+                            attrs: svg_shape_attrs state clipRef
+                            body: body ++ "<ellipse cx='" ++ to :string (p\x) ++ "' cy='" ++ to :string (p\y) ++ "' rx='" ++ to :string (rxy\x) ++ "' ry='" ++ to :string (rxy\y) ++ "'" ++ attrs ++ " />"
+                            i: i + 3
+                            handled: true
+                        ]
+                    ]
+                ]
+                "polygon" -> [
+                    if less? (i + 1) blen [
+                        pts: get block (i + 1)
+                        if equal? (type pts) :block [
+                            pointsStr: svg_points_attr pts
+                            if not? equal? pointsStr "" [
+                                attrs: svg_shape_attrs state clipRef
+                                body: body ++ "<polygon points='" ++ svg_escape_attr pointsStr ++ "'" ++ attrs ++ " />"
+                                i: i + 2
+                                handled: true
+                            ]
+                        ]
+                    ]
+                ]
+                "triangle" -> [
+                    if less? (i + 3) blen [
+                        p1: vg_point (get block (i + 1))
+                        p2: vg_point (get block (i + 2))
+                        p3: vg_point (get block (i + 3))
+                        if all? @[notEqual? p1 null notEqual? p2 null notEqual? p3 null] [
+                            attrs: svg_shape_attrs state clipRef
+                            pointsStr: to :string (p1\x) ++ "," ++ to :string (p1\y) ++ " " ++ to :string (p2\x) ++ "," ++ to :string (p2\y) ++ " " ++ to :string (p3\x) ++ "," ++ to :string (p3\y)
+                            body: body ++ "<polygon points='" ++ svg_escape_attr pointsStr ++ "'" ++ attrs ++ " />"
+                            i: i + 4
+                            handled: true
+                        ]
+                    ]
+                ]
+                "curve" -> [
+                    if less? (i + 3) blen [
+                        p1: vg_point (get block (i + 1))
+                        c1: vg_point (get block (i + 2))
+                        p2: vg_point (get block (i + 3))
+                        if all? @[notEqual? p1 null notEqual? c1 null notEqual? p2 null] [
+                            d: "M " ++ to :string (p1\x) ++ " " ++ to :string (p1\y) ++ " Q " ++ to :string (c1\x) ++ " " ++ to :string (c1\y) ++ " " ++ to :string (p2\x) ++ " " ++ to :string (p2\y)
+                            attrs: svg_shape_attrs state clipRef
+                            body: body ++ "<path d='" ++ svg_escape_attr d ++ "'" ++ attrs ++ " fill='none' />"
+                            i: i + 4
+                            handled: true
+                        ]
+                    ]
+                    if all? @[not? handled less? (i + 4) blen] [
+                        p1: vg_point (get block (i + 1))
+                        c1: vg_point (get block (i + 2))
+                        c2: vg_point (get block (i + 3))
+                        p2: vg_point (get block (i + 4))
+                        if all? @[notEqual? p1 null notEqual? c1 null notEqual? c2 null notEqual? p2 null] [
+                            d: "M " ++ to :string (p1\x) ++ " " ++ to :string (p1\y) ++ " C " ++ to :string (c1\x) ++ " " ++ to :string (c1\y) ++ ", " ++ to :string (c2\x) ++ " " ++ to :string (c2\y) ++ ", " ++ to :string (p2\x) ++ " " ++ to :string (p2\y)
+                            attrs: svg_shape_attrs state clipRef
+                            body: body ++ "<path d='" ++ svg_escape_attr d ++ "'" ++ attrs ++ " fill='none' />"
+                            i: i + 5
+                            handled: true
+                        ]
+                    ]
+                ]
+                "spline" -> [
+                    if less? (i + 1) blen [
+                        pts: get block (i + 1)
+                        if equal? (type pts) :block [
+                            plen: size pts
+                            if greaterOrEqual? plen 2 [
+                                p0: vg_point (get pts 0)
+                                if notEqual? p0 null [
+                                    d: "M " ++ to :string (p0\x) ++ " " ++ to :string (p0\y)
+                                    pi: 1
+                                    while [less? pi plen][
+                                        p: vg_point (get pts pi)
+                                        if notEqual? p null [
+                                            if less? (pi + 1) plen [
+                                                pnext: vg_point (get pts (pi + 1))
+                                                if notEqual? pnext null [
+                                                    mx: (p\x + pnext\x) / 2
+                                                    my: (p\y + pnext\y) / 2
+                                                    d: d ++ " Q " ++ to :string (p\x) ++ " " ++ to :string (p\y) ++ " " ++ to :string (mx) ++ " " ++ to :string (my)
+                                                ] [
+                                                    d: d ++ " L " ++ to :string (p\x) ++ " " ++ to :string (p\y)
+                                                ]
+                                            ] [
+                                                d: d ++ " L " ++ to :string (p\x) ++ " " ++ to :string (p\y)
+                                            ]
+                                        ]
+                                        pi: pi + 1
+                                    ]
+                                    attrs: svg_shape_attrs state clipRef
+                                    body: body ++ "<path d='" ++ svg_escape_attr d ++ "'" ++ attrs ++ " fill='none' />"
+                                    i: i + 2
+                                    handled: true
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+                "text" -> [
+                    if less? (i + 2) blen [
+                        p: vg_point (get block (i + 1))
+                        tval: get block (i + 2)
+                        if notEqual? p null [
+                            attrs: svg_shape_attrs state clipRef
+                            fillVal: state\fill
+                            if equal? fillVal "none" [ fillVal: state\stroke ]
+                            body: body ++ "<text x='" ++ to :string p\x ++ "' y='" ++ to :string p\y ++ "' fill='" ++ svg_escape_attr fillVal ++ "'"
+                            if not? equal? state\transform "" [
+                                body: body ++ " transform='" ++ svg_escape_attr state\transform ++ "'"
+                            ]
+                            if not? equal? clipRef "" [
+                                body: body ++ clipRef
+                            ]
+                            body: body ++ " style='font:" ++ svg_escape_attr state\font ++ ";'>" ++ svg_escape_attr (to :string tval) ++ "</text>"
+                            i: i + 3
+                            handled: true
+                        ]
+                    ]
+                ]
+                any -> [ ]
+            ]
+        ]
+        if not? handled [
+            i: i + 1
+        ]
+    ]
+    defsHtml: ""
+    if not? equal? defs "" [
+        defsHtml: "<defs>" ++ defs ++ "</defs>"
+    ]
+    "<svg xmlns='http://www.w3.org/2000/svg' width='" ++ to :string w ++ "' height='" ++ to :string h ++ "' viewBox='0 0 " ++ to :string w ++ " " ++ to :string h ++ "'>" ++ defsHtml ++ body ++ "</svg>"
+]
+
+draw_svg: function [block width height] [
+    draw_to_svg (vg_normalize_block block) width height
+]
+
 draw_preload_list_js: function [preload] [
     if equal? preload null [
         return "[]"
