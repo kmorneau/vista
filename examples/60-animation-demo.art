@@ -1,207 +1,36 @@
-; Vista UI - Animation Examples
-; Demonstrates Vista's animation system for UI transitions and sprite animations
-
-; Import Vista framework
 import "vista.art"!
 
-; Example 1: Fade-in animation on panel
-fade_in_demo: function [] [
-        ARTURO [Title: "Vista Animation Demo"]
-        view [
-                box [
-                        text "Fade In Animation"
-                        button "Show with Fade" .on-click: [
-                                "panel-1" animate: "fade-in" 500
-                        ]
-                ]
-                panel "panel-1" [
-                        text "This panel fades in!"
-                        text "Animation: fade-in (500ms)"
-                ]
-        ]
+ARTURO [
+    Title: "Vista Animation System"
+    Logo: "arturo-vista.png"
+    Width: 980
+    Height: 620
 ]
 
-; Example 2: Slide and scale animations
-slide_scale_demo: function [] [
-        ARTURO [Title: "Slide & Scale Demo"]
-        view [
-                row [
-                        button "Slide In" .on-click: [
-                                "slide-box" animate: "slide-in" 300
-                        ]
-                        button "Scale In" .on-click: [
-                                "scale-box" animate: "scale-in" 300
-                        ]
-                        button "Bounce" .on-click: [
-                                "bounce-box" animate: "bounce" 500
-                        ]
-                ]
-                row [
-                        box "slide-box" [
-                                text "Slide Panel"
-                        ]
-                        box "scale-box" [
-                                text "Scale Panel"
-                        ]
-                        box "bounce-box" [
-                                text "Bounce Panel"
-                        ]
-                ]
-        ]
-]
+status: "Ready"
 
-; Example 3: Pulse animation for attention
-pulse_demo: function [] [
-        ARTURO [Title: "Pulse Animation Demo"]
-        view [
-                box [
-                        text "Pulse Animation (Continuous)"
-                        button "Start Pulse" .on-click: [
-                                "pulse-icon" animate: "pulse" 1000
-                        ]
-                        button "Stop Pulse" .on-click: [
-                                "pulse-icon" style: ""  ; Remove animation
-                        ]
-                ]
-                row [
-                        image "pulse-icon" "heart.png" width: 48 height: 48
-                ]
-        ]
-]
+view [
+    title "Vista Animation Examples"
+    text "Native animation helpers: fade-in, slide-in, scale-in, bounce, shake, pulse, spin"
 
-; Example 4: Spin animation for loading
-spin_demo: function [] [
-        ARTURO [Title: "Spin Animation Demo"]
-        view [
-                box [
-                        text "Spin Animation (Loading)"
-                        button "Start Spinner" .on-click: [
-                                "spinner" animate: "spin" 1000
-                        ]
-                        button "Stop Spinner" .on-click: [
-                                "spinner" style: ""
-                        ]
-                ]
-                image "spinner" "spinner.png" width: 32 height: 32
-        ]
-]
+    row .space:8 [
+        button "Fade In" [animate "demo-panel" "fade-in" 400 status: "fade-in"]
+        button "Slide In" [animate "demo-panel" "slide-in" 400 status: "slide-in"]
+        button "Scale In" [animate "demo-panel" "scale-in" 400 status: "scale-in"]
+        button "Bounce" [animate "demo-panel" "bounce" 500 status: "bounce"]
+        button "Shake" [animate "demo-panel" "shake" 500 status: "shake"]
+        button "Pulse" [animate "demo-panel" "pulse" 900 status: "pulse"]
+    ]
 
-; Example 5: Sprite animation
-sprite_demo: function [] [
-        ARTURO [Title: "Sprite Animation Demo"]
-        view [
-                box [
-                        text "Sprite Animation"
-                        button "Start Animation" .on-click: [
-                                "sprite-1" startSprite
-                        ]
-                        button "Stop Animation" .on-click: [
-                                "sprite-1" stopSprite
-                        ]
-                ]
-                sprite_anim "character.png" frames: 8 fps: 12 width: 64 height: 64
-        ]
-]
+    box .id:"demo-panel" [
+        text "Animated Panel"
+        text status
+    ]
 
-; Example 6: Animation sequence
-sequence_demo: function [] [
-        ARTURO [Title: "Animation Sequence Demo"]
-        view [
-                box [
-                        text "Animation Sequence"
-                        button "Play Sequence" .on-click: [
-                                "seq-box" animateSequence: @[
-                                        [name: "fade-in" duration: 300]
-                                        [name: "scale-in" duration: 300]
-                                        [name: "bounce" duration: 500]
-                                ]
-                        ]
-                ]
-                box "seq-box" [
-                        text "Sequence Box"
-                ]
-        ]
+    row .space:8 [
+        button "Spin Icon" [animate "demo-icon" "spin" 1000]
+    ]
+    box .id:"demo-icon" [
+        text "*"
+    ]
 ]
-
-; Example 7: Multiple animations on different elements
-multi_demo: function [] [
-        ARTURO [Title: "Multiple Animations Demo"]
-        view [
-                row [
-                        box "box-1" [text "Box 1"]
-                        box "box-2" [text "Box 2"]
-                        box "box-3" [text "Box 3"]
-                ]
-                row [
-                        button "Animate All" .on-click: [
-                                "box-1" animate: "fade-in" 300
-                                "box-2" animate: "slide-in" 400
-                                "box-3" animate: "scale-in" 500
-                        ]
-                        button "Shake Error" .on-click: [
-                                "box-2" animate: "shake" 500
-                        ]
-                        button "Pulse Alert" .on-click: [
-                                "box-3" animate: "pulse" 1000
-                        ]
-                ]
-        ]
-]
-
-; Run animation demo
-animation_demo: function [] [
-        ARTURO [Title: "Vista Animation System"]
-        view [
-                raw {<style>
-                @keyframes vistaFadeIn { from { opacity: 0; } to { opacity: 1; } }
-                @keyframes vistaBounce { 0%,100% { transform: translateY(0); } 30% { transform: translateY(-10px); } 60% { transform: translateY(0); } }
-                @keyframes vistaShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
-                .vista-demo-fade-in { animation-name: vistaFadeIn; animation-timing-function: ease-out; }
-                .vista-demo-bounce { animation-name: vistaBounce; animation-timing-function: ease-in-out; }
-                .vista-demo-shake { animation-name: vistaShake; animation-timing-function: ease-in-out; }
-                </style>
-                <script>
-                function vistaDemoAnim(id, cls, ms) {
-                  var el = document.getElementById(id);
-                  if (!el) return;
-                  var all = ['vista-demo-fade-in', 'vista-demo-bounce', 'vista-demo-shake'];
-                  all.forEach(function(c) { el.classList.remove(c); });
-                  void el.offsetWidth;
-                  el.style.animationDuration = (ms || 400) + 'ms';
-                  el.classList.add(cls);
-                  setTimeout(function(){ el.classList.remove(cls); }, ms || 400);
-                }
-                </script>}
-                title "Vista Animation Examples"
-                
-                text "Vista provides CSS-based animations inspired by REBOL View:"
-                text "fade-in, fade-out, slide-in, slide-out, scale-in, scale-out, bounce, shake, pulse, spin"
-                
-                spacer
-                
-                panel [
-                        text "Quick Demo"
-                        button "Fade In" .on-click:"vistaDemoAnim('demo-panel','vista-demo-fade-in',400)"
-                        button "Bounce" .on-click:"vistaDemoAnim('demo-panel','vista-demo-bounce',500)"
-                        button "Shake" .on-click:"vistaDemoAnim('demo-panel','vista-demo-shake',500)"
-                ]
-                
-                box .id:"demo-panel" "Animated Panel" [
-                        text "Animated Panel"
-                ]
-        ]
-]
-
-; Export for use
-exports: #[
-        demo: :animation_demo
-        fade: :fade_in_demo
-        slide: :slide_scale_demo
-        pulse: :pulse_demo
-        spin: :spin_demo
-        sprite: :sprite_demo
-        sequence: :sequence_demo
-        multi: :multi_demo
-]
-
-animation_demo

@@ -1,83 +1,83 @@
 [
     {
         "name": "01-layout-flow.html",
-        "size": 977707
+        "size": 977703
     },
     {
         "name": "02-bindings.html",
-        "size": 1008301
+        "size": 1008269
     },
     {
         "name": "03-controls.html",
-        "size": 1008466
+        "size": 1008434
     },
     {
         "name": "04-form-submit.html",
-        "size": 1008503
+        "size": 1008471
     },
     {
         "name": "05-lists-boxes.html",
-        "size": 1008318
+        "size": 1008286
     },
     {
         "name": "06-advanced-controls.html",
-        "size": 1008648
+        "size": 1008616
     },
     {
         "name": "07-media-progress.html",
-        "size": 977730
+        "size": 977726
     },
     {
         "name": "08-tabs.html",
-        "size": 1008743
+        "size": 1008711
     },
     {
         "name": "09-radio-block-labels.html",
-        "size": 1008630
+        "size": 1008598
     },
     {
         "name": "10-events-layout.html",
-        "size": 1008588
+        "size": 1008556
     },
     {
         "name": "11-layout-positioning.html",
-        "size": 977920
+        "size": 977916
     },
     {
         "name": "12-list-drop-list.html",
-        "size": 1008459
+        "size": 1008427
     },
     {
         "name": "13-slider-labels.html",
-        "size": 1008309
+        "size": 1008277
     },
     {
         "name": "14-panel-grid-spacer.html",
-        "size": 978120
+        "size": 978116
     },
     {
         "name": "15-table.html",
-        "size": 977943
+        "size": 977939
     },
     {
         "name": "16-toolbar-menubar.html",
-        "size": 1008499
+        "size": 1008467
     },
     {
         "name": "17-canvas-divider.html",
-        "size": 977743
+        "size": 977739
     },
     {
         "name": "18-split.html",
-        "size": 977807
+        "size": 977803
     },
     {
         "name": "19-radio-attrs.html",
-        "size": 1008363
+        "size": 1008331
     },
     {
         "name": "20-nested-layout.html",
-        "size": 977831
+        "size": 977827
     },
     {
         "name": "21-style.html",
@@ -85,7 +85,7 @@
     },
     {
         "name": "22-tabs-update.html",
-        "size": 978088
+        "size": 978084
     },
     {
         "name": "23-face-tree.html",
@@ -97,67 +97,67 @@
     },
     {
         "name": "25-face-overlay.html",
-        "size": 977773
+        "size": 977769
     },
     {
         "name": "26-vid-phase1.html",
-        "size": 1008660
+        "size": 1008628
     },
     {
         "name": "27-layout-container-attrs.html",
-        "size": 977740
+        "size": 977736
     },
     {
         "name": "28-vid-mode.html",
-        "size": 978244
+        "size": 978240
     },
     {
         "name": "29-scope-layout.html",
-        "size": 977764
+        "size": 977760
     },
     {
         "name": "30-vid-helper.html",
-        "size": 978369
+        "size": 978365
     },
     {
         "name": "31-key-capture.html",
-        "size": 1008252
+        "size": 1008220
     },
     {
         "name": "32-list-selection.html",
-        "size": 1008442
+        "size": 1008410
     },
     {
         "name": "33-key-onchange.html",
-        "size": 1008197
+        "size": 1008165
     },
     {
         "name": "34-key-options.html",
-        "size": 1008223
+        "size": 1008191
     },
     {
         "name": "35-vid-widgets.html",
-        "size": 1008503
+        "size": 1008471
     },
     {
         "name": "36-overlay-inspector.html",
-        "size": 977579
+        "size": 977575
     },
     {
         "name": "37-layout-vid-mode.html",
-        "size": 977824
+        "size": 977820
     },
     {
         "name": "38-tabs-selected.html",
-        "size": 978094
+        "size": 978090
     },
     {
         "name": "39-edge-facets.html",
-        "size": 978144
+        "size": 978140
     },
     {
         "name": "40-events-over-out.html",
-        "size": 977660
+        "size": 977656
     },
     {
         "name": "41-mouse-events.html",
@@ -165,51 +165,51 @@
     },
     {
         "name": "41-demo-form.html",
-        "size": 1008541
+        "size": 1008509
     },
     {
         "name": "42-demo-tabs.html",
-        "size": 978277
+        "size": 978273
     },
     {
         "name": "43-demo-lists.html",
-        "size": 1008473
+        "size": 1008441
     },
     {
         "name": "44-demo-toolbar.html",
-        "size": 977910
+        "size": 977906
     },
     {
         "name": "45-demo-table.html",
-        "size": 978244
+        "size": 978240
     },
     {
         "name": "46-demo-split.html",
-        "size": 978089
+        "size": 978085
     },
     {
         "name": "47-app-header.html",
-        "size": 977575
+        "size": 977571
     },
     {
         "name": "48-smoke-app.html",
-        "size": 977563
+        "size": 977559
     },
     {
         "name": "49-draw-primitives.html",
-        "size": 978334
+        "size": 978330
     },
     {
         "name": "50-draw-gradients.html",
-        "size": 978221
+        "size": 978217
     },
     {
         "name": "51-draw-text-image.html",
-        "size": 978236
+        "size": 978232
     },
     {
         "name": "52-draw-transforms.html",
-        "size": 978396
+        "size": 978392
     },
     {
         "name": "52-face-inspector.html",
@@ -221,7 +221,7 @@
     },
     {
         "name": "54-draw-arc-curve-flood.html",
-        "size": 978568
+        "size": 978564
     },
     {
         "name": "55-draw-coord-clip.html",
@@ -229,7 +229,7 @@
     },
     {
         "name": "56-audio-video.html",
-        "size": 1008591
+        "size": 1008559
     },
     {
         "name": "57-feature-coverage-smoke.html",

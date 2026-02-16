@@ -38,11 +38,19 @@ assert_contains() {
 echo "Starting API on port ${PORT}..."
 (cd "${ROOT_DIR}" && API_PORT="${PORT}" arturo api/server.art >"${SERVER_LOG}" 2>&1) &
 SERVER_PID="$!"
-sleep 1
-
-if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
+for _ in $(seq 1 40); do
+  if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
+    cat "${SERVER_LOG}" || true
+    fail "API server failed to start"
+  fi
+  if curl -fsS "${BASE_URL}/api/health" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 0.25
+done
+if ! curl -fsS "${BASE_URL}/api/health" >/dev/null 2>&1; then
   cat "${SERVER_LOG}" || true
-  fail "API server failed to start"
+  fail "API server did not become healthy"
 fi
 
 providers="$(curl -fsS "${BASE_URL}/api/ai/providers")"
@@ -72,18 +80,31 @@ assert_contains "${validation}" "\"ok\": false" "validation error returns failur
 assert_contains "${validation}" "options.max_tokens" "validation includes max_tokens error"
 assert_contains "${validation}" "options.top_p" "validation includes top_p error"
 
-missing_openai_key="$(curl -fsS -X POST "${BASE_URL}/api/ai/chat/openai/gpt-4o-mini/0.2/hello")"
-assert_contains "${missing_openai_key}" "Missing API key for provider" "openai key missing check"
+openai_probe="$(curl -fsS -X POST "${BASE_URL}/api/ai/chat/openai/gpt-4o-mini/0.2/hello")"
+if [[ "${openai_probe}" == *"Missing API key for provider"* ]]; then
+  echo "PASS: openai key missing check"
+else
+  assert_contains "${openai_probe}" "\"ok\": true" "openai probe with configured key"
+fi
 
 if [[ -n "${OPENAI_API_KEY:-}" ]]; then
   echo "Running live OpenAI check..."
   cleanup
   (cd "${ROOT_DIR}" && API_PORT="${PORT}" OPENAI_API_KEY="${OPENAI_API_KEY}" arturo api/server.art >"${SERVER_LOG}" 2>&1) &
   SERVER_PID="$!"
-  sleep 1
-  if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
+  for _ in $(seq 1 40); do
+    if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
+      cat "${SERVER_LOG}" || true
+      fail "API server failed to restart for live OpenAI check"
+    fi
+    if curl -fsS "${BASE_URL}/api/health" >/dev/null 2>&1; then
+      break
+    fi
+    sleep 0.25
+  done
+  if ! curl -fsS "${BASE_URL}/api/health" >/dev/null 2>&1; then
     cat "${SERVER_LOG}" || true
-    fail "API server failed to restart for live OpenAI check"
+    fail "API server did not become healthy after restart"
   fi
 
   openai_resp="$(curl -fsS -X POST "${BASE_URL}/api/ai/chat/openai/gpt-4o-mini/0.2/0.9/16/Reply%20exactly%20vista-ok")"

@@ -10,7 +10,15 @@ ARTURO [
 view [
     text "Above"
     divider
-    canvas .id:"demo-canvas" .width: 160 .height: 80
-    raw "<script>\nconst c=document.getElementById('demo-canvas');\nif(c){const ctx=c.getContext('2d');ctx.fillStyle='#f0f4ff';ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle='#2f5cff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(10,10);ctx.lineTo(150,70);ctx.stroke();ctx.fillStyle='#1b1b1b';ctx.font='12px sans-serif';ctx.fillText('Canvas OK',10,24);}\n</script>"
+    canvas .id:"demo-canvas" .width: 160 .height: 80 [
+        fill-pen "#f0f4ff"
+        box [0 0] [160 80]
+        pen "#2f5cff"
+        line-width 3
+        line [10 10] [150 70]
+        pen "#1b1b1b"
+        font "12px 'IBM Plex Sans'"
+        text [10 24] "Canvas OK"
+    ]
     text "Below"
 ]

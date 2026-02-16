@@ -3,58 +3,57 @@ import "vista.art"!
 ARTURO [
     Title: "Computed State Demo"
     Logo: "arturo-vista.png"
-    Width: 920
-    Height: 620
+    Width: 900
+    Height: 560
 ]
 
-view .file:"ui.html" [
-    raw {<style>
-    .cgrid{display:grid;gap:10px;max-width:640px;}
-    .crow{display:grid;grid-template-columns:180px 1fr;gap:8px;align-items:center;}
-    .cval{font-weight:700;}
-    .cbox{border:1px solid #ded6c2;border-radius:10px;background:#fff;padding:12px;}
-    </style>
-    <script>
-    function n(id){
-      var v = Number((document.getElementById(id)?.value || '').trim());
-      return Number.isFinite(v) ? v : 0;
-    }
-    function recompute(){
-      var a = n('num-a');
-      var b = n('num-b');
-      var c = n('num-c');
+a: 10
+b: 20
+c: 30
+sum_val: 60
+product_val: 6000
+average_val: "20"
+max_val: 30
+min_val: 10
+sum_txt: "60"
+product_txt: "6000"
+max_txt: "30"
+min_txt: "10"
 
-      var sum = a + b + c;
-      var product = a * b * c;
-      var avg = sum / 3;
-      var maxv = Math.max(a,b,c);
-      var minv = Math.min(a,b,c);
+recompute: function [] [
+    ai: to :integer a
+    bi: to :integer b
+    ci: to :integer c
+    sum_val: ai + bi + ci
+    product_val: ai * bi * ci
+    average_val: to :string ((to :floating sum_val) / 3.0)
+    max_ab: if greater? ai bi [ai] [bi]
+    min_ab: if less? ai bi [ai] [bi]
+    max_val: if greater? max_ab ci [max_ab] [ci]
+    min_val: if less? min_ab ci [min_ab] [ci]
+    sum_txt: to :string sum_val
+    product_txt: to :string product_val
+    max_txt: to :string max_val
+    min_txt: to :string min_val
+]
 
-      document.getElementById('sum').textContent = String(sum);
-      document.getElementById('product').textContent = String(product);
-      document.getElementById('average').textContent = avg.toFixed(2);
-      document.getElementById('max').textContent = String(maxv);
-      document.getElementById('min').textContent = String(minv);
-    }
-    document.addEventListener('DOMContentLoaded', recompute);
-    </script>}
+recompute
 
+view [
     title "Computed State Demo"
-    text "Derived values update from base inputs (A, B, C)."
+    text "Edit values and click Recompute."
 
-    raw {<div class="cgrid">
-      <div class="cbox">
-        <div class="crow"><label for="num-a">Value A</label><input id="num-a" type="number" value="10" oninput="recompute()" /></div>
-        <div class="crow"><label for="num-b">Value B</label><input id="num-b" type="number" value="20" oninput="recompute()" /></div>
-        <div class="crow"><label for="num-c">Value C</label><input id="num-c" type="number" value="30" oninput="recompute()" /></div>
-      </div>
+    row .space:8 [text "Value A" field a]
+    row .space:8 [text "Value B" field b]
+    row .space:8 [text "Value C" field c]
 
-      <div class="cbox">
-        <div class="crow"><span>Sum</span><span id="sum" class="cval">0</span></div>
-        <div class="crow"><span>Product</span><span id="product" class="cval">0</span></div>
-        <div class="crow"><span>Average</span><span id="average" class="cval">0</span></div>
-        <div class="crow"><span>Maximum</span><span id="max" class="cval">0</span></div>
-        <div class="crow"><span>Minimum</span><span id="min" class="cval">0</span></div>
-      </div>
-    </div>}
+    button "Recompute" [recompute]
+
+    panel "Computed" [
+        row .space:8 [text "Sum" text sum_txt]
+        row .space:8 [text "Product" text product_txt]
+        row .space:8 [text "Average" text average_val]
+        row .space:8 [text "Maximum" text max_txt]
+        row .space:8 [text "Minimum" text min_txt]
+    ]
 ]

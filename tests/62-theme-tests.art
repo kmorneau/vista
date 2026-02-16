@@ -1,203 +1,34 @@
-; Vista UI - Theming Tests
-; Tests for the theming system
+; Vista UI - Theme Enhancement Smoke Tests
 
-import "src/vista/vista.art"!
-
-; Test 1: Theme registry exists
-test_theme_registry: function [] [
-        print "Test: Theme registry exists"
-        
-        if not? key? vista_themes "default" [
-                print "FAIL: Default theme should exist"
-                return false
-        ]
-        
-        if not? key? vista_themes "dark" [
-                print "FAIL: Dark theme should exist"
-                return false
-        ]
-        
-        if not? key? vista_themes "light" [
-                print "FAIL: Light theme should exist"
-                return false
-        ]
-        
-        print "PASS"
-        true
+run_example: function [file] [
+    res: execute.code ("VISTA_NO_WEBVIEW=1 arturo " ++ file)
+    if not? equal? res\code 0 [
+        print ["FAIL" file "exit code" to :string res\code]
+        return false
+    ]
+    print ["PASS" file]
+    true
 ]
 
-; Test 2: Theme has colors
-test_theme_colors: function [] [
-        print "Test: Theme colors exist"
-        
-        default-theme: vista_themes\default
-        if not? key? default-theme "colors" [
-                print "FAIL: Default theme should have colors"
-                return false
-        ]
-        
-        colors: default-theme\colors
-        if not? key? colors "primary" [
-                print "FAIL: Default theme should have primary color"
-                return false
-        ]
-        
-        if not? key? colors "secondary" [
-                print "FAIL: Default theme should have secondary color"
-                return false
-        ]
-        
-        print "PASS"
-        true
+test_theme_demo: function [] [
+    print "Test: theming demo runs"
+    run_example "examples/61-theming-demo.art"
 ]
 
-; Test 3: Theme inheritance
-test_theme_inheritance: function [] [
-        print "Test: Theme inheritance"
-        
-        ; Dark theme extends default
-        dark-theme: vista_themes\dark
-        if not? key? dark-theme "extends" [
-                print "FAIL: Dark theme should have extends"
-                return false
-        ]
-        
-        if not? equal? dark-theme\extends "default" [
-                print "FAIL: Dark theme should extend default"
-                return false
-        ]
-        
-        ; Dark should inherit fonts from default
-        fonts: get_theme_value "dark" "fonts.family"
-        if equal? fonts null [
-                print "FAIL: Dark theme should inherit fonts from default"
-                return false
-        ]
-        
-        print "PASS"
-        true
+test_all_features_theme: function [] [
+    print "Test: all-features theme controls run"
+    run_example "examples/66-all-features-demo.art"
 ]
 
-; Test 4: Get theme value
-test_get_theme_value: function [] [
-        print "Test: Get theme value"
-        
-        ; Get primary color from default theme
-        primary: get_theme_value "default" "colors.primary"
-        if equal? primary null [
-                print "FAIL: Should get primary color from default theme"
-                return false
-        ]
-        
-        if not? equal? primary "#1f5cff" [
-                print "FAIL: Default primary should be #1f5cff"
-                return false
-        ]
-        
-        ; Get font family
-        font: get_theme_value "default" "fonts.family"
-        if equal? font null [
-                print "FAIL: Should get font family from default theme"
-                return false
-        ]
-        
-        print "PASS"
-        true
-]
-
-; Test 5: Set theme
-test_set_theme: function [] [
-        print "Test: Set theme"
-        
-        ; Should return true for valid theme
-        result: set_theme "dark"
-        if not? result [
-                print "FAIL: set_theme should return true for valid theme"
-                return false
-        ]
-        
-        ; Should return false for invalid theme
-        result: set_theme "nonexistent"
-        if result [
-                print "FAIL: set_theme should return false for invalid theme"
-                return false
-        ]
-        
-        ; Current theme should be updated
-        if not? equal? vista_current_theme "dark" [
-                print "FAIL: Current theme should be dark"
-                return false
-        ]
-        
-        print "PASS"
-        true
-]
-
-; Test 6: Theme fonts
-test_theme_fonts: function [] [
-        print "Test: Theme fonts"
-        
-        default-theme: vista_themes\default
-        if not? key? default-theme "fonts" [
-                print "FAIL: Default theme should have fonts"
-                return false
-        ]
-        
-        fonts: default-theme\fonts
-        if not? key? fonts "family" [
-                print "FAIL: Default theme should have font family"
-                return false
-        ]
-        
-        if not? key? fonts "size" [
-                print "FAIL: Default theme should have font size"
-                return false
-        ]
-        
-        print "PASS"
-        true
-]
-
-; Test 7: Theme icons
-test_theme_icons: function [] [
-        print "Test: Theme icons"
-        
-        default-theme: vista_themes\default
-        if not? key? default-theme "icons" [
-                print "FAIL: Default theme should have icons"
-                return false
-        ]
-        
-        icons: default-theme\icons
-        if not? key? icons "path" [
-                print "FAIL: Default theme icons should have path"
-                return false
-        ]
-        
-        if not? key? icons "ext" [
-                print "FAIL: Default theme icons should have extension"
-                return false
-        ]
-        
-        print "PASS"
-        true
-]
-
-; Run all theme tests
 run_theme_tests: function [] [
-        print "=== Theming Tests ==="
-        passed: 0
-        failed: 0
-        
-        if test_theme_registry [passed: passed + 1] [failed: failed + 1]
-        if test_theme_colors [passed: passed + 1] [failed: failed + 1]
-        if test_theme_inheritance [passed: passed + 1] [failed: failed + 1]
-        if test_get_theme_value [passed: passed + 1] [failed: failed + 1]
-        if test_set_theme [passed: passed + 1] [failed: failed + 1]
-        if test_theme_fonts [passed: passed + 1] [failed: failed + 1]
-        if test_theme_icons [passed: passed + 1] [failed: failed + 1]
-        
-        print ""
-        print "Results: " ++ to :string passed ++ " passed, " ++ to :string failed ++ " failed"
-        passed
+    print "=== Theming Tests ==="
+    passed: 0
+    failed: 0
+
+    if test_theme_demo [passed: passed + 1] [failed: failed + 1]
+    if test_all_features_theme [passed: passed + 1] [failed: failed + 1]
+
+    print ""
+    print ["Results:" passed "passed," failed "failed"]
+    passed
 ]

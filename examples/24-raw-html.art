@@ -1,17 +1,16 @@
 import "vista.art"!
 
 ARTURO [
-    Title: "Raw Html"
+    Title: "Text Rendering"
     Logo: "arturo-vista.png"
     Width: 900
     Height: 560
 ]
 
 view .file: "ui.html" [
-    title "Raw HTML Example"
-    text "Escaped by default: "
-    text "<em>escaped</em>"
+    title "Text Rendering Example"
+    text "Vista text is escaped/safe by default:"
+    text "<strong>not interpreted as html</strong>"
     return
-    text "Raw helper: "
-    text raw "<strong>not escaped</strong>"
+    text "Use native Vista components for formatting and layout."
 ]

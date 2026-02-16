@@ -7,175 +7,92 @@ ARTURO [
     Height: 760
 ]
 
-view .file:"ui.html" [
-    raw {<style>
-    .all-wrap{display:flex;flex-direction:column;gap:12px;}
-    .all-toolbar{display:flex;gap:8px;flex-wrap:wrap;}
-    .all-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-    .all-card{background:#fff;border:1px solid #ddd;border-radius:10px;padding:10px;}
-    .all-card h3{margin:0 0 8px 0;}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
-    .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #bbb;background:#f7f7f7;}
-    .ok{color:#0a7f35;font-weight:700;}
-    .bad{color:#b00020;font-weight:700;}
-    .track{height:12px;background:#efefef;border-radius:999px;overflow:hidden;border:1px solid #ddd;}
-    .bar{height:100%;width:0%;background:#f2c230;transition:width .14s linear;}
-    .log{height:120px;overflow:auto;border:1px solid #e5e5e5;border-radius:8px;padding:8px;background:#fafafa;}
-    </style>
-    <script>
-    var allState={
-      theme:'arturo',
-      count:0,
-      progress:0,
-      timer:null,
-      fast:null,
-      slow:null,
-      fastCount:0,
-      slowCount:0
-    };
-    function el(id){return document.getElementById(id);}
-    function log(msg){
-      var box=el('all-log');
-      if(!box){return;}
-      var line=document.createElement('div');
-      line.className='mono';
-      line.textContent='['+new Date().toLocaleTimeString()+'] '+msg;
-      box.prepend(line);
-    }
-    function setTheme(name){
-      allState.theme=name;
-      var body=document.body;
-      if(name==='arturo'){
-        body.style.background='#f4f1e6';
-        body.style.color='#111';
-      }else if(name==='charcoal'){
-        body.style.background='#232323';
-        body.style.color='#f4f4f4';
-      }else{
-        body.style.background='#fff';
-        body.style.color='#111';
-      }
-      var t=el('theme-name');
-      if(t){t.textContent=name;}
-      log('Theme -> '+name);
-    }
-    function incCounter(){
-      allState.count+=1;
-      var n=el('count-val');
-      if(n){n.textContent=String(allState.count);}
-      log('Counter incremented.');
-    }
-    function resetCounter(){
-      allState.count=0;
-      var n=el('count-val');
-      if(n){n.textContent='0';}
-      log('Counter reset.');
-    }
-    function startProgress(){
-      stopProgress();
-      allState.progress=0;
-      var b=el('progress-bar');
-      var p=el('progress-val');
-      if(b){b.style.width='0%';}
-      if(p){p.textContent='0%';}
-      allState.timer=setInterval(function(){
-        allState.progress+=2;
-        if(allState.progress>100){allState.progress=100;}
-        if(b){b.style.width=allState.progress+'%';}
-        if(p){p.textContent=allState.progress+'%';}
-        if(allState.progress===100){
-          stopProgress();
-          log('Progress complete.');
-        }
-      },100);
-      log('Progress started.');
-    }
-    function stopProgress(){
-      if(allState.timer){clearInterval(allState.timer);}
-      allState.timer=null;
-    }
-    function validateForm(){
-      var name=(el('f-name')||{}).value||'';
-      var email=(el('f-email')||{}).value||'';
-      var valid=name.trim().length>=2 && email.indexOf('@')>0 && email.indexOf('.')>1;
-      var out=el('form-status');
-      if(out){
-        out.className=valid?'ok':'bad';
-        out.textContent=valid?'Valid form':'Invalid form';
-      }
-      log('Validation -> '+(valid?'valid':'invalid'));
-    }
-    function startRates(){
-      stopRates();
-      allState.fastCount=0;
-      allState.slowCount=0;
-      var f=el('fast-val');
-      var s=el('slow-val');
-      if(f){f.textContent='0';}
-      if(s){s.textContent='0';}
-      allState.fast=setInterval(function(){
-        allState.fastCount+=1;
-        if(f){f.textContent=String(allState.fastCount);}
-      },100);
-      allState.slow=setInterval(function(){
-        allState.slowCount+=1;
-        if(s){s.textContent=String(allState.slowCount);}
-      },1000);
-      log('Multi-rate started.');
-    }
-    function stopRates(){
-      if(allState.fast){clearInterval(allState.fast);}
-      if(allState.slow){clearInterval(allState.slow);}
-      allState.fast=null;
-      allState.slow=null;
-      log('Multi-rate stopped.');
-    }
-    </script>}
+theme_name: "Arturo"
+count: 0
+progress: 0
+count_txt: "0"
+progress_txt: "0%"
+name: ""
+email: ""
+form_status: "Invalid form"
+fast_rate: "off"
+slow_rate: "off"
+log_text: "Ready"
 
-    title "All Features Demo (Stable)"
-    text "This combines theme switching, validation, progress animation, counter state, and multi-rate timers."
+append_log: function [msg] [
+    log_text: msg ++ "\n" ++ log_text
+]
+
+set_theme_demo: function [nameVal] [theme_name: nameVal append_log "Theme -> " ++ nameVal]
+inc_counter: function [] [count: count + 1 count_txt: to :string count append_log "Counter incremented"]
+reset_counter: function [] [count: 0 count_txt: "0" append_log "Counter reset"]
+start_progress: function [] [progress: 100 progress_txt: "100%" append_log "Progress complete"]
+
+validate_form_demo: function [] [
+    ok_name: greaterOrEqual? (size (strip name)) 2
+    ok_email: all? @[not? equal? (index email "@") null not? equal? (index email ".") null]
+    if all? @[ok_name ok_email] [
+        form_status: "Valid form"
+        append_log "Validation -> valid"
+    ] [
+        form_status: "Invalid form"
+        append_log "Validation -> invalid"
+    ]
+]
+
+start_rates: function [] [fast_rate: "100ms" slow_rate: "1000ms" append_log "Multi-rate started"]
+stop_rates: function [] [fast_rate: "off" slow_rate: "off" append_log "Multi-rate stopped"]
+
+view .file:"ui.html" [
+    title "All Features Demo (Native)"
+    text "Theme + state + validation + rate + draw"
 
     row .space:8 [
-        button "Theme Arturo" "setTheme('arturo')"
-        button "Theme Charcoal" "setTheme('charcoal')"
-        button "Theme White" "setTheme('white')"
-        button "Counter +1" "incCounter()"
-        button "Counter Reset" "resetCounter()"
-        button "Start Progress" "startProgress()"
-        button "Validate Form" "validateForm()"
-        button "Start Rates" "startRates()"
-        button "Stop Rates" "stopRates()"
+        button "Theme Arturo" [set_theme_demo "Arturo"]
+        button "Theme Dark" [set_theme_demo "Dark"]
+        button "Theme Ocean" [set_theme_demo "Ocean"]
+        button "Counter +1" [inc_counter]
+        button "Counter Reset" [reset_counter]
+        button "Start Progress" [start_progress]
+        button "Validate Form" [validate_form_demo]
+        button "Start Rates" [start_rates]
+        button "Stop Rates" [stop_rates]
     ]
 
-    raw {<div class="all-wrap">
-      <div class="all-grid">
-        <div class="all-card">
-          <h3>Theme + State</h3>
-          <div>Theme: <span id="theme-name" class="pill">arturo</span></div>
-          <div>Counter: <span id="count-val" class="mono">0</span></div>
-        </div>
-        <div class="all-card">
-          <h3>Progress Animation</h3>
-          <div class="track"><div id="progress-bar" class="bar"></div></div>
-          <div>Progress: <span id="progress-val" class="mono">0%</span></div>
-        </div>
-        <div class="all-card">
-          <h3>Validation</h3>
-          <div style="display:flex;gap:8px;flex-direction:column;">
-            <input id="f-name" placeholder="Name (min 2 chars)">
-            <input id="f-email" placeholder="Email">
-            <div id="form-status" class="bad">Invalid form</div>
-          </div>
-        </div>
-        <div class="all-card">
-          <h3>Rate Facets (Timer Semantics)</h3>
-          <div>Fast (100ms): <span id="fast-val" class="mono">0</span></div>
-          <div>Slow (1000ms): <span id="slow-val" class="mono">0</span></div>
-        </div>
-      </div>
-      <div class="all-card">
-        <h3>Event Log</h3>
-        <div id="all-log" class="log"></div>
-      </div>
-    </div>}
+    split .ratio:50 [
+        panel "Theme + State" [
+            row .space:8 [text "Theme:" text theme_name]
+            row .space:8 [text "Counter:" text count_txt]
+            row .space:8 [text "Progress:" text progress_txt]
+        ]
+    ] [
+        panel "Validation" [
+            text "Name"
+            field name
+            text "Email"
+            field email
+            text form_status
+        ]
+    ]
+
+    panel "Rates" [
+        row .space:8 [text "Fast (100ms):" text fast_rate]
+        row .space:8 [text "Slow (1000ms):" text slow_rate]
+    ]
+
+    panel "Draw" [
+        canvas .width: 360 .height: 130 [
+            fill-pen "#edf1ff"
+            box [0 0] [360 130]
+            fill-pen "#4c78ff"
+            box [18 60] [56 112]
+            box [82 44] [120 112]
+            box [146 28] [184 112]
+            box [210 52] [248 112]
+            pen "#111"
+            text [12 18] "Native draw preview"
+        ]
+    ]
+
+    panel "Event Log" [textarea log_text .size:"100%x180"]
 ]

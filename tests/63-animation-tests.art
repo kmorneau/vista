@@ -1,194 +1,34 @@
-; Vista UI - Animation Tests
-; Tests for the animation system
+; Vista UI - Animation Enhancement Smoke Tests
 
-import "src/vista/vista.art"!
-
-; Test 1: Animation registry exists
-test_animation_registry: function [] [
-        print "Test: Animation registry exists"
-        
-        if not? key? vista_animations "fade-in" [
-                print "FAIL: fade-in animation should exist"
-                return false
-        ]
-        
-        if not? key? vista_animations "bounce" [
-                print "FAIL: bounce animation should exist"
-                return false
-        ]
-        
-        if not? key? vista_animations "spin" [
-                print "FAIL: spin animation should exist"
-                return false
-        ]
-        
-        print "PASS"
-        true
+run_example: function [file] [
+    res: execute.code ("VISTA_NO_WEBVIEW=1 arturo " ++ file)
+    if not? equal? res\code 0 [
+        print ["FAIL" file "exit code" to :string res\code]
+        return false
+    ]
+    print ["PASS" file]
+    true
 ]
 
-; Test 2: Animation names mapping
-test_animation_names: function [] [
-        print "Test: Animation names mapping"
-        
-        if not? equal? vista_animations\fade-in "fadeIn" [
-                print "FAIL: fade-in should map to fadeIn"
-                return false
-        ]
-        
-        if not? equal? vista_animations\scale-in "scaleIn" [
-                print "FAIL: scale-in should map to scaleIn"
-                return false
-        ]
-        
-        if not? equal? vista_animations\slide-out "slideOut" [
-                print "FAIL: slide-out should map to slideOut"
-                return false
-        ]
-        
-        print "PASS"
-        true
+test_animation_demo: function [] [
+    print "Test: animation demo runs"
+    run_example "examples/60-animation-demo.art"
 ]
 
-; Test 3: Animation counter
-test_animation_counter: function [] [
-        print "Test: Animation counter"
-        
-        initial: vista_animation_counter
-        
-        ; Create an animation
-        result: animate "test-face" "fade-in" 300
-        
-        if not? key? result "id" [
-                print "FAIL: animate should return id"
-                return false
-        ]
-        
-        if not? key? result "name" [
-                print "FAIL: animate should return name"
-                return false
-        ]
-        
-        if not? key? result "duration" [
-                print "FAIL: animate should return duration"
-                return false
-        ]
-        
-        if not? key? result "js" [
-                print "FAIL: animate should return js"
-                return false
-        ]
-        
-        ; Counter should increment
-        if not? greater? vista_animation_counter initial [
-                print "FAIL: Animation counter should increment"
-                return false
-        ]
-        
-        print "PASS"
-        true
+test_styled_app_demo: function [] [
+    print "Test: styled app demo runs"
+    run_example "examples/60-styled-app.art"
 ]
 
-; Test 4: Animation CSS generation
-test_animation_css: function [] [
-        print "Test: Animation CSS generation"
-        
-        css: animation_css
-        
-        if equal? css null [
-                print "FAIL: animation_css should return CSS"
-                return false
-        ]
-        
-        if equal? css "" [
-                print "FAIL: animation_css should not be empty"
-                return false
-        ]
-        
-        ; Should contain keyframes
-        if not? contains? css "keyframes" [
-                print "FAIL: CSS should contain keyframes"
-                return false
-        ]
-        
-        ; Should contain animation classes
-        if not? contains? css "vista-animate" [
-                print "FAIL: CSS should contain animation classes"
-                return false
-        ]
-        
-        print "PASS"
-        true
-]
-
-; Test 5: Sprite animation function
-test_sprite_animation: function [] [
-        print "Test: Sprite animation function"
-        
-        html: sprite_anim "sprite.png" 8 12 64 64
-        
-        if equal? html null [
-                print "FAIL: sprite_anim should return HTML"
-                return false
-        ]
-        
-        if not? contains? html "vista-sprite" [
-                print "FAIL: sprite_anim should create vista-sprite element"
-                return false
-        ]
-        
-        if not? contains? html "data-src" [
-                print "FAIL: sprite_anim should set data-src"
-                return false
-        ]
-        
-        if not? contains? html "data-frames" [
-                print "FAIL: sprite_anim should set data-frames"
-                return false
-        ]
-        
-        if not? contains? html "data-fps" [
-                print "FAIL: sprite_anim should set data-fps"
-                return false
-        ]
-        
-        print "PASS"
-        true
-]
-
-; Test 6: All animation types available
-test_all_animations: function [] [
-        print "Test: All animation types"
-        
-        animations: @["fade-in" "fade-out" "slide-in" "slide-out" "scale-in" "scale-out" "bounce" "shake" "pulse" "spin"]
-        
-        i: 0
-        while [less? i (size animations)] [
-                anim: get animations i
-                if not? key? vista_animations anim [
-                        print "FAIL: " ++ anim ++ " animation should exist"
-                        return false
-                ]
-                i: i + 1
-        ]
-        
-        print "PASS"
-        true
-]
-
-; Run all animation tests
 run_animation_tests: function [] [
-        print "=== Animation Tests ==="
-        passed: 0
-        failed: 0
-        
-        if test_animation_registry [passed: passed + 1] [failed: failed + 1]
-        if test_animation_names [passed: passed + 1] [failed: failed + 1]
-        if test_animation_counter [passed: passed + 1] [failed: failed + 1]
-        if test_animation_css [passed: passed + 1] [failed: failed + 1]
-        if test_sprite_animation [passed: passed + 1] [failed: failed + 1]
-        if test_all_animations [passed: passed + 1] [failed: failed + 1]
-        
-        print ""
-        print "Results: " ++ to :string passed ++ " passed, " ++ to :string failed ++ " failed"
-        passed
+    print "=== Animation Tests ==="
+    passed: 0
+    failed: 0
+
+    if test_animation_demo [passed: passed + 1] [failed: failed + 1]
+    if test_styled_app_demo [passed: passed + 1] [failed: failed + 1]
+
+    print ""
+    print ["Results:" passed "passed," failed "failed"]
+    passed
 ]

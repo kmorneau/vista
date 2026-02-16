@@ -4,13 +4,21 @@ ARTURO [
     Title: "Digital Clock"
     Logo: "arturo-vista.png"
     Width: 320
-    Height: 140
+    Height: 160
 ]
 
+clock_text: "--:--:--"
+
+refresh_clock: function [] [
+    clock_text: to :string now
+]
+
+refresh_clock
+
 view .file:"digital-clock.html" [
-    box .edge:#[style: "bevel" size: 2 color: "#777"] .pad:12 [
+    box .pad:12 [
         title "Digital Clock"
-        text .id:"clock" "--:--:--"
+        text clock_text
+        button "Refresh" [refresh_clock]
     ]
-    raw "<script>\nfunction pad(n){return String(n).padStart(2,'0');}\nfunction tick(){const d=new Date();const t=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());const el=document.getElementById('clock');if(el){el.textContent=t;}}\nwindow.addEventListener('DOMContentLoaded',()=>{tick();setInterval(tick,1000);});\n</script>"
 ]

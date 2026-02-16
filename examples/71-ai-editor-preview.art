@@ -5,31 +5,13 @@ ARTURO [
     Logo: "arturo-vista.png"
     Width: 1320
     Height: 820
-    PrimaryColor: "#6aa3e9"
-    BackgroundColor: "#f5f4f2"
-    TitleColor: "#1f1f1f"
-    TextColor: "#1f1f1f"
 ]
-
-api_base: "http://localhost:18969"
-provider: "openai"
-model: "gpt-4o-mini"
-temperature: "0.2"
-top_p: "0.9"
-max_tokens: "256"
-
-provider_options: ["openai" "gemini"]
-model_options: ["gpt-4o-mini" "gpt-4.1-mini" "gemini-2.0-flash" "gemini-2.0-flash-lite"]
-temperature_options: ["0.0" "0.2" "0.4" "0.7" "1.0"]
-top_p_options: ["0.7" "0.9" "1.0"]
-max_tokens_options: ["64" "128" "256" "512"]
 
 chat_log: "ai: I can help generate Vista layouts, Arturo state logic, and draw blocks."
 message: ""
 status: "Ready"
 
 mode: "Preview"
-file_list: ["app.art" "ui/layout.art" "graphics/chart.art"]
 selected_file: "app.art"
 
 app_art: {import "vista.art"!
@@ -69,11 +51,7 @@ chart_art: {canvas .id:"chart-canvas" .width:260 .height:140 [
 ]}
 
 editor_text: app_art
-preview_html: {<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body><div class="vista-panel"><h1>AI Editor</h1><p>Use Code mode to edit source text.</p></div></body>
-</html>}
+preview_text: app_art
 
 set_file: function [name] [
     selected_file: name
@@ -90,72 +68,50 @@ save_file: function [] [
 ]
 
 build_preview: function [] [
-    preview_html: "<!-- " ++ selected_file ++ " -->\n" ++ editor_text
+    preview_text: editor_text
     status: "Preview refreshed"
 ]
 
-cwd_path: strip execute "pwd"
-ui_name: "ui-71-ai-editor-preview.html"
-ui_path: cwd_path ++ "/" ++ ui_name
-
-full_html: view .returnHtml [
-    split .ratio:25 .style:"min-height:740px;gap:12px;" [
-        box .style:"background:#ffffff;border:1px solid #e6e3df;border-radius:14px;min-height:740px;display:flex;flex-direction:column;" [
-            row .style:"padding:10px 12px;border-bottom:1px solid #e6e3df;align-items:center;justify-content:space-between;" [
-                text "AI Chat" .style:"font-size:15px;font-weight:800;"
-                text "assistant" .style:"font-size:11px;color:#6c6b68;"
-            ]
-
-            textarea chat_log .style:"width:100%;min-height:520px;border:0;border-radius:0;padding:12px;background:linear-gradient(180deg,#faf9f7 0%,#f6f4ef 100%);white-space:pre-wrap;overflow:auto;"
-
-            box .style:"padding:10px;border-top:1px solid #e6e3df;display:flex;flex-direction:column;gap:8px;" [
-                textarea message .placeholder:"Ask for UI changes, code edits, or graphics..." .style:"width:100%;min-height:78px;border:1px solid #e6e3df;border-radius:10px;padding:10px;background:#fff;"
-                row .space:8 [
-                    button "Send" [ai_chat] .style:"background:#1769ff;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-weight:700;"
-                    text status .style:"font-size:12px;color:#6c6b68;"
+view [
+    split .ratio:25 [
+        panel "AI Chat" [
+            textarea chat_log .size:"100%x520"
+            textarea message .placeholder:"Ask for UI changes, code edits, or graphics..." .size:"100%x90"
+            row .space:8 [
+                button "Send" [
+                    chat_log: chat_log ++ "\nuser: " ++ message
+                    message: ""
+                    status: "Message appended"
                 ]
+                text status
             ]
         ]
     ] [
-        box .style:"background:#ffffff;border:1px solid #e6e3df;border-radius:14px;min-height:740px;display:flex;flex-direction:column;" [
-            row .space:8 .style:"padding:10px;border-bottom:1px solid #e6e3df;background:#f9f7f2;" [
-                button "Preview" [mode: "Preview"] .style:"border:1px solid #ddd8ce;background:#fff;border-radius:999px;padding:7px 14px;font-weight:700;"
-                button "Code" [mode: "Code"] .style:"border:1px solid #ddd8ce;background:#fff;border-radius:999px;padding:7px 14px;font-weight:700;"
+        panel "Editor" [
+            row .space:8 [
+                button "Preview" [mode: "Preview"]
+                button "Code" [mode: "Code"]
             ]
 
-            box .data-show-bind:"mode" .data-show-value:"Preview" .style:"padding:12px;display:flex;flex-direction:column;gap:8px;flex:1;" [
-                text "Compiled HTML Output" .style:"font-size:12px;color:#6c6b68;text-transform:uppercase;letter-spacing:.05em;"
-                textarea preview_html .style:"width:100%;min-height:590px;border:1px solid #2c3447;border-radius:10px;background:#111318;color:#e8ebf5;padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace;overflow:auto;"
+            box .data-show-bind:"mode" .data-show-value:"Preview" [
+                text "Compiled Output"
+                textarea preview_text .size:"100%x590"
+                button "Refresh from current file" [build_preview]
+            ]
+
+            box .data-show-bind:"mode" .data-show-value:"Code" [
                 row .space:8 [
-                    button "Refresh from current file" [build_preview] .style:"background:#1769ff;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-weight:700;"
+                    button "app.art" [set_file "app.art"]
+                    button "ui/layout.art" [set_file "ui/layout.art"]
+                    button "graphics/chart.art" [set_file "graphics/chart.art"]
                 ]
-            ]
-
-            box .data-show-bind:"mode" .data-show-value:"Code" .style:"display:flex;gap:0;flex:1;min-height:0;" [
-                box .style:"width:240px;border-right:1px solid #e6e3df;padding:10px;background:#faf8f3;display:flex;flex-direction:column;gap:8px;" [
-                    text "Files" .style:"font-size:12px;color:#6c6b68;text-transform:uppercase;letter-spacing:.05em;"
-                    button "app.art" [set_file "app.art"] .style:"text-align:left;border:1px solid #ddd8ce;background:#fff;border-radius:8px;padding:8px 9px;font-size:12px;"
-                    button "ui/layout.art" [set_file "ui/layout.art"] .style:"text-align:left;border:1px solid #ddd8ce;background:#fff;border-radius:8px;padding:8px 9px;font-size:12px;"
-                    button "graphics/chart.art" [set_file "graphics/chart.art"] .style:"text-align:left;border:1px solid #ddd8ce;background:#fff;border-radius:8px;padding:8px 9px;font-size:12px;"
-
-                    text "Model" .style:"font-size:11px;color:#6c6b68;margin-top:6px;"
-                    select model model_options .style:"width:100%;border:1px solid #ddd8ce;border-radius:8px;padding:6px 8px;background:#fff;font-size:12px;"
-                ]
-
-                box .style:"flex:1;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0;" [
-                    text selected_file .style:"font-size:12px;color:#6c6b68;"
-                    textarea editor_text .style:"width:100%;min-height:560px;border:1px solid #2c3447;border-radius:10px;background:#111318;color:#e8ebf5;padding:12px;font-family:ui-monospace,Menlo,Consolas,monospace;overflow:auto;"
-                    row .space:8 [
-                        button "Save File" [save_file] .style:"background:#fff;color:#1f1f1f;border:1px solid #ddd8ce;border-radius:10px;padding:8px 14px;font-weight:700;"
-                        button "Build Preview" [save_file build_preview mode: "Preview"] .style:"background:#1769ff;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-weight:700;"
-                    ]
+                text selected_file
+                textarea editor_text .size:"100%x560"
+                row .space:8 [
+                    button "Save File" [save_file]
+                    button "Build Preview" [save_file build_preview mode: "Preview"]
                 ]
             ]
         ]
     ]
 ]
-
-write full_html ui_path
-safe_ui_path: replace ui_path "\"" "\\\""
-execute "open \"" ++ safe_ui_path ++ "\" >/dev/null 2>&1 &"
-print ["Opened in browser:" ui_path]

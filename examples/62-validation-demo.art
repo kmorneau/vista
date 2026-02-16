@@ -7,104 +7,93 @@ ARTURO [
     Height: 620
 ]
 
+name: ""
+email: ""
+age: ""
+password: ""
+confirm: ""
 status: "Fill the form and click Validate"
 
+err_name: ""
+err_email: ""
+err_age: ""
+err_password: ""
+err_confirm: ""
+
+contains_char?: function [txt ch] [
+    if equal? txt null [return false]
+    not? equal? (index (to :string txt) ch) null
+]
+
+validate_demo_form: function [] [
+    err_name: ""
+    err_email: ""
+    err_age: ""
+    err_password: ""
+    err_confirm: ""
+
+    if equal? (strip name) "" [err_name: "Name is required"]
+
+    if equal? (strip email) "" [
+        err_email: "Email is required"
+    ] [
+        if not? all? @[contains_char? email "@" contains_char? email "."] [
+            err_email: "Email format is invalid"
+        ]
+    ]
+
+    age_num: to :integer age
+    if any? @[less? age_num 18 greater? age_num 120] [err_age: "Age must be between 18 and 120"]
+
+    if less? (size password) 8 [err_password: "Password must be at least 8 characters"]
+
+    if not? equal? password confirm [err_confirm: "Passwords do not match"]
+
+    has_err: false
+    loop [err_name err_email err_age err_password err_confirm] 'x [
+        if not? equal? (to :string x) "" [has_err: true]
+    ]
+
+    if has_err [
+        status: "Validation failed. Please fix highlighted fields."
+    ] [
+        status: "Validation passed."
+    ]
+]
+
+clear_demo_form: function [] [
+    name: "" email: "" age: "" password: "" confirm: ""
+    err_name: "" err_email: "" err_age: "" err_password: "" err_confirm: ""
+    status: "Form cleared."
+]
+
 view .file:"ui.html" [
-    raw {<style>
-    .vform {display:grid; gap:10px; max-width:560px;}
-    .vrow {display:grid; gap:4px;}
-    .verr {color:#b00020; font-size:13px; min-height:18px;}
-    .vok {color:#0f5132; font-weight:600;}
-    .vbad {color:#b00020; font-weight:600;}
-    </style>
-    <script>
-    function byId(id){ return document.getElementById(id); }
-    function setErr(id,msg){ var el=byId(id); if(el){ el.textContent=msg||''; } }
-    function setStatus(msg,ok){
-      var s=byId('form-status');
-      if(!s) return;
-      s.textContent=msg;
-      s.className = ok ? 'vok' : 'vbad';
-    }
-    function validateDemoForm(){
-      var name=(byId('name')?.value||'').trim();
-      var email=(byId('email')?.value||'').trim();
-      var ageRaw=(byId('age')?.value||'').trim();
-      var pwd=(byId('password')?.value||'');
-      var confirm=(byId('confirm')?.value||'');
-
-      setErr('err-name','');
-      setErr('err-email','');
-      setErr('err-age','');
-      setErr('err-password','');
-      setErr('err-confirm','');
-
-      var ok=true;
-
-      if(!name){ setErr('err-name','Name is required.'); ok=false; }
-
-      var emailRx=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if(!email){ setErr('err-email','Email is required.'); ok=false; }
-      else if(!emailRx.test(email)){ setErr('err-email','Email format is invalid.'); ok=false; }
-
-      var age=Number(ageRaw);
-      if(!ageRaw){ setErr('err-age','Age is required.'); ok=false; }
-      else if(!Number.isFinite(age) || age < 18 || age > 120){ setErr('err-age','Age must be between 18 and 120.'); ok=false; }
-
-      if(pwd.length < 8){ setErr('err-password','Password must be at least 8 characters.'); ok=false; }
-
-      if(confirm !== pwd){ setErr('err-confirm','Passwords do not match.'); ok=false; }
-
-      if(ok){ setStatus('Validation passed.', true); }
-      else { setStatus('Validation failed. Please fix highlighted fields.', false); }
-    }
-
-    function clearDemoForm(){
-      ['name','email','age','password','confirm'].forEach(function(id){ var el=byId(id); if(el) el.value=''; });
-      ['err-name','err-email','err-age','err-password','err-confirm'].forEach(function(id){ setErr(id,''); });
-      setStatus('Form cleared.', true);
-    }
-    </script>}
-
     title "Form Validation Demo"
-    text "Basic client-side validation using current Vista runtime."
 
-    raw {<div class="vform">
-      <div class="vrow">
-        <label for="name">Name (required)</label>
-        <input id="name" type="text" placeholder="Enter your name" />
-        <div id="err-name" class="verr"></div>
-      </div>
+    text "Name (required)"
+    field name
+    text err_name
 
-      <div class="vrow">
-        <label for="email">Email (required)</label>
-        <input id="email" type="email" placeholder="you@example.com" />
-        <div id="err-email" class="verr"></div>
-      </div>
+    text "Email (required)"
+    field email
+    text err_email
 
-      <div class="vrow">
-        <label for="age">Age (18-120)</label>
-        <input id="age" type="number" placeholder="Enter age" />
-        <div id="err-age" class="verr"></div>
-      </div>
+    text "Age (18-120)"
+    field age
+    text err_age
 
-      <div class="vrow">
-        <label for="password">Password (min 8 chars)</label>
-        <input id="password" type="password" placeholder="Create password" />
-        <div id="err-password" class="verr"></div>
-      </div>
+    text "Password (min 8 chars)"
+    field password .type:"password"
+    text err_password
 
-      <div class="vrow">
-        <label for="confirm">Confirm Password</label>
-        <input id="confirm" type="password" placeholder="Confirm password" />
-        <div id="err-confirm" class="verr"></div>
-      </div>
+    text "Confirm Password"
+    field confirm .type:"password"
+    text err_confirm
 
-      <div style="display:flex; gap:8px;">
-        <button type="button" onclick="validateDemoForm()">Validate</button>
-        <button type="button" onclick="clearDemoForm()">Clear</button>
-      </div>
+    row .space:8 [
+        button "Validate" [validate_demo_form]
+        button "Clear" [clear_demo_form]
+    ]
 
-      <div id="form-status"></div>
-    </div>}
+    text status
 ]

@@ -11,18 +11,57 @@ import "tests/64-rate-feel-tests.art"!
 run_group: function [label runner] [
     print ""
     print ["Running" label]
-    result: 0
-    if error? err: <= try [
-        result: call runner
-    ] [
-        print ["SKIP" label "-" to :string err]
+    if equal? label "validation" [
+        result: 0
+        if error? err: <= try [result: run_validation_tests] [
+            print ["SKIP" label "-" to :string err]
+            return 0
+        ]
+        if greater? result 0 [print ["PASS" label result] return result]
+        print ["INFO" label "returned" result]
         return 0
     ]
-    if greater? result 0 [
-        print ["PASS" label result]
-        return result
+    if equal? label "computed" [
+        result: 0
+        if error? err: <= try [result: run_computed_tests] [
+            print ["SKIP" label "-" to :string err]
+            return 0
+        ]
+        if greater? result 0 [print ["PASS" label result] return result]
+        print ["INFO" label "returned" result]
+        return 0
     ]
-    print ["INFO" label "returned" result]
+    if equal? label "theme" [
+        result: 0
+        if error? err: <= try [result: run_theme_tests] [
+            print ["SKIP" label "-" to :string err]
+            return 0
+        ]
+        if greater? result 0 [print ["PASS" label result] return result]
+        print ["INFO" label "returned" result]
+        return 0
+    ]
+    if equal? label "animation" [
+        result: 0
+        if error? err: <= try [result: run_animation_tests] [
+            print ["SKIP" label "-" to :string err]
+            return 0
+        ]
+        if greater? result 0 [print ["PASS" label result] return result]
+        print ["INFO" label "returned" result]
+        return 0
+    ]
+    if equal? label "rate/feel" [
+        result: 0
+        if error? err: <= try [result: run_rate_feel_tests] [
+            print ["SKIP" label "-" to :string err]
+            return 0
+        ]
+        if greater? result 0 [print ["PASS" label result] return result]
+        print ["INFO" label "returned" result]
+        return 0
+    ]
+    print ["SKIP" label "- no runner"]
     0
 ]
 

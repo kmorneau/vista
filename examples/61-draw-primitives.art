@@ -9,39 +9,16 @@ ARTURO [
 
 view [
     text "Draw primitives (pen/fill, line, box, circle, polygon)"
-    raw {<canvas id="draw-primitives" width="360" height="220" style="border:1px solid #ded6c2;border-radius:8px;background:#fff"></canvas>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  var c = document.getElementById('draw-primitives');
-  if (!c) return;
-  var ctx = c.getContext('2d');
-  ctx.strokeStyle = '#1f5cff';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(20, 20);
-  ctx.lineTo(200, 20);
-  ctx.stroke();
-
-  ctx.fillStyle = '#f0f4ff';
-  ctx.strokeStyle = '#1f5cff';
-  ctx.strokeRect(20, 40, 180, 80);
-  ctx.fillRect(20, 40, 180, 80);
-
-  ctx.strokeStyle = '#ff6b6b';
-  ctx.beginPath();
-  ctx.arc(260, 80, 36, 0, Math.PI * 2);
-  ctx.stroke();
-
-  ctx.strokeStyle = '#111';
-  ctx.fillStyle = '#ffd166';
-  ctx.beginPath();
-  ctx.moveTo(240, 140);
-  ctx.lineTo(320, 140);
-  ctx.lineTo(350, 200);
-  ctx.lineTo(210, 200);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-});
-</script>}
+    canvas .id:"draw-primitives" .width: 360 .height: 220 [
+        pen "#1f5cff"
+        line-width 3
+        line [20 20] [200 20]
+        fill-pen "#f0f4ff"
+        box [20 40] [200 120]
+        pen "#ff6b6b"
+        circle [260 80] 36
+        pen "#111"
+        fill-pen "#ffd166"
+        polygon [ [240 140] [320 140] [350 190] [210 190] ]
+    ]
 ]

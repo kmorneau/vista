@@ -7,168 +7,45 @@ ARTURO [
     Height: 700
 ]
 
+clock_rate: "off"
+countdown_rate: "off"
+fast_rate: "off"
+slow_rate: "off"
+status: "Ready"
+log_text: "Ready"
+
+append_log: function [msg] [
+    log_text: msg ++ "\n" ++ log_text
+    status: msg
+]
+
+start_clock: function [] [clock_rate: "1000ms" append_log "Clock rate set to 1000ms"]
+stop_clock: function [] [clock_rate: "off" append_log "Clock rate cleared"]
+start_countdown: function [] [countdown_rate: "1000ms" append_log "Countdown rate set to 1000ms"]
+stop_countdown: function [] [countdown_rate: "off" append_log "Countdown rate cleared"]
+start_multi: function [] [fast_rate: "100ms" slow_rate: "1000ms" append_log "Multi-rate set: fast=100ms slow=1000ms"]
+stop_multi: function [] [fast_rate: "off" slow_rate: "off" append_log "Multi-rate cleared"]
+
 view .file:"ui.html" [
-    raw {<style>
-    .rate-wrap{display:flex;flex-direction:column;gap:12px;}
-    .rate-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-    .rate-card{border:1px solid #d8d8d8;border-radius:8px;background:#fff;padding:10px;}
-    .rate-card h3{margin:0 0 8px 0;}
-    .rate-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
-    .rate-row{display:flex;gap:8px;flex-wrap:wrap;}
-    .rate-log{height:140px;overflow:auto;border:1px solid #e5e5e5;border-radius:6px;padding:8px;background:#fafafa;}
-    </style>
-    <script>
-    var vistaRateState={
-      clockTimer:null,
-      countTimer:null,
-      count:15,
-      fastTimer:null,
-      slowTimer:null,
-      fastCount:0,
-      slowCount:0
-    };
-
-    function v$(id){return document.getElementById(id);}
-
-    function updateClock(){
-      var now=new Date();
-      var clock=v$('rate-clock');
-      if(clock){clock.textContent=now.toLocaleTimeString();}
-    }
-
-    function startClock(){
-      stopClock();
-      updateClock();
-      vistaRateState.clockTimer=setInterval(updateClock,1000);
-      setStatus('Clock running at 1000ms.');
-    }
-
-    function stopClock(){
-      if(vistaRateState.clockTimer){clearInterval(vistaRateState.clockTimer);}
-      vistaRateState.clockTimer=null;
-    }
-
-    function resetCountdown(){
-      vistaRateState.count=15;
-      var node=v$('rate-countdown');
-      if(node){node.textContent=String(vistaRateState.count);}
-    }
-
-    function startCountdown(){
-      stopCountdown();
-      resetCountdown();
-      vistaRateState.countTimer=setInterval(function(){
-        vistaRateState.count-=1;
-        var node=v$('rate-countdown');
-        if(node){node.textContent=String(vistaRateState.count);}
-        if(vistaRateState.count<=0){
-          stopCountdown();
-          setStatus('Countdown reached zero.');
-        }
-      },1000);
-      setStatus('Countdown running at 1000ms.');
-    }
-
-    function stopCountdown(){
-      if(vistaRateState.countTimer){clearInterval(vistaRateState.countTimer);}
-      vistaRateState.countTimer=null;
-    }
-
-    function resetMulti(){
-      vistaRateState.fastCount=0;
-      vistaRateState.slowCount=0;
-      var f=v$('rate-fast');
-      var s=v$('rate-slow');
-      if(f){f.textContent='0';}
-      if(s){s.textContent='0';}
-    }
-
-    function startMulti(){
-      stopMulti();
-      resetMulti();
-      vistaRateState.fastTimer=setInterval(function(){
-        vistaRateState.fastCount+=1;
-        var f=v$('rate-fast');
-        if(f){f.textContent=String(vistaRateState.fastCount);}
-      },100);
-      vistaRateState.slowTimer=setInterval(function(){
-        vistaRateState.slowCount+=1;
-        var s=v$('rate-slow');
-        if(s){s.textContent=String(vistaRateState.slowCount);}
-      },1000);
-      setStatus('Multi-rate running: fast=100ms, slow=1000ms.');
-    }
-
-    function stopMulti(){
-      if(vistaRateState.fastTimer){clearInterval(vistaRateState.fastTimer);}
-      if(vistaRateState.slowTimer){clearInterval(vistaRateState.slowTimer);}
-      vistaRateState.fastTimer=null;
-      vistaRateState.slowTimer=null;
-    }
-
-    function pushLog(msg){
-      var box=v$('rate-log');
-      if(!box){return;}
-      var now=new Date().toLocaleTimeString();
-      var line=document.createElement('div');
-      line.className='rate-mono';
-      line.textContent='['+now+'] '+msg;
-      box.prepend(line);
-    }
-
-    function setStatus(msg){
-      var s=v$('rate-status');
-      if(s){s.textContent=msg;}
-      pushLog(msg);
-    }
-
-    function stopAll(){
-      stopClock();
-      stopCountdown();
-      stopMulti();
-      setStatus('All timers stopped.');
-    }
-    </script>}
-
-    title "Rate Facet Demo (Timer Semantics)"
-    text "This shows what 'rate' means in practice: scheduled updates at different intervals."
+    title "Rate Facet Demo"
+    text "Demonstrates timer interval states in native Vista UI."
 
     row .space:8 [
-        button "Start Clock" "startClock()"
-        button "Stop Clock" "stopClock(); setStatus('Clock stopped.')"
-        button "Start Countdown" "startCountdown()"
-        button "Stop Countdown" "stopCountdown(); setStatus('Countdown stopped.')"
-        button "Start Multi-Rate" "startMulti()"
-        button "Stop Multi-Rate" "stopMulti(); setStatus('Multi-rate stopped.')"
-        button "Stop All" "stopAll()"
+        button "Start Clock" [start_clock]
+        button "Stop Clock" [stop_clock]
+        button "Start Countdown" [start_countdown]
+        button "Stop Countdown" [stop_countdown]
+        button "Start Multi-Rate" [start_multi]
+        button "Stop Multi-Rate" [stop_multi]
     ]
 
-    raw {<div class="rate-wrap">
-      <div class="rate-grid">
-        <div class="rate-card">
-          <h3>Clock (1000ms)</h3>
-          <div>Current Time: <span id="rate-clock" class="rate-mono">--:--:--</span></div>
-        </div>
-        <div class="rate-card">
-          <h3>Countdown (1000ms)</h3>
-          <div>Remaining: <span id="rate-countdown" class="rate-mono">15</span></div>
-        </div>
-        <div class="rate-card">
-          <h3>Fast Counter (100ms)</h3>
-          <div>Ticks: <span id="rate-fast" class="rate-mono">0</span></div>
-        </div>
-        <div class="rate-card">
-          <h3>Slow Counter (1000ms)</h3>
-          <div>Ticks: <span id="rate-slow" class="rate-mono">0</span></div>
-        </div>
-      </div>
-      <div class="rate-card">
-        <h3>Status</h3>
-        <div id="rate-status">Ready.</div>
-      </div>
-      <div class="rate-card">
-        <h3>Event Log</h3>
-        <div id="rate-log" class="rate-log"></div>
-      </div>
-    </div>}
+    panel "Current Rate Values" [
+        row .space:8 [text "clock-face:" text clock_rate]
+        row .space:8 [text "countdown-face:" text countdown_rate]
+        row .space:8 [text "fast-counter:" text fast_rate]
+        row .space:8 [text "slow-counter:" text slow_rate]
+    ]
+
+    panel "Status" [text status]
+    panel "Event Log" [textarea log_text .size:"100%x220"]
 ]

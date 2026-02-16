@@ -7,36 +7,24 @@ ARTURO [
     Height: 560
 ]
 
-view .file:"ui.html" [
-    raw {<style>
-    .live-card{border:1px solid #ddd;border-radius:8px;padding:12px;background:#fff;}
-    .live-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
-    </style>
-    <script>
-    function vistaLiveSetStatus(msg){
-      var n=document.getElementById('live-status');
-      if(n){n.textContent=msg;}
-    }
-    function vistaLiveSetGreeting(msg){
-      var n=document.getElementById('live-greeting');
-      if(n){n.textContent=msg;}
-    }
-    function vistaLiveNow(){
-      vistaLiveSetStatus('Updated at '+new Date().toLocaleTimeString());
-      vistaLiveSetGreeting('Hello from live update');
-    }
-    </script>}
+status: "initial"
+greeting: "Hello (initial)"
 
+view .file:"ui.html" [
     title "Live Update Demo"
-    text "Click buttons to update status and greeting immediately."
+    text "Click buttons to update state immediately."
+
     row .space:8 [
-        button "Set Status" "vistaLiveSetStatus('Status changed from button')"
-        button "Set Greeting" "vistaLiveSetGreeting('Greeting changed from button')"
-        button "Update Both" "vistaLiveNow()"
+        button "Set Status" [status: "Status changed from button"]
+        button "Set Greeting" [greeting: "Greeting changed from button"]
+        button "Update Both" [
+            status: "Updated at " ++ to :string now
+            greeting: "Hello from live update"
+        ]
     ]
-    raw {<div class="live-card">
-      <div class="live-row">Status: <span id="live-status" class="mono">initial</span></div>
-      <div class="live-row">Greeting: <span id="live-greeting" class="mono">Hello (initial)</span></div>
-    </div>}
+
+    box [
+        row .space:8 [text "Status:" text status]
+        row .space:8 [text "Greeting:" text greeting]
+    ]
 ]

@@ -7,70 +7,32 @@ ARTURO [
     Height: 600
 ]
 
-view [
-    raw {<style>
-    :root{
-      --demo-bg:#f7f6f1;
-      --demo-panel:#ffffff;
-      --demo-ink:#141414;
-      --demo-primary:#f2c230;
-      --demo-border:#ded6c2;
-    }
-    body{background:var(--demo-bg)!important;color:var(--demo-ink)!important;}
-    .demo-card{background:var(--demo-panel);border:1px solid var(--demo-border);border-radius:10px;padding:12px;}
-    .demo-pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--demo-border);background:var(--demo-primary);font-weight:700;}
-    .demo-swatch{width:34px;height:34px;border:1px solid var(--demo-border);border-radius:6px;display:inline-block;}
-    </style>
-    <script>
-    function vistaApplyTheme(name){
-      var root=document.documentElement;
-      var themes={
-        Arturo:{bg:'#f7f6f1',panel:'#ffffff',ink:'#141414',primary:'#f2c230',border:'#ded6c2'},
-        Dark:{bg:'#1e1f22',panel:'#2a2c30',ink:'#eceff4',primary:'#f2c230',border:'#43464d'},
-        Ocean:{bg:'#eaf5f7',panel:'#ffffff',ink:'#12343b',primary:'#2aa3b0',border:'#b9d7dd'}
-      };
-      var t=themes[name]||themes.Arturo;
-      root.style.setProperty('--demo-bg',t.bg);
-      root.style.setProperty('--demo-panel',t.panel);
-      root.style.setProperty('--demo-ink',t.ink);
-      root.style.setProperty('--demo-primary',t.primary);
-      root.style.setProperty('--demo-border',t.border);
-      var label=document.getElementById('theme-name');
-      if(label){label.textContent=name;}
-      var p=document.getElementById('swatch-primary');
-      var i=document.getElementById('swatch-ink');
-      var b=document.getElementById('swatch-bg');
-      if(p){p.style.background=t.primary;}
-      if(i){i.style.background=t.ink;}
-      if(b){b.style.background=t.bg;}
-    }
-    </script>}
+theme_name: "Arturo"
+primary_color: "#f2c230"
+ink_color: "#141414"
+bg_color: "#f7f6f1"
 
+apply_theme_demo: function [name p i b] [
+    theme_name: name
+    primary_color: p
+    ink_color: i
+    bg_color: b
+]
+
+view [
     title "Vista Theming Demo"
-    text "This example shows runtime theme switching with CSS variables."
+    text "Theme switching with native state values."
+
     row .space:8 [
-        button "Arturo" "vistaApplyTheme('Arturo')"
-        button "Dark" "vistaApplyTheme('Dark')"
-        button "Ocean" "vistaApplyTheme('Ocean')"
+        button "Arturo" [apply_theme_demo "Arturo" "#f2c230" "#141414" "#f7f6f1"]
+        button "Dark" [apply_theme_demo "Dark" "#f2c230" "#eceff4" "#1e1f22"]
+        button "Ocean" [apply_theme_demo "Ocean" "#2aa3b0" "#12343b" "#eaf5f7"]
     ]
 
     panel "Preview" [
-        box .class:"demo-card" [
-            text "Current Theme:"
-            text .id:"theme-name" "Arturo"
-            return
-            text "Swatches"
-            row .space:8 [
-                box .class:"demo-swatch" .id:"swatch-primary" ""
-                box .class:"demo-swatch" .id:"swatch-ink" ""
-                box .class:"demo-swatch" .id:"swatch-bg" ""
-            ]
-            return
-            box .class:"demo-pill" [
-                text "Primary Accent"
-            ]
-            return
-            text "If the buttons work, these colors update immediately."
-        ]
+        row .space:8 [text "Theme:" text theme_name]
+        row .space:8 [text "Primary:" text primary_color]
+        row .space:8 [text "Ink:" text ink_color]
+        row .space:8 [text "Background:" text bg_color]
     ]
 ]

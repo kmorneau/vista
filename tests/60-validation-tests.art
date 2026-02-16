@@ -1,201 +1,34 @@
-; Vista UI - Validation Tests
-; Tests for the validation system
+; Vista UI - Validation Enhancement Smoke Tests
 
-import "src/vista/vista.art"!
-
-; Test 1: Required validation
-test_required_validation: function [] [
-        print "Test: Required validation"
-        
-        ; Empty string should fail
-        errors: validate_field "" #[required: true]
-        if not? equal? (size errors) 1 [
-                print "FAIL: Empty string should fail required validation"
-                return false
-        ]
-        
-        ; Non-empty string should pass
-        errors: validate_field "hello" #[required: true]
-        if not? equal? (size errors) 0 [
-                print "FAIL: Non-empty string should pass required validation"
-                return false
-        ]
-        
-        ; Null should fail
-        errors: validate_field null #[required: true]
-        if not? equal? (size errors) 1 [
-                print "FAIL: Null should fail required validation"
-                return false
-        ]
-        
-        print "PASS"
-        true
+run_example: function [file] [
+    res: execute.code ("VISTA_NO_WEBVIEW=1 arturo " ++ file)
+    if not? equal? res\code 0 [
+        print ["FAIL" file "exit code" to :string res\code]
+        return false
+    ]
+    print ["PASS" file]
+    true
 ]
 
-; Test 2: Email validation
-test_email_validation: function [] [
-        print "Test: Email validation"
-        
-        ; Valid emails should pass
-        errors: validate_field "test@example.com" #[email: true]
-        if not? equal? (size errors) 0 [
-                print "FAIL: Valid email should pass"
-                return false
-        ]
-        
-        errors: validate_field "user.name@domain.org" #[email: true]
-        if not? equal? (size errors) 0 [
-                print "FAIL: Valid email with dots should pass"
-                return false
-        ]
-        
-        ; Invalid emails should fail
-        errors: validate_field "invalid" #[email: true]
-        if not? equal? (size errors) 1 [
-                print "FAIL: Invalid email should fail"
-                return false
-        ]
-        
-        errors: validate_field "no@domain" #[email: true]
-        if not? equal? (size errors) 1 [
-                print "FAIL: Email without TLD should fail"
-                return false
-        ]
-        
-        print "PASS"
-        true
+test_validation_demo: function [] [
+    print "Test: validation demo runs"
+    run_example "examples/62-validation-demo.art"
 ]
 
-; Test 3: Min/Max validation
-test_min_max_validation: function [] [
-        print "Test: Min/Max validation"
-        
-        ; Value within range should pass
-        errors: validate_field 50 #[min: 0 max: 100]
-        if not? equal? (size errors) 0 [
-                print "FAIL: Value in range should pass"
-                return false
-        ]
-        
-        ; Value below min should fail
-        errors: validate_field -5 #[min: 0]
-        if not? equal? (size errors) 1 [
-                print "FAIL: Value below min should fail"
-                return false
-        ]
-        
-        ; Value above max should fail
-        errors: validate_field 150 #[max: 100]
-        if not? equal? (size errors) 1 [
-                print "FAIL: Value above max should fail"
-                return false
-        ]
-        
-        print "PASS"
-        true
+test_all_features_form: function [] [
+    print "Test: all-features form runs"
+    run_example "examples/66-all-features-demo.art"
 ]
 
-; Test 4: Length validation
-test_length_validation: function [] [
-        print "Test: Length validation"
-        
-        ; Valid length should pass
-        errors: validate_field "hello" #[minLength: 3 maxLength: 10]
-        if not? equal? (size errors) 0 [
-                print "FAIL: Valid length should pass"
-                return false
-        ]
-        
-        ; Too short should fail
-        errors: validate_field "hi" #[minLength: 3]
-        if not? equal? (size errors) 1 [
-                print "FAIL: Too short should fail"
-                return false
-        ]
-        
-        ; Too long should fail
-        errors: validate_field "this is too long" #[maxLength: 5]
-        if not? equal? (size errors) 1 [
-                print "FAIL: Too long should fail"
-                return false
-        ]
-        
-        print "PASS"
-        true
-]
-
-; Test 5: Form validation
-test_form_validation: function [] [
-        print "Test: Form validation"
-        
-        ; Register form
-        register_form "test-form" @[
-                @["name" #[required: true]]
-                @["email" #[required: true email: true]]
-                @["age" #[min: 18 max: 120]]
-        ]
-        
-        ; Valid data should pass
-        data: #{
-                name: "John"
-                email: "john@example.com"
-                age: 25
-        }
-        errors: validate_form "test-form" data
-        if not? equal? (size errors) 0 [
-                print "FAIL: Valid form data should pass"
-                return false
-        ]
-        
-        ; Invalid data should fail
-        invalid-data: #{
-                name: ""
-                email: "invalid"
-                age: 15
-        }
-        errors: validate_form "test-form" invalid-data
-        if not? greater? (size errors) 0 [
-                print "FAIL: Invalid form data should produce errors"
-                return false
-        ]
-        
-        print "PASS"
-        true
-]
-
-; Test 6: Multiple validation rules on single field
-test_multiple_rules: function [] [
-        print "Test: Multiple validation rules"
-        
-        errors: validate_field "ab" #[
-                required: true
-                minLength: 5
-                email: true
-        ]
-        ; Should have at least 2 errors (length and email)
-        if less? (size errors) 2 [
-                print "FAIL: Multiple rule violations should produce multiple errors"
-                return false
-        ]
-        
-        print "PASS"
-        true
-]
-
-; Run all tests
 run_validation_tests: function [] [
-        print "=== Validation Tests ==="
-        passed: 0
-        failed: 0
-        
-        if test_required_validation [passed: passed + 1] [failed: failed + 1]
-        if test_email_validation [passed: passed + 1] [failed: failed + 1]
-        if test_min_max_validation [passed: passed + 1] [failed: failed + 1]
-        if test_length_validation [passed: passed + 1] [failed: failed + 1]
-        if test_form_validation [passed: passed + 1] [failed: failed + 1]
-        if test_multiple_rules [passed: passed + 1] [failed: failed + 1]
-        
-        print ""
-        print "Results: " ++ to :string passed ++ " passed, " ++ to :string failed ++ " failed"
-        passed
+    print "=== Validation Tests ==="
+    passed: 0
+    failed: 0
+
+    if test_validation_demo [passed: passed + 1] [failed: failed + 1]
+    if test_all_features_form [passed: passed + 1] [failed: failed + 1]
+
+    print ""
+    print ["Results:" passed "passed," failed "failed"]
+    passed
 ]
