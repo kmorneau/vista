@@ -226,6 +226,32 @@ apply_feel: function [faceId feelDef] [
     if key? feelDef "blur" [ attrs\onblur: compile feelDef\["blur"] ]
     if key? feelDef "key" [ attrs\onkeydown: compile feelDef\["key"] ]
     if key? feelDef "drag" [ attrs\["data-feel-drag"]: compile feelDef\["drag"] ]
+    if key? feelDef "pointer-down" [ attrs\["data-feel-pointer-down"]: compile feelDef\["pointer-down"] ]
+    if key? feelDef "pointer_down" [ attrs\["data-feel-pointer-down"]: compile feelDef\pointer_down ]
+    if key? feelDef "pointer-move" [ attrs\["data-feel-pointer-move"]: compile feelDef\["pointer-move"] ]
+    if key? feelDef "pointer_move" [ attrs\["data-feel-pointer-move"]: compile feelDef\pointer_move ]
+    if key? feelDef "pointer-up" [ attrs\["data-feel-pointer-up"]: compile feelDef\["pointer-up"] ]
+    if key? feelDef "pointer_up" [ attrs\["data-feel-pointer-up"]: compile feelDef\pointer_up ]
+    if key? feelDef "pointer-cancel" [ attrs\["data-feel-pointer-cancel"]: compile feelDef\["pointer-cancel"] ]
+    if key? feelDef "pointer_cancel" [ attrs\["data-feel-pointer-cancel"]: compile feelDef\pointer_cancel ]
+    if key? feelDef "tap" [ attrs\["data-feel-tap"]: compile feelDef\tap ]
+    if key? feelDef "long-press" [ attrs\["data-feel-long-press"]: compile feelDef\["long-press"] ]
+    if key? feelDef "long_press" [ attrs\["data-feel-long-press"]: compile feelDef\long_press ]
+    if key? feelDef "long-press-ms" [ attrs\["data-feel-long-press-ms"]: to :string feelDef\["long-press-ms"] ]
+    if key? feelDef "long_press_ms" [ attrs\["data-feel-long-press-ms"]: to :string feelDef\long_press_ms ]
+    if key? feelDef "dragstart" [
+        attrs\["data-dnd-dragstart"]: compile feelDef\dragstart
+        if not? key? attrs "draggable" [ attrs\draggable: true ]
+    ]
+    if key? feelDef "dragover" [ attrs\["data-dnd-dragover"]: compile feelDef\dragover ]
+    if key? feelDef "drop" [ attrs\["data-dnd-drop"]: compile feelDef\drop ]
+    if key? feelDef "dragenter" [ attrs\["data-dnd-dragenter"]: compile feelDef\dragenter ]
+    if key? feelDef "dragleave" [ attrs\["data-dnd-dragleave"]: compile feelDef\dragleave ]
+    if key? feelDef "dragend" [ attrs\["data-dnd-dragend"]: compile feelDef\dragend ]
+    if key? feelDef "drag-data" [ attrs\["data-dnd-payload"]: to :string feelDef\["drag-data"] ]
+    if key? feelDef "drag_data" [ attrs\["data-dnd-payload"]: to :string feelDef\drag_data ]
+    if key? feelDef "drop-effect" [ attrs\["data-dnd-drop-effect"]: to :string feelDef\["drop-effect"] ]
+    if key? feelDef "drop_effect" [ attrs\["data-dnd-drop-effect"]: to :string feelDef\drop_effect ]
     update_face face\id #[attrs: attrs]
     true
 ]
@@ -248,6 +274,22 @@ remove_feel: function [faceId] [
     attrs: attrs_without attrs "onblur"
     attrs: attrs_without attrs "onkeydown"
     attrs: attrs_without attrs "data-feel-drag"
+    attrs: attrs_without attrs "data-feel-pointer-down"
+    attrs: attrs_without attrs "data-feel-pointer-move"
+    attrs: attrs_without attrs "data-feel-pointer-up"
+    attrs: attrs_without attrs "data-feel-pointer-cancel"
+    attrs: attrs_without attrs "data-feel-tap"
+    attrs: attrs_without attrs "data-feel-long-press"
+    attrs: attrs_without attrs "data-feel-long-press-ms"
+    attrs: attrs_without attrs "data-dnd-dragstart"
+    attrs: attrs_without attrs "data-dnd-dragover"
+    attrs: attrs_without attrs "data-dnd-drop"
+    attrs: attrs_without attrs "data-dnd-dragenter"
+    attrs: attrs_without attrs "data-dnd-dragleave"
+    attrs: attrs_without attrs "data-dnd-dragend"
+    attrs: attrs_without attrs "data-dnd-payload"
+    attrs: attrs_without attrs "data-dnd-drop-effect"
+    attrs: attrs_without attrs "draggable"
     update_face face\id #[attrs: attrs]
     true
 ]

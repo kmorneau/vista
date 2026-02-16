@@ -1,83 +1,83 @@
 [
     {
         "name": "01-layout-flow.html",
-        "size": 978050
+        "size": 981627
     },
     {
         "name": "02-bindings.html",
-        "size": 1012949
+        "size": 1016526
     },
     {
         "name": "03-controls.html",
-        "size": 1013114
+        "size": 1016691
     },
     {
         "name": "04-form-submit.html",
-        "size": 1013151
+        "size": 1016728
     },
     {
         "name": "05-lists-boxes.html",
-        "size": 1012966
+        "size": 1016543
     },
     {
         "name": "06-advanced-controls.html",
-        "size": 1013296
+        "size": 1016873
     },
     {
         "name": "07-media-progress.html",
-        "size": 978073
+        "size": 981650
     },
     {
         "name": "08-tabs.html",
-        "size": 1013391
+        "size": 1016968
     },
     {
         "name": "09-radio-block-labels.html",
-        "size": 1013278
+        "size": 1016855
     },
     {
         "name": "10-events-layout.html",
-        "size": 1013236
+        "size": 1016813
     },
     {
         "name": "11-layout-positioning.html",
-        "size": 978263
+        "size": 981840
     },
     {
         "name": "12-list-drop-list.html",
-        "size": 1013107
+        "size": 1016684
     },
     {
         "name": "13-slider-labels.html",
-        "size": 1012957
+        "size": 1016534
     },
     {
         "name": "14-panel-grid-spacer.html",
-        "size": 978463
+        "size": 982040
     },
     {
         "name": "15-table.html",
-        "size": 978286
+        "size": 981863
     },
     {
         "name": "16-toolbar-menubar.html",
-        "size": 1013147
+        "size": 1016724
     },
     {
         "name": "17-canvas-divider.html",
-        "size": 978086
+        "size": 981663
     },
     {
         "name": "18-split.html",
-        "size": 978150
+        "size": 981727
     },
     {
         "name": "19-radio-attrs.html",
-        "size": 1013011
+        "size": 1016588
     },
     {
         "name": "20-nested-layout.html",
-        "size": 978174
+        "size": 981751
     },
     {
         "name": "21-style.html",
@@ -85,7 +85,7 @@
     },
     {
         "name": "22-tabs-update.html",
-        "size": 978431
+        "size": 982008
     },
     {
         "name": "23-face-tree.html",
@@ -97,67 +97,67 @@
     },
     {
         "name": "25-face-overlay.html",
-        "size": 978116
+        "size": 981693
     },
     {
         "name": "26-vid-phase1.html",
-        "size": 1013308
+        "size": 1016885
     },
     {
         "name": "27-layout-container-attrs.html",
-        "size": 978083
+        "size": 981660
     },
     {
         "name": "28-vid-mode.html",
-        "size": 978587
+        "size": 982164
     },
     {
         "name": "29-scope-layout.html",
-        "size": 978107
+        "size": 981684
     },
     {
         "name": "30-vid-helper.html",
-        "size": 978712
+        "size": 982289
     },
     {
         "name": "31-key-capture.html",
-        "size": 1012900
+        "size": 1016477
     },
     {
         "name": "32-list-selection.html",
-        "size": 1013090
+        "size": 1016667
     },
     {
         "name": "33-key-onchange.html",
-        "size": 1012845
+        "size": 1016422
     },
     {
         "name": "34-key-options.html",
-        "size": 1012871
+        "size": 1016448
     },
     {
         "name": "35-vid-widgets.html",
-        "size": 1013151
+        "size": 1016728
     },
     {
         "name": "36-overlay-inspector.html",
-        "size": 977922
+        "size": 981499
     },
     {
         "name": "37-layout-vid-mode.html",
-        "size": 978167
+        "size": 981744
     },
     {
         "name": "38-tabs-selected.html",
-        "size": 978437
+        "size": 982014
     },
     {
         "name": "39-edge-facets.html",
-        "size": 978487
+        "size": 982064
     },
     {
         "name": "40-events-over-out.html",
-        "size": 978003
+        "size": 981580
     },
     {
         "name": "41-mouse-events.html",
@@ -165,51 +165,51 @@
     },
     {
         "name": "41-demo-form.html",
-        "size": 1013189
+        "size": 1016766
     },
     {
         "name": "42-demo-tabs.html",
-        "size": 978620
+        "size": 982197
     },
     {
         "name": "43-demo-lists.html",
-        "size": 1013121
+        "size": 1016698
     },
     {
         "name": "44-demo-toolbar.html",
-        "size": 978253
+        "size": 981830
     },
     {
         "name": "45-demo-table.html",
-        "size": 978587
+        "size": 982164
     },
     {
         "name": "46-demo-split.html",
-        "size": 978432
+        "size": 982009
     },
     {
         "name": "47-app-header.html",
-        "size": 977918
+        "size": 981495
     },
     {
         "name": "48-smoke-app.html",
-        "size": 977906
+        "size": 981483
     },
     {
         "name": "49-draw-primitives.html",
-        "size": 978677
+        "size": 982254
     },
     {
         "name": "50-draw-gradients.html",
-        "size": 978564
+        "size": 982141
     },
     {
         "name": "51-draw-text-image.html",
-        "size": 978579
+        "size": 982384
     },
     {
         "name": "52-draw-transforms.html",
-        "size": 978739
+        "size": 982316
     },
     {
         "name": "52-face-inspector.html",
@@ -221,7 +221,7 @@
     },
     {
         "name": "54-draw-arc-curve-flood.html",
-        "size": 978911
+        "size": 982488
     },
     {
         "name": "55-draw-coord-clip.html",
@@ -229,7 +229,7 @@
     },
     {
         "name": "56-audio-video.html",
-        "size": 1013239
+        "size": 1016816
     },
     {
         "name": "57-feature-coverage-smoke.html",
@@ -245,10 +245,18 @@
     },
     {
         "name": "60-semantic-text-tags.html",
-        "size": 1013180
+        "size": 1016757
     },
     {
         "name": "61-accessibility-defaults.html",
         "size": 1009
+    },
+    {
+        "name": "65-canvas-image-preload.html",
+        "size": 983202
+    },
+    {
+        "name": "66-phase2-interaction-media.html",
+        "size": 982817
     }
 ]

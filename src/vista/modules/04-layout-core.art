@@ -86,6 +86,67 @@ render_block_inner: function [value bindings faces parentId] [
         ]
 ]
 
+collect_media_args: function [block start] [
+        args: []
+        block_len: size block
+        i: start
+        while [less? i block_len][
+                tok: get block i
+                if equal? (type tok) :word [
+                        name: to :string tok
+                        if any? @[equal? name "source" equal? name "track"] [
+                                break
+                        ]
+                ]
+                args: append_value args tok
+                i: i + 1
+        ]
+        #[
+                args: args
+                next: i
+        ]
+]
+
+media_child_html: function [name attrs] [
+        attrStr: attrs_to_html attrs
+        "<" ++ name ++ attrStr ++ ">"
+]
+
+parse_media_children_html: function [block] [
+        if notEqual? (type block) :block [
+                return ""
+        ]
+        html: ""
+        blen: size block
+        i: 0
+        while [less? i blen][
+                handled: false
+                tok: get block i
+                if equal? (type tok) :word [
+                        name: to :string tok
+                        if any? @[equal? name "source" equal? name "track"] [
+                                info: collect_media_args block (i + 1)
+                                parsed: parse_attrs info\args
+                                attrs: parsed\attrs
+                                args: parsed\args
+                                if greater? (size args) 0 [
+                                        srcVal: get args 0
+                                        if not? key? attrs "src" [
+                                                attrs\src: to :string srcVal
+                                        ]
+                                ]
+                                html: html ++ media_child_html name attrs
+                                i: info\next
+                                handled: true
+                        ]
+                ]
+                if not? handled [
+                        i: i + 1
+                ]
+        ]
+        html
+]
+
 ; Layout function: parse block into HTML + bindings
 layout_state: function [block] [
         block: normalize_block block
@@ -1726,6 +1787,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
+                                        mediaHtml: ""
                                         parentId: current_parent_id face_stack
                                         faceId: register_face faces parentId "audio" attrs ""
                                         attrs: with_face_id attrs faceId
@@ -1736,21 +1798,40 @@ layout_state: function [block] [
                                         if greater? args_len 0 [
                                                 arg0: get args 0
                                                 arg0_type: type arg0
+                                                if equal? arg0_type :block [
+                                                        mediaHtml: parse_media_children_html arg0
+                                                ]
                                                 switch equal? arg0_type :word [
                                                         add_binding bindings arg0
                                                         arg0_str: to :string arg0
                                                         attrStr: attrs_to_html attrs
-                                                        faceHtml: "<audio data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></audio>"
+                                                        faceHtml: "<audio data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ ">" ++ mediaHtml ++ "</audio>"
                                                         html: html ++ faceHtml
+                                                        if notEqual? mediaHtml "" [
+                                                                set_face_meta faces faceId #[media_html: mediaHtml]
+                                                        ]
                                                         set_face_html faces faceId faceHtml
                                                 ][
-                                                        attrs\src: to :string arg0
-                                                        faceHtml: audio_face attrs
+                                                        if notEqual? arg0_type :block [
+                                                                attrs\src: to :string arg0
+                                                        ]
+                                                        if equal? mediaHtml "" [
+                                                                if greater? args_len 1 [
+                                                                        arg1: get args 1
+                                                                        if equal? (type arg1) :block [
+                                                                                mediaHtml: parse_media_children_html arg1
+                                                                        ]
+                                                                ]
+                                                        ]
+                                                        faceHtml: audio_face attrs mediaHtml
                                                         html: html ++ faceHtml
+                                                        if notEqual? mediaHtml "" [
+                                                                set_face_meta faces faceId #[media_html: mediaHtml]
+                                                        ]
                                                         set_face_html faces faceId faceHtml
                                                 ]
                                         ] [
-                                                faceHtml: audio_face attrs
+                                                faceHtml: audio_face attrs ""
                                                 html: html ++ faceHtml
                                                 set_face_html faces faceId faceHtml
                                         ]
@@ -1761,6 +1842,7 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         args_len: size args
+                                        mediaHtml: ""
                                         parentId: current_parent_id face_stack
                                         faceId: register_face faces parentId "video" attrs ""
                                         attrs: with_face_id attrs faceId
@@ -1771,21 +1853,40 @@ layout_state: function [block] [
                                         if greater? args_len 0 [
                                                 arg0: get args 0
                                                 arg0_type: type arg0
+                                                if equal? arg0_type :block [
+                                                        mediaHtml: parse_media_children_html arg0
+                                                ]
                                                 switch equal? arg0_type :word [
                                                         add_binding bindings arg0
                                                         arg0_str: to :string arg0
                                                         attrStr: attrs_to_html attrs
-                                                        faceHtml: "<video data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ "></video>"
+                                                        faceHtml: "<video data-bind='" ++ arg0_str ++ "'" ++ attrStr ++ ">" ++ mediaHtml ++ "</video>"
                                                         html: html ++ faceHtml
+                                                        if notEqual? mediaHtml "" [
+                                                                set_face_meta faces faceId #[media_html: mediaHtml]
+                                                        ]
                                                         set_face_html faces faceId faceHtml
                                                 ][
-                                                        attrs\src: to :string arg0
-                                                        faceHtml: video_face attrs
+                                                        if notEqual? arg0_type :block [
+                                                                attrs\src: to :string arg0
+                                                        ]
+                                                        if equal? mediaHtml "" [
+                                                                if greater? args_len 1 [
+                                                                        arg1: get args 1
+                                                                        if equal? (type arg1) :block [
+                                                                                mediaHtml: parse_media_children_html arg1
+                                                                        ]
+                                                                ]
+                                                        ]
+                                                        faceHtml: video_face attrs mediaHtml
                                                         html: html ++ faceHtml
+                                                        if notEqual? mediaHtml "" [
+                                                                set_face_meta faces faceId #[media_html: mediaHtml]
+                                                        ]
                                                         set_face_html faces faceId faceHtml
                                                 ]
                                         ] [
-                                                faceHtml: video_face attrs
+                                                faceHtml: video_face attrs ""
                                                 html: html ++ faceHtml
                                                 set_face_html faces faceId faceHtml
                                         ]
@@ -2352,6 +2453,11 @@ layout_state: function [block] [
                                         attrs: prepare_attrs info\attrs bindings
                                         args: info\args
                                         drawBlock: null
+                                        preloadVal: null
+                                        if key? attrs "preload" [
+                                                preloadVal: attrs\preload
+                                                attrs: attrs_without attrs "preload"
+                                        ]
                                         if greater? (size args) 0 [
                                                 if equal? (type (get args 0)) :block [
                                                         drawBlock: normalize_block (get args 0)
@@ -2361,8 +2467,15 @@ layout_state: function [block] [
                                         faceId: register_face faces parentId "canvas" attrs ""
                                         attrs: with_face_id attrs faceId
                                         set_face_attrs_and_name faces faceId attrs
+                                        meta: #[]
                                         if notEqual? drawBlock null [
-                                                set_face_meta faces faceId #[draw: drawBlock]
+                                                meta\draw: drawBlock
+                                        ]
+                                        if notEqual? preloadVal null [
+                                                meta\preload: preloadVal
+                                        ]
+                                        if greater? (size keys meta) 0 [
+                                                set_face_meta faces faceId meta
                                         ]
                                         faceHtml: canvas_face attrs
                                         html: html ++ faceHtml
@@ -2690,10 +2803,14 @@ render_face: function [face] [
             "<img" ++ attrStr ++ ">"
         ]
         "audio" -> [
-            audio_face face\attrs
+            mediaHtml: ""
+            if key? meta "media_html" [ mediaHtml: meta\media_html ]
+            audio_face face\attrs mediaHtml
         ]
         "video" -> [
-            video_face face\attrs
+            mediaHtml: ""
+            if key? meta "media_html" [ mediaHtml: meta\media_html ]
+            video_face face\attrs mediaHtml
         ]
         "icon" -> [
             attrStr: attrs_to_html face\attrs

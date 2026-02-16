@@ -65,6 +65,8 @@ files: [
     "tests/59-dialog-lifecycle.art"
     "tests/60-semantic-text-tags.art"
     "tests/61-accessibility-defaults.art"
+    "tests/65-canvas-image-preload.art"
+    "tests/66-phase2-interaction-media.art"
 ]
 
 out_dir: "tests/snapshots/snapshots"

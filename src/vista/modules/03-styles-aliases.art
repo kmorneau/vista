@@ -1191,6 +1191,14 @@ apply_facet_attrs: function [attrs] [
             attrs\["data-rate"]: to :string attrs\rate
             attrs: attrs_without attrs "rate"
         ]
+        if key? attrs "drag-data" [
+            attrs\["data-dnd-payload"]: to :string attrs\["drag-data"]
+            attrs: attrs_without attrs "drag-data"
+        ]
+        if key? attrs "drop-effect" [
+            attrs\["data-dnd-drop-effect"]: to :string attrs\["drop-effect"]
+            attrs: attrs_without attrs "drop-effect"
+        ]
         if key? attrs "feel" [
             feelVal: attrs\feel
             if equal? (type feelVal) :dictionary [
@@ -1206,6 +1214,29 @@ apply_facet_attrs: function [attrs] [
                 if key? feelVal "blur" [ attrs\["on-blur"]: feelVal\blur ]
                 if key? feelVal "key" [ attrs\["on-key"]: feelVal\key ]
                 if key? feelVal "drag" [ attrs\["data-feel-drag"]: to :string feelVal\drag ]
+                if key? feelVal "pointer-down" [ attrs\["on-pointer-down"]: feelVal\["pointer-down"] ]
+                if key? feelVal "pointer_down" [ attrs\["on-pointer-down"]: feelVal\pointer_down ]
+                if key? feelVal "pointer-move" [ attrs\["on-pointer-move"]: feelVal\["pointer-move"] ]
+                if key? feelVal "pointer_move" [ attrs\["on-pointer-move"]: feelVal\pointer_move ]
+                if key? feelVal "pointer-up" [ attrs\["on-pointer-up"]: feelVal\["pointer-up"] ]
+                if key? feelVal "pointer_up" [ attrs\["on-pointer-up"]: feelVal\pointer_up ]
+                if key? feelVal "pointer-cancel" [ attrs\["on-pointer-cancel"]: feelVal\["pointer-cancel"] ]
+                if key? feelVal "pointer_cancel" [ attrs\["on-pointer-cancel"]: feelVal\pointer_cancel ]
+                if key? feelVal "tap" [ attrs\["on-tap"]: feelVal\tap ]
+                if key? feelVal "long-press" [ attrs\["on-long-press"]: feelVal\["long-press"] ]
+                if key? feelVal "long_press" [ attrs\["on-long-press"]: feelVal\long_press ]
+                if key? feelVal "long-press-ms" [ attrs\["on-long-press-ms"]: feelVal\["long-press-ms"] ]
+                if key? feelVal "long_press_ms" [ attrs\["on-long-press-ms"]: feelVal\long_press_ms ]
+                if key? feelVal "dragstart" [ attrs\["on-dragstart"]: feelVal\dragstart ]
+                if key? feelVal "dragover" [ attrs\["on-dragover"]: feelVal\dragover ]
+                if key? feelVal "drop" [ attrs\["on-drop"]: feelVal\drop ]
+                if key? feelVal "dragenter" [ attrs\["on-dragenter"]: feelVal\dragenter ]
+                if key? feelVal "dragleave" [ attrs\["on-dragleave"]: feelVal\dragleave ]
+                if key? feelVal "dragend" [ attrs\["on-dragend"]: feelVal\dragend ]
+                if key? feelVal "drag-data" [ attrs\["data-dnd-payload"]: to :string feelVal\["drag-data"] ]
+                if key? feelVal "drag_data" [ attrs\["data-dnd-payload"]: to :string feelVal\drag_data ]
+                if key? feelVal "drop-effect" [ attrs\["data-dnd-drop-effect"]: to :string feelVal\["drop-effect"] ]
+                if key? feelVal "drop_effect" [ attrs\["data-dnd-drop-effect"]: to :string feelVal\drop_effect ]
             ]
             attrs: attrs_without attrs "feel"
         ]
@@ -1549,6 +1580,170 @@ apply_event_attrs: function [attrs bindings] [
                 res\onmousemove: compile_action val bindings
             ][
                 res\onmousemove: to :string val
+            ]
+        ]
+        if key? res "on-pointer-down" [
+            val: res\["on-pointer-down"]
+            res: attrs_without res "on-pointer-down"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-pointer-down"]: compile_action val bindings
+            ][
+                res\["data-feel-pointer-down"]: to :string val
+            ]
+        ]
+        if key? res "on-pointer-move" [
+            val: res\["on-pointer-move"]
+            res: attrs_without res "on-pointer-move"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-pointer-move"]: compile_action val bindings
+            ][
+                res\["data-feel-pointer-move"]: to :string val
+            ]
+        ]
+        if key? res "on-pointer-up" [
+            val: res\["on-pointer-up"]
+            res: attrs_without res "on-pointer-up"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-pointer-up"]: compile_action val bindings
+            ][
+                res\["data-feel-pointer-up"]: to :string val
+            ]
+        ]
+        if key? res "on-pointer-cancel" [
+            val: res\["on-pointer-cancel"]
+            res: attrs_without res "on-pointer-cancel"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-pointer-cancel"]: compile_action val bindings
+            ][
+                res\["data-feel-pointer-cancel"]: to :string val
+            ]
+        ]
+        if key? res "on-tap" [
+            val: res\["on-tap"]
+            res: attrs_without res "on-tap"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-tap"]: compile_action val bindings
+            ][
+                res\["data-feel-tap"]: to :string val
+            ]
+        ]
+        if key? res "on-long-press" [
+            val: res\["on-long-press"]
+            res: attrs_without res "on-long-press"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-long-press"]: compile_action val bindings
+            ][
+                res\["data-feel-long-press"]: to :string val
+            ]
+        ]
+        if key? res "on-long-press-ms" [
+            val: res\["on-long-press-ms"]
+            res: attrs_without res "on-long-press-ms"
+            res\["data-feel-long-press-ms"]: to :string val
+        ]
+        if key? res "on-dragstart" [
+            val: res\["on-dragstart"]
+            res: attrs_without res "on-dragstart"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-dragstart"]: compile_action val bindings
+            ][
+                res\["data-dnd-dragstart"]: to :string val
+            ]
+            if not? key? res "draggable" [
+                res\draggable: true
+            ]
+        ]
+        if key? res "on-dragover" [
+            val: res\["on-dragover"]
+            res: attrs_without res "on-dragover"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-dragover"]: compile_action val bindings
+            ][
+                res\["data-dnd-dragover"]: to :string val
+            ]
+        ]
+        if key? res "on-drop" [
+            val: res\["on-drop"]
+            res: attrs_without res "on-drop"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-drop"]: compile_action val bindings
+            ][
+                res\["data-dnd-drop"]: to :string val
+            ]
+        ]
+        if key? res "on-dragenter" [
+            val: res\["on-dragenter"]
+            res: attrs_without res "on-dragenter"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-dragenter"]: compile_action val bindings
+            ][
+                res\["data-dnd-dragenter"]: to :string val
+            ]
+        ]
+        if key? res "on-dragleave" [
+            val: res\["on-dragleave"]
+            res: attrs_without res "on-dragleave"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-dragleave"]: compile_action val bindings
+            ][
+                res\["data-dnd-dragleave"]: to :string val
+            ]
+        ]
+        if key? res "on-dragend" [
+            val: res\["on-dragend"]
+            res: attrs_without res "on-dragend"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-dragend"]: compile_action val bindings
+            ][
+                res\["data-dnd-dragend"]: to :string val
             ]
         ]
         if key? res "on-tick" [
@@ -2067,7 +2262,8 @@ table_script: function [] [
 rate_feel_script: function [] [
         script: "document.addEventListener('DOMContentLoaded',()=>{"
         script: script ++ "document.querySelectorAll('[data-rate]').forEach(el=>{const ms=parseInt(el.getAttribute('data-rate')||'0',10);if(!(ms>0)){return;}const tickCode=el.getAttribute('data-rate-on-tick')||'';setInterval(()=>{try{if(window.__vistaAllowDynamicEval&&tickCode){(new Function('event','value',tickCode)).call(el,null,('value' in el)?el.value:el.textContent);}}catch(_e){}try{el.dispatchEvent(new CustomEvent('vista-rate-tick'));}catch(_e2){}},ms);});"
-        script: script ++ "document.querySelectorAll('[data-feel-drag]').forEach(el=>{let down=false,sx=0,sy=0;const code=el.getAttribute('data-feel-drag')||'';let fn=null;try{if(window.__vistaAllowDynamicEval&&code){fn=new Function('dx','dy','event',code);}}catch(_e){}const start=(x,y,e)=>{down=true;sx=x;sy=y;};const move=(x,y,e)=>{if(!down||!fn){return;}try{fn.call(el,x-sx,y-sy,e);}catch(_e3){}};const end=()=>{down=false;};if(window.PointerEvent){el.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0){return;}start(e.clientX,e.clientY,e);});window.addEventListener('pointermove',e=>{move(e.clientX,e.clientY,e);});window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);}else{el.addEventListener('mousedown',e=>{start(e.clientX,e.clientY,e);});window.addEventListener('mousemove',e=>{move(e.clientX,e.clientY,e);});window.addEventListener('mouseup',end);el.addEventListener('touchstart',e=>{if(!e.touches||e.touches.length===0){return;}const t=e.touches[0];start(t.clientX,t.clientY,e);},{passive:true});window.addEventListener('touchmove',e=>{if(!e.touches||e.touches.length===0){return;}const t=e.touches[0];move(t.clientX,t.clientY,e);if(down){e.preventDefault();}},{passive:false});window.addEventListener('touchend',end);window.addEventListener('touchcancel',end);}});"
+        script: script ++ "document.querySelectorAll('[data-feel-drag],[data-feel-pointer-down],[data-feel-pointer-move],[data-feel-pointer-up],[data-feel-pointer-cancel],[data-feel-tap],[data-feel-long-press]').forEach(el=>{const run=(code,event,value)=>{if(!code){return;}try{if(window.__vistaAllowDynamicEval){(new Function('event','value',code)).call(el,event,value);}}catch(_e){}};const dragCode=el.getAttribute('data-feel-drag')||'';const ptrDown=el.getAttribute('data-feel-pointer-down')||'';const ptrMove=el.getAttribute('data-feel-pointer-move')||'';const ptrUp=el.getAttribute('data-feel-pointer-up')||'';const ptrCancel=el.getAttribute('data-feel-pointer-cancel')||'';const tapCode=el.getAttribute('data-feel-tap')||'';const longCode=el.getAttribute('data-feel-long-press')||'';const longMs=Math.max(0,parseInt(el.getAttribute('data-feel-long-press-ms')||'500',10)||500);let down=false,sx=0,sy=0,pressedAt=0,longTimer=null,longFired=false,moved=false;const clearLong=()=>{if(longTimer){clearTimeout(longTimer);longTimer=null;}};const start=(x,y,e)=>{down=true;sx=x;sy=y;pressedAt=Date.now();longFired=false;moved=false;clearLong();run(ptrDown,e,{x:x,y:y});if(longCode){longTimer=setTimeout(()=>{if(down&&!moved){longFired=true;run(longCode,e,{x:x,y:y});}},longMs);}};const move=(x,y,e)=>{run(ptrMove,e,{x:x,y:y});if(!down){return;}const dx=x-sx;const dy=y-sy;if(Math.abs(dx)>8||Math.abs(dy)>8){moved=true;clearLong();}if(dragCode){run(dragCode,e,{dx:dx,dy:dy,x:x,y:y});}};const finish=(x,y,e,cancelled)=>{if(!down){if(cancelled){run(ptrCancel,e,{x:x,y:y});}return;}down=false;const dx=x-sx;const dy=y-sy;const dur=Date.now()-pressedAt;clearLong();if(cancelled){run(ptrCancel,e,{dx:dx,dy:dy,x:x,y:y,duration:dur});return;}run(ptrUp,e,{dx:dx,dy:dy,x:x,y:y,duration:dur});if(tapCode&&!longFired&&!moved&&dur<longMs){run(tapCode,e,{x:x,y:y,duration:dur});}};if(window.PointerEvent){el.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0){return;}start(e.clientX,e.clientY,e);});window.addEventListener('pointermove',e=>{move(e.clientX,e.clientY,e);});window.addEventListener('pointerup',e=>{finish(e.clientX,e.clientY,e,false);});window.addEventListener('pointercancel',e=>{finish(e.clientX,e.clientY,e,true);});}else{el.addEventListener('mousedown',e=>{if(e.button!==0){return;}start(e.clientX,e.clientY,e);});window.addEventListener('mousemove',e=>{move(e.clientX,e.clientY,e);});window.addEventListener('mouseup',e=>{finish(e.clientX,e.clientY,e,false);});el.addEventListener('touchstart',e=>{if(!e.touches||e.touches.length===0){return;}const t=e.touches[0];start(t.clientX,t.clientY,e);},{passive:true});window.addEventListener('touchmove',e=>{if(!e.touches||e.touches.length===0){return;}const t=e.touches[0];move(t.clientX,t.clientY,e);if(down){e.preventDefault();}},{passive:false});window.addEventListener('touchend',e=>{const t=e.changedTouches&&e.changedTouches[0];if(t){finish(t.clientX,t.clientY,e,false);}else{finish(sx,sy,e,false);}});window.addEventListener('touchcancel',e=>{const t=e.changedTouches&&e.changedTouches[0];if(t){finish(t.clientX,t.clientY,e,true);}else{finish(sx,sy,e,true);}});}});"
+        script: script ++ "document.querySelectorAll('[data-dnd-dragstart],[data-dnd-dragover],[data-dnd-drop],[data-dnd-dragenter],[data-dnd-dragleave],[data-dnd-dragend]').forEach(el=>{const run=(code,event,payload)=>{if(!code){return;}try{if(window.__vistaAllowDynamicEval){(new Function('event','value',code)).call(el,event,payload);}}catch(_e){}};const payloadAttr=el.getAttribute('data-dnd-payload')||'';const dragStartCode=el.getAttribute('data-dnd-dragstart')||'';const dragOverCode=el.getAttribute('data-dnd-dragover')||'';const dropCode=el.getAttribute('data-dnd-drop')||'';const dragEnterCode=el.getAttribute('data-dnd-dragenter')||'';const dragLeaveCode=el.getAttribute('data-dnd-dragleave')||'';const dragEndCode=el.getAttribute('data-dnd-dragend')||'';const dropEffect=el.getAttribute('data-dnd-drop-effect')||'';if(dragStartCode&&!el.hasAttribute('draggable')){el.setAttribute('draggable','true');}el.addEventListener('dragstart',e=>{const payload=payloadAttr!==''?payloadAttr:(el.getAttribute('data-value')||el.textContent||'');if(e.dataTransfer){try{e.dataTransfer.setData('text/plain',payload);}catch(_e1){}e.dataTransfer.effectAllowed='copyMove';}run(dragStartCode,e,payload);});el.addEventListener('dragover',e=>{e.preventDefault();if(e.dataTransfer&&dropEffect!==''){e.dataTransfer.dropEffect=dropEffect;}run(dragOverCode,e,null);});el.addEventListener('drop',e=>{e.preventDefault();let payload='';if(e.dataTransfer){try{payload=e.dataTransfer.getData('text/plain')||'';}catch(_e2){}}el.setAttribute('data-dnd-last-payload',payload);run(dropCode,e,payload);});el.addEventListener('dragenter',e=>{e.preventDefault();run(dragEnterCode,e,null);});el.addEventListener('dragleave',e=>{run(dragLeaveCode,e,null);});el.addEventListener('dragend',e=>{run(dragEndCode,e,null);});});"
         script: script ++ "});"
         script
 ]

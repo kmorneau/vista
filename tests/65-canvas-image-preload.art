@@ -1,0 +1,15 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    canvas .id:"draw-preload" .width: 320 .height: 200 .preload:["arturo-vista.png" "arte-logo.png"] [
+        fill-pen "#f8f9ff"
+        box [0 0] [320 200]
+        image [20 40] "arturo-vista.png" [96 96]
+        image [140 40] "arte-logo.png" [96 96]
+        pen "#141414"
+        line-width 2
+        box [16 36] [240 140]
+    ]
+]
+
+print html

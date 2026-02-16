@@ -376,7 +376,7 @@ vg_color_value: function [val] [
 | Limitation | Fixable? | Status | Notes |
 |------------|----------|--------|-------|
 | Text metrics | Partial | ✅ Implemented | `text-baseline`, `text-align` commands |
-| Image flicker | Yes | ⏳ Deferred | Preload system (medium effort) |
+| Image flicker | Yes | ✅ Implemented | `canvas .preload:[...]` preloads before draw |
 | Anti-aliasing | Partial | ✅ Implemented | `smooth on/off` for images only |
 | Coordinate system | Yes | ✅ Implemented | `coord-system "vid"|"math"|"center"` |
 | Color formats | Yes | ✅ Implemented | 140+ named colors + `transparent` |
@@ -413,7 +413,7 @@ flowchart TD
 - [x] Add `coord-system` command for coordinate transforms
 - [x] Add named colors map (140+ CSS color names)
 - [x] Add `transparent` keyword support
-- [ ] Implement image preloading system (deferred - medium effort)
+- [x] Implement image preloading system (`canvas .preload:[...]`)
 
 ### Phase 3: Documentation & Validation
 - [ ] Draft doc updates (README.md, vista_tutorial.md, VID_COMPAT.md)

@@ -1,0 +1,32 @@
+import "vista.art"!
+
+html: view .returnHtml [
+    box .id:"drag-card" .feel:#[
+        pointer_down: "state.pointer='down';render();"
+        pointer_move: "state.pointer='move';render();"
+        pointer_up: "state.pointer='up';render();"
+        pointer_cancel: "state.pointer='cancel';render();"
+        tap: "state.pointer='tap';render();"
+        long_press: "state.pointer='long';render();"
+        long_press_ms: 650
+        dragstart: "state.dnd='start';render();"
+        dragover: "state.dnd='over';render();"
+        drop: "state.dnd=value;render();"
+        drag_data: "card-1"
+        drop_effect: "move"
+    ] "Drag card"
+
+    audio .id:"podcast" .preload:"metadata" .autoplay:true .muted:true [
+        source "https://example.com/audio.mp3" .type:"audio/mpeg"
+        source "https://example.com/audio.ogg" .type:"audio/ogg"
+        track "https://example.com/audio.vtt" .kind:"captions" .srclang:"en" .label:"English"
+    ]
+
+    video .id:"clip" .preload:"auto" .autoplay:true .muted:true .poster:"https://example.com/poster.jpg" [
+        source "https://example.com/video.mp4" .type:"video/mp4"
+        source "https://example.com/video.webm" .type:"video/webm"
+        track "https://example.com/video.vtt" .kind:"subtitles" .srclang:"en" .label:"English"
+    ]
+]
+
+print html

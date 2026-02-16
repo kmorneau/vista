@@ -601,19 +601,17 @@ draw_to_canvas: function [canvasId drawBlock] [
                             sizeVal: get drawBlock (i + 3)
                         ]
                         if notEqual? p1 null [
-                            js: js ++ "var img=new Image();img.onload=function(){"
+                            js: js ++ "(function(){var __vistaSrc=" ++ (draw_js_token src) ++ ";var __vistaImg=(typeof __vistaImgCache!=='undefined'&&__vistaImgCache)?__vistaImgCache[__vistaSrc]:null;"
                             if equal? (type sizeVal) :block [
                                 if equal? (size sizeVal) 2 [
                                     w: get sizeVal 0
                                     h: get sizeVal 1
-                                    js: js ++ "ctx.drawImage(img," ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ "," ++ (to :string w) ++ "," ++ (to :string h) ++ ");"
-                                    js: js ++ "};img.src=" ++ (draw_js_token src) ++ ";"
+                                    js: js ++ "if(__vistaImg&&__vistaImg.complete){ctx.drawImage(__vistaImg," ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ "," ++ (to :string w) ++ "," ++ (to :string h) ++ ");}else{var img=new Image();img.onload=function(){ctx.drawImage(img," ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ "," ++ (to :string w) ++ "," ++ (to :string h) ++ ");};img.src=__vistaSrc;}})();"
                                     i: i + 4
                                     continue
                                 ]
                             ]
-                            js: js ++ "ctx.drawImage(img," ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ ");"
-                            js: js ++ "};img.src=" ++ (draw_js_token src) ++ ";"
+                            js: js ++ "if(__vistaImg&&__vistaImg.complete){ctx.drawImage(__vistaImg," ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ ");}else{var img=new Image();img.onload=function(){ctx.drawImage(img," ++ (to :string p1\x) ++ "," ++ (to :string p1\y) ++ ");};img.src=__vistaSrc;}})();"
                             i: i + 3
                             continue
                         ]
@@ -697,10 +695,49 @@ draw: function [block] [
     draw_to_canvas "canvas" block
 ]
 
+draw_preload_list_js: function [preload] [
+    if equal? preload null [
+        return "[]"
+    ]
+    vals: []
+    ptype: type preload
+    if equal? ptype :block [
+        vals: preload
+    ] [
+        vals: @[preload]
+    ]
+    out: "["
+    i: 0
+    plen: size vals
+    first: true
+    while [less? i plen][
+        val: get vals i
+        vtype: type val
+        if any? @[equal? vtype :string equal? vtype :word equal? vtype :literal] [
+            if not? first [
+                out: out ++ ","
+            ]
+            out: out ++ draw_js_token val
+            first: false
+        ]
+        i: i + 1
+    ]
+    out ++ "]"
+]
+
 draw_script: function [canvasId drawBlock] [
     js: draw_to_canvas canvasId drawBlock
     if equal? js "" [
         return ""
     ]
     "<script>document.addEventListener('DOMContentLoaded',()=>{" ++ js ++ "});</script>"
+]
+
+draw_script_preload: function [canvasId drawBlock preload] [
+    js: draw_to_canvas canvasId drawBlock
+    if equal? js "" [
+        return ""
+    ]
+    preloadList: draw_preload_list_js preload
+    "<script>document.addEventListener('DOMContentLoaded',()=>{var __vistaRun=function(__vistaImgCache){" ++ js ++ "};var __vistaPreload=" ++ preloadList ++ ";if(!Array.isArray(__vistaPreload)||__vistaPreload.length===0){__vistaRun(null);return;}var __vistaCache={};var __vistaPending=__vistaPreload.length;var __vistaDone=false;var __vistaFinish=function(){if(__vistaDone){return;}__vistaDone=true;__vistaRun(__vistaCache);};__vistaPreload.forEach(function(src){var img=new Image();img.onload=function(){__vistaCache[src]=img;__vistaPending--;if(__vistaPending===0){__vistaFinish();}};img.onerror=function(){__vistaPending--;if(__vistaPending===0){__vistaFinish();}};img.src=src;});});</script>"
 ]

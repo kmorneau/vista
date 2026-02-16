@@ -338,10 +338,17 @@ canvas_draw_script: function [face] [
                 return ""
         ]
         drawBlock: face\meta\draw
+        preload: null
+        if key? face\meta "preload" [
+                preload: face\meta\preload
+        ]
         if not? key? face\attrs "id" [
                 return ""
         ]
         canvasId: face\attrs\id
+        if notEqual? preload null [
+                return draw_script_preload canvasId drawBlock preload
+        ]
         draw_script canvasId drawBlock
 ]
 
@@ -715,22 +722,30 @@ image_face: function [src attrs] [
         "<img src='" ++ srcStr ++ "'" ++ attrStr ++ ">"
 ]
 
-audio_face: function [attrs] [
+audio_face: function [attrs content] [
         attrsVal: attrs
         if not? key? attrsVal "controls" [
             attrsVal\controls: true
         ]
         attrStr: attrs_to_html attrsVal
-        "<audio" ++ attrStr ++ "></audio>"
+        body: ""
+        if notEqual? content null [
+            body: to :string content
+        ]
+        "<audio" ++ attrStr ++ ">" ++ body ++ "</audio>"
 ]
 
-video_face: function [attrs] [
+video_face: function [attrs content] [
         attrsVal: attrs
         if not? key? attrsVal "controls" [
             attrsVal\controls: true
         ]
         attrStr: attrs_to_html attrsVal
-        "<video" ++ attrStr ++ "></video>"
+        body: ""
+        if notEqual? content null [
+            body: to :string content
+        ]
+        "<video" ++ attrStr ++ ">" ++ body ++ "</video>"
 ]
 
 progress_face: function [value attrs] [
