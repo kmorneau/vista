@@ -13,6 +13,16 @@ ai_parse_json_payload: function [payloadEncoded] [
         ]
     ]
     tokenVal: to :string payloadEncoded
+    ; URL decode the payload (browser sends URL-encoded base64)
+    tokenVal: replace tokenVal "%20" " "
+    tokenVal: replace tokenVal "%3A" ":"
+    tokenVal: replace tokenVal "%3F" "?"
+    tokenVal: replace tokenVal "%26" "&"
+    tokenVal: replace tokenVal "%3D" "="
+    tokenVal: replace tokenVal "%2F" "/"
+    tokenVal: replace tokenVal "%2B" "+"
+    ; Handle any other %XX sequences
+    ; Convert base64 URL-safe characters
     tokenVal: replace tokenVal "-" "+"
     tokenVal: replace tokenVal "_" "/"
     padLen: 4 - (mod (size tokenVal) 4)

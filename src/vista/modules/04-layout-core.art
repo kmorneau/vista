@@ -2652,11 +2652,12 @@ render_html_document: function [compileResult] [
         fi: fi + 1
     ]
     html: html ++ "<main class='vista-app-body'>" ++ htmlContent ++ "</main>"
-    html: html ++ script
+    html: html ++ "<script>" ++ script
     html: html ++ tabsScript
     html: html ++ menuScript
     html: html ++ tableScript
     html: html ++ rateFeelScript
+    html: html ++ "</script>"
     html: html ++ canvasScript
     html: html ++ reloadScript
     html: html ++ "</body></html>"

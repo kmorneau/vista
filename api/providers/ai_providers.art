@@ -292,22 +292,6 @@ extract_gemini_text: function [resp] [
     to :string p0\text
 ]
 
-extract_kilo_text: function [resp] [
-    if notEqual? (type resp) :dictionary [
-        return ""
-    ]
-    if key? resp "text" [
-        return to :string resp\text
-    ]
-    if key? resp "output" [
-        return to :string resp\output
-    ]
-    if key? resp "message" [
-        return to :string resp\message
-    ]
-    extract_openai_text resp
-]
-
 call_openai: function [model prompt temperature options] [
     apiKey: load_provider_key "OPENAI_API_KEY" "OPENAI_API_KEY"
     if equal? apiKey "" [
@@ -411,72 +395,6 @@ call_gemini: function [model prompt temperature options] [
         ok: true
         data: #[
             provider: "gemini"
-            model: model
-            text: text
-            raw: resp
-        ]
-    ]
-]
-
-call_kilo: function [model prompt temperature options] [
-    apiKey: ""
-    if key? env "KILO_API_KEY" [
-        apiKey: to :string env\KILO_API_KEY
-    ]
-    if equal? apiKey "" [
-        return provider_missing_key "kilo"
-    ]
-    url: ""
-    if key? env "AI_KILO_URL" [
-        url: to :string env\AI_KILO_URL
-    ]
-    if equal? url "" [
-        return #[
-            ok: false
-            code: "missing_provider_url"
-            message: "Set AI_KILO_URL for kilo provider"
-            details: #[provider: "kilo"]
-        ]
-    ]
-    messages: @[
-        #[role: "user" content: prompt]
-    ]
-    if all? @[notEqual? options null equal? (type options) :dictionary key? options "system"] [
-        systemText: to :string options\system
-        if notEqual? systemText "" [
-            messages: @[
-                #[role: "system" content: systemText]
-                #[role: "user" content: prompt]
-            ]
-        ]
-    ]
-
-    payload: #[
-        model: model
-        messages: messages
-        temperature: temperature
-    ]
-    if all? @[notEqual? options null equal? (type options) :dictionary key? options "max_tokens"] [
-        payload\max_tokens: to :integer options\max_tokens
-    ]
-    if all? @[notEqual? options null equal? (type options) :dictionary key? options "top_p"] [
-        payload\top_p: to :floating options\top_p
-    ]
-    respRaw: request.post.json url .headers:#[
-        "authorization": "Bearer " ++ apiKey
-    ] payload
-    resp: normalize_provider_json respRaw
-    if notEqual? (type resp) :dictionary [
-        return provider_request_error "kilo" "Kilo request failed" resp
-    ]
-    if key? resp "error" [
-        return provider_request_error "kilo" "Kilo provider returned an error" resp
-    ]
-    text: extract_kilo_text resp
-    #[
-        ok: true
-        data: #[
-            provider: "kilo"
             model: model
             text: text
             raw: resp

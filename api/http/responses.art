@@ -1,6 +1,21 @@
 ; HTTP response helpers (string JSON envelopes)
 
+; CORS headers for cross-origin requests
+cors_headers: #[
+    "Access-Control-Allow-Origin": "*"
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS"
+    "Access-Control-Allow-Headers": "Content-Type, x-auth-token, x-client-id, x-csrf-token"
+    "Access-Control-Max-Age": "86400"
+]
+
 json_body: function [value] [
+    write.json value ø
+]
+
+json_body_cors: function [value] [
+    ; Set CORS headers before writing JSON body
+    ; Note: Arturo's serve DSL may not support custom headers directly
+    ; This is a placeholder for when header support is added
     write.json value ø
 ]
 

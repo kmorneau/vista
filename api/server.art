@@ -10,137 +10,242 @@ if key? env "API_PORT" [
     api_port: to :integer env\API_PORT
 ]
 
-serve.verbose .port:api_port [
-    GET "/" [
-        write.json #[
-            ok: true
-            service: "vista-api"
-            version: "v2"
-            routes: [
-                "GET /api/health",
-                "GET /api/users",
-                "GET /api/users/:id",
-                "POST /api/users/:name/:email",
-                "PUT /api/users/:id/:name/:email",
-                "DELETE /api/users/:id",
-                "GET /api/v2/security/csrf/:clientId",
-                "POST /api/v2/auth/signup/:clientId/:csrf/:payload",
-                "POST /api/v2/auth/login/:clientId/:csrf/:payload",
-                "POST /api/v2/auth/mfa/verify/:clientId/:csrf/:payload",
-                "PUT /api/v2/auth/email/:clientId/:csrf/:payload",
-                "PUT /api/v2/auth/password/:clientId/:csrf/:payload",
-                "POST /api/v2/auth/logout/:clientId/:csrf/:payload",
-                "GET /api/security/headers",
-                "GET /api/security/audit/:token/:limit",
-                "POST /api/security/runtime/clear/:token",
-                "GET /api/ai/providers",
-                "GET /api/ai/providers-script/:requestId",
-                "GET /api/ai/settings",
-                "POST /api/v2/ai/chat/:clientId/:csrf/:payload",
-                "POST /api/v2/ai/settings/:clientId/:csrf/:payload",
-                "GET /api/v2/ai/chat-script/:clientId/:csrf/:requestId/:payload",
-                "GET /api/v2/ai/settings-script/:clientId/:csrf/:requestId"
-            ]
-            note: "All routes use path params. Auth routes use encoded JSON payload + CSRF path token."
-        ] ø
-    ]
+; CORS headers for cross-origin requests
+cors_headers: #[
+    "Access-Control-Allow-Origin": "*"
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS"
+    "Access-Control-Allow-Headers": "Content-Type, x-auth-token, x-client-id, x-csrf-token"
+    "Access-Control-Max-Age": "86400"
+]
 
-    GET "/api/health" [
-        write.json #[
-            ok: true
-            data: #[
-                status: "up"
+; Simplified route matching using prefix checks
+; No complex path splitting needed
+
+; Start server with function-based handler
+serve .port:api_port $[req][
+    ; Handle OPTIONS preflight requests for CORS
+    if req\method = "OPTIONS" [
+        return #[
+            status: 204
+            headers: cors_headers
+            body: ""
+        ]
+    ]
+    
+    ; Extract path and method
+    path: req\path
+    method: req\method
+    
+    ; Route: GET /
+    if all? @[
+        method = "GET"
+        path = "/"
+    ][
+        return #[
+            status: 200
+            headers: cors_headers
+            body: write.json #[
+                ok: true
                 service: "vista-api"
+                version: "v2"
+                routes: [
+                    "GET /api/health",
+                    "GET /api/users",
+                    "GET /api/users/:id",
+                    "POST /api/users/:name/:email",
+                    "PUT /api/users/:id/:name/:email",
+                    "DELETE /api/users/:id",
+                    "GET /api/v2/security/csrf/:clientId",
+                    "POST /api/v2/auth/signup/:clientId/:csrf/:payload",
+                    "POST /api/v2/auth/login/:clientId/:csrf/:payload",
+                    "POST /api/v2/auth/mfa/verify/:clientId/:csrf/:payload",
+                    "PUT /api/v2/auth/email/:clientId/:csrf/:payload",
+                    "PUT /api/v2/auth/password/:clientId/:csrf/:payload",
+                    "POST /api/v2/auth/logout/:clientId/:csrf/:payload",
+                    "GET /api/security/headers",
+                    "GET /api/security/audit/:token/:limit",
+                    "POST /api/security/runtime/clear/:token",
+                    "GET /api/ai/providers",
+                    "GET /api/ai/providers-script/:requestId",
+                    "GET /api/ai/settings",
+                    "POST /api/v2/ai/chat/:clientId/:csrf/:payload",
+                    "POST /api/v2/ai/settings/:clientId/:csrf/:payload",
+                    "GET /api/v2/ai/chat-script/:clientId/:csrf/:requestId/:payload",
+                    "GET /api/v2/ai/settings-script/:clientId/:csrf/:requestId"
+                ]
+                note: "All routes use path params. Auth routes use encoded JSON payload + CSRF path token."
+            ] ø
+        ]
+    ]
+
+    ; Route: GET /api/health
+    if all? @[
+        method = "GET"
+        path = "/api/health"
+    ][
+        return #[
+            status: 200
+            headers: cors_headers
+            body: write.json #[
+                ok: true
+                data: #[
+                    status: "up"
+                    service: "vista-api"
+                ]
+            ] ø
+        ]
+    ]
+
+    ; Route: GET /api/users
+    if all? @[
+        method = "GET"
+        path = "/api/users"
+    ][
+        return #[
+            status: 200
+            headers: cors_headers
+            body: users_index_handler
+        ]
+    ]
+
+    ; Route: GET /api/v2/security/csrf/:clientId
+    if all? @[
+        method = "GET"
+        prefix? path "/api/v2/security/csrf/"
+    ][
+        ; Remove the prefix "/api/v2/security/csrf/" (22 chars in 1-based indexing) from path
+        prefixLen: 22
+        clientId: slice path prefixLen (size path)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: auth_csrf_token_handler clientId
+        ]
+    ]
+
+    ; Route: GET /api/security/headers
+    if all? @[
+        method = "GET"
+        path = "/api/security/headers"
+    ][
+        return #[
+            status: 200
+            headers: cors_headers
+            body: ok sec_default_headers
+        ]
+    ]
+
+    ; Route: GET /api/ai/providers
+    if all? @[
+        method = "GET"
+        path = "/api/ai/providers"
+    ][
+        return #[
+            status: 200
+            headers: cors_headers
+            body: ai_providers_handler
+        ]
+    ]
+
+    ; Route: GET /api/v2/ai/providers (v2 alias)
+    if all? @[
+        method = "GET"
+        path = "/api/v2/ai/providers"
+    ][
+        return #[
+            status: 200
+            headers: cors_headers
+            body: ai_providers_handler
+        ]
+    ]
+
+    ; Route: GET /api/ai/settings
+    if all? @[
+        method = "GET"
+        path = "/api/ai/settings"
+    ][
+        return #[
+            status: 200
+            headers: cors_headers
+            body: ai_settings_handler
+        ]
+    ]
+
+    ; Route: POST /api/v2/ai/chat/:clientId/:csrf/:payload
+    if all? @[
+        method = "POST"
+        prefix? path "/api/v2/ai/chat/"
+    ][
+        ; Path format: /api/v2/ai/chat/{clientId}/{csrf}/{payload}
+        rest: slice path 16 (size path)
+        firstSlash: index rest "/"
+        ; In Arturo, slice [start, end] is INCLUSIVE
+        clientId: slice rest 0 (firstSlash - 1)
+        rest2: slice rest (firstSlash + 1) (size rest)
+        secondSlash: index rest2 "/"
+        csrf: slice rest2 0 (secondSlash - 1)
+        payload: slice rest2 (secondSlash + 1) (size rest2)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: ai_chat_v2_handler clientId csrf payload
+        ]
+    ]
+
+    ; Route: POST /api/v2/auth/signup/:clientId/:csrf/:payload
+    if all? @[
+        method = "POST"
+        prefix? path "/api/v2/auth/signup/"
+    ][
+        rest: slice path 20 (size path)
+        firstSlash: index rest "/"
+        ; In Arturo, slice [start, end] is INCLUSIVE
+        clientId: slice rest 0 (firstSlash - 1)
+        ; rest2 starts after the first slash (firstSlash + 1 to skip the "/")
+        rest2: slice rest (firstSlash + 1) (size rest)
+        secondSlash: index rest2 "/"
+        csrf: slice rest2 0 (secondSlash - 1)
+        payload: slice rest2 (secondSlash + 1) (size rest2)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: auth_signup_json_handler clientId csrf payload
+        ]
+    ]
+
+    ; Route: POST /api/v2/auth/login/:clientId/:csrf/:payload
+    if all? @[
+        method = "POST"
+        prefix? path "/api/v2/auth/login/"
+    ][
+        rest: slice path 19 (size path)
+        firstSlash: index rest "/"
+        clientId: slice rest 0 (firstSlash - 1)
+        rest2: slice rest (firstSlash + 1) (size rest)
+        secondSlash: index rest2 "/"
+        csrf: slice rest2 0 (secondSlash - 1)
+        payload: slice rest2 (secondSlash + 1) (size rest2)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: auth_login_json_handler clientId csrf payload
+        ]
+    ]
+
+    ; 404 Not Found
+    return #[
+        status: 404
+        headers: cors_headers
+        body: write.json #[
+            ok: false
+            error: #[
+                code: "not_found"
+                message: "Route not found"
+                details: #[
+                    path: path
+                    method: method
+                ]
             ]
         ] ø
-    ]
-
-    GET "/api/users" [
-        users_index_handler
-    ]
-
-    GET "/api/users/(?<id>.+)" $[id][
-        users_show_handler id
-    ]
-
-    POST "/api/users/(?<name>[^/]+)/(?<email>.+)" $[name email][
-        users_create_handler name email
-    ]
-
-    PUT "/api/users/(?<id>[^/]+)/(?<name>[^/]+)/(?<email>.+)" $[id name email][
-        users_update_handler id name email
-    ]
-
-    DELETE "/api/users/(?<id>.+)" $[id][
-        users_delete_handler id
-    ]
-
-    GET "/api/v2/security/csrf/(?<clientId>[^/]+)" $[clientId][
-        auth_csrf_token_handler clientId
-    ]
-
-    POST "/api/v2/auth/signup/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
-        auth_signup_json_handler clientId csrf payload
-    ]
-
-    POST "/api/v2/auth/login/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
-        auth_login_json_handler clientId csrf payload
-    ]
-
-    POST "/api/v2/auth/mfa/verify/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
-        auth_mfa_verify_json_handler clientId csrf payload
-    ]
-
-    PUT "/api/v2/auth/email/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
-        auth_email_json_handler clientId csrf payload
-    ]
-
-    PUT "/api/v2/auth/password/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
-        auth_password_json_handler clientId csrf payload
-    ]
-
-    POST "/api/v2/auth/logout/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
-        auth_logout_json_handler clientId csrf payload
-    ]
-
-    GET "/api/security/headers" [
-        ok sec_default_headers
-    ]
-
-    GET "/api/security/audit/(?<token>[^/]+)/(?<limit>[0-9]+)" $[token limit][
-        security_audit_handler token limit
-    ]
-
-    POST "/api/security/runtime/clear/(?<token>[^/]+)" $[token][
-        security_runtime_clear_handler token
-    ]
-
-    GET "/api/ai/providers" [
-        ai_providers_handler
-    ]
-
-    GET "/api/ai/providers-script/(?<requestId>[^/]+)" $[requestId][
-        ai_providers_script_handler requestId
-    ]
-
-    GET "/api/ai/settings" [
-        ai_settings_handler
-    ]
-
-    ; v2 AI routes with JSON payloads
-    POST "/api/v2/ai/chat/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
-        ai_chat_v2_handler clientId csrf payload
-    ]
-
-    POST "/api/v2/ai/settings/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<payload>.+)" $[clientId csrf payload][
-        ai_settings_v2_handler clientId csrf payload
-    ]
-
-    GET "/api/v2/ai/chat-script/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<requestId>[^/]+)/(?<payload>.+)" $[clientId csrf requestId payload][
-        ai_chat_script_v2_handler clientId csrf requestId payload
-    ]
-
-    GET "/api/v2/ai/settings-script/(?<clientId>[^/]+)/(?<csrf>[^/]+)/(?<requestId>[^/]+)" $[clientId csrf requestId][
-        ai_settings_script_v2_handler clientId csrf requestId
     ]
 ]
