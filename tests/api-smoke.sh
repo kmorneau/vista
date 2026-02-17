@@ -6,10 +6,13 @@ cd "${ROOT_DIR}"
 
 ARTURO_BIN="${ARTURO_BIN:-}"
 if [[ -z "${ARTURO_BIN}" ]]; then
-  if [[ -x "${ROOT_DIR}/../arturo/bin/arturo" ]]; then
+  if command -v arturo >/dev/null 2>&1; then
+    ARTURO_BIN="arturo"
+  elif [[ -x "${ROOT_DIR}/../arturo/bin/arturo" ]]; then
     ARTURO_BIN="${ROOT_DIR}/../arturo/bin/arturo"
   else
-    ARTURO_BIN="arturo"
+    echo "FAIL: arturo binary not found"
+    exit 1
   fi
 fi
 
@@ -33,7 +36,8 @@ SERVER_PID=$!
 
 READY=0
 for _ in $(seq 1 80); do
-  if curl -sS "${BASE_URL}/api/health" >/dev/null 2>&1; then
+  if curl -sS "${BASE_URL}/api/health" >/dev/null 2>&1 && \
+     curl -sS "${BASE_URL}/api/ai/providers" >/dev/null 2>&1; then
     READY=1
     break
   fi
