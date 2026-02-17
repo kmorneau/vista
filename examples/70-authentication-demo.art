@@ -5,7 +5,6 @@ ARTURO [
     Logo: "arturo-vista.png"
     Width: 860
     Height: 720
-    AuthState: "logged_out"
     Author: "Vista Team"
     Date: "2024"
 ]
@@ -26,105 +25,20 @@ show_signup: false
 show_account: false
 
 view [
-    box .class:"vista-auth-container" [
-        ; Login form - shown when show_login is true
-        box .class:"vista-auth-card" .data-show-bind:"show_login" .data-show-value:"true" [
-            text "Sign In" .class:"vista-auth-title"
-            text "Enter your credentials" .class:"vista-auth-subtitle"
-            spacer .height:16
-            label "Email"
-            field email .placeholder:"your@email.com"
-            spacer .height:8
-            label "Password"  
-            field password .type:"password"
-            spacer .height:8
-            label "MFA Code (if enabled)" .class:"vista-auth-meta"
-            field mfa_code .placeholder:"123456"
-            spacer .height:16
-            row [
-                button "Sign In" .icon:"log-in" [auth_login]
-                button "Need an account?" .icon:"user-plus" .data-vista-action:"auth_show_signup"
-            ]
-            text auth_status .class:"vista-auth-meta"
-        ]
-        
-        ; Signup form - shown when show_signup is true
-        box .class:"vista-auth-card" .data-show-bind:"show_signup" .data-show-value:"true" [
-            text "Create Account" .class:"vista-auth-title"
-            text "Enter your details" .class:"vista-auth-subtitle"
-            spacer .height:16
-            label "Email"
-            field email .placeholder:"your@email.com"
-            spacer .height:8
-            label "Password"
-            field password .type:"password"
-            spacer .height:16
-            row [
-                button "Sign Up" .icon:"user-plus" [auth_signup]
-                button "Have an account?" .icon:"log-in" .data-vista-action:"auth_show_login"
-            ]
-            text auth_status .class:"vista-auth-meta"
-        ]
-        
-        ; Account form - shown when show_account is true
-        box .class:"vista-auth-card" .data-show-bind:"show_account" .data-show-value:"true" [
-            text "Account" .class:"vista-auth-title"
-            text profile_label .class:"vista-auth-subtitle"
-            spacer .height:16
-            label "New Email"
-            field new_email .placeholder:"new@email.com"
-            spacer .height:8
-            button "Update Email" .icon:"mail" [auth_update_email]
-            spacer .height:16
-            divider
-            spacer .height:8
-            label "Current Password"
-            field old_password .type:"password"
-            spacer .height:8
-            label "New Password"
-            field new_password .type:"password"
-            spacer .height:8
-            row [
-                button "Update Password" .icon:"lock" [auth_update_password]
-                button "Sign Out" .icon:"log-out" [auth_logout]
-            ]
-            spacer .height:8
-            row [
-                button "Enable MFA" .icon:"shield-check" [auth_enable_mfa]
-                button "Disable MFA" .icon:"shield-off" [auth_disable_mfa]
-            ]
-            text auth_status .class:"vista-auth-meta"
-        ]
+    box .class:"vista-auth-card" .data-show-bind:"show_login" .data-show-value:"true" [
+        auth_login email password mfa_code [auth_login]
+        text .class:"vista-auth-meta" auth_status
+        text .class:"vista-auth-meta" mfa_challenge
+        button "Verify MFA Code" .icon:"shield-check" [auth_mfa_verify]
     ]
-]
 
-auth_login: function [] [
-    auth_login:email password mfa_code
-]
+    box .class:"vista-auth-card" .data-show-bind:"show_signup" .data-show-value:"true" [
+        auth_signup email password [auth_signup]
+        text .class:"vista-auth-meta" auth_status
+    ]
 
-auth_signup: function [] [
-    auth_signup:email password
-]
-
-auth_update_email: function [] [
-    auth_update_email:new_email
-]
-
-auth_update_password: function [] [
-    auth_update_password:old_password new_password
-]
-
-auth_enable_mfa: function [] [
-    auth_enable_mfa:
-]
-
-auth_disable_mfa: function [] [
-    auth_disable_mfa:
-]
-
-auth_logout: function [] [
-    auth_logout:
-    set_state "show_login" true
-    set_state "show_signup" false
-    set_state "show_account" false
+    box .class:"vista-auth-card" .data-show-bind:"show_account" .data-show-value:"true" [
+        auth_account profile_label new_email [auth_update_email] old_password new_password [auth_update_password] [auth_enable_mfa] [auth_disable_mfa] [auth_logout]
+        text .class:"vista-auth-meta" auth_status
+    ]
 ]

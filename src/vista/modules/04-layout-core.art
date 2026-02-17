@@ -2621,6 +2621,14 @@ render_html_document: function [compileResult] [
     if all? @[key? vista_state "app_title_color" notEqual? vista_state\app_title_color ""] [
         effectiveTitleColor: to :string vista_state\app_title_color
     ]
+    effectiveAuthor: ""
+    if all? @[key? vista_state "app_author" notEqual? vista_state\app_author ""] [
+        effectiveAuthor: to :string vista_state\app_author
+    ]
+    effectiveDate: ""
+    if all? @[key? vista_state "app_date" notEqual? vista_state\app_date ""] [
+        effectiveDate: to :string vista_state\app_date
+    ]
     css: css ++ ":root{--arturo-primary:" ++ effectivePrimaryColor ++ ";--arturo-bg:" ++ effectiveBackgroundColor ++ ";--arturo-ink:" ++ effectiveTextColor ++ ";}"
     css: css ++ ".vista-app-title{color:" ++ effectiveTitleColor ++ ";}"
     html: "<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>"
@@ -2636,7 +2644,22 @@ render_html_document: function [compileResult] [
         logoAlt: html_escape_attr effectiveTitle
         logoHtml: "<img class='vista-app-logo' src='" ++ logoSrc ++ "' alt='" ++ logoAlt ++ "'>"
     ]
-    appHeader: "<header class='vista-app-header'><div class='vista-app-header-inner'>" ++ logoHtml ++ headerTextHtml ++ "</div></header>"
+    authControlsHtml: "<div class='vista-auth-header-controls'><button class='vista-auth-header-btn' data-vista-action='auth_show_login'>Sign In</button><button class='vista-auth-header-btn vista-auth-header-btn-primary' data-vista-action='auth_show_signup'>Sign Up</button></div>"
+    appHeader: "<header class='vista-app-header'><div class='vista-app-header-inner'>" ++ logoHtml ++ headerTextHtml ++ authControlsHtml ++ "</div></header>"
+    appFooter: ""
+    footerInner: ""
+    if not? equal? effectiveAuthor "" [
+        footerInner: footerInner ++ html_escape_text effectiveAuthor
+    ]
+    if not? equal? effectiveDate "" [
+        if not? equal? footerInner "" [
+            footerInner: footerInner ++ " "
+        ]
+        footerInner: footerInner ++ html_escape_text effectiveDate
+    ]
+    if not? equal? footerInner "" [
+        appFooter: "<footer class='vista-app-footer'><div class='vista-app-footer-inner'>" ++ footerInner ++ "</div></footer>"
+    ]
     html: html ++ bodyOpen
     html: html ++ appHeader
     canvasScript: ""
@@ -2652,6 +2675,7 @@ render_html_document: function [compileResult] [
         fi: fi + 1
     ]
     html: html ++ "<main class='vista-app-body'>" ++ htmlContent ++ "</main>"
+    html: html ++ appFooter
     html: html ++ "<script>" ++ script
     html: html ++ tabsScript
     html: html ++ menuScript

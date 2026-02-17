@@ -1,0 +1,23 @@
+
+[0;31m══╡ [1;31mType Error[0;31m ╞════════════════════════════════════════════════════ <script> ══[0m
+
+  Erroneous type found[0m
+
+  Cannot call function:
+      [1mappend[0m collection value[0;31m ◄[0m
+  
+  Wrong argument (at position 1): 
+      [1;32m85[0;90m :integer[0m
+  
+  Expected: 
+      :char, :string, :literal, :pathliteral, :binary, :object, :block
+
+  [0;90m┃ [1;90mFile: [0;90msrc/vista/graphics/drawing.art
+  [0;90m┃ [1;90mLine: [0;90m1004
+  [0;90m┃ [0m
+  [0;90m┃ 1002 ║                              rh: p2\y - p1\y[0m
+  [0;90m┃ 1003 ║                              attrs: svg_shape_attrs state clipRef[0m
+  [0;90m┃ [1;90m1004[0;90m ║[0;31m►[0;90m [1;90m                            body: body ++ "<rect x='" ++ to :string (x) ++ "' y='" ++ to :string (y) ++ "' width='" ++ to :string (rw) ++ "' height='" ++ to :string (rh) ++ "'" ++ attrs ++ " />"[0;90m[0m
+  [0;90m┃ 1005 ║                              i: i + 3[0m
+  [0;90m┃ 1006 ║                              handled: true[0m
+

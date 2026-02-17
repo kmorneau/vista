@@ -1,0 +1,6 @@
+import "vista.art"!
+
+; Test button with icon
+view [
+    button .icon:"resources/icons/arrow-right.svg" "Continue"
+]

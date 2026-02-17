@@ -6,13 +6,22 @@ import "src/vista/graphics/vista-graphics.art"!
 ; Face types: functions that generate HTML for UI elements
 resolve_icon_src: function [src] [
         srcStr: to :string src
-        ; Icon shorthand: "log-in" -> bundled icon SVG path
+        ; Icon shorthand: "log-in" -> bundled icon SVG data URI
         if all? @[
             not? contains? srcStr "/"
             not? contains? srcStr "."
             not? contains? srcStr ":"
         ] [
-            return "dist/assets/icons/" ++ srcStr ++ ".svg"
+            iconPath: "dist/assets/icons/" ++ srcStr ++ ".svg"
+            iconOut: iconPath
+            if not? error? err: <= try [
+                iconRaw: read iconPath
+                iconB64: encode.base64 to :string iconRaw
+                iconOut: "data:image/svg+xml;base64," ++ iconB64
+            ] [
+                null
+            ]
+            return iconOut
         ]
         srcStr
 ]

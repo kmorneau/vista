@@ -232,6 +232,120 @@ serve .port:api_port $[req][
         ]
     ]
 
+    ; Route: POST /api/v2/auth/mfa/verify/:clientId/:csrf/:payload
+    if all? @[
+        method = "POST"
+        prefix? path "/api/v2/auth/mfa/verify/"
+    ][
+        rest: slice path 24 (size path)
+        firstSlash: index rest "/"
+        clientId: slice rest 0 (firstSlash - 1)
+        rest2: slice rest (firstSlash + 1) (size rest)
+        secondSlash: index rest2 "/"
+        csrf: slice rest2 0 (secondSlash - 1)
+        payload: slice rest2 (secondSlash + 1) (size rest2)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: auth_mfa_verify_json_handler clientId csrf payload
+        ]
+    ]
+
+    ; Route: PUT /api/v2/auth/email/:clientId/:csrf/:payload
+    if all? @[
+        method = "PUT"
+        prefix? path "/api/v2/auth/email/"
+    ][
+        rest: slice path 19 (size path)
+        firstSlash: index rest "/"
+        clientId: slice rest 0 (firstSlash - 1)
+        rest2: slice rest (firstSlash + 1) (size rest)
+        secondSlash: index rest2 "/"
+        csrf: slice rest2 0 (secondSlash - 1)
+        payload: slice rest2 (secondSlash + 1) (size rest2)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: auth_email_json_handler clientId csrf payload
+        ]
+    ]
+
+    ; Route: PUT /api/v2/auth/password/:clientId/:csrf/:payload
+    if all? @[
+        method = "PUT"
+        prefix? path "/api/v2/auth/password/"
+    ][
+        rest: slice path 22 (size path)
+        firstSlash: index rest "/"
+        clientId: slice rest 0 (firstSlash - 1)
+        rest2: slice rest (firstSlash + 1) (size rest)
+        secondSlash: index rest2 "/"
+        csrf: slice rest2 0 (secondSlash - 1)
+        payload: slice rest2 (secondSlash + 1) (size rest2)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: auth_password_json_handler clientId csrf payload
+        ]
+    ]
+
+    ; Route: POST /api/v2/auth/logout/:clientId/:csrf/:payload
+    if all? @[
+        method = "POST"
+        prefix? path "/api/v2/auth/logout/"
+    ][
+        rest: slice path 20 (size path)
+        firstSlash: index rest "/"
+        clientId: slice rest 0 (firstSlash - 1)
+        rest2: slice rest (firstSlash + 1) (size rest)
+        secondSlash: index rest2 "/"
+        csrf: slice rest2 0 (secondSlash - 1)
+        payload: slice rest2 (secondSlash + 1) (size rest2)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: auth_logout_json_handler clientId csrf payload
+        ]
+    ]
+
+    ; Route: POST /api/v2/auth/mfa/enable/:clientId/:csrf/:payload
+    if all? @[
+        method = "POST"
+        prefix? path "/api/v2/auth/mfa/enable/"
+    ][
+        rest: slice path 24 (size path)
+        firstSlash: index rest "/"
+        clientId: slice rest 0 (firstSlash - 1)
+        rest2: slice rest (firstSlash + 1) (size rest)
+        secondSlash: index rest2 "/"
+        csrf: slice rest2 0 (secondSlash - 1)
+        payload: slice rest2 (secondSlash + 1) (size rest2)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: auth_mfa_enable_json_handler clientId csrf payload
+        ]
+    ]
+
+    ; Route: POST /api/v2/auth/mfa/disable/:clientId/:csrf/:payload
+    if all? @[
+        method = "POST"
+        prefix? path "/api/v2/auth/mfa/disable/"
+    ][
+        rest: slice path 25 (size path)
+        firstSlash: index rest "/"
+        clientId: slice rest 0 (firstSlash - 1)
+        rest2: slice rest (firstSlash + 1) (size rest)
+        secondSlash: index rest2 "/"
+        csrf: slice rest2 0 (secondSlash - 1)
+        payload: slice rest2 (secondSlash + 1) (size rest2)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: auth_mfa_disable_json_handler clientId csrf payload
+        ]
+    ]
+
     ; 404 Not Found
     return #[
         status: 404

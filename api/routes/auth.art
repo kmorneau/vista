@@ -277,7 +277,13 @@ auth_mfa_verify_json_handler: function [clientId csrf payload] [
     parsed: auth_parse_json_payload payload
     if not? parsed\ok [ return auth_result_to_http parsed false ]
     data: parsed\data
-    result: service_auth_mfa_verify data\challenge_id data\code
+    challengeId: null
+    if error? err: <= try [
+        challengeId: to :integer data\challenge_id
+    ] [
+        return bad_request "challenge_id must be an integer" #[field: "challenge_id"]
+    ]
+    result: service_auth_mfa_verify challengeId data\code
     auth_result_to_http result false
 ]
 
@@ -315,5 +321,29 @@ auth_logout_json_handler: function [clientId csrf payload] [
     data: parsed\data
     result: service_auth_logout data\token
     sec_audit_log "auth.logout.v2" (to :string clientId) result\ok #[]
+    auth_result_to_http result false
+]
+
+auth_mfa_enable_json_handler: function [clientId csrf payload] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "auth-mfa-enable-v2" (to :string clientId) 30 60
+    gate: sec_chain_checks @[c1 c2]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    parsed: auth_parse_json_payload payload
+    if not? parsed\ok [ return auth_result_to_http parsed false ]
+    data: parsed\data
+    result: service_auth_enable_mfa data\token
+    auth_result_to_http result false
+]
+
+auth_mfa_disable_json_handler: function [clientId csrf payload] [
+    c1: sec_check_csrf_token clientId csrf
+    c2: sec_check_rate_limit "auth-mfa-disable-v2" (to :string clientId) 30 60
+    gate: sec_chain_checks @[c1 c2]
+    if not? gate\ok [ return sec_to_http_error gate ]
+    parsed: auth_parse_json_payload payload
+    if not? parsed\ok [ return auth_result_to_http parsed false ]
+    data: parsed\data
+    result: service_auth_disable_mfa data\token
     auth_result_to_http result false
 ]
