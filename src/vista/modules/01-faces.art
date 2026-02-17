@@ -4,6 +4,19 @@
 import "src/vista/graphics/vista-graphics.art"!
 
 ; Face types: functions that generate HTML for UI elements
+resolve_icon_src: function [src] [
+        srcStr: to :string src
+        ; Icon shorthand: "log-in" -> bundled icon SVG path
+        if all? @[
+            not? contains? srcStr "/"
+            not? contains? srcStr "."
+            not? contains? srcStr ":"
+        ] [
+            return "dist/assets/icons/" ++ srcStr ++ ".svg"
+        ]
+        srcStr
+]
+
 button: function [text action attrs] [
         attrsVal: attrs
         if equal? attrsVal null [
@@ -17,6 +30,13 @@ button: function [text action attrs] [
         if [action notEqual? null] [
             actionStr: to :string action
         ]
+        iconHtml: ""
+        if key? attrsVal "icon" [
+            iconSrc: resolve_icon_src attrsVal\icon
+            iconAttrs: #["class":"vista-button-icon"]
+            iconHtml: image_face iconSrc iconAttrs
+            attrsVal: attrs_without attrsVal "icon"
+        ]
         attrStr: attrs_to_html attrsVal
         html: "<button" ++ attrStr
         switch equal? actionStr "" [
@@ -26,7 +46,7 @@ button: function [text action attrs] [
             html: html ++ html_escape_attr actionStr
             html: html ++ "\">"
         ]
-        html ++ textStr ++ "</button>"
+        html ++ iconHtml ++ textStr ++ "</button>"
 ]
 
 key_button: function [text bindName attrs] [
@@ -718,7 +738,7 @@ radio_group: function [bindName attrs options bindings] [
 
 image_face: function [src attrs] [
         attrStr: attrs_to_html attrs
-        srcStr: html_escape_attr (to :string src)
+        srcStr: html_escape_attr (resolve_icon_src src)
         "<img src='" ++ srcStr ++ "'" ++ attrStr ++ ">"
 ]
 
@@ -773,13 +793,27 @@ vista_css: "*{box-sizing:border-box;}" ++
     "body{font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;margin:0;background:var(--arturo-bg);color:var(--arturo-ink);}" ++
     "button,input,select,textarea{font:inherit;}" ++
     "button{cursor:pointer;}" ++
+    ".vista-button-icon{vertical-align:middle;margin-right:6px;height:1.2em;width:auto;}" ++
     "a{color:inherit;}" ++
     ".vista-app-header{position:sticky;top:0;z-index:1000;background:var(--arturo-primary);color:var(--arturo-ink);border-bottom:2px solid var(--arturo-ink);}" ++
     ".vista-app-header-inner{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;}" ++
     ".vista-app-logo{height:28px;width:auto;display:block;}" ++
+    ".vista-app-mark{font-weight:700;font-size:15px;letter-spacing:0.5px;}" ++
+    ".vista-app-title{font-weight:700;font-size:18px;}" ++
+    ".vista-app-footer{position:relative;z-index:1000;background:var(--arturo-primary);color:var(--arturo-ink);border-top:1px solid var(--arturo-ink);padding:8px 16px;font-size:12px;opacity:0.85;}" ++
+    ".vista-app-footer-inner{max-width:1100px;margin:0 auto;text-align:center;}" ++
+    ".vista-app-author{font-weight:600;}" ++
+    ".vista-app-date{opacity:0.8;}" ++
+    ".vista-auth-header-controls{display:flex;align-items:center;gap:8px;margin-left:auto;}" ++
+    ".vista-auth-header-btn{background:transparent;border:1px solid var(--arturo-ink);color:var(--arturo-ink);padding:4px 12px;border-radius:4px;cursor:pointer;font-size:13px;transition:all 0.2s ease;}" ++
+    ".vista-auth-header-btn:hover{background:var(--arturo-ink);color:var(--arturo-primary);}" ++
+    ".vista-auth-header-btn-primary{background:var(--arturo-ink);color:var(--arturo-primary);}" ++
+    ".vista-auth-header-btn-primary:hover{opacity:0.85;}" ++
+    ".vista-auth-header-user{font-size:13px;opacity:0.9;}" ++
+    ".vista-auth-container{max-width:400px;margin:40px auto;}" ++
     ".vista-app-mark{font-weight:800;letter-spacing:0.2em;text-transform:uppercase;}" ++
     ".vista-app-title{font-size:18px;font-weight:700;}" ++
-    ".vista-app-body{max-width:1100px;margin:0 auto;padding:16px;}" ++
+    ".vista-app-body{max-width:1100px;margin:0 auto;padding:16px;padding-bottom:60px;}" ++
     ".vista-row,.vista-layout-across{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}" ++
     ".vista-col,.vista-layout-below{display:flex;flex-direction:column;gap:8px;}" ++
     ".vista-layout-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}" ++
