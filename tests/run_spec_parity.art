@@ -56,12 +56,16 @@ test_results: #[
 ]
 
 ; Initialize results directory
+ensure_dir: function [path] [
+    execute "mkdir -p \"" ++ path ++ "\""
+]
+
 init_results_dir: function [] [
     if not? exists? RESULTS_DIR [
-        make-dir RESULTS_DIR
+        ensure_dir RESULTS_DIR
     ]
     if not? exists? TEST_DIR [
-        make-dir TEST_DIR
+        ensure_dir TEST_DIR
     ]
 ]
 
@@ -102,7 +106,10 @@ run_category_tests: function [category] [
         return categoryResults
     ]
     
-    for testName in tests [
+    ti: 0
+    tlen: size tests
+    while [less? ti tlen] [
+        testName: get tests ti
         testFile: TEST_DIR ++ "/" ++ category ++ "/" ++ testName ++ ".art"
         
         testResult: run_test_file testFile
@@ -120,6 +127,7 @@ run_category_tests: function [category] [
                 categoryResults\skipped: categoryResults\skipped + 1
             ]
         ]
+        ti: ti + 1
     ]
     
     categoryResults
@@ -134,7 +142,10 @@ run_all_tests: function [] [
     
     categories: keys TEST_CATEGORIES
     
-    for cat in categories [
+    ci: 0
+    clen: size categories
+    while [less? ci clen] [
+        cat: get categories ci
         print "Running category: " ++ cat
         catResults: run_category_tests cat
         
@@ -145,7 +156,10 @@ run_all_tests: function [] [
         test_results\total: test_results\total + catResults\passed + catResults\failed + catResults\skipped
         
         ; Track failures
-        for test in catResults\tests [
+        tfi: 0
+        tflen: size catResults\tests
+        while [less? tfi tflen] [
+            test: get catResults\tests tfi
             if equal? test\status "failed" [
                 test_results\failures: test_results\failures ++ @[#[
                     category: cat
@@ -153,12 +167,14 @@ run_all_tests: function [] [
                     errors: test\errors
                 ]]
             ]
+            tfi: tfi + 1
         ]
         
         print "  Passed: " ++ to :string catResults\passed
         print "  Failed: " ++ to :string catResults\failed
         print "  Skipped: " ++ to :string catResults\skipped
         print ""
+        ci: ci + 1
     ]
     
     ; Print summary
@@ -172,11 +188,19 @@ run_all_tests: function [] [
     ; Print failures
     if greater? (size test_results\failures) 0 [
         print "=== Failures ==="
-        for f in test_results\failures [
+        fi: 0
+        flen: size test_results\failures
+        while [less? fi flen] [
+            f: get test_results\failures fi
             print f\category ++ "/" ++ f\name ++ ":"
-            for err in f\errors [
+            ei: 0
+            elen: size f\errors
+            while [less? ei elen] [
+                err: get f\errors ei
                 print "  " ++ err
+                ei: ei + 1
             ]
+            fi: fi + 1
         ]
     ]
     
@@ -198,43 +222,24 @@ run_all_tests: function [] [
 
 ; Write results to JSON file
 write_results: function [] [
-    timestamp: to :string now
+    nowStr: to :string now []
+    timestamp: nowStr
     timestamp: replace timestamp ":" "-"
     timestamp: replace timestamp " " "_"
     
     resultsFile: RESULTS_DIR ++ "/spec_parity_" ++ timestamp ++ ".json"
-    
-    ; Build JSON manually
-    json: "{\n"
-    json: json ++ "  \"timestamp\": \"" ++ to :string now ++ "\",\n"
-    json: json ++ "  \"summary\": {\n"
-    json: json ++ "    \"total\": " ++ to :string test_results\total ++ ",\n"
-    json: json ++ "    \"passed\": " ++ to :string test_results\passed ++ ",\n"
-    json: json ++ "    \"failed\": " ++ to :string test_results\failed ++ ",\n"
-    json: json ++ "    \"skipped\": " ++ to :string test_results\skipped ++ "\n"
-    json: json ++ "  },\n"
-    json: json ++ "  \"categories\": {\n"
-    
-    cats: keys test_results\categories
-    ci: 0
-    for cat in cats [
-        catResults: test_results\categories\[cat]
-        json: json ++ "    \"" ++ cat ++ "\": {\n"
-        json: json ++ "      \"passed\": " ++ to :string catResults\passed ++ ",\n"
-        json: json ++ "      \"failed\": " ++ to :string catResults\failed ++ ",\n"
-        json: json ++ "      \"skipped\": " ++ to :string catResults\skipped ++ "\n"
-        json: json ++ "    }"
-        if less? (ci + 1) (size cats) [
-            json: json ++ ","
+
+    payload: #[
+        timestamp: nowStr
+        summary: #[
+            total: test_results\total
+            passed: test_results\passed
+            failed: test_results\failed
+            skipped: test_results\skipped
         ]
-        json: json ++ "\n"
-        ci: ci + 1
+        categories: test_results\categories
     ]
-    
-    json: json ++ "  }\n"
-    json: json ++ "}\n"
-    
-    write json resultsFile
+    write (write.json payload ø) resultsFile
     print "Results written to: " ++ resultsFile
 ]
 
@@ -257,28 +262,32 @@ check_coverage_thresholds: function [] [
     gapCount: 0
     
     lines: split content "\n"
-    for line in lines [
+    li: 0
+    llen: size lines
+    while [less? li llen] [
+        line: get lines li
         if contains? line "| Full |" [ fullCount: fullCount + 1 ]
         if contains? line "| Partial |" [ partialCount: partialCount + 1 ]
         if contains? line "| Gap |" [ gapCount: gapCount + 1 ]
+        li: li + 1
     ]
     
     print "=== Coverage Status ==="
-    print "Full: " ++ to :string fullCount
-    print "Partial: " ++ to :string partialCount
-    print "Gap: " ++ to :string gapCount
+    print ["Full:" fullCount]
+    print ["Partial:" partialCount]
+    print ["Gap:" gapCount]
     print ""
     
     ; Check thresholds
     passed: true
     
     if greater? gapCount 5 [
-        print "FAIL: Gap count (" ++ to :string gapCount ++ ") exceeds threshold (5)"
+        print ["FAIL: Gap count exceeds threshold (5)." "Gap count:" gapCount]
         passed: false
     ]
     
     if less? fullCount 30 [
-        print "FAIL: Full count (" ++ to :string fullCount ++ ") below threshold (30)"
+        print ["FAIL: Full count below threshold (30)." "Full count:" fullCount]
         passed: false
     ]
     

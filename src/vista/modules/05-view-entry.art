@@ -1,4 +1,37 @@
 ; Host split: render HTML independently from host delivery side effects.
+safe_key?: function [dict keyName] [
+    dictType: type dict
+    if any? @[
+        equal? dictType :dictionary
+        equal? dictType :object
+    ] [
+        return key? dict keyName
+    ]
+    false
+]
+
+safe_attr?: function [name] [
+    result: false
+    err: try [
+        result: attr? name
+    ]
+    if error? err [
+        return false
+    ]
+    result
+]
+
+safe_attr: function [name] [
+    result: null
+    err: try [
+        result: attr name
+    ]
+    if error? err [
+        return null
+    ]
+    result
+]
+
 view_render_html: function [layoutBlock] [
     apply_arturo_header
     vista_state\webview_open: false
@@ -7,17 +40,20 @@ view_render_html: function [layoutBlock] [
 
 view_host_options: function [] [
     noWebview: false
-    if attr? "noWebview" [
+    hasNoWebviewAttr: safe_attr? "noWebview"
+    if hasNoWebviewAttr [
         noWebview: true
     ]
     env_vars: env
-    if key? env_vars "VISTA_NO_WEBVIEW" [
+    envHasVistaNoWebview: safe_key? env_vars "VISTA_NO_WEBVIEW"
+    if envHasVistaNoWebview [
         noWebview: true
     ]
-    if key? env_vars "NO_WEBVIEW" [
+    envHasNoWebview: safe_key? env_vars "NO_WEBVIEW"
+    if envHasNoWebview [
         noWebview: true
     ]
-    filePath: attr "file"
+    filePath: safe_attr "file"
     fileName: "ui.html"
     if notEqual? filePath null [
         fileName: to :string filePath
@@ -49,7 +85,8 @@ view_host_deliver_default: function [fullHtml hostOptions] [
 ; View function: generate full HTML and serve through the default host adapter.
 view: function [layoutBlock] [
     fullHtml: view_render_html layoutBlock
-    if attr? "returnHtml" [
+    shouldReturnHtml: safe_attr? "returnHtml"
+    if shouldReturnHtml [
         return fullHtml
     ]
     hostOptions: view_host_options
@@ -60,22 +97,25 @@ vid: function [layoutBlock] [
     prev: vista_vid_mode
     vista_vid_mode: true
     result: null
-    returnHtml: false
-    if attr? "returnHtml" [
+    returnHtml: safe_attr? "returnHtml"
+    if returnHtml [
         returnHtml: true
     ]
     switch returnHtml [
         result: view .returnHtml layoutBlock
     ][
-        switch attr? "file" [
-            path: attr "file"
-            switch attr? "noWebview" [
+        hasFileAttr: safe_attr? "file"
+        switch hasFileAttr [
+            path: safe_attr "file"
+            hasNoWebviewAttr: safe_attr? "noWebview"
+            switch hasNoWebviewAttr [
                 result: view .file:path .noWebview layoutBlock
             ][
                 result: view .file:path layoutBlock
             ]
         ][
-            switch attr? "noWebview" [
+            hasNoWebviewAttr: safe_attr? "noWebview"
+            switch hasNoWebviewAttr [
                 result: view .noWebview layoutBlock
             ][
                 result: view layoutBlock
@@ -94,7 +134,9 @@ vista_runtime_webview_inject: function [js] [
         return false
     ]
     env_vars: env
-    if any? @[key? env_vars "VISTA_NO_WEBVIEW" key? env_vars "NO_WEBVIEW"] [
+    envHasVistaNoWebview: safe_key? env_vars "VISTA_NO_WEBVIEW"
+    envHasNoWebview: safe_key? env_vars "NO_WEBVIEW"
+    if any? @[envHasVistaNoWebview envHasNoWebview] [
         return false
     ]
     webview .inject: js ""

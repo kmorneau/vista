@@ -17,7 +17,7 @@ style "auth_login" [
         field arg1 .type:"password" .placeholder:"••••••••"
         label "MFA Code (if enabled)"
         field arg2 .placeholder:"123456"
-        button "Sign in" arg3
+        button "Sign in" .icon:"log-in" arg3
     ]
 ]
 
@@ -27,7 +27,7 @@ style "auth_signup" [
         field arg0 .placeholder:"you@example.com"
         label "Password"
         field arg1 .type:"password" .placeholder:"At least 8 characters"
-        button "Create account" arg2
+        button "Create account" .icon:"user-plus" arg2
     ]
 ]
 
@@ -37,20 +37,20 @@ style "auth_account" [
         divider
         label "Change email"
         field arg1 .placeholder:"new@email.com"
-        button "Update email" arg2
+        button "Update email" .icon:"mail" arg2
         divider
         label "Change password"
         field arg3 .type:"password" .placeholder:"Current password"
         field arg4 .type:"password" .placeholder:"New password"
-        button "Update password" arg5
+        button "Update password" .icon:"lock" arg5
         divider
         label "Multi-factor"
         row [
-            button "Enable MFA" arg6
-            button "Disable MFA" arg7
+            button "Enable MFA" .icon:"shield-check" arg6
+            button "Disable MFA" .icon:"shield-off" arg7
         ]
         divider
-        button "Sign out" arg8
+        button "Sign out" .icon:"log-out" arg8
     ]
 ]
 

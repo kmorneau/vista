@@ -1,0 +1,158 @@
+{
+    "timestamp": "2026-02-18T14:17:30-05:00",
+    "summary": {
+        "total": 21,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 21
+    },
+    "categories": {
+        "html5-core": {
+            "passed": 0,
+            "failed": 0,
+            "skipped": 9,
+            "tests": [
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "document-structure",
+                    "category": "html5-core"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "metadata",
+                    "category": "html5-core"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "sectioning",
+                    "category": "html5-core"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "headings",
+                    "category": "html5-core"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "lists",
+                    "category": "html5-core"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "tables",
+                    "category": "html5-core"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "forms",
+                    "category": "html5-core"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "media",
+                    "category": "html5-core"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "interactive",
+                    "category": "html5-core"
+                }
+            ]
+        },
+        "graphics": {
+            "passed": 0,
+            "failed": 0,
+            "skipped": 7,
+            "tests": [
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "canvas-2d",
+                    "category": "graphics"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "shapes",
+                    "category": "graphics"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "curves",
+                    "category": "graphics"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "transforms",
+                    "category": "graphics"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "text-drawing",
+                    "category": "graphics"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "gradients",
+                    "category": "graphics"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "svg-export",
+                    "category": "graphics"
+                }
+            ]
+        },
+        "vid-parity": {
+            "passed": 0,
+            "failed": 0,
+            "skipped": 5,
+            "tests": [
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "faces",
+                    "category": "vid-parity"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "layout",
+                    "category": "vid-parity"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "events",
+                    "category": "vid-parity"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "bindings",
+                    "category": "vid-parity"
+                },
+                {
+                    "status": "skipped",
+                    "reason": "file not found",
+                    "name": "styles",
+                    "category": "vid-parity"
+                }
+            ]
+        }
+    }
+}

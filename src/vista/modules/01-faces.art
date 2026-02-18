@@ -816,8 +816,8 @@ vista_css: "*{box-sizing:border-box;}" ++
     ".vista-auth-header-controls{display:flex;align-items:center;gap:8px;margin-left:auto;}" ++
     ".vista-auth-header-btn{background:transparent;border:1px solid var(--arturo-ink);color:var(--arturo-ink);padding:4px 12px;border-radius:4px;cursor:pointer;font-size:13px;transition:all 0.2s ease;}" ++
     ".vista-auth-header-btn:hover{background:var(--arturo-ink);color:var(--arturo-primary);}" ++
-    ".vista-auth-header-btn-primary{background:var(--arturo-ink);color:var(--arturo-primary);}" ++
-    ".vista-auth-header-btn-primary:hover{opacity:0.85;}" ++
+    ".vista-auth-header-btn-primary{background:transparent;border:1px solid var(--arturo-ink);color:var(--arturo-ink);}" ++
+    ".vista-auth-header-btn-primary:hover{background:var(--arturo-ink);color:var(--arturo-primary);opacity:1;}" ++
     ".vista-auth-header-user{font-size:13px;opacity:0.9;}" ++
     ".vista-auth-container{max-width:400px;margin:40px auto;}" ++
     ".vista-app-mark{font-weight:800;letter-spacing:0.2em;text-transform:uppercase;}" ++
