@@ -26,6 +26,49 @@ resolve_icon_src: function [src] [
         srcStr
 ]
 
+icon_svg_source_path: function [src] [
+        srcStr: to :string src
+        if all? @[
+            not? contains? srcStr "/"
+            not? contains? srcStr "."
+            not? contains? srcStr ":"
+        ] [
+            return "dist/assets/icons/" ++ srcStr ++ ".svg"
+        ]
+        if all? @[
+            contains? srcStr ".svg"
+            not? contains? srcStr "data:image/"
+        ] [
+            return srcStr
+        ]
+        null
+]
+
+icon_svg_markup: function [src] [
+        iconPath: icon_svg_source_path src
+        if equal? iconPath null [
+            return null
+        ]
+        iconRaw: null
+        if error? err: <= try [
+            iconRaw: to :string read iconPath
+        ] [
+            return null
+        ]
+        iconRaw
+]
+
+icon_uses_current_color?: function [attrs] [
+        if equal? attrs null [
+            return false
+        ]
+        if not? key? attrs "class" [
+            return false
+        ]
+        classStr: to :string attrs\class
+        contains? classStr "vista-button-icon"
+]
+
 button: function [text action attrs] [
         attrsVal: attrs
         if equal? attrsVal null [
@@ -41,7 +84,7 @@ button: function [text action attrs] [
         ]
         iconHtml: ""
         if key? attrsVal "icon" [
-            iconSrc: resolve_icon_src attrsVal\icon
+            iconSrc: attrsVal\icon
             iconAttrs: #["class":"vista-button-icon"]
             iconHtml: image_face iconSrc iconAttrs
             attrsVal: attrs_without attrsVal "icon"
@@ -746,6 +789,13 @@ radio_group: function [bindName attrs options bindings] [
 ]
 
 image_face: function [src attrs] [
+        if icon_uses_current_color? attrs [
+            svgMarkup: icon_svg_markup src
+            if notEqual? svgMarkup null [
+                attrStr: attrs_to_html attrs
+                return "<span" ++ attrStr ++ ">" ++ svgMarkup ++ "</span>"
+            ]
+        ]
         attrStr: attrs_to_html attrs
         srcStr: html_escape_attr (resolve_icon_src src)
         "<img src='" ++ srcStr ++ "'" ++ attrStr ++ ">"
@@ -802,7 +852,10 @@ vista_css: "*{box-sizing:border-box;}" ++
     "body{font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;margin:0;background:var(--arturo-bg);color:var(--arturo-ink);}" ++
     "button,input,select,textarea{font:inherit;}" ++
     "button{cursor:pointer;}" ++
-    ".vista-button-icon{vertical-align:middle;margin-right:6px;height:1.2em;width:auto;}" ++
+    ".vista-button-icon{vertical-align:middle;margin-right:6px;height:1.2em;width:1.2em;display:inline-flex;align-items:center;justify-content:center;}" ++
+    ".vista-button-icon img{height:100%;width:100%;display:block;}" ++
+    ".vista-button-icon svg{height:100%;width:100%;display:block;}" ++
+    ".vista-button-icon svg *{fill:currentColor !important;stroke:currentColor !important;}" ++
     "a{color:inherit;}" ++
     ".vista-app-header{position:sticky;top:0;z-index:1000;background:var(--arturo-primary);color:var(--arturo-ink);border-bottom:2px solid var(--arturo-ink);}" ++
     ".vista-app-header-inner{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;}" ++

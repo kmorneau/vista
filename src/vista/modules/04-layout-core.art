@@ -2676,8 +2676,8 @@ render_html_document: function [compileResult] [
         logoAlt: html_escape_attr effectiveTitle
         logoHtml: "<img class='vista-app-logo' src='" ++ logoSrc ++ "' alt='" ++ logoAlt ++ "'>"
     ]
-    signInIconSrc: resolve_icon_src "log-in"
-    signUpIconSrc: resolve_icon_src "user-plus"
+    signInIconSrc: "log-in"
+    signUpIconSrc: "user-plus"
     signInIconHtml: image_face signInIconSrc #["class":"vista-button-icon"]
     signUpIconHtml: image_face signUpIconSrc #["class":"vista-button-icon"]
     authControlsHtml: "<div class='vista-auth-header-controls'><button class='vista-auth-header-btn' data-vista-action='auth_show_login'>" ++ signInIconHtml ++ "Sign In</button><button class='vista-auth-header-btn' data-vista-action='auth_show_signup'>" ++ signUpIconHtml ++ "Sign Up</button></div>"
