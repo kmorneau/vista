@@ -213,8 +213,13 @@ field: function [value] [
         "<input type='text' value='" ++ (to :string value) ++ "'>"
 ]
 
+label_text_with_suffix: function [content] [
+        contentStr: to :string content
+        contentStr ++ ": "
+]
+
 label: function [content] [
-        contentStr: html_text content
+        contentStr: html_text (label_text_with_suffix content)
         "<label>" ++ contentStr ++ "</label>"
 ]
 
@@ -229,7 +234,7 @@ label_face: function [content attrs] [
             attrsVal: attrs_without attrsVal "as"
         ]
         attrStr: attrs_to_html attrsVal
-        contentStr: html_text content
+        contentStr: html_text (label_text_with_suffix content)
         "<" ++ tagName ++ attrStr ++ ">" ++ contentStr ++ "</" ++ tagName ++ ">"
 ]
 
@@ -920,10 +925,10 @@ vista_css: "*{box-sizing:border-box;}" ++
     ".vista-radio-item{display:flex;align-items:center;gap:6px;}" ++
     ".vista-auth-splash{min-height:60vh;display:flex;align-items:center;justify-content:center;padding:24px;}" ++
     ".vista-auth-splash-card{max-width:520px;width:100%;text-align:center;padding:24px;border:1px solid var(--arturo-border);border-radius:14px;background:var(--arturo-panel);box-shadow:0 10px 30px rgba(0,0,0,0.08);}" ++
-    ".vista-auth-title{font-size:28px;font-weight:800;margin:0 0 8px;}" ++
+    ".vista-auth-title{font-size:28px;font-weight:800;margin:0 0 8px;color:var(--arturo-ink) !important;background:var(--arturo-primary) !important;padding:4px 10px;border-radius:8px;display:inline-block;}" ++
     ".vista-auth-subtitle{color:var(--arturo-muted);margin:0;}" ++
     ".vista-auth-card{max-width:520px;margin:0 auto;}" ++
-    ".vista-auth-meta{color:var(--arturo-muted);margin-bottom:6px;}" ++
+    ".vista-auth-meta{display:block;color:var(--arturo-muted);margin-bottom:6px;}" ++
     "html{-webkit-text-size-adjust:100%;}" ++
     "img,video,canvas{max-width:100%;height:auto;}" ++
     "textarea{max-width:100%;}" ++

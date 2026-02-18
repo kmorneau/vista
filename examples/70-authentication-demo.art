@@ -20,21 +20,55 @@ profile_label: "Signed out"
 auth_token: ""
 auth_status: "Ready"
 mfa_challenge: ""
-show_login: true
+show_splash: true
+show_login: false
 show_signup: false
 show_account: false
 
 view [
+    ; Seed visibility flags into client state for data-show-bind conditions.
+    box .style:"display:none" [
+        field show_splash .type:"hidden"
+        field show_login .type:"hidden"
+        field show_signup .type:"hidden"
+        field show_account .type:"hidden"
+    ]
+
+    box .class:"vista-auth-card" .data-show-bind:"show_splash" .data-show-value:"true" [
+        col [
+            auth_splash "Welcome to Vista Authentication" "Sign in or create an account to continue."
+            row [
+                button "Continue to Sign In" .icon:"log-in" .data-vista-action:"auth_show_login"
+                button "Go to Sign Up" .icon:"user-plus" .data-vista-action:"auth_show_signup"
+            ]
+        ]
+    ]
+
     box .class:"vista-auth-card" .data-show-bind:"show_login" .data-show-value:"true" [
-        auth_login email password mfa_code [auth_login]
-        text .class:"vista-auth-meta" auth_status
-        text .class:"vista-auth-meta" mfa_challenge
-        button "Verify MFA Code" .icon:"shield-check" [auth_mfa_verify]
+        col [
+            auth_login email password mfa_code [auth_login]
+            button "Verify MFA Code" .icon:"shield-check" [auth_mfa_verify]
+            text .class:"vista-auth-meta" auth_status
+            text .class:"vista-auth-meta" mfa_challenge
+        ]
     ]
 
     box .class:"vista-auth-card" .data-show-bind:"show_signup" .data-show-value:"true" [
         auth_signup email password [auth_signup]
         text .class:"vista-auth-meta" auth_status
+    ]
+
+    box .class:"vista-auth-card" .data-show-bind:"show_account" .data-show-value:"true" [
+        panel "MFA Setup" [
+            col [
+                text .class:"vista-auth-meta" "Manage MFA without using the account form."
+                row [
+                    button "Enable MFA" .icon:"shield-check" [auth_enable_mfa]
+                    button "Disable MFA" .icon:"shield-off" [auth_disable_mfa]
+                ]
+                text .class:"vista-auth-meta" auth_status
+            ]
+        ]
     ]
 
     box .class:"vista-auth-card" .data-show-bind:"show_account" .data-show-value:"true" [

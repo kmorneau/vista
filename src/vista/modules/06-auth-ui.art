@@ -3,7 +3,7 @@
 style "auth_splash" [
     box .class:"vista-auth-splash" [
         box .class:"vista-auth-splash-card" [
-            title .class:"vista-auth-title" arg0
+            title .class:"vista-auth-title" .style:"color:var(--arturo-ink) !important;background:var(--arturo-primary) !important;" arg0
             text .class:"vista-auth-subtitle" arg1
         ]
     ]
@@ -11,23 +11,37 @@ style "auth_splash" [
 
 style "auth_login" [
     panel .class:"vista-auth-card" "Sign in" [
-        label "Email"
-        field arg0 .placeholder:"you@example.com"
-        label "Password"
-        field arg1 .type:"password" .placeholder:"••••••••"
-        label "MFA Code (if enabled)"
-        field arg2 .placeholder:"123456"
-        button "Sign in" .icon:"log-in" arg3
+        col [
+            row [
+                label "Email"
+                field arg0 .placeholder:"you@example.com"
+            ]
+            row [
+                label "Password"
+                field arg1 .type:"password" .placeholder:"••••••••"
+            ]
+            row [
+                label "MFA Code (if enabled)"
+                field arg2 .placeholder:"123456"
+            ]
+            button "Sign in" .icon:"log-in" arg3
+        ]
     ]
 ]
 
 style "auth_signup" [
     panel .class:"vista-auth-card" "Create account" [
-        label "Email"
-        field arg0 .placeholder:"you@example.com"
-        label "Password"
-        field arg1 .type:"password" .placeholder:"At least 8 characters"
-        button "Create account" .icon:"user-plus" arg2
+        col [
+            row [
+                label "Email"
+                field arg0 .placeholder:"you@example.com"
+            ]
+            row [
+                label "Password"
+                field arg1 .type:"password" .placeholder:"At least 8 characters"
+            ]
+            button "Create account" .icon:"user-plus" arg2
+        ]
     ]
 ]
 
@@ -40,9 +54,13 @@ style "auth_account" [
         button "Update email" .icon:"mail" arg2
         divider
         label "Change password"
-        field arg3 .type:"password" .placeholder:"Current password"
-        field arg4 .type:"password" .placeholder:"New password"
-        button "Update password" .icon:"lock" arg5
+        col [
+            field arg3 .type:"password" .placeholder:"Current password"
+            field arg4 .type:"password" .placeholder:"New password"
+        ]
+        row [
+            button "Update password" .icon:"lock" arg5
+        ]
         divider
         label "Multi-factor"
         row [
