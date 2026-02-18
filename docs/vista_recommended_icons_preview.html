@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Vista Recommended Icons Preview</title>
+  <title>Vista Recommended Face Icons</title>
   <style>
     :root {
       --ink: #141414;
@@ -101,93 +101,57 @@
   </style>
 </head>
 <body>
-  <h1>Vista Recommended Icons</h1>
-  <p>Visual preview and copy-ready implementation snippets for commonly used UI faces/actions.</p>
+  <h1>Vista Recommended Face Icons</h1>
+  <p>Canonical defaults for faces without icon conventions, aligned to the bundled icon set.</p>
 
   <table>
     <thead>
       <tr>
-        <th>Name</th>
+        <th>Face</th>
+        <th>Default Icon</th>
         <th>How It Looks</th>
         <th>Implementation</th>
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/log-in.svg" alt="log-in" /></span> <code>log-in</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/log-in.svg" alt="" /></span>Sign in</button></td>
-        <td><code>button "Sign in" .icon:"log-in" [auth_login]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/user-plus.svg" alt="user-plus" /></span> <code>user-plus</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/user-plus.svg" alt="" /></span>Sign up</button></td>
-        <td><code>button "Sign up" .icon:"user-plus" [auth_signup]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/mail.svg" alt="mail" /></span> <code>mail</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/mail.svg" alt="" /></span>Update email</button></td>
-        <td><code>button "Update email" .icon:"mail" [auth_update_email]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/lock.svg" alt="lock" /></span> <code>lock</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/lock.svg" alt="" /></span>Update password</button></td>
-        <td><code>button "Update password" .icon:"lock" [auth_update_password]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/shield-check.svg" alt="shield-check" /></span> <code>shield-check</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/shield-check.svg" alt="" /></span>Enable MFA</button></td>
-        <td><code>button "Enable MFA" .icon:"shield-check" [auth_enable_mfa]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/shield-off.svg" alt="shield-off" /></span> <code>shield-off</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/shield-off.svg" alt="" /></span>Disable MFA</button></td>
-        <td><code>button "Disable MFA" .icon:"shield-off" [auth_disable_mfa]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/log-out.svg" alt="log-out" /></span> <code>log-out</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/log-out.svg" alt="" /></span>Sign out</button></td>
-        <td><code>button "Sign out" .icon:"log-out" [auth_logout]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/settings.svg" alt="settings" /></span> <code>settings</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/settings.svg" alt="" /></span>Preferences</button></td>
-        <td><code>button "Preferences" .icon:"settings" [open_settings]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/info.svg" alt="info" /></span> <code>info</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/info.svg" alt="" /></span>More info</button></td>
-        <td><code>button "More info" .icon:"info" [show_help]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/layout-template.svg" alt="layout-template" /></span> <code>layout-template</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/layout-template.svg" alt="" /></span>Templates</button></td>
-        <td><code>button "Templates" .icon:"layout-template" [open_templates]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/layout-grid.svg" alt="layout-grid" /></span> <code>layout-grid</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/layout-grid.svg" alt="" /></span>Grid view</button></td>
-        <td><code>button "Grid view" .icon:"layout-grid" [toggle_grid]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/table.svg" alt="table" /></span> <code>table</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/table.svg" alt="" /></span>Table view</button></td>
-        <td><code>button "Table view" .icon:"table" [toggle_table]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/image.svg" alt="image" /></span> <code>image</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/image.svg" alt="" /></span>Images</button></td>
-        <td><code>button "Images" .icon:"image" [open_media]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/video.svg" alt="video" /></span> <code>video</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/video.svg" alt="" /></span>Videos</button></td>
-        <td><code>button "Videos" .icon:"video" [open_video]</code></td>
-      </tr>
-      <tr>
-        <td><span class="icon-wrap"><img src="../dist/assets/icons/volume-2.svg" alt="volume-2" /></span> <code>volume-2</code></td>
-        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/volume-2.svg" alt="" /></span>Audio</button></td>
-        <td><code>button "Audio" .icon:"volume-2" [open_audio]</code></td>
-      </tr>
+      <tr><td><code>key_button</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/keyboard.svg" alt="keyboard" /></span> <code>keyboard</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/keyboard.svg" alt="" /></span>Key</button></td><td><code>button "Key" .icon:"keyboard" [handler]</code></td></tr>
+      <tr><td><code>title</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/heading.svg" alt="heading" /></span> <code>heading</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/heading.svg" alt="" /></span>Title</button></td><td><code>button "Title" .icon:"heading" [handler]</code></td></tr>
+      <tr><td><code>subtitle</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/text-cursor-input.svg" alt="text-cursor-input" /></span> <code>text-cursor-input</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/text-cursor-input.svg" alt="" /></span>Subtitle</button></td><td><code>button "Subtitle" .icon:"text-cursor-input" [handler]</code></td></tr>
+      <tr><td><code>label</code>, <code>label_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/tag.svg" alt="tag" /></span> <code>tag</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/tag.svg" alt="" /></span>Label</button></td><td><code>button "Label" .icon:"tag" [handler]</code></td></tr>
+      <tr><td><code>field</code>, <code>input_field</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/pen-line.svg" alt="pen-line" /></span> <code>pen-line</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/pen-line.svg" alt="" /></span>Field</button></td><td><code>button "Field" .icon:"pen-line" [handler]</code></td></tr>
+      <tr><td><code>textarea_field</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/file-text.svg" alt="file-text" /></span> <code>file-text</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/file-text.svg" alt="" /></span>Textarea</button></td><td><code>button "Textarea" .icon:"file-text" [handler]</code></td></tr>
+      <tr><td><code>select_field</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/chevron-down.svg" alt="chevron-down" /></span> <code>chevron-down</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/chevron-down.svg" alt="" /></span>Select</button></td><td><code>button "Select" .icon:"chevron-down" [handler]</code></td></tr>
+      <tr><td><code>checkbox</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/check.svg" alt="check" /></span> <code>check</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/check.svg" alt="" /></span>Checkbox</button></td><td><code>button "Checkbox" .icon:"check" [handler]</code></td></tr>
+      <tr><td><code>toggle</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/toggle-right.svg" alt="toggle-right" /></span> <code>toggle-right</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/toggle-right.svg" alt="" /></span>Toggle</button></td><td><code>button "Toggle" .icon:"toggle-right" [handler]</code></td></tr>
+      <tr><td><code>slider_field</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/sliders-horizontal.svg" alt="sliders-horizontal" /></span> <code>sliders-horizontal</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/sliders-horizontal.svg" alt="" /></span>Slider</button></td><td><code>button "Slider" .icon:"sliders-horizontal" [handler]</code></td></tr>
+      <tr><td><code>rotary_field</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/disc.svg" alt="disc" /></span> <code>disc</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/disc.svg" alt="" /></span>Rotary</button></td><td><code>button "Rotary" .icon:"disc" [handler]</code></td></tr>
+      <tr><td><code>radio_group</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/circle.svg" alt="circle" /></span> <code>circle</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/circle.svg" alt="" /></span>Radio</button></td><td><code>button "Radio" .icon:"circle" [handler]</code></td></tr>
+      <tr><td><code>form</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/clipboard.svg" alt="clipboard" /></span> <code>clipboard</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/clipboard.svg" alt="" /></span>Form</button></td><td><code>button "Form" .icon:"clipboard" [handler]</code></td></tr>
+      <tr><td><code>table_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/table.svg" alt="table" /></span> <code>table</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/table.svg" alt="" /></span>Table</button></td><td><code>button "Table" .icon:"table" [handler]</code></td></tr>
+      <tr><td><code>table_row_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/rows-3.svg" alt="rows-3" /></span> <code>rows-3</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/rows-3.svg" alt="" /></span>Row</button></td><td><code>button "Row" .icon:"rows-3" [handler]</code></td></tr>
+      <tr><td><code>table_cell_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/columns-3.svg" alt="columns-3" /></span> <code>columns-3</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/columns-3.svg" alt="" /></span>Cell</button></td><td><code>button "Cell" .icon:"columns-3" [handler]</code></td></tr>
+      <tr><td><code>toolbar_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/toolbox.svg" alt="toolbox" /></span> <code>toolbox</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/toolbox.svg" alt="" /></span>Toolbar</button></td><td><code>button "Toolbar" .icon:"toolbox" [handler]</code></td></tr>
+      <tr><td><code>menubar_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/menu.svg" alt="menu" /></span> <code>menu</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/menu.svg" alt="" /></span>Menubar</button></td><td><code>button "Menubar" .icon:"menu" [handler]</code></td></tr>
+      <tr><td><code>tool_group_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/layers.svg" alt="layers" /></span> <code>layers</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/layers.svg" alt="" /></span>Group</button></td><td><code>button "Group" .icon:"layers" [handler]</code></td></tr>
+      <tr><td><code>dialog_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/message-square.svg" alt="message-square" /></span> <code>message-square</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/message-square.svg" alt="" /></span>Dialog</button></td><td><code>button "Dialog" .icon:"message-square" [handler]</code></td></tr>
+      <tr><td><code>details_face</code>, <code>summary_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/info.svg" alt="info" /></span> <code>info</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/info.svg" alt="" /></span>Details</button></td><td><code>button "Details" .icon:"info" [handler]</code></td></tr>
+      <tr><td><code>template_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/layout-template.svg" alt="layout-template" /></span> <code>layout-template</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/layout-template.svg" alt="" /></span>Template</button></td><td><code>button "Template" .icon:"layout-template" [handler]</code></td></tr>
+      <tr><td><code>grid_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/layout-grid.svg" alt="layout-grid" /></span> <code>layout-grid</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/layout-grid.svg" alt="" /></span>Grid</button></td><td><code>button "Grid" .icon:"layout-grid" [handler]</code></td></tr>
+      <tr><td><code>spacer_face</code>, <code>divider_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/minus.svg" alt="minus" /></span> <code>minus</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/minus.svg" alt="" /></span>Divider</button></td><td><code>button "Divider" .icon:"minus" [handler]</code></td></tr>
+      <tr><td><code>row</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/arrow-right.svg" alt="arrow-right" /></span> <code>arrow-right</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/arrow-right.svg" alt="" /></span>Row</button></td><td><code>button "Row" .icon:"arrow-right" [handler]</code></td></tr>
+      <tr><td><code>col</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/arrow-down.svg" alt="arrow-down" /></span> <code>arrow-down</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/arrow-down.svg" alt="" /></span>Column</button></td><td><code>button "Column" .icon:"arrow-down" [handler]</code></td></tr>
+      <tr><td><code>group</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/folder.svg" alt="folder" /></span> <code>folder</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/folder.svg" alt="" /></span>Group</button></td><td><code>button "Group" .icon:"folder" [handler]</code></td></tr>
+      <tr><td><code>panel_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/layout-panel-top.svg" alt="layout-panel-top" /></span> <code>layout-panel-top</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/layout-panel-top.svg" alt="" /></span>Panel</button></td><td><code>button "Panel" .icon:"layout-panel-top" [handler]</code></td></tr>
+      <tr><td><code>box</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/square.svg" alt="square" /></span> <code>square</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/square.svg" alt="" /></span>Box</button></td><td><code>button "Box" .icon:"square" [handler]</code></td></tr>
+      <tr><td><code>split_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/panel-left.svg" alt="panel-left" /></span> <code>panel-left</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/panel-left.svg" alt="" /></span>Split</button></td><td><code>button "Split" .icon:"panel-left" [handler]</code></td></tr>
+      <tr><td><code>list_face_bind</code>, <code>text_list</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/list.svg" alt="list" /></span> <code>list</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/list.svg" alt="" /></span>List</button></td><td><code>button "List" .icon:"list" [handler]</code></td></tr>
+      <tr><td><code>sensor_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/activity.svg" alt="activity" /></span> <code>activity</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/activity.svg" alt="" /></span>Sensor</button></td><td><code>button "Sensor" .icon:"activity" [handler]</code></td></tr>
+      <tr><td><code>script_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/code.svg" alt="code" /></span> <code>code</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/code.svg" alt="" /></span>Script</button></td><td><code>button "Script" .icon:"code" [handler]</code></td></tr>
+      <tr><td><code>canvas_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/pen-tool.svg" alt="pen-tool" /></span> <code>pen-tool</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/pen-tool.svg" alt="" /></span>Canvas</button></td><td><code>button "Canvas" .icon:"pen-tool" [handler]</code></td></tr>
+      <tr><td><code>image_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/image.svg" alt="image" /></span> <code>image</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/image.svg" alt="" /></span>Image</button></td><td><code>button "Image" .icon:"image" [handler]</code></td></tr>
+      <tr><td><code>audio_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/volume-2.svg" alt="volume-2" /></span> <code>volume-2</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/volume-2.svg" alt="" /></span>Audio</button></td><td><code>button "Audio" .icon:"volume-2" [handler]</code></td></tr>
+      <tr><td><code>video_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/video.svg" alt="video" /></span> <code>video</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/video.svg" alt="" /></span>Video</button></td><td><code>button "Video" .icon:"video" [handler]</code></td></tr>
+      <tr><td><code>progress_face</code></td><td><span class="icon-wrap"><img src="../dist/assets/icons/loader.svg" alt="loader" /></span> <code>loader</code></td><td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/loader.svg" alt="" /></span>Progress</button></td><td><code>button "Progress" .icon:"loader" [handler]</code></td></tr>
     </tbody>
   </table>
 </body>

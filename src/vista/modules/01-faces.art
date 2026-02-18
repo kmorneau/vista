@@ -69,6 +69,61 @@ icon_uses_current_color?: function [attrs] [
         contains? classStr "vista-button-icon"
 ]
 
+; Canonical defaults used by Vista docs/examples for faces without explicit icon conventions.
+vista_face_default_icons: #[
+        key_button: "keyboard"
+        title: "heading"
+        subtitle: "text-cursor-input"
+        label: "tag"
+        label_face: "tag"
+        field: "pen-line"
+        input_field: "pen-line"
+        textarea_field: "file-text"
+        select_field: "chevron-down"
+        checkbox: "check"
+        toggle: "toggle-right"
+        slider_field: "sliders-horizontal"
+        rotary_field: "disc"
+        radio_group: "circle"
+        form: "clipboard"
+        table_face: "table"
+        table_row_face: "rows-3"
+        table_cell_face: "columns-3"
+        toolbar_face: "toolbox"
+        menubar_face: "menu"
+        tool_group_face: "layers"
+        dialog_face: "message-square"
+        details_face: "info"
+        summary_face: "info"
+        template_face: "layout-template"
+        grid_face: "layout-grid"
+        spacer_face: "minus"
+        row: "arrow-right"
+        col: "arrow-down"
+        group: "folder"
+        panel_face: "layout-panel-top"
+        box: "square"
+        divider_face: "minus"
+        split_face: "panel-left"
+        list_face_bind: "list"
+        text_list: "list"
+        sensor_face: "activity"
+        script_face: "code"
+        canvas_face: "pen-tool"
+        image_face: "image"
+        audio_face: "volume-2"
+        video_face: "video"
+        progress_face: "loader"
+]
+
+vista_face_default_icon: function [faceName] [
+        key: to :string faceName
+        if key? vista_face_default_icons key [
+                return vista_face_default_icons\[key]
+        ]
+        null
+]
+
 button: function [text action attrs] [
         attrsVal: attrs
         if equal? attrsVal null [
