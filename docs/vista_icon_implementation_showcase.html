@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vista Icon Implementation Showcase</title>
+  <style>
+    :root {
+      --arturo-primary: #f2c230;
+      --arturo-ink: #141414;
+      --arturo-bg: #f7f6f1;
+      --arturo-panel: #ffffff;
+      --arturo-border: #ded6c2;
+      --arturo-muted: #4b4b4b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+      background: var(--arturo-bg);
+      color: var(--arturo-ink);
+      padding: 20px;
+    }
+    h1 { margin: 0 0 6px; }
+    .muted { color: var(--arturo-muted); margin: 0 0 16px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--arturo-panel);
+      border: 1px solid var(--arturo-border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      border-bottom: 1px solid var(--arturo-border);
+      vertical-align: top;
+      text-align: left;
+      padding: 12px;
+    }
+    th {
+      background: #f2ead4;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    tr:last-child td { border-bottom: none; }
+
+    .vista-button-icon {
+      vertical-align: middle;
+      margin-right: 6px;
+      height: 1.1em;
+      width: 1.1em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .vista-button-icon img,
+    .vista-button-icon svg {
+      display: block;
+      height: 100%;
+      width: 100%;
+    }
+    .vista-button-icon svg * {
+      fill: currentColor !important;
+      stroke: currentColor !important;
+    }
+
+    .btn {
+      background: transparent;
+      border: 1px solid var(--arturo-ink);
+      color: var(--arturo-ink);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      margin-right: 8px;
+      margin-bottom: 6px;
+    }
+    .btn:hover {
+      background: var(--arturo-ink);
+      color: var(--arturo-primary);
+    }
+
+    .auth-title {
+      display: inline-block;
+      color: var(--arturo-ink);
+      background: var(--arturo-primary);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .snippet {
+      margin: 0;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      background: #fbf8ef;
+      border: 1px solid var(--arturo-border);
+      border-radius: 8px;
+      padding: 8px;
+    }
+    .cell-name { width: 20%; font-weight: 600; }
+    .cell-look { width: 35%; }
+    .cell-impl { width: 45%; }
+  </style>
+</head>
+<body>
+  <h1>Vista Icon Implementations</h1>
+  <p class="muted">Rendered examples of icon-enabled faces/styles with their Arturo implementation snippets.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>How It Looks</th>
+        <th>Implementation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="cell-name"><code>button .icon</code></td>
+        <td class="cell-look">
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/log-in.svg" alt="" /></span>Sign In</button>
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/user-plus.svg" alt="" /></span>Sign Up</button>
+        </td>
+        <td class="cell-impl"><pre class="snippet">button "Sign In" .icon:"log-in" [auth_login]
+button "Sign Up" .icon:"user-plus" [auth_signup]</pre></td>
+      </tr>
+
+      <tr>
+        <td class="cell-name"><code>auth_login</code></td>
+        <td class="cell-look">
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/log-in.svg" alt="" /></span>Sign in</button>
+        </td>
+        <td class="cell-impl"><pre class="snippet">auth_login email password mfa_code [auth_login]</pre></td>
+      </tr>
+
+      <tr>
+        <td class="cell-name"><code>auth_signup</code></td>
+        <td class="cell-look">
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/user-plus.svg" alt="" /></span>Create account</button>
+        </td>
+        <td class="cell-impl"><pre class="snippet">auth_signup email password [auth_signup]</pre></td>
+      </tr>
+
+      <tr>
+        <td class="cell-name"><code>auth_account</code></td>
+        <td class="cell-look">
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/mail.svg" alt="" /></span>Update email</button>
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/lock.svg" alt="" /></span>Update password</button>
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/shield-check.svg" alt="" /></span>Enable MFA</button>
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/shield-off.svg" alt="" /></span>Disable MFA</button>
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/log-out.svg" alt="" /></span>Sign out</button>
+        </td>
+        <td class="cell-impl"><pre class="snippet">auth_account profile_label new_email [auth_update_email]
+            old_password new_password [auth_update_password]
+            [auth_enable_mfa] [auth_disable_mfa] [auth_logout]</pre></td>
+      </tr>
+
+      <tr>
+        <td class="cell-name"><code>auth_splash</code></td>
+        <td class="cell-look">
+          <div class="auth-title">Welcome to Vista Authentication</div>
+        </td>
+        <td class="cell-impl"><pre class="snippet">auth_splash "Welcome to Vista Authentication"
+            "Sign in or create an account to continue."</pre></td>
+      </tr>
+
+      <tr>
+        <td class="cell-name"><code>auth_app</code></td>
+        <td class="cell-look">
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/log-in.svg" alt="" /></span>Continue to Sign In</button>
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/user-plus.svg" alt="" /></span>Go to Sign Up</button>
+          <button class="btn"><span class="vista-button-icon"><img src="../dist/assets/icons/shield-check.svg" alt="" /></span>Verify MFA Code</button>
+        </td>
+        <td class="cell-impl"><pre class="snippet">auth_app "Welcome to Vista Authentication"
+         "Sign in or create an account to continue."</pre></td>
+      </tr>
+
+      <tr>
+        <td class="cell-name"><code>vista-graphics</code></td>
+        <td class="cell-look">No face-level icon system (graphics draws shapes/paths on canvas/SVG).</td>
+        <td class="cell-impl"><pre class="snippet">canvas .id:"demo" .width:240 .height:140 [
+    pen "#1f5cff"
+    line-width 3
+    line [20 20] [200 20]
+]</pre></td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

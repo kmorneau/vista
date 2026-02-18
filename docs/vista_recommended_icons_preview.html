@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vista Recommended Icons Preview</title>
+  <style>
+    :root {
+      --ink: #141414;
+      --bg: #f7f6f1;
+      --panel: #ffffff;
+      --border: #ded6c2;
+      --primary: #f2c230;
+      --muted: #4b4b4b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    }
+    h1 { margin: 0 0 6px; }
+    p { margin: 0 0 16px; color: var(--muted); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--border);
+    }
+    th, td {
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+      padding: 10px;
+    }
+    tr:last-child td { border-bottom: none; }
+    th {
+      background: #f3ecd8;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 12px;
+    }
+    .icon-wrap {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fbf8ef;
+    }
+    .icon-wrap img {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+    .preview-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--ink);
+      color: var(--ink);
+      background: transparent;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+    .preview-btn:hover {
+      background: var(--ink);
+      color: var(--primary);
+    }
+    .preview-btn .ico {
+      display: inline-flex;
+      width: 1em;
+      height: 1em;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-btn .ico img,
+    .preview-btn .ico svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .preview-btn .ico svg * {
+      fill: currentColor !important;
+      stroke: currentColor !important;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      background: #fbf8ef;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 6px;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Vista Recommended Icons</h1>
+  <p>Visual preview and copy-ready implementation snippets for commonly used UI faces/actions.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>How It Looks</th>
+        <th>Implementation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/log-in.svg" alt="log-in" /></span> <code>log-in</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/log-in.svg" alt="" /></span>Sign in</button></td>
+        <td><code>button "Sign in" .icon:"log-in" [auth_login]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/user-plus.svg" alt="user-plus" /></span> <code>user-plus</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/user-plus.svg" alt="" /></span>Sign up</button></td>
+        <td><code>button "Sign up" .icon:"user-plus" [auth_signup]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/mail.svg" alt="mail" /></span> <code>mail</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/mail.svg" alt="" /></span>Update email</button></td>
+        <td><code>button "Update email" .icon:"mail" [auth_update_email]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/lock.svg" alt="lock" /></span> <code>lock</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/lock.svg" alt="" /></span>Update password</button></td>
+        <td><code>button "Update password" .icon:"lock" [auth_update_password]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/shield-check.svg" alt="shield-check" /></span> <code>shield-check</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/shield-check.svg" alt="" /></span>Enable MFA</button></td>
+        <td><code>button "Enable MFA" .icon:"shield-check" [auth_enable_mfa]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/shield-off.svg" alt="shield-off" /></span> <code>shield-off</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/shield-off.svg" alt="" /></span>Disable MFA</button></td>
+        <td><code>button "Disable MFA" .icon:"shield-off" [auth_disable_mfa]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/log-out.svg" alt="log-out" /></span> <code>log-out</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/log-out.svg" alt="" /></span>Sign out</button></td>
+        <td><code>button "Sign out" .icon:"log-out" [auth_logout]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/settings.svg" alt="settings" /></span> <code>settings</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/settings.svg" alt="" /></span>Preferences</button></td>
+        <td><code>button "Preferences" .icon:"settings" [open_settings]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/info.svg" alt="info" /></span> <code>info</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/info.svg" alt="" /></span>More info</button></td>
+        <td><code>button "More info" .icon:"info" [show_help]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/layout-template.svg" alt="layout-template" /></span> <code>layout-template</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/layout-template.svg" alt="" /></span>Templates</button></td>
+        <td><code>button "Templates" .icon:"layout-template" [open_templates]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/layout-grid.svg" alt="layout-grid" /></span> <code>layout-grid</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/layout-grid.svg" alt="" /></span>Grid view</button></td>
+        <td><code>button "Grid view" .icon:"layout-grid" [toggle_grid]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/table.svg" alt="table" /></span> <code>table</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/table.svg" alt="" /></span>Table view</button></td>
+        <td><code>button "Table view" .icon:"table" [toggle_table]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/image.svg" alt="image" /></span> <code>image</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/image.svg" alt="" /></span>Images</button></td>
+        <td><code>button "Images" .icon:"image" [open_media]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/video.svg" alt="video" /></span> <code>video</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/video.svg" alt="" /></span>Videos</button></td>
+        <td><code>button "Videos" .icon:"video" [open_video]</code></td>
+      </tr>
+      <tr>
+        <td><span class="icon-wrap"><img src="../dist/assets/icons/volume-2.svg" alt="volume-2" /></span> <code>volume-2</code></td>
+        <td><button class="preview-btn"><span class="ico"><img src="../dist/assets/icons/volume-2.svg" alt="" /></span>Audio</button></td>
+        <td><code>button "Audio" .icon:"volume-2" [open_audio]</code></td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
