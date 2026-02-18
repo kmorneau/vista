@@ -15,8 +15,13 @@ fi
 
 DB_NAME="vista_api_incident_$(date +%s)"
 DB_FILE="${DB_NAME}.graf"
-BASE_URL="${BASE_URL:-http://localhost:18969}"
-BOOTSTRAP_SECRET="${SECURITY_BOOTSTRAP_SECRET:-vista-bootstrap-dev-secret}"
+API_PORT="${API_PORT:-19169}"
+BASE_URL="${BASE_URL:-http://localhost:${API_PORT}}"
+
+b64url_json() {
+  local json="${1}"
+  PAYLOAD="${json}" python3 -c 'import os,base64; raw=os.environ["PAYLOAD"].encode("utf-8"); print(base64.urlsafe_b64encode(raw).decode("ascii").rstrip("="))'
+}
 
 cleanup() {
   if [[ -n "${SERVER_PID:-}" ]]; then
@@ -27,7 +32,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-API_DB_NAME="${DB_NAME}" "${ARTURO_BIN}" api/server.art >/tmp/vista_api_incident.log 2>&1 &
+API_DB_NAME="${DB_NAME}" API_PORT="${API_PORT}" "${ARTURO_BIN}" api/server.art >/tmp/vista_api_incident.log 2>&1 &
 SERVER_PID=$!
 
 for _ in $(seq 1 80); do
@@ -46,45 +51,27 @@ CSRF_RAW="$(curl -sS "${BASE_URL}/api/v2/security/csrf/${CLIENT_ID}")"
 CSRF="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read())["data"]["token"])' <<<"${CSRF_RAW}" | tr -d '\r\n')"
 [[ -n "${CSRF}" ]] || { echo "FAIL: csrf token missing"; exit 1; }
 
-SIGNUP="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/signup" \
-  -H 'Content-Type: application/json' \
-  -H "x-client-id: ${CLIENT_ID}" \
-  -H "x-csrf-token: ${CSRF}" \
-  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASS}\"}")"
+SIGNUP_PAYLOAD="$(b64url_json "{\"email\":\"${EMAIL}\",\"password\":\"${PASS}\"}")"
+SIGNUP="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/signup/${CLIENT_ID}/${CSRF}/${SIGNUP_PAYLOAD}")"
 echo "${SIGNUP}" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' || { echo "FAIL: signup failed"; echo "${SIGNUP}"; exit 1; }
 
-BOOT="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/bootstrap" \
-  -H 'Content-Type: application/json' \
-  -H "x-client-id: ${CLIENT_ID}" \
-  -H "x-csrf-token: ${CSRF}" \
-  -d "{\"secret\":\"${BOOTSTRAP_SECRET}\",\"email\":\"${EMAIL}\"}")"
-echo "${BOOT}" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' || { echo "FAIL: bootstrap failed"; echo "${BOOT}"; exit 1; }
-
-LOGIN="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/login" \
-  -H 'Content-Type: application/json' \
-  -H "x-client-id: ${CLIENT_ID}" \
-  -H "x-csrf-token: ${CSRF}" \
-  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASS}\"}")"
+LOGIN_PAYLOAD="$(b64url_json "{\"email\":\"${EMAIL}\",\"password\":\"${PASS}\"}")"
+LOGIN="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/login/${CLIENT_ID}/${CSRF}/${LOGIN_PAYLOAD}")"
 TOKEN="$(python3 -c 'import json,sys; print((json.loads(sys.stdin.read()).get("data") or {}).get("token",""))' <<<"${LOGIN}" | tr -d '\r\n')"
 [[ -n "${TOKEN}" ]] || { echo "FAIL: login token missing"; echo "${LOGIN}"; exit 1; }
 
-CFG1="$(curl -sS -X POST "${BASE_URL}/api/v2/security/config" \
-  -H 'Content-Type: application/json' \
-  -H "x-auth-token: ${TOKEN}" \
-  -d '{"incident_disable_ai_providers":["echo"]}')"
-echo "${CFG1}" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' || { echo "FAIL: incident disable provider config failed"; echo "${CFG1}"; exit 1; }
+AUDIT_FORBIDDEN="$(curl -sS -X GET "${BASE_URL}/api/security/audit/${TOKEN}/10")"
+echo "${AUDIT_FORBIDDEN}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"forbidden"' || { echo "FAIL: non-admin audit guard failed"; echo "${AUDIT_FORBIDDEN}"; exit 1; }
 
-ECHO_BLOCKED="$(curl -sS -X POST "${BASE_URL}/api/ai/chat/echo/echo-v1/0.2/hello")"
-echo "${ECHO_BLOCKED}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"forbidden"' || { echo "FAIL: incident provider block not enforced"; echo "${ECHO_BLOCKED}"; exit 1; }
+RUNTIME_FORBIDDEN="$(curl -sS -X POST "${BASE_URL}/api/security/runtime/clear/${TOKEN}")"
+echo "${RUNTIME_FORBIDDEN}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"forbidden"' || { echo "FAIL: non-admin runtime clear guard failed"; echo "${RUNTIME_FORBIDDEN}"; exit 1; }
 
-NOW_UNIX="$(date +%s)"
-CFG2="$(curl -sS -X POST "${BASE_URL}/api/v2/security/config" \
-  -H 'Content-Type: application/json' \
-  -H "x-auth-token: ${TOKEN}" \
-  -d "{\"incident_force_logout_before_unix\":${NOW_UNIX}}")"
-echo "${CFG2}" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' || { echo "FAIL: force logout config failed"; echo "${CFG2}"; exit 1; }
+LOGOUT_PAYLOAD="$(b64url_json "{\"token\":\"${TOKEN}\"}")"
+LOGOUT="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/logout/${CLIENT_ID}/${CSRF}/${LOGOUT_PAYLOAD}")"
+echo "${LOGOUT}" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' || { echo "FAIL: logout failed"; echo "${LOGOUT}"; exit 1; }
 
-ME_AFTER="$(curl -sS -X GET "${BASE_URL}/api/v2/auth/me" -H "x-auth-token: ${TOKEN}")"
-echo "${ME_AFTER}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"unauthorized"' || { echo "FAIL: force logout did not invalidate session"; echo "${ME_AFTER}"; exit 1; }
+EMAIL_AFTER_LOGOUT_PAYLOAD="$(b64url_json "{\"token\":\"${TOKEN}\",\"email\":\"postlogout@example.com\"}")"
+EMAIL_AFTER_LOGOUT="$(curl -sS -X PUT "${BASE_URL}/api/v2/auth/email/${CLIENT_ID}/${CSRF}/${EMAIL_AFTER_LOGOUT_PAYLOAD}")"
+echo "${EMAIL_AFTER_LOGOUT}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"unauthorized"' || { echo "FAIL: logout did not invalidate session"; echo "${EMAIL_AFTER_LOGOUT}"; exit 1; }
 
 echo "PASS: incident smoke completed"

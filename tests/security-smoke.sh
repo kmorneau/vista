@@ -14,7 +14,13 @@ fi
 
 DB_NAME="vista_api_smoke_$(date +%s)"
 DB_FILE="${DB_NAME}.graf"
-BASE_URL="${BASE_URL:-http://localhost:18969}"
+API_PORT="${API_PORT:-19169}"
+BASE_URL="${BASE_URL:-http://localhost:${API_PORT}}"
+
+b64url_json() {
+  local json="${1}"
+  PAYLOAD="${json}" python3 -c 'import os,base64; raw=os.environ["PAYLOAD"].encode("utf-8"); print(base64.urlsafe_b64encode(raw).decode("ascii").rstrip("="))'
+}
 
 cleanup() {
   if [[ -n "${SERVER_PID:-}" ]]; then
@@ -25,11 +31,11 @@ cleanup() {
 }
 trap cleanup EXIT
 
-API_DB_NAME="$DB_NAME" "${ARTURO_BIN}" api/server.art >/tmp/vista_api_server.log 2>&1 &
+API_DB_NAME="$DB_NAME" API_PORT="${API_PORT}" "${ARTURO_BIN}" api/server.art >/tmp/vista_api_server.log 2>&1 &
 SERVER_PID=$!
 
 for _ in $(seq 1 40); do
-  if curl -sS http://localhost:18969/api/health >/dev/null 2>&1; then
+  if curl -sS "${BASE_URL}/api/health" >/dev/null 2>&1; then
     break
   fi
   sleep 0.25
@@ -50,18 +56,12 @@ if [[ -z "${CSRF}" ]]; then
   exit 1
 fi
 
-SIGNUP="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/signup" \
-  -H 'Content-Type: application/json' \
-  -H "x-client-id: ${CLIENT_ID}" \
-  -H "x-csrf-token: ${CSRF}" \
-  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASS}\"}")"
+SIGNUP_PAYLOAD="$(b64url_json "{\"email\":\"${EMAIL}\",\"password\":\"${PASS}\"}")"
+SIGNUP="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/signup/${CLIENT_ID}/${CSRF}/${SIGNUP_PAYLOAD}")"
 echo "${SIGNUP}" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' || { echo "FAIL: v2 signup failed"; echo "${SIGNUP}"; exit 1; }
 
-LOGIN="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/login" \
-  -H 'Content-Type: application/json' \
-  -H "x-client-id: ${CLIENT_ID}" \
-  -H "x-csrf-token: ${CSRF}" \
-  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASS}\"}")"
+LOGIN_PAYLOAD="$(b64url_json "{\"email\":\"${EMAIL}\",\"password\":\"${PASS}\"}")"
+LOGIN="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/login/${CLIENT_ID}/${CSRF}/${LOGIN_PAYLOAD}")"
 echo "${LOGIN}" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' || { echo "FAIL: v2 login failed"; echo "${LOGIN}"; exit 1; }
 
 TOKEN="$(python3 -c 'import json,sys; print((json.loads(sys.stdin.read()).get("data") or {}).get("token",""))' <<<"${LOGIN}" | tr -d '\r\n')"
@@ -71,11 +71,8 @@ if [[ -z "${TOKEN}" ]]; then
   exit 1
 fi
 
-EMAIL_UPDATE="$(curl -sS -X PUT "${BASE_URL}/api/v2/auth/email" \
-  -H 'Content-Type: application/json' \
-  -H "x-client-id: ${CLIENT_ID}" \
-  -H "x-csrf-token: ${CSRF}" \
-  -d "{\"token\":\"${TOKEN}\",\"email\":\"${EMAIL2}\"}")"
+EMAIL_PAYLOAD="$(b64url_json "{\"token\":\"${TOKEN}\",\"email\":\"${EMAIL2}\"}")"
+EMAIL_UPDATE="$(curl -sS -X PUT "${BASE_URL}/api/v2/auth/email/${CLIENT_ID}/${CSRF}/${EMAIL_PAYLOAD}")"
 echo "${EMAIL_UPDATE}" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' || { echo "FAIL: v2 email update failed"; echo "${EMAIL_UPDATE}"; exit 1; }
 TOKEN2="$(python3 -c 'import json,sys; print((json.loads(sys.stdin.read()).get("data") or {}).get("token",""))' <<<"${EMAIL_UPDATE}" | tr -d '\r\n')"
 if [[ -z "${TOKEN2}" || "${TOKEN2}" == "${TOKEN}" ]]; then
@@ -83,14 +80,12 @@ if [[ -z "${TOKEN2}" || "${TOKEN2}" == "${TOKEN}" ]]; then
   echo "${EMAIL_UPDATE}"
   exit 1
 fi
-ME_OLD_1="$(curl -sS -X GET "${BASE_URL}/api/v2/auth/me" -H "x-auth-token: ${TOKEN}")"
-echo "${ME_OLD_1}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"unauthorized"' || { echo "FAIL: old token still valid after email update"; echo "${ME_OLD_1}"; exit 1; }
+EMAIL_OLD_PAYLOAD="$(b64url_json "{\"token\":\"${TOKEN}\",\"email\":\"${EMAIL}\"}")"
+EMAIL_OLD_CHECK="$(curl -sS -X PUT "${BASE_URL}/api/v2/auth/email/${CLIENT_ID}/${CSRF}/${EMAIL_OLD_PAYLOAD}")"
+echo "${EMAIL_OLD_CHECK}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"unauthorized"' || { echo "FAIL: old token still valid after email update"; echo "${EMAIL_OLD_CHECK}"; exit 1; }
 
-PASS_UPDATE="$(curl -sS -X PUT "${BASE_URL}/api/v2/auth/password" \
-  -H 'Content-Type: application/json' \
-  -H "x-client-id: ${CLIENT_ID}" \
-  -H "x-csrf-token: ${CSRF}" \
-  -d "{\"token\":\"${TOKEN2}\",\"old_password\":\"${PASS}\",\"new_password\":\"${PASS2}\"}")"
+PASS_PAYLOAD="$(b64url_json "{\"token\":\"${TOKEN2}\",\"old_password\":\"${PASS}\",\"new_password\":\"${PASS2}\"}")"
+PASS_UPDATE="$(curl -sS -X PUT "${BASE_URL}/api/v2/auth/password/${CLIENT_ID}/${CSRF}/${PASS_PAYLOAD}")"
 echo "${PASS_UPDATE}" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' || { echo "FAIL: v2 password update failed"; echo "${PASS_UPDATE}"; exit 1; }
 TOKEN3="$(python3 -c 'import json,sys; print((json.loads(sys.stdin.read()).get("data") or {}).get("token",""))' <<<"${PASS_UPDATE}" | tr -d '\r\n')"
 if [[ -z "${TOKEN3}" || "${TOKEN3}" == "${TOKEN2}" ]]; then
@@ -98,19 +93,19 @@ if [[ -z "${TOKEN3}" || "${TOKEN3}" == "${TOKEN2}" ]]; then
   echo "${PASS_UPDATE}"
   exit 1
 fi
-ME_OLD_2="$(curl -sS -X GET "${BASE_URL}/api/v2/auth/me" -H "x-auth-token: ${TOKEN2}")"
-echo "${ME_OLD_2}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"unauthorized"' || { echo "FAIL: old token still valid after password update"; echo "${ME_OLD_2}"; exit 1; }
-ME_NEW="$(curl -sS -X GET "${BASE_URL}/api/v2/auth/me" -H "x-auth-token: ${TOKEN3}")"
-echo "${ME_NEW}" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' || { echo "FAIL: rotated token not valid"; echo "${ME_NEW}"; exit 1; }
+PASS_OLD_PAYLOAD="$(b64url_json "{\"token\":\"${TOKEN2}\",\"old_password\":\"${PASS2}\",\"new_password\":\"${PASS}\"}")"
+PASS_OLD_CHECK="$(curl -sS -X PUT "${BASE_URL}/api/v2/auth/password/${CLIENT_ID}/${CSRF}/${PASS_OLD_PAYLOAD}")"
+echo "${PASS_OLD_CHECK}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"unauthorized"' || { echo "FAIL: old token still valid after password update"; echo "${PASS_OLD_CHECK}"; exit 1; }
+AUDIT_FORBIDDEN="$(curl -sS -X GET "${BASE_URL}/api/security/audit/${TOKEN3}/5")"
+echo "${AUDIT_FORBIDDEN}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"forbidden"' || { echo "FAIL: security admin guard failed (audit)"; echo "${AUDIT_FORBIDDEN}"; exit 1; }
+RUNTIME_FORBIDDEN="$(curl -sS -X POST "${BASE_URL}/api/security/runtime/clear/${TOKEN3}")"
+echo "${RUNTIME_FORBIDDEN}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"forbidden"' || { echo "FAIL: security admin guard failed (runtime clear)"; echo "${RUNTIME_FORBIDDEN}"; exit 1; }
 
-CFG_FORBIDDEN="$(curl -sS -X GET "${BASE_URL}/api/v2/security/config" -H "x-auth-token: ${TOKEN3}")"
-echo "${CFG_FORBIDDEN}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"forbidden"' || { echo "FAIL: v2 security admin guard failed"; echo "${CFG_FORBIDDEN}"; exit 1; }
+LOGOUT_PAYLOAD="$(b64url_json "{\"token\":\"${TOKEN3}\"}")"
+LOGOUT_OK="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/logout/${CLIENT_ID}/${CSRF}/${LOGOUT_PAYLOAD}")"
+echo "${LOGOUT_OK}" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true' || { echo "FAIL: rotated token not valid for logout"; echo "${LOGOUT_OK}"; exit 1; }
 
-BAD_CSRF="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/login" \
-  -H 'Content-Type: application/json' \
-  -H "x-client-id: ${CLIENT_ID}" \
-  -H "x-csrf-token: badcsrf" \
-  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASS}\"}")"
+BAD_CSRF="$(curl -sS -X POST "${BASE_URL}/api/v2/auth/login/${CLIENT_ID}/badcsrf/${LOGIN_PAYLOAD}")"
 echo "${BAD_CSRF}" | grep -Eq '"code"[[:space:]]*:[[:space:]]*"invalid_csrf"' || { echo "FAIL: csrf mismatch not enforced"; echo "${BAD_CSRF}"; exit 1; }
 
 echo "PASS: security smoke completed"

@@ -135,6 +135,51 @@ serve .port:api_port $[req][
         ]
     ]
 
+    ; Route: GET /api/security/audit/:token/:limit
+    if all? @[
+        method = "GET"
+        prefix? path "/api/security/audit/"
+    ][
+        prefixStr: "/api/security/audit/"
+        rest: slice path (size prefixStr) (size path)
+        slashPos: index rest "/"
+        if equal? slashPos null [
+            return #[
+                status: 200
+                headers: cors_headers
+                body: write.json #[
+                    ok: false
+                    error: #[
+                        code: "bad_request"
+                        message: "Missing audit limit segment"
+                        details: #[path:path]
+                    ]
+                ] ø
+            ]
+        ]
+        token: slice rest 0 (slashPos - 1)
+        limit: slice rest (slashPos + 1) (size rest)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: security_audit_handler token limit
+        ]
+    ]
+
+    ; Route: POST /api/security/runtime/clear/:token
+    if all? @[
+        method = "POST"
+        prefix? path "/api/security/runtime/clear/"
+    ][
+        prefixStr: "/api/security/runtime/clear/"
+        token: slice path (size prefixStr) (size path)
+        return #[
+            status: 200
+            headers: cors_headers
+            body: security_runtime_clear_handler token
+        ]
+    ]
+
     ; Route: GET /api/ai/providers
     if all? @[
         method = "GET"
