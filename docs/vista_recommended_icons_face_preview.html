@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vista Recommended Face Icon Preview (Face-like)</title>
+  <style>
+    :root { --ink:#141414; --bg:#f7f6f1; --panel:#fff; --border:#ded6c2; --primary:#f2c230; --muted:#4b4b4b; }
+    * { box-sizing: border-box; }
+    body { margin:0; padding:20px; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif; }
+    h1 { margin:0 0 6px; }
+    p { margin:0 0 16px; color:var(--muted); }
+    table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--border); }
+    th,td { border-bottom:1px solid var(--border); text-align:left; vertical-align:top; padding:10px; }
+    tr:last-child td { border-bottom:none; }
+    th { background:#f3ecd8; text-transform:uppercase; letter-spacing:.04em; font-size:12px; }
+    code { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12px; background:#fbf8ef; border:1px solid var(--border); border-radius:6px; padding:2px 6px; white-space:pre-wrap; display:inline-block; }
+    .ico { width:1em; height:1em; display:inline-flex; align-items:center; justify-content:center; vertical-align:text-bottom; margin-right:6px; }
+    .ico img { width:100%; height:100%; display:block; }
+    .vista-title { font-size:22px; font-weight:800; margin:0; }
+    .vista-subtitle { font-size:16px; font-weight:600; margin:0; color:var(--muted); }
+    .vista-label { font-weight:600; }
+    .vista-input,.vista-select,.vista-textarea { border:1px solid var(--border); border-radius:6px; padding:6px 8px; font:inherit; width:230px; background:#fff; }
+    .vista-textarea { min-height:58px; }
+    .vista-check,.vista-toggle,.vista-radio { display:inline-flex; align-items:center; gap:6px; }
+    .vista-card { border:1px solid var(--border); border-radius:10px; padding:8px; background:#faf7ee; display:inline-block; min-width:220px; }
+    .vista-panel-title { font-weight:700; background:var(--primary); border:1px solid var(--ink); border-radius:6px; padding:4px 8px; display:inline-block; margin-bottom:6px; }
+    .vista-row { display:flex; gap:8px; align-items:center; }
+    .vista-col { display:flex; flex-direction:column; gap:8px; }
+    .vista-box { border:1px solid var(--border); border-radius:8px; padding:8px; display:inline-block; }
+    .vista-template,.vista-script { font-family:ui-monospace,monospace; font-size:12px; }
+    .vista-table { border-collapse:collapse; }
+    .vista-table td,.vista-table th { border:1px solid var(--border); padding:4px 6px; }
+    .vista-progress { width:220px; }
+  </style>
+</head>
+<body>
+  <h1>Vista Recommended Face Icons (Face-like Preview)</h1>
+  <p>Face previews with a true face-based Vista code column.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Face</th>
+        <th>Icon</th>
+        <th>How It Looks (Face-like)</th>
+        <th>Vista Code</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>title</code></td><td><code>heading</code></td><td><h2 class="vista-title"><span class="ico"><img src="../dist/assets/icons/heading.svg" alt="" /></span>Page Title</h2></td><td><code>title "Page Title"</code></td></tr>
+      <tr><td><code>subtitle</code></td><td><code>text-cursor-input</code></td><td><p class="vista-subtitle"><span class="ico"><img src="../dist/assets/icons/text-cursor-input.svg" alt="" /></span>Section Subtitle</p></td><td><code>subtitle "Section Subtitle"</code></td></tr>
+      <tr><td><code>label</code> / <code>label_face</code></td><td><code>tag</code></td><td><label class="vista-label"><span class="ico"><img src="../dist/assets/icons/tag.svg" alt="" /></span>Email:</label></td><td><code>label "Email"
+label_face "Email" #[]</code></td></tr>
+      <tr><td><code>field</code> / <code>input_field</code></td><td><code>pen-line</code></td><td><label class="vista-label"><span class="ico"><img src="../dist/assets/icons/pen-line.svg" alt="" /></span>Name: <input class="vista-input" placeholder="Your name" /></label></td><td><code>field name
+input_field name</code></td></tr>
+      <tr><td><code>textarea_field</code></td><td><code>file-text</code></td><td><div class="vista-col"><label class="vista-label"><span class="ico"><img src="../dist/assets/icons/file-text.svg" alt="" /></span>Description:</label><textarea class="vista-textarea"></textarea></div></td><td><code>textarea_field description</code></td></tr>
+      <tr><td><code>select_field</code></td><td><code>chevron-down</code></td><td><label class="vista-label"><span class="ico"><img src="../dist/assets/icons/chevron-down.svg" alt="" /></span>Choice: <select class="vista-select"><option>Option A</option></select></label></td><td><code>select_field choice ["Option A" "Option B"]</code></td></tr>
+      <tr><td><code>checkbox</code></td><td><code>check</code></td><td><label class="vista-check"><span class="ico"><img src="../dist/assets/icons/check.svg" alt="" /></span><input type="checkbox" checked /> Accept terms</label></td><td><code>checkbox "Accept terms" accept_terms</code></td></tr>
+      <tr><td><code>toggle</code></td><td><code>toggle-right</code></td><td><label class="vista-toggle"><span class="ico"><img src="../dist/assets/icons/toggle-right.svg" alt="" /></span><input type="checkbox" checked /> Enabled</label></td><td><code>toggle "Enabled" feature_enabled</code></td></tr>
+      <tr><td><code>radio_group</code></td><td><code>circle</code></td><td><label class="vista-radio"><span class="ico"><img src="../dist/assets/icons/circle.svg" alt="" /></span><input type="radio" checked /> Choice 1</label></td><td><code>radio_group "Size" ["S" "M" "L"] size_choice</code></td></tr>
+      <tr><td><code>form</code></td><td><code>clipboard</code></td><td><form class="vista-card"><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/clipboard.svg" alt="" /></span><strong>Form</strong></div></form></td><td><code>form [
+  label "Email"
+  field email
+] .action:"/submit" [on_submit]</code></td></tr>
+      <tr><td><code>table_face</code></td><td><code>table</code></td><td><table class="vista-table"><thead><tr><th><span class="ico"><img src="../dist/assets/icons/table.svg" alt="" /></span>Col</th></tr></thead><tbody><tr><td>Row</td></tr></tbody></table></td><td><code>table [
+  table_row [table_cell "Row"]
+]</code></td></tr>
+      <tr><td><code>panel_face</code></td><td><code>layout-panel-top</code></td><td><div class="vista-card"><div class="vista-panel-title"><span class="ico"><img src="../dist/assets/icons/layout-panel-top.svg" alt="" /></span>Panel Title</div><div>Panel body</div></div></td><td><code>panel "Panel Title" [
+  text "Panel body"
+]</code></td></tr>
+      <tr><td><code>box</code></td><td><code>square</code></td><td><div class="vista-box"><span class="ico"><img src="../dist/assets/icons/square.svg" alt="" /></span>Box content</div></td><td><code>box [text "Box content"]</code></td></tr>
+      <tr><td><code>details_face</code> / <code>summary_face</code></td><td><code>info</code></td><td><details open><summary><span class="ico"><img src="../dist/assets/icons/info.svg" alt="" /></span>More info</summary><div class="vista-card">Hidden details here</div></details></td><td><code>details "More info" [
+  text "Hidden details here"
+]</code></td></tr>
+      <tr><td><code>template_face</code></td><td><code>layout-template</code></td><td><span class="vista-template"><span class="ico"><img src="../dist/assets/icons/layout-template.svg" alt="" /></span>&lt;template&gt;...&lt;/template&gt;</span></td><td><code>template [text "template content"]</code></td></tr>
+      <tr><td><code>grid_face</code></td><td><code>layout-grid</code></td><td><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/layout-grid.svg" alt="" /></span><div class="vista-card">grid</div></div></td><td><code>grid 2 [
+  box [text "A"]
+  box [text "B"]
+]</code></td></tr>
+      <tr><td><code>row</code> / <code>col</code></td><td><code>arrow-right</code> / <code>arrow-down</code></td><td><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/arrow-right.svg" alt="" /></span>row <span class="ico"><img src="../dist/assets/icons/arrow-down.svg" alt="" /></span>col</div></td><td><code>row [text "A" text "B"]
+col [text "A" text "B"]</code></td></tr>
+      <tr><td><code>group</code></td><td><code>folder</code></td><td><div class="vista-card"><span class="ico"><img src="../dist/assets/icons/folder.svg" alt="" /></span>Group container</div></td><td><code>group [text "Group container"]</code></td></tr>
+      <tr><td><code>split_face</code></td><td><code>panel-left</code></td><td><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/panel-left.svg" alt="" /></span><div class="vista-card">left</div><div class="vista-card">right</div></div></td><td><code>split 50 [text "left"] [text "right"]</code></td></tr>
+      <tr><td><code>toolbar_face</code> / <code>menubar_face</code></td><td><code>toolbox</code> / <code>menu</code></td><td><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/toolbox.svg" alt="" /></span><span class="ico"><img src="../dist/assets/icons/menu.svg" alt="" /></span><div class="vista-card">Toolbar / Menubar</div></div></td><td><code>toolbar [button "Run" [run]]
+menubar [button "File" [open_menu]]</code></td></tr>
+      <tr><td><code>tool_group_face</code></td><td><code>layers</code></td><td><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/layers.svg" alt="" /></span>Tool group</div></td><td><code>tool_group [button "A" [a] button "B" [b]]</code></td></tr>
+      <tr><td><code>dialog_face</code></td><td><code>message-square</code></td><td><div class="vista-card"><span class="ico"><img src="../dist/assets/icons/message-square.svg" alt="" /></span>Dialog content</div></td><td><code>dialog [text "Dialog content"]</code></td></tr>
+      <tr><td><code>sensor_face</code></td><td><code>activity</code></td><td><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/activity.svg" alt="" /></span>Sensor</div></td><td><code>sensor [text "Sensor"] .onclick:[on_sensor]</code></td></tr>
+      <tr><td><code>script_face</code></td><td><code>code</code></td><td><span class="vista-script"><span class="ico"><img src="../dist/assets/icons/code.svg" alt="" /></span>&lt;script&gt;...&lt;/script&gt;</span></td><td><code>script "console.log('hello')"</code></td></tr>
+      <tr><td><code>canvas_face</code></td><td><code>pen-tool</code></td><td><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/pen-tool.svg" alt="" /></span><canvas width="140" height="44" style="border:1px solid #ded6c2;border-radius:6px;background:#fff"></canvas></div></td><td><code>canvas .id:"demo" .width:140 .height:44 [
+  line 10 10 120 10
+]</code></td></tr>
+      <tr><td><code>image_face</code></td><td><code>image</code></td><td><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/image.svg" alt="" /></span><img src="../dist/assets/icons/image.svg" alt="preview" width="20" height="20" /></div></td><td><code>image "logo.svg"</code></td></tr>
+      <tr><td><code>audio_face</code></td><td><code>volume-2</code></td><td><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/volume-2.svg" alt="" /></span><audio controls style="width:220px"></audio></div></td><td><code>audio "clip.mp3"</code></td></tr>
+      <tr><td><code>video_face</code></td><td><code>video</code></td><td><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/video.svg" alt="" /></span><video controls width="160" height="60"></video></div></td><td><code>video "intro.mp4"</code></td></tr>
+      <tr><td><code>progress_face</code></td><td><code>loader</code></td><td><div class="vista-row"><span class="ico"><img src="../dist/assets/icons/loader.svg" alt="" /></span><progress class="vista-progress" value="60" max="100"></progress></div></td><td><code>progress 60</code></td></tr>
+    </tbody>
+  </table>
+</body>
+</html>
