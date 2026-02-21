@@ -1,0 +1,38 @@
+; Vista Graphics Utility Functions
+
+; Simple JS literal encoder
+vg_js_escape_single: function [s] [
+    s: replace s "\\" "\\\\"
+    s: replace s "'" "\\'"
+    s: replace s "\r" "\\r"
+    s: replace s "\n" "\\n"
+    s
+]
+
+draw_js_token: function [token] [
+    t: type token
+    if equal? t :integer [
+        return to :string token
+    ]
+    if equal? t :floating [
+        return to :string token
+    ]
+    if equal? t :logical [
+        return to :string token
+    ]
+    if equal? t :null [
+        return "null"
+    ]
+    ; Use template literals to avoid quote-escaping corruption in generated draw scripts.
+    return "`" ++ (to :string token) ++ "`"
+]
+
+; Parse a point: [x y] or "x y" block or two numbers
+vg_point: function [val] [
+    if equal? (type val) :block [
+        if equal? (size val) 2 [
+            return #[x: get val 0 y: get val 1]
+        ]
+    ]
+    null
+]

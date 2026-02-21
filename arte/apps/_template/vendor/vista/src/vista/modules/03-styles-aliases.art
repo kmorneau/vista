@@ -1,0 +1,2733 @@
+; Rebol/View style aliases (core set)
+style "h1" [title .class:"vista-h1" arg0]
+style "h2" [title .class:"vista-h2" arg0]
+style "h3" [title .class:"vista-h3" arg0]
+style "h4" [title .class:"vista-h4" arg0]
+style "h5" [title .class:"vista-h5" arg0]
+style "vh1" [title .class:"vista-vh1" arg0]
+style "vh2" [title .class:"vista-vh2" arg0]
+style "vh3" [title .class:"vista-vh3" arg0]
+style "banner" [title .class:"vista-banner" arg0]
+style "info" [text .class:"vista-info" arg0]
+style "tt" [text .class:"vista-tt" arg0]
+style "code" [text .class:"vista-code" arg0]
+style "vtext" [text .class:"vista-vtext" arg0]
+style "area" [textarea .class:"vista-area" arg0]
+style "choice" [select .class:"vista-choice" arg0 arg1]
+style "check" [checkbox .class:"vista-check" arg0]
+style "icon" [image .class:"vista-icon" arg0]
+style "anim" [image .class:"vista-anim" arg0]
+style "arrow" [button .class:"vista-arrow" arg0]
+style "rotary" [slider .class:"vista-rotary" arg0]
+style "led" [text .class:"vista-led" arg0]
+style "sensor" [box .class:"vista-sensor" arg0]
+style "backdrop" [box .class:"vista-backdrop" arg0]
+style "backtile" [box .class:"vista-backtile" arg0]
+
+apply_style_args: function [blk args attrs] [
+        out: []
+        blen: size blk
+        i: 0
+        while [less? i blen][
+                item: get blk i
+                item_type: type item
+                switch equal? item_type :block [
+                        out: out ++ @[apply_style_args item args attrs]
+                ][
+                        switch equal? item_type :word [
+                                name: to :string item
+                                switch equal? name "args" [
+                                        out: out ++ @[args]
+                                ][
+                                        switch equal? name "attrs" [
+                                                out: out ++ @[attrs]
+                                        ][
+                                                replaced: false
+                                                j: 0
+                                                alen: size args
+                                                while [less? j alen][
+                                                        if equal? name ("arg" ++ to :string j) [
+                                                                out: out ++ @[get args j]
+                                                                replaced: true
+                                                                break
+                                                        ]
+                                                        j: j + 1
+                                                ]
+                                                if not? replaced [
+                                                        out: out ++ @[item]
+                                                ]
+                                        ]
+                                ]
+                        ][
+                                out: out ++ @[item]
+                        ]
+                ]
+                i: i + 1
+        ]
+        out
+]
+
+get_face_path: function [path] [
+    if equal? (type path) :string [
+        return get_face path
+    ]
+    if equal? (type path) :word [
+        return get_face path
+    ]
+    if notEqual? (type path) :block [
+        return null
+    ]
+    if equal? (size path) 0 [
+        return null
+    ]
+    idx: 0
+    current: null
+    first: get path 0
+    first_type: type first
+    switch any? @[equal? first_type :string equal? first_type :word] [
+        current: get_face first
+        switch equal? current null [
+            current: get_face vista_state\last_root
+            idx: 0
+        ][
+            idx: 1
+        ]
+    ][
+        current: get_face vista_state\last_root
+        idx: 0
+    ]
+    while [all? @[notEqual? current null less? idx (size path)]] [
+        tok: get path idx
+        tok_type: type tok
+        if any? @[equal? tok_type :string equal? tok_type :word] [
+            tname: to :string tok
+            resolvedById: false
+            if all? @[prefix? tname ".id:" greater? (size tname) 4] [
+                nameStr: slice tname 4 (size tname)
+                if key? vista_state\face_names nameStr [
+                    current: get_face nameStr
+                    resolvedById: true
+                ]
+            ]
+            if not? resolvedById [
+                index: 0
+                if less? idx + 1 (size path) [
+                    nextTok: get path (idx + 1)
+                    if equal? (type nextTok) :integer [
+                        index: nextTok
+                        idx: idx + 1
+                    ]
+                ]
+                children: current\children
+                found: null
+                count: 0
+                clen: size children
+                c: 0
+                while [less? c clen][
+                    cid: get children c
+                    child: vista_state\last_faces\[cid]
+                    if equal? child\type tname [
+                        if equal? count index [
+                            found: child
+                            break
+                        ]
+                        count: count + 1
+                    ]
+                    c: c + 1
+                ]
+                current: found
+            ]
+        ]
+        idx: idx + 1
+    ]
+    current
+]
+
+face_children_html: function [face] [
+    if not? key? face "children" [
+        return ""
+    ]
+    kids: face\children
+    out: ""
+    klen: size kids
+    i: 0
+    while [less? i klen][
+        cid: get kids i
+        if key? vista_state\last_faces cid [
+            out: out ++ vista_state\last_faces\[cid]\html
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+face_child_html: function [face index] [
+    if not? key? face "children" [
+        return ""
+    ]
+    kids: face\children
+    if less? index (size kids) [
+        cid: get kids index
+        if key? vista_state\last_faces cid [
+            return vista_state\last_faces\[cid]\html
+        ]
+    ]
+    ""
+]
+
+update_panel_body: function [panelId newBlock] [
+    panelFace: get_face panelId
+    if equal? panelFace null [
+        return null
+    ]
+    inner: layout_state newBlock
+    merge_faces vista_state\last_faces inner\faces
+    append_children_from_root vista_state\last_faces panelFace\id inner\root
+    titleHtml: ""
+    if key? panelFace "meta" [
+        if key? panelFace\meta "titleHtml" [
+            titleHtml: panelFace\meta\titleHtml
+        ]
+    ]
+    faceHtml: panel_face titleHtml inner\html panelFace\attrs
+    update_face panelFace\id #[html: faceHtml]
+]
+
+update_split_pane: function [splitId paneIndex newBlock] [
+    splitFace: get_face splitId
+    if equal? splitFace null [
+        return null
+    ]
+    if not? key? splitFace "children" [
+        return null
+    ]
+    if any? @[less? paneIndex 0 greaterOrEqual? paneIndex (size splitFace\children)] [
+        return null
+    ]
+    inner: layout_state newBlock
+    merge_faces vista_state\last_faces inner\faces
+    rootFace: inner\faces\[inner\root]
+    if not? key? rootFace "children" [
+        return null
+    ]
+    if equal? (size rootFace\children) 0 [
+        return null
+    ]
+    newPaneId: get rootFace\children 0
+    kids: splitFace\children
+    newKids: []
+    klen: size kids
+    i: 0
+    while [less? i klen][
+        switch equal? i paneIndex [
+            newKids: newKids ++ @[newPaneId]
+        ][
+            newKids: newKids ++ @[get kids i]
+        ]
+        i: i + 1
+    ]
+    splitFace\children: newKids
+    vista_state\last_faces\[splitFace\id]: splitFace
+    update_face splitFace\id #[html: render_face splitFace]
+]
+
+update_table_body: function [tableId newBlock] [
+    tableFace: get_face tableId
+    if equal? tableFace null [
+        return null
+    ]
+    inner: layout_state newBlock
+    merge_faces vista_state\last_faces inner\faces
+    append_children_from_root vista_state\last_faces tableFace\id inner\root
+    update_face tableFace\id #[html: render_face tableFace]
+]
+
+face_child_id: function [face index] [
+    if not? key? face "children" [
+        return null
+    ]
+    kids: face\children
+    if less? index (size kids) [
+        return get kids index
+    ]
+    null
+]
+
+tab_panel_id: function [tabsFace index] [
+    if not? key? tabsFace "children" [
+        return null
+    ]
+    kids: tabsFace\children
+    count: 0
+    i: 0
+    klen: size kids
+    while [less? i klen][
+        cid: get kids i
+        child: vista_state\last_faces\[cid]
+        if equal? child\type "tab-panel" [
+            if equal? count index [
+                return cid
+            ]
+            count: count + 1
+        ]
+        i: i + 1
+    ]
+    null
+]
+
+update_face_path: function [path updates] [
+    face: get_face_path path
+    if equal? face null [
+        return null
+    ]
+    update_face face\id updates
+]
+
+update_tab_panel: function [tabsId index newBlock] [
+    tabsFace: get_face tabsId
+    if equal? tabsFace null [
+        return null
+    ]
+    panelId: tab_panel_id tabsFace index
+    if equal? panelId null [
+        return null
+    ]
+    inner: layout_state newBlock
+    merge_faces vista_state\last_faces inner\faces
+    append_children_from_root vista_state\last_faces panelId inner\root
+    indexStr: to :string index
+    panelAttrs: vista_state\last_faces\[panelId]\attrs
+    attrStr: attrs_to_html panelAttrs
+    panelHtml: "<div class='vista-tab-panel' data-tab='panel-" ++ indexStr ++ "'" ++ attrStr ++ ">" ++ inner\html ++ "</div>"
+    update_face panelId #[html: panelHtml]
+]
+
+show_path: function [path] [
+    face: get_face_path path
+    if equal? face null [
+        return null
+    ]
+    show face
+]
+
+set_state: function [key value] [
+    keyStr: to :string key
+    vista_state\last_bindings\[keyStr]: value
+    if all? @[webview_sync_state_updates vista_state\webview_open] [
+        valueStr: js_literal value
+        js: "state['" ++ keyStr ++ "']=" ++ valueStr ++ "; render();"
+        if webview_enabled [
+            env_vars: env
+            if not? any? @[key? env_vars "VISTA_NO_WEBVIEW" key? env_vars "NO_WEBVIEW"] [
+                webview .inject: js ""
+            ]
+        ]
+    ]
+]
+
+apply_state_from_ui: function [data] [
+    if equal? (type data) :dictionary [
+        keysList: keys data
+        i: 0
+        klen: size keysList
+        while [less? i klen][
+            k: get keysList i
+            v: data\[k]
+            vista_state\last_bindings\[k]: v
+            lit: to :literal k
+            if set? lit [
+                set lit v
+            ]
+            i: i + 1
+        ]
+    ]
+]
+
+sync_state: function [] [
+    keysList: keys vista_state\last_bindings
+    i: 0
+    keys_len: size keysList
+    while [less? i keys_len][
+        k: get keysList i
+        lit: to :literal k
+        if set? lit [
+            val: do k
+            if notEqual? val vista_state\last_bindings\[k] [
+                set_state k val
+            ]
+        ]
+        i: i + 1
+    ]
+]
+
+print_face_tree: function [] [
+    root: get_face vista_state\last_root
+    if equal? root null [
+        print "No face tree"
+        return
+    ]
+    walk_face_tree root 0
+]
+
+walk_face_tree: function [face depth] [
+    indent: ""
+    i: 0
+    while [less? i depth][
+        indent: indent ++ "  "
+        i: i + 1
+    ]
+    nameStr: ""
+    if key? face\attrs "id" [
+        nameStr: " #" ++ to :string face\attrs\id
+    ]
+    print (indent ++ face\id ++ " (" ++ face\type ++ ")" ++ nameStr)
+    if key? face "children" [
+        kids: face\children
+        klen: size kids
+        j: 0
+        while [less? j klen][
+            cid: get kids j
+            if key? vista_state\last_faces cid [
+                walk_face_tree vista_state\last_faces\[cid] (depth + 1)
+            ]
+            j: j + 1
+        ]
+    ]
+]
+
+find_faces: function [criteria] [
+    if notEqual? (type criteria) :dictionary [
+        return []
+    ]
+    results: []
+    keysList: keys vista_state\last_faces
+    klen: size keysList
+    i: 0
+    while [less? i klen][
+        fid: get keysList i
+        face: vista_state\last_faces\[fid]
+        match: true
+        if key? criteria "type" [
+            if notEqual? face\type criteria\type [
+                match: false
+            ]
+        ]
+        if key? criteria "id" [
+            idVal: criteria\["id"]
+            idValStr: to :string idVal
+            hasId: key? face\attrs "id"
+            if not? hasId [
+                match: false
+            ]
+            if hasId [
+                faceIdStr: to :string face\attrs\["id"]
+                if notEqual? faceIdStr idValStr [
+                    match: false
+                ]
+            ]
+        ]
+        if key? criteria "attr" [
+            attrName: criteria\attr
+            if not? key? face\attrs attrName [
+                match: false
+            ]
+        ]
+        if match [
+            results: results ++ @[face]
+        ]
+        i: i + 1
+    ]
+    results
+]
+
+find_face: function [criteria] [
+    results: find_faces criteria
+    if greater? (size results) 0 [
+        return get results 0
+    ]
+    null
+]
+
+face_info: function [face] [
+    if equal? face null [
+        return "null"
+    ]
+    nameStr: ""
+    if key? face\attrs "id" [
+        nameStr: " #" ++ to :string face\attrs\id
+    ]
+    face\id ++ " (" ++ face\type ++ ")" ++ nameStr
+]
+
+face_tree: function [] [
+    root: get_face vista_state\last_root
+    if equal? root null [
+        return []
+    ]
+    build_face_json root
+]
+
+json_escape: function [value] [
+    out: ""
+    s: to :string value
+    i: 0
+    len: size s
+    while [less? i len][
+        ch: get s i
+        escaped: false
+        if equal? ch "\\" [
+            out: out ++ "\\\\"
+            escaped: true
+        ]
+        if equal? ch "\"" [
+            out: out ++ "\\\""
+            escaped: true
+        ]
+        if equal? ch "\n" [
+            out: out ++ "\\n"
+            escaped: true
+        ]
+        if equal? ch "\r" [
+            out: out ++ "\\r"
+            escaped: true
+        ]
+        if equal? ch "\t" [
+            out: out ++ "\\t"
+            escaped: true
+        ]
+        if not? escaped [
+            out: out ++ ch
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+json_encode: function [value] [
+    t: type value
+    switch equal? t :string [
+        "\"" ++ json_escape value ++ "\""
+    ][
+        switch equal? t :integer [
+            to :string value
+        ][
+            switch equal? t :floating [
+                to :string value
+            ][
+                switch equal? t :logical [
+                    switch value [
+                        "true"
+                    ][
+                        "false"
+                    ]
+                ][
+                    switch equal? t :null [
+                        "null"
+                    ][
+                        switch equal? t :dictionary [
+                            keysList: keys value
+                            i: 0
+                            klen: size keysList
+                            out: "{"
+                            first: true
+                            while [less? i klen][
+                                k: get keysList i
+                                v: value\[k]
+                                if not? first [
+                                    out: out ++ ","
+                                ]
+                                out: out ++ "\"" ++ json_escape k ++ "\":" ++ json_encode v
+                                first: false
+                                i: i + 1
+                            ]
+                            out ++ "}"
+                        ][
+                            switch equal? t :block [
+                                i: 0
+                                blen: size value
+                                out: "["
+                                first: true
+                                while [less? i blen][
+                                    item: get value i
+                                    if not? first [
+                                        out: out ++ ","
+                                    ]
+                                    out: out ++ json_encode item
+                                    first: false
+                                    i: i + 1
+                                ]
+                                out ++ "]"
+                            ][
+                                "\"" ++ json_escape (to :string value) ++ "\""
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+]
+
+face_tree_json: function [] [
+    json_encode face_tree
+]
+
+json_pretty: function [json] [
+    indent: 0
+    inString: false
+    escapeNext: false
+    out: ""
+    len: size json
+    i: 0
+    while [less? i len][
+        ch: get json i
+        if escapeNext [
+            out: out ++ ch
+            escapeNext: false
+            i: i + 1
+            continue
+        ]
+        if equal? ch "\\" [
+            out: out ++ ch
+            if inString [ escapeNext: true ]
+            i: i + 1
+            continue
+        ]
+        if equal? ch "\"" [
+            inString: not inString
+            out: out ++ ch
+            i: i + 1
+            continue
+        ]
+        if inString [
+            out: out ++ ch
+            i: i + 1
+            continue
+        ]
+        if any? @[equal? ch "{" equal? ch "["] [
+            indent: indent + 1
+            out: out ++ ch ++ "\n" ++ repeat "  " indent
+            i: i + 1
+            continue
+        ]
+        if any? @[equal? ch "}" equal? ch "]"] [
+            indent: indent - 1
+            out: out ++ "\n" ++ repeat "  " indent ++ ch
+            i: i + 1
+            continue
+        ]
+        if equal? ch "," [
+            out: out ++ ch ++ "\n" ++ repeat "  " indent
+            i: i + 1
+            continue
+        ]
+        if equal? ch ":" [
+            out: out ++ ": "
+            i: i + 1
+            continue
+        ]
+        out: out ++ ch
+        i: i + 1
+    ]
+    out
+]
+
+face_tree_pretty: function [] [
+    json_pretty face_tree_json
+]
+
+face_tree_by_id: function [criteria] [
+    crit: criteria
+    if equal? (type criteria) :string [
+        crit: #[id: criteria]
+    ]
+    face: find_face crit
+    if equal? face null [
+        return []
+    ]
+    build_face_json face
+]
+
+face_tree_by_id_json: function [criteria] [
+    json_encode (face_tree_by_id criteria)
+]
+
+face_tree_overlay: function [] [
+    json: face_tree_json
+    js: ""
+    js: js ++ "const vistaFaceTree=" ++ json ++ ";"
+    js: js ++ "const flatten=(node,arr)=>{if(!node){return;}arr.push(node);(node.children||[]).forEach(c=>flatten(c,arr));};"
+    js: js ++ "const list=[];flatten(vistaFaceTree,list);"
+    js: js ++ "const renderList=(q)=>{const wrap=document.getElementById('vista-face-results');if(!wrap){return;}const term=(q||'').toLowerCase();const items=list.filter(n=>{const name=(n.name||'');return (n.id||'').toLowerCase().includes(term)||name.toLowerCase().includes(term)||(n.type||'').toLowerCase().includes(term);});wrap.innerHTML=items.map(n=>`<div style='padding:2px 0;'><button data-id='${n.id}' style='background:#1b1b1b;color:#e6e6e6;border:1px solid #333;padding:1px 4px;cursor:pointer;'>${n.id}</button> <span style='opacity:0.7'>(${n.type}${n.name?(' #' + n.name):''})</span></div>`).join('');wrap.querySelectorAll('button[data-id]').forEach(btn=>{btn.addEventListener('click',()=>highlight(btn.dataset.id));});};"
+    js: js ++ "const highlight=(id)=>{document.querySelectorAll('[data-vista-highlight]').forEach(el=>{el.style.outline='';el.removeAttribute('data-vista-highlight');});const el=document.querySelector(`[data-face-id=\"${id}\"]`);if(!el){return;}el.setAttribute('data-vista-highlight','true');el.style.outline='2px solid #ffb347';el.scrollIntoView({block:'center',behavior:'smooth'});};"
+    js: js ++ "const renderState=()=>{const pre=document.getElementById('vista-state-pre');if(!pre){return;}if(window.state){pre.textContent=JSON.stringify(window.state,null,2);}else{pre.textContent='(state not ready)';}};"
+    js: js ++ "document.addEventListener('DOMContentLoaded',()=>{const input=document.getElementById('vista-face-search');if(input){input.addEventListener('input',e=>renderList(e.target.value));}const refresh=document.getElementById('vista-face-refresh');if(refresh){refresh.addEventListener('click',()=>renderState());}renderList('');setTimeout(renderState,50);});"
+    vista_state\last_runtime_js: to :string vista_state\last_runtime_js ++ "\n" ++ js
+    raw (
+        "<div id='vista-face-overlay' style='position:fixed;right:8px;bottom:8px;max-width:42%;max-height:55%;overflow:auto;background:#111;color:#e6e6e6;border:1px solid #333;padding:8px 10px;font:12px/1.4 monospace;z-index:99999;'>" ++
+        "<div style='font-weight:bold;margin-bottom:6px;'>Vista Inspector</div>" ++
+        "<input id='vista-face-search' placeholder='Search faces...' style='width:100%;box-sizing:border-box;margin-bottom:6px;background:#1a1a1a;color:#e6e6e6;border:1px solid #333;padding:4px 6px;'>" ++
+        "<div id='vista-face-results' style='max-height:180px;overflow:auto;border:1px solid #333;padding:4px;'></div>" ++
+        "<div style='margin-top:6px;display:flex;gap:6px;align-items:center;'>" ++
+        "<button id='vista-face-refresh' style='background:#222;color:#e6e6e6;border:1px solid #333;padding:2px 6px;cursor:pointer;'>Refresh</button>" ++
+        "<span style='opacity:0.7;'>Click a face to highlight</span>" ++
+        "</div>" ++
+        "<div style='margin-top:6px;opacity:0.7;'>State</div>" ++
+        "<pre id='vista-state-pre' style='margin:4px 0 0 0;white-space:pre-wrap;max-height:140px;overflow:auto;background:#0f0f0f;border:1px solid #333;padding:4px;'></pre>" ++
+        "</div>"
+    )
+]
+
+build_face_json: function [face] [
+    obj: #[
+        id: face\id
+        type: face\type
+    ]
+    if key? face\attrs "id" [
+        obj\name: to :string face\attrs\id
+    ]
+    kids: []
+    if key? face "children" [
+        clen: size face\children
+        i: 0
+        while [less? i clen][
+            cid: get face\children i
+            if key? vista_state\last_faces cid [
+                kids: kids ++ @[build_face_json vista_state\last_faces\[cid]]
+            ]
+            i: i + 1
+        ]
+    ]
+    obj\children: kids
+    obj
+]
+
+path_first: function [path] [
+    path_nth path 0
+]
+
+path_last: function [path] [
+    face: get_face_path path
+    if equal? face null [
+        return null
+    ]
+    if not? key? face "children" [
+        return null
+    ]
+    count: size face\children
+    if equal? count 0 [
+        return null
+    ]
+    path_nth path (count - 1)
+]
+
+path_nth: function [path index] [
+    if not? equal? (type path) :block [
+        return null
+    ]
+    face: get_face_path path
+    if equal? face null [
+        return null
+    ]
+    if not? key? face "children" [
+        return null
+    ]
+    if less? index 0 [
+        return null
+    ]
+    if greaterOrEqual? index (size face\children) [
+        return null
+    ]
+    cid: get face\children index
+    if key? vista_state\last_faces cid [
+        return vista_state\last_faces\[cid]
+    ]
+    null
+]
+
+is_keyword: function [item block] [
+        item_type: type item
+        switch equal? item_type :word [
+            name: to :string item
+            if key? vista_styles name [
+                if set? name [
+                    return false
+                ]
+                return true
+            ]
+            in? name ["across" "below" "return" "end" "pad" "space" "align" "valign" "size" "origin" "offset" "indent" "guide" "do" "scope" "raw" "style" "styles" "stylize" "at" "backcolor" "text" "title" "subtitle" "field" "info" "button" "key" "label" "box" "panel" "details" "summary" "dialog" "template" "text-list" "text_list" "list" "row" "col" "grid" "spacer" "group" "form" "checkbox" "toggle" "input" "slider" "rotary" "textarea" "select" "drop-list" "drop_list" "radio" "radio-group" "radio_group" "tabs" "tab" "image" "audio" "video" "icon" "anim" "progress" "table" "table-row" "table_row" "table-cell" "table_cell" "table-header" "table_header" "table-head" "table_head" "table-body" "table_body" "table-foot" "table_foot" "toolbar" "menubar" "tool-group" "tool_group" "canvas" "divider" "split" "sensor" "pen" "fill-pen" "line-width" "line-cap" "line-join" "line-pattern" "line" "box" "circle" "arc" "ellipse" "polygon" "curve" "flood" "text" "font" "image" "push" "pop" "translate" "rotate" "scale" "skew" "smooth" "coord-system" "text-baseline" "text-align" "linear-gradient" "radial-gradient" "anti-alias" "clip" "fill-rule" "gamma" "grad-pen" "matrix" "invert-matrix" "reset-matrix" "transform" "arrow" "shape" "triangle" "spline"]
+        ][
+            ; Also check for compound keywords like "-width" from "line-width" tokenized as "line - width"
+            switch equal? item_type :symbol [
+                if not? block [
+                    return false
+                ]
+                name: to :string item
+                if not? equal? name "-" [
+                    return false
+                ]
+                ; This is a "-" symbol, check if next token is part of a compound keyword
+                blen: size block
+                found_idx: -1
+                j: 0
+                while [less? j blen] [
+                    if equal? (get block j) item [
+                        found_idx: j
+                        break
+                    ]
+                    j: j + 1
+                ]
+                if equal? found_idx -1 [
+                    return false
+                ]
+                if less? (found_idx + 2) blen [
+                    tail: get block (found_idx + 2)
+                    tail_type: type tail
+                    if any? @[equal? tail_type :word equal? tail_type :label] [
+                        tailName: to :string tail
+                        ; Check if "-" + tailName forms a known compound keyword suffix
+                        compoundSuf: "-" ++ tailName
+                    suffixes: ["-width" "-pen" "-cap" "-join" "-pattern" "-system" "-baseline" "-align" "-gradient" "-rule" "-alias" "-matrix"]
+                        in? compoundSuf suffixes
+                    ] [
+                        false
+                    ]
+                ] [
+                    false
+                ]
+            ][
+                false
+            ]
+        ]
+]
+
+append_value: function [lst val] [
+        lst ++ @[val]
+]
+
+parse_attrs: function [args] [
+        attrs: #[]
+        rest: []
+        i: 0
+        args_len: size args
+        while [less? i args_len][
+            tok: get args i
+            tok_type: type tok
+            switch any? @[equal? tok_type :attributeLabel equal? tok_type :label] [
+                name: to :string tok
+                advance: 1
+                if less? i + 2 args_len [
+                    mid: get args (i + 1)
+                    tail: get args (i + 2)
+                    if all? @[equal? (type mid) :symbol equal? (to :string mid) "-" any? @[equal? (type tail) :word equal? (type tail) :label]] [
+                        name: name ++ "-" ++ to :string tail
+                        advance: 3
+                    ]
+                ]
+                switch less? i + advance args_len [
+                    valIndex: i + advance
+                    val: get args valIndex
+                    if equal? (type val) :symbol [
+                        if equal? (to :string val) ":" [
+                            if less? (valIndex + 1) args_len [
+                                valIndex: valIndex + 1
+                                val: get args valIndex
+                            ]
+                        ]
+                    ]
+                    handled: false
+                    if equal? (type val) :symbol [
+                        if equal? (to :string val) "#" [
+                            if less? (valIndex + 1) args_len [
+                                nextVal: get args (valIndex + 1)
+                                if equal? (type nextVal) :block [
+                                    attrs\[name]: header_from_block nextVal
+                                    i: valIndex + 2
+                                    handled: true
+                                ]
+                            ]
+                        ]
+                    ]
+                    if not? handled [
+                        attrs\[name]: val
+                        i: valIndex + 1
+                    ]
+                ][
+                    i: i + 1
+                ]
+            ][
+                switch equal? tok_type :attribute [
+                    name: to :string tok
+                    if less? i + 2 args_len [
+                        mid: get args (i + 1)
+                        tail: get args (i + 2)
+                        if all? @[equal? (type mid) :symbol equal? (to :string mid) "-" any? @[equal? (type tail) :word equal? (type tail) :label]] [
+                            name: name ++ "-" ++ to :string tail
+                            i: i + 3
+                            attrs\[name]: true
+                            continue
+                        ]
+                    ]
+                    attrs\[name]: true
+                    i: i + 1
+                ][
+                    rest: append_value rest tok
+                    i: i + 1
+                ]
+            ]
+        ]
+        #[
+            attrs: attrs
+            args: rest
+        ]
+]
+
+attrs_to_html: function [attrs] [
+        keysList: keys attrs
+        keys_len: size keysList
+        if equal? keys_len 0 [
+            return ""
+        ]
+        html: ""
+        i: 0
+        while [less? i keys_len][
+            k: get keysList i
+            v: attrs\[k]
+            v_type: type v
+            switch equal? v_type :logical [
+                if v [
+                    html: html ++ " " ++ k
+                ]
+            ][
+                html: html ++ " " ++ k ++ "='"
+                html: html ++ html_escape_attr (to :string v)
+                html: html ++ "'"
+            ]
+            i: i + 1
+        ]
+        html
+]
+
+attrs_without: function [attrs key] [
+        filtered: #[]
+        keysList: keys attrs
+        i: 0
+        keys_len: size keysList
+        while [less? i keys_len][
+            k: get keysList i
+            if notEqual? k key [
+                filtered\[k]: attrs\[k]
+            ]
+            i: i + 1
+        ]
+        filtered
+]
+
+take_attr: function [attrs key] [
+        val: null
+        if key? attrs key [
+            val: attrs\[key]
+            attrs: attrs_without attrs key
+        ]
+        #[
+            value: val
+            attrs: attrs
+        ]
+]
+
+append_style: function [style fragment] [
+        switch equal? style "" [
+            fragment
+        ][
+            style ++ " " ++ fragment
+        ]
+]
+
+has_style_dim: function [attrs] [
+        if key? attrs "style" [
+            s: to :string attrs\style
+            if notEqual? (find s "width:") null [
+                return true
+            ]
+            if notEqual? (find s "height:") null [
+                return true
+            ]
+        ]
+        false
+]
+
+maybe_autosize_text_attrs: function [attrs] [
+        if key? attrs "data-auto-size" [
+            return attrs
+        ]
+        if has_style_dim attrs [
+            return attrs
+        ]
+        attrs\["data-auto-size"]: "text"
+        attrs
+]
+
+style_value: function [val] [
+        t: type val
+        switch equal? t :integer [
+            valStr: to :string val
+            valStr ++ "px"
+        ][
+            switch equal? t :floating [
+                valStr: to :string val
+                valStr ++ "px"
+            ][
+                to :string val
+            ]
+        ]
+]
+
+merge_pending_attrs: function [attrs pending] [
+        res: attrs
+        keysList: keys pending
+        klen: size keysList
+        i: 0
+        while [less? i klen][
+            k: get keysList i
+            switch key? res k [
+                if equal? k "class" [
+                    res\class: to :string res\class ++ " " ++ to :string pending\class
+                ]
+                if equal? k "style" [
+                    res\style: append_style (to :string res\style) (to :string pending\style)
+                ]
+            ][
+                res\[k]: pending\[k]
+            ]
+            i: i + 1
+        ]
+        res
+]
+
+merge_layout_scopes: function [attrs] [
+        res: attrs
+        stackLen: size vista_state\layout_scope_stack
+        i: 0
+        while [less? i stackLen][
+            res: merge_pending_attrs res (get vista_state\layout_scope_stack i)
+            i: i + 1
+        ]
+        res
+]
+
+apply_font_attrs: function [style fontVal] [
+        t: type fontVal
+        switch equal? t :dictionary [
+            if key? fontVal "family" [
+                style: append_style style ("font-family: " ++ (to :string fontVal\family) ++ ";")
+            ]
+            if key? fontVal "size" [
+                fontSize: style_value fontVal\size
+                style: append_style style ("font-size: " ++ fontSize ++ ";")
+            ]
+            if key? fontVal "color" [
+                style: append_style style ("color: " ++ (to :string fontVal\color) ++ ";")
+            ]
+            if key? fontVal "weight" [
+                style: append_style style ("font-weight: " ++ (to :string fontVal\weight) ++ ";")
+            ]
+            if key? fontVal "style" [
+                style: append_style style ("font-style: " ++ (to :string fontVal\style) ++ ";")
+            ]
+            if key? fontVal "bold" [
+                if fontVal\bold [
+                    style: append_style style "font-weight: 700;"
+                ]
+            ]
+            if key? fontVal "italic" [
+                if fontVal\italic [
+                    style: append_style style "font-style: italic;"
+                ]
+            ]
+            style
+        ][
+            style: append_style style ("font-family: " ++ (to :string fontVal) ++ ";")
+        ]
+]
+
+apply_para_attrs: function [style paraVal] [
+        t: type paraVal
+        switch equal? t :dictionary [
+            if key? paraVal "align" [
+                style: append_style style ("text-align: " ++ (to :string paraVal\align) ++ ";")
+            ]
+            if key? paraVal "wrap" [
+                if not? paraVal\wrap [
+                    style: append_style style "white-space: nowrap;"
+                ]
+            ]
+            if key? paraVal "spacing" [
+                spacingVal: style_value paraVal\spacing
+                style: append_style style ("letter-spacing: " ++ spacingVal ++ ";")
+            ]
+            if key? paraVal "leading" [
+                leadingVal: style_value paraVal\leading
+                style: append_style style ("line-height: " ++ leadingVal ++ ";")
+            ]
+            style
+        ][
+            style: append_style style ("text-align: " ++ (to :string paraVal) ++ ";")
+        ]
+]
+
+apply_edge_attrs: function [baseStyle edgeVal] [
+        out: ""
+        if notEqual? baseStyle null [
+            out: to :string baseStyle
+        ]
+        t: type edgeVal
+        switch equal? t :dictionary [
+            sizeVal: 1
+            colorVal: "#888"
+            styleVal: "solid"
+            if key? edgeVal "size" [ sizeVal: edgeVal\size ]
+            if key? edgeVal "color" [ colorVal: edgeVal\color ]
+            if key? edgeVal "style" [ styleVal: edgeVal\style ]
+            sizeStr: style_value sizeVal
+            switch any? @[equal? styleVal "bevel" equal? styleVal "raised" equal? styleVal "inset"] [
+                out: append_style out ("border: " ++ sizeStr ++ " solid " ++ (to :string colorVal) ++ ";")
+                if equal? styleVal "bevel" [
+                    out: append_style out "box-shadow: inset 1px 1px 0 rgba(255,255,255,0.7), inset -1px -1px 0 rgba(0,0,0,0.3);"
+                ]
+                if equal? styleVal "raised" [
+                    out: append_style out "box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.25);"
+                ]
+                if equal? styleVal "inset" [
+                    out: append_style out "box-shadow: inset 0 1px 3px rgba(0,0,0,0.35);"
+                ]
+            ][
+                out: append_style out ("border: " ++ sizeStr ++ " " ++ (to :string styleVal) ++ " " ++ (to :string colorVal) ++ ";")
+            ]
+            if key? edgeVal "radius" [
+                radiusStr: style_value edgeVal\radius
+                out: append_style out ("border-radius: " ++ radiusStr ++ ";")
+            ]
+        ][
+            out: append_style out ("border: 1px solid " ++ (to :string edgeVal) ++ ";")
+        ]
+        out
+]
+
+apply_effect_attrs: function [style effectVal] [
+        t: type effectVal
+        switch equal? t :dictionary [
+            if key? effectVal "shadow" [
+                return append_style style ("box-shadow: " ++ (to :string effectVal\shadow) ++ ";")
+            ]
+            if key? effectVal "filter" [
+                return append_style style ("filter: " ++ (to :string effectVal\filter) ++ ";")
+            ]
+            if key? effectVal "type" [
+                effectVal: effectVal\type
+            ]
+        ][
+            effectVal: effectVal
+        ]
+        valStr: to :string effectVal
+        switch equal? valStr "shadow" [
+            append_style style "box-shadow: 0 2px 8px rgba(0,0,0,0.18);"
+        ][
+            switch equal? valStr "inset" [
+                append_style style "box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);"
+            ][
+                switch equal? valStr "raised" [
+                    append_style style "box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 2px 4px rgba(0,0,0,0.25);"
+                ][
+                    switch equal? valStr "emboss" [
+                        append_style style "box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.3);"
+                    ][
+                        switch equal? valStr "bevel" [
+                            append_style style "box-shadow: inset 1px 1px 0 rgba(255,255,255,0.7), inset -1px -1px 0 rgba(0,0,0,0.3);"
+                        ][
+                            append_style style ("filter: " ++ valStr ++ ";")
+                        ]
+                    ]
+                ]
+            ]
+        ]
+]
+
+facet_pair_xy: function [val] [
+        t: type val
+        switch equal? t :block [
+            if greaterOrEqual? size val 2 [
+                xVal: get val 0
+                yVal: get val 1
+                return #[
+                    x: xVal
+                    y: yVal
+                ]
+            ]
+        ][
+            switch equal? t :string [
+                parts: split val "x"
+                if greaterOrEqual? size parts 2 [
+                    xVal: get parts 0
+                    yVal: get parts 1
+                    return #[
+                        x: xVal
+                        y: yVal
+                    ]
+                ]
+            ][
+                null
+            ]
+        ]
+        null
+]
+
+facet_bool: function [val defaultVal] [
+        if equal? (type val) :logical [
+            return val
+        ]
+        valStr: lower to :string val
+        if equal? valStr "true" [ return true ]
+        if equal? valStr "false" [ return false ]
+        defaultVal
+]
+
+rebol_facets_merge_attrs: function [attrs facets] [
+        if notEqual? (type facets) :dictionary [
+            return attrs
+        ]
+        out: attrs
+        if key? facets "color" [ out\color: facets\color ]
+        if key? facets "font" [ out\font: facets\font ]
+        if key? facets "para" [ out\para: facets\para ]
+        if key? facets "edge" [ out\edge: facets\edge ]
+        if key? facets "effect" [ out\effect: facets\effect ]
+        if key? facets "rate" [ out\rate: facets\rate ]
+        if key? facets "options" [ out\options: facets\options ]
+        if key? facets "feel" [ out\feel: facets\feel ]
+        if key? facets "actor" [ out\actor: facets\actor ]
+        if key? facets "size" [
+            sizePair: facet_pair_xy facets\size
+            if notEqual? sizePair null [
+                sizeX: sizePair\x
+                sizeY: sizePair\y
+                widthStr: style_value sizeX
+                heightStr: style_value sizeY
+                styleNow: ""
+                if key? out "style" [ styleNow: to :string out\style ]
+                styleNow: append_style styleNow ("width: " ++ widthStr ++ ";")
+                styleNow: append_style styleNow ("height: " ++ heightStr ++ ";")
+                out\style: styleNow
+            ]
+        ]
+        if any? @[key? facets "offset" key? facets "origin" key? facets "at"] [
+            posVal: null
+            if key? facets "offset" [ posVal: facets\offset ]
+            if all? @[equal? posVal null key? facets "origin"] [ posVal: facets\origin ]
+            if all? @[equal? posVal null key? facets "at"] [ posVal: facets\at ]
+            posPair: facet_pair_xy posVal
+            if notEqual? posPair null [
+                posX: posPair\x
+                posY: posPair\y
+                leftStr: style_value posX
+                topStr: style_value posY
+                styleNow: ""
+                if key? out "style" [ styleNow: to :string out\style ]
+                styleNow: append_style styleNow "position: relative;"
+                styleNow: append_style styleNow ("left: " ++ leftStr ++ ";")
+                styleNow: append_style styleNow ("top: " ++ topStr ++ ";")
+                out\style: styleNow
+            ]
+        ]
+        if any? @[key? facets "visible" key? facets "show" key? facets "hidden"] [
+            visible: true
+            if key? facets "visible" [ visible: facet_bool facets\visible visible ]
+            if key? facets "show" [ visible: facet_bool facets\show visible ]
+            if key? facets "hidden" [
+                visible: not? facet_bool facets\hidden false
+            ]
+            if not? visible [
+                styleNow: ""
+                if key? out "style" [ styleNow: to :string out\style ]
+                styleNow: append_style styleNow "display: none;"
+                out\style: styleNow
+            ]
+        ]
+        if any? @[key? facets "enabled" key? facets "disabled"] [
+            enabled: true
+            if key? facets "enabled" [ enabled: facet_bool facets\enabled enabled ]
+            if key? facets "disabled" [ enabled: not? facet_bool facets\disabled false ]
+            if not? enabled [ out\disabled: true ]
+        ]
+        if key? facets "alpha" [
+            styleNow: ""
+            if key? out "style" [ styleNow: to :string out\style ]
+            styleNow: append_style styleNow ("opacity: " ++ to :string facets\alpha ++ ";")
+            out\style: styleNow
+        ]
+        out
+]
+
+rebol_actor_to_feel: function [actorVal] [
+        if notEqual? (type actorVal) :dictionary [
+            return #[]
+        ]
+        feel: #[]
+        if key? actorVal "on-click" [ feel\click: actorVal\["on-click"] ]
+        if key? actorVal "click" [ feel\click: actorVal\click ]
+        if key? actorVal "action" [ feel\click: actorVal\action ]
+        if key? actorVal "on-down" [ feel\down: actorVal\["on-down"] ]
+        if key? actorVal "down" [ feel\down: actorVal\down ]
+        if key? actorVal "on-up" [ feel\up: actorVal\["on-up"] ]
+        if key? actorVal "up" [ feel\up: actorVal\up ]
+        if key? actorVal "on-over" [ feel\hover: actorVal\["on-over"] ]
+        if key? actorVal "over" [ feel\hover: actorVal\over ]
+        if key? actorVal "on-out" [ feel\away: actorVal\["on-out"] ]
+        if key? actorVal "away" [ feel\away: actorVal\away ]
+        if key? actorVal "on-change" [ feel\change: actorVal\["on-change"] ]
+        if key? actorVal "change" [ feel\change: actorVal\change ]
+        if key? actorVal "on-key" [ feel\key: actorVal\["on-key"] ]
+        if key? actorVal "key" [ feel\key: actorVal\key ]
+        if key? actorVal "on-move" [ feel\move: actorVal\["on-move"] ]
+        if key? actorVal "move" [ feel\move: actorVal\move ]
+        if key? actorVal "on-input" [ feel\input: actorVal\["on-input"] ]
+        if key? actorVal "input" [ feel\input: actorVal\input ]
+        if key? actorVal "on-focus" [ feel\focus: actorVal\["on-focus"] ]
+        if key? actorVal "focus" [ feel\focus: actorVal\focus ]
+        if key? actorVal "on-blur" [ feel\blur: actorVal\["on-blur"] ]
+        if key? actorVal "blur" [ feel\blur: actorVal\blur ]
+        if key? actorVal "on-engage" [ feel\engage: actorVal\["on-engage"] ]
+        if key? actorVal "engage" [
+            feel\engage: actorVal\engage
+        ]
+        if key? actorVal "on-detect" [ feel\detect: actorVal\["on-detect"] ]
+        if key? actorVal "detect" [
+            feel\detect: actorVal\detect
+        ]
+        if key? actorVal "on-redraw" [ feel\redraw: actorVal\["on-redraw"] ]
+        if key? actorVal "redraw" [
+            feel\redraw: actorVal\redraw
+        ]
+        if key? actorVal "on-pointer-down" [ feel\["pointer-down"]: actorVal\["on-pointer-down"] ]
+        if key? actorVal "pointer-down" [ feel\["pointer-down"]: actorVal\["pointer-down"] ]
+        if key? actorVal "pointer_down" [ feel\pointer_down: actorVal\pointer_down ]
+        if key? actorVal "on-pointer-move" [ feel\["pointer-move"]: actorVal\["on-pointer-move"] ]
+        if key? actorVal "pointer-move" [ feel\["pointer-move"]: actorVal\["pointer-move"] ]
+        if key? actorVal "pointer_move" [ feel\pointer_move: actorVal\pointer_move ]
+        if key? actorVal "on-pointer-up" [ feel\["pointer-up"]: actorVal\["on-pointer-up"] ]
+        if key? actorVal "pointer-up" [ feel\["pointer-up"]: actorVal\["pointer-up"] ]
+        if key? actorVal "pointer_up" [ feel\pointer_up: actorVal\pointer_up ]
+        if key? actorVal "on-pointer-cancel" [ feel\["pointer-cancel"]: actorVal\["on-pointer-cancel"] ]
+        if key? actorVal "pointer-cancel" [ feel\["pointer-cancel"]: actorVal\["pointer-cancel"] ]
+        if key? actorVal "pointer_cancel" [ feel\pointer_cancel: actorVal\pointer_cancel ]
+        if key? actorVal "on-tap" [ feel\tap: actorVal\["on-tap"] ]
+        if key? actorVal "tap" [ feel\tap: actorVal\tap ]
+        if key? actorVal "on-long-press" [ feel\["long-press"]: actorVal\["on-long-press"] ]
+        if key? actorVal "long-press" [ feel\["long-press"]: actorVal\["long-press"] ]
+        if key? actorVal "long_press" [ feel\long_press: actorVal\long_press ]
+        if key? actorVal "on-long-press-ms" [ feel\["long-press-ms"]: actorVal\["on-long-press-ms"] ]
+        if key? actorVal "long-press-ms" [ feel\["long-press-ms"]: actorVal\["long-press-ms"] ]
+        if key? actorVal "long_press_ms" [ feel\long_press_ms: actorVal\long_press_ms ]
+        if key? actorVal "on-dragstart" [ feel\dragstart: actorVal\["on-dragstart"] ]
+        if key? actorVal "dragstart" [ feel\dragstart: actorVal\dragstart ]
+        if key? actorVal "on-dragover" [ feel\dragover: actorVal\["on-dragover"] ]
+        if key? actorVal "dragover" [ feel\dragover: actorVal\dragover ]
+        if key? actorVal "on-drop" [ feel\drop: actorVal\["on-drop"] ]
+        if key? actorVal "drop" [ feel\drop: actorVal\drop ]
+        if key? actorVal "on-dragenter" [ feel\dragenter: actorVal\["on-dragenter"] ]
+        if key? actorVal "dragenter" [ feel\dragenter: actorVal\dragenter ]
+        if key? actorVal "on-dragleave" [ feel\dragleave: actorVal\["on-dragleave"] ]
+        if key? actorVal "dragleave" [ feel\dragleave: actorVal\dragleave ]
+        if key? actorVal "on-dragend" [ feel\dragend: actorVal\["on-dragend"] ]
+        if key? actorVal "dragend" [ feel\dragend: actorVal\dragend ]
+        if key? actorVal "drag-data" [ feel\["drag-data"]: actorVal\["drag-data"] ]
+        if key? actorVal "drag_data" [ feel\drag_data: actorVal\drag_data ]
+        if key? actorVal "drop-effect" [ feel\["drop-effect"]: actorVal\["drop-effect"] ]
+        if key? actorVal "drop_effect" [ feel\drop_effect: actorVal\drop_effect ]
+        feel
+]
+
+apply_facet_attrs: function [attrs] [
+        if key? attrs "facets" [
+            attrs: rebol_facets_merge_attrs attrs attrs\facets
+            attrs: attrs_without attrs "facets"
+        ]
+        if key? attrs "actor" [
+            actorFeel: rebol_actor_to_feel attrs\actor
+            if greater? size keys actorFeel 0 [
+                if key? attrs "feel" [
+                    if equal? (type attrs\feel) :dictionary [
+                        mergedFeel: attrs\feel
+                        actorKeys: keys actorFeel
+                        ai: 0
+                        alen: size actorKeys
+                        while [less? ai alen][
+                            ak: get actorKeys ai
+                            if not? key? mergedFeel ak [
+                                mergedFeel\[ak]: actorFeel\[ak]
+                            ]
+                            ai: ai + 1
+                        ]
+                        attrs\feel: mergedFeel
+                    ]
+                ] [
+                    attrs\feel: actorFeel
+                ]
+            ]
+            attrs: attrs_without attrs "actor"
+        ]
+        style: ""
+        if key? attrs "style" [
+            style: to :string attrs\style
+            attrs: attrs_without attrs "style"
+        ]
+        if key? attrs "color" [
+            style: append_style style ("background-color: " ++ (to :string attrs\color) ++ ";")
+            attrs: attrs_without attrs "color"
+        ]
+        if key? attrs "font" [
+            style: apply_font_attrs style attrs\font
+            attrs: attrs_without attrs "font"
+        ]
+        if key? attrs "para" [
+            style: apply_para_attrs style attrs\para
+            attrs: attrs_without attrs "para"
+        ]
+        if key? attrs "valign" [
+            style: append_style style ("justify-content: " ++ (to :string attrs\valign) ++ ";")
+            style: append_style style ("vertical-align: " ++ (to :string attrs\valign) ++ ";")
+            attrs: attrs_without attrs "valign"
+        ]
+        if key? attrs "edge" [
+            style: apply_edge_attrs style attrs\edge
+            attrs: attrs_without attrs "edge"
+        ]
+        if key? attrs "effect" [
+            style: apply_effect_attrs style attrs\effect
+            attrs: attrs_without attrs "effect"
+        ]
+        if key? attrs "options" [
+            attrs\["data-options"]: to :string attrs\options
+            attrs: attrs_without attrs "options"
+        ]
+        if key? attrs "rate" [
+            attrs\["data-rate"]: to :string attrs\rate
+            attrs: attrs_without attrs "rate"
+        ]
+        if key? attrs "drag-data" [
+            attrs\["data-dnd-payload"]: to :string attrs\["drag-data"]
+            attrs: attrs_without attrs "drag-data"
+        ]
+        if key? attrs "drop-effect" [
+            attrs\["data-dnd-drop-effect"]: to :string attrs\["drop-effect"]
+            attrs: attrs_without attrs "drop-effect"
+        ]
+        if key? attrs "feel" [
+            feelVal: attrs\feel
+            if equal? (type feelVal) :dictionary [
+                if key? feelVal "hover" [ attrs\["on-over"]: feelVal\hover ]
+                if key? feelVal "away" [ attrs\["on-out"]: feelVal\away ]
+                if key? feelVal "click" [ attrs\["on-click"]: feelVal\click ]
+                if key? feelVal "down" [ attrs\["on-down"]: feelVal\down ]
+                if key? feelVal "up" [ attrs\["on-up"]: feelVal\up ]
+                if key? feelVal "move" [ attrs\["on-move"]: feelVal\move ]
+                if key? feelVal "input" [ attrs\["on-input"]: feelVal\input ]
+                if key? feelVal "change" [ attrs\["on-change"]: feelVal\change ]
+                if key? feelVal "focus" [ attrs\["on-focus"]: feelVal\focus ]
+                if key? feelVal "blur" [ attrs\["on-blur"]: feelVal\blur ]
+                if key? feelVal "key" [ attrs\["on-key"]: feelVal\key ]
+                if key? feelVal "engage" [ attrs\["on-engage"]: feelVal\engage ]
+                if key? feelVal "detect" [ attrs\["on-detect"]: feelVal\detect ]
+                if key? feelVal "redraw" [ attrs\["on-redraw"]: feelVal\redraw ]
+                if key? feelVal "drag" [ attrs\["data-feel-drag"]: to :string feelVal\drag ]
+                if key? feelVal "pointer-down" [ attrs\["on-pointer-down"]: feelVal\["pointer-down"] ]
+                if key? feelVal "pointer_down" [ attrs\["on-pointer-down"]: feelVal\pointer_down ]
+                if key? feelVal "pointer-move" [ attrs\["on-pointer-move"]: feelVal\["pointer-move"] ]
+                if key? feelVal "pointer_move" [ attrs\["on-pointer-move"]: feelVal\pointer_move ]
+                if key? feelVal "pointer-up" [ attrs\["on-pointer-up"]: feelVal\["pointer-up"] ]
+                if key? feelVal "pointer_up" [ attrs\["on-pointer-up"]: feelVal\pointer_up ]
+                if key? feelVal "pointer-cancel" [ attrs\["on-pointer-cancel"]: feelVal\["pointer-cancel"] ]
+                if key? feelVal "pointer_cancel" [ attrs\["on-pointer-cancel"]: feelVal\pointer_cancel ]
+                if key? feelVal "tap" [ attrs\["on-tap"]: feelVal\tap ]
+                if key? feelVal "long-press" [ attrs\["on-long-press"]: feelVal\["long-press"] ]
+                if key? feelVal "long_press" [ attrs\["on-long-press"]: feelVal\long_press ]
+                if key? feelVal "long-press-ms" [ attrs\["on-long-press-ms"]: feelVal\["long-press-ms"] ]
+                if key? feelVal "long_press_ms" [ attrs\["on-long-press-ms"]: feelVal\long_press_ms ]
+                if key? feelVal "dragstart" [ attrs\["on-dragstart"]: feelVal\dragstart ]
+                if key? feelVal "dragover" [ attrs\["on-dragover"]: feelVal\dragover ]
+                if key? feelVal "drop" [ attrs\["on-drop"]: feelVal\drop ]
+                if key? feelVal "dragenter" [ attrs\["on-dragenter"]: feelVal\dragenter ]
+                if key? feelVal "dragleave" [ attrs\["on-dragleave"]: feelVal\dragleave ]
+                if key? feelVal "dragend" [ attrs\["on-dragend"]: feelVal\dragend ]
+                if key? feelVal "drag-data" [ attrs\["data-dnd-payload"]: to :string feelVal\["drag-data"] ]
+                if key? feelVal "drag_data" [ attrs\["data-dnd-payload"]: to :string feelVal\drag_data ]
+                if key? feelVal "drop-effect" [ attrs\["data-dnd-drop-effect"]: to :string feelVal\["drop-effect"] ]
+                if key? feelVal "drop_effect" [ attrs\["data-dnd-drop-effect"]: to :string feelVal\drop_effect ]
+            ]
+            attrs: attrs_without attrs "feel"
+        ]
+        if notEqual? style "" [
+            attrs\style: style
+        ]
+        attrs
+]
+
+header_value: function [hdr key] [
+        keyStr: to :string key
+        if key? hdr keyStr [
+            return hdr\[keyStr]
+        ]
+        lowerKey: lower keyStr
+        if key? hdr lowerKey [
+            return hdr\[lowerKey]
+        ]
+        null
+]
+
+header_from_block: function [blk] [
+        hdr: #[]
+        if notEqual? (type blk) :block [
+            return hdr
+        ]
+        blen: size blk
+        i: 0
+        while [less? i blen][
+            k: get blk i
+            ktype: type k
+            handled: false
+            if equal? ktype :label [
+                keyStr: to :string k
+                if less? (i + 1) blen [
+                    hdr\[keyStr]: get blk (i + 1)
+                    i: i + 2
+                    handled: true
+                ]
+            ]
+            if not? handled [
+                i: i + 1
+            ]
+        ]
+        hdr
+]
+
+apply_header_values: function [hdr] [
+        titleVal: header_value hdr "Title"
+        if notEqual? titleVal null [
+            vista_state\webview_title: to :string titleVal
+        ]
+        widthVal: header_value hdr "Width"
+        if notEqual? widthVal null [
+            vista_state\webview_width: widthVal
+        ]
+        heightVal: header_value hdr "Height"
+        if notEqual? heightVal null [
+            vista_state\webview_height: heightVal
+        ]
+        logoVal: header_value hdr "Logo"
+        if notEqual? logoVal null [
+            vista_state\app_logo_path: to :string logoVal
+        ]
+        primaryColorVal: header_value hdr "PrimaryColor"
+        if notEqual? primaryColorVal null [
+            vista_state\app_primary_color: to :string primaryColorVal
+        ]
+        backgroundColorVal: header_value hdr "BackgroundColor"
+        if notEqual? backgroundColorVal null [
+            vista_state\app_background_color: to :string backgroundColorVal
+        ]
+        textColorVal: header_value hdr "TextColor"
+        if notEqual? textColorVal null [
+            vista_state\app_text_color: to :string textColorVal
+        ]
+        titleColorVal: header_value hdr "TitleColor"
+        if notEqual? titleColorVal null [
+            vista_state\app_title_color: to :string titleColorVal
+        ]
+        authorVal: header_value hdr "Author"
+        if notEqual? authorVal null [
+            vista_state\app_author: to :string authorVal
+        ]
+        dateVal: header_value hdr "Date"
+        if notEqual? dateVal null [
+            vista_state\app_date: to :string dateVal
+        ]
+        hdr
+]
+
+ARTURO: function [hdrBlock] [
+        hdr: header_from_block hdrBlock
+        if greater? (size keys hdr) 0 [
+            vista_state\app_header: hdr
+            apply_header_values hdr
+        ]
+        hdr
+]
+
+apply_arturo_header: function [] [
+        if all? @[key? vista_state "app_header" greater? (size keys vista_state\app_header) 0] [
+            return apply_header_values vista_state\app_header
+        ]
+        null
+]
+
+run_app: function [layoutBlock] [
+    apply_arturo_header
+    view layoutBlock
+]
+
+apply_layout_attrs: function [attrs] [
+        style: ""
+        if key? attrs "style" [
+            style: to :string attrs\style
+            attrs: attrs_without attrs "style"
+        ]
+        if key? attrs "pad" [
+            padVal: style_value attrs\pad
+            style: append_style style ("padding: " ++ padVal ++ ";")
+            attrs: attrs_without attrs "pad"
+        ]
+        if key? attrs "space" [
+            spaceVal: style_value attrs\space
+            style: append_style style ("gap: " ++ spaceVal ++ ";")
+            attrs: attrs_without attrs "space"
+        ]
+        if key? attrs "align" [
+            style: append_style style ("align-items: " ++ (to :string attrs\align) ++ ";")
+            attrs: attrs_without attrs "align"
+        ]
+        if key? attrs "indent" [
+            indentVal: style_value attrs\indent
+            style: append_style style ("margin-left: " ++ indentVal ++ ";")
+            attrs: attrs_without attrs "indent"
+        ]
+        if key? attrs "size" [
+            sizeVal: attrs\size
+            sizeType: type sizeVal
+            switch equal? sizeType :block [
+                if equal? (size sizeVal) 2 [
+                    w: get sizeVal 0
+                    h: get sizeVal 1
+                    widthVal: style_value w
+                    heightVal: style_value h
+                    style: append_style style ("width: " ++ widthVal ++ ";")
+                    style: append_style style ("height: " ++ heightVal ++ ";")
+                ]
+            ][
+                sizeStr: to :string sizeVal
+                parts: split sizeStr "x"
+                switch equal? (size parts) 2 [
+                    widthVal: style_value (get parts 0)
+                    heightVal: style_value (get parts 1)
+                    style: append_style style ("width: " ++ widthVal ++ ";")
+                    style: append_style style ("height: " ++ heightVal ++ ";")
+                ][
+                    widthVal: style_value sizeStr
+                    style: append_style style ("width: " ++ widthVal ++ ";")
+                ]
+            ]
+            attrs: attrs_without attrs "size"
+        ]
+        if key? attrs "origin" [
+            pos: attrs\origin
+            if equal? (type pos) :block [
+                if equal? (size pos) 2 [
+                    leftVal: style_value (get pos 0)
+                    topVal: style_value (get pos 1)
+                    style: append_style style ("padding-left: " ++ leftVal ++ ";")
+                    style: append_style style ("padding-top: " ++ topVal ++ ";")
+                ]
+            ]
+            attrs: attrs_without attrs "origin"
+        ]
+        if key? attrs "offset" [
+            pos: attrs\offset
+            if equal? (type pos) :block [
+                if equal? (size pos) 2 [
+                    style: append_style style "position: relative;"
+                    leftVal: style_value (get pos 0)
+                    topVal: style_value (get pos 1)
+                    style: append_style style ("left: " ++ leftVal ++ ";")
+                    style: append_style style ("top: " ++ topVal ++ ";")
+                ]
+            ]
+            attrs: attrs_without attrs "offset"
+        ]
+        if key? attrs "at" [
+            pos: attrs\at
+            if equal? (type pos) :block [
+                if equal? (size pos) 2 [
+                    style: append_style style "position: absolute;"
+                    leftVal: style_value (get pos 0)
+                    topVal: style_value (get pos 1)
+                    style: append_style style ("left: " ++ leftVal ++ ";")
+                    style: append_style style ("top: " ++ topVal ++ ";")
+                ]
+            ]
+            attrs: attrs_without attrs "at"
+        ]
+        if notEqual? style "" [
+            attrs\style: style
+        ]
+        attrs
+]
+
+apply_event_attrs: function [attrs bindings] [
+        res: attrs
+        if key? res "on-click" [
+            val: res\["on-click"]
+            res: attrs_without res "on-click"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onclick: compile_action val bindings
+            ][
+                res\onclick: to :string val
+            ]
+        ]
+        if key? res "on-over" [
+            val: res\["on-over"]
+            res: attrs_without res "on-over"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onmouseenter: compile_action val bindings
+            ][
+                res\onmouseenter: to :string val
+            ]
+        ]
+        if key? res "on-out" [
+            val: res\["on-out"]
+            res: attrs_without res "on-out"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onmouseleave: compile_action val bindings
+            ][
+                res\onmouseleave: to :string val
+            ]
+        ]
+        if key? res "on-down" [
+            val: res\["on-down"]
+            res: attrs_without res "on-down"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onmousedown: compile_action val bindings
+            ][
+                res\onmousedown: to :string val
+            ]
+        ]
+        if key? res "on-up" [
+            val: res\["on-up"]
+            res: attrs_without res "on-up"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onmouseup: compile_action val bindings
+            ][
+                res\onmouseup: to :string val
+            ]
+        ]
+        if key? res "on-change" [
+            val: res\["on-change"]
+            res: attrs_without res "on-change"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onchange: compile_action val bindings
+            ][
+                res\onchange: to :string val
+            ]
+        ]
+        if key? res "on-key" [
+            val: res\["on-key"]
+            res: attrs_without res "on-key"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onkeydown: compile_action val bindings
+            ][
+                res\onkeydown: to :string val
+            ]
+        ]
+        if key? res "on-focus" [
+            val: res\["on-focus"]
+            res: attrs_without res "on-focus"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onfocus: compile_action val bindings
+            ][
+                res\onfocus: to :string val
+            ]
+        ]
+        if key? res "on-blur" [
+            val: res\["on-blur"]
+            res: attrs_without res "on-blur"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onblur: compile_action val bindings
+            ][
+                res\onblur: to :string val
+            ]
+        ]
+        if key? res "on-input" [
+            val: res\["on-input"]
+            res: attrs_without res "on-input"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\oninput: compile_action val bindings
+            ][
+                res\oninput: to :string val
+            ]
+        ]
+        if key? res "on-move" [
+            val: res\["on-move"]
+            res: attrs_without res "on-move"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\onmousemove: compile_action val bindings
+            ][
+                res\onmousemove: to :string val
+            ]
+        ]
+        if key? res "on-engage" [
+            val: res\["on-engage"]
+            res: attrs_without res "on-engage"
+            vType: type val
+            switch equal? vType :dictionary [
+                pKeys: keys val
+                pi: 0
+                plen: size pKeys
+                while [less? pi plen][
+                    pk: get pKeys pi
+                    pName: lower to :string pk
+                    pName: replace pName "_" "-"
+                    pVal: val\[pk]
+                    pType: type pVal
+                    switch any? @[equal? pType :block equal? pType :dictionary] [
+                        if equal? pType :dictionary [
+                            pVal: dict_to_block pVal
+                        ]
+                        res\["data-feel-engage-phase-" ++ pName]: compile_action pVal bindings
+                    ][
+                        res\["data-feel-engage-phase-" ++ pName]: to :string pVal
+                    ]
+                    pi: pi + 1
+                ]
+            ][
+                switch equal? vType :block [
+                    asPairs: false
+                    vlen: size val
+                    if greaterOrEqual? vlen 2 [
+                        if equal? mod vlen 2 0 [
+                            asPairs: true
+                            vi: 0
+                            while [less? vi vlen][
+                                pkTok: get val vi
+                                pkType: type pkTok
+                                if not? any? @[equal? pkType :word equal? pkType :label equal? pkType :string] [
+                                    asPairs: false
+                                    break
+                                ]
+                                vi: vi + 2
+                            ]
+                        ]
+                    ]
+                    if asPairs [
+                        vi: 0
+                        while [less? vi vlen][
+                            pkTok: get val vi
+                            pName: lower to :string pkTok
+                            pName: replace pName "_" "-"
+                            pVal: get val (vi + 1)
+                            pType: type pVal
+                            switch any? @[equal? pType :block equal? pType :dictionary] [
+                                if equal? pType :dictionary [
+                                    pVal: dict_to_block pVal
+                                ]
+                                res\["data-feel-engage-phase-" ++ pName]: compile_action pVal bindings
+                            ][
+                                res\["data-feel-engage-phase-" ++ pName]: to :string pVal
+                            ]
+                            vi: vi + 2
+                        ]
+                    ] [
+                        res\["data-feel-engage"]: compile_action val bindings
+                    ]
+                ][
+                    res\["data-feel-engage"]: to :string val
+                ]
+            ]
+        ]
+        if key? res "on-detect" [
+            val: res\["on-detect"]
+            res: attrs_without res "on-detect"
+            vType: type val
+            switch equal? vType :dictionary [
+                pKeys: keys val
+                pi: 0
+                plen: size pKeys
+                while [less? pi plen][
+                    pk: get pKeys pi
+                    pName: lower to :string pk
+                    pName: replace pName "_" "-"
+                    pVal: val\[pk]
+                    pType: type pVal
+                    switch any? @[equal? pType :block equal? pType :dictionary] [
+                        if equal? pType :dictionary [
+                            pVal: dict_to_block pVal
+                        ]
+                        res\["data-feel-detect-phase-" ++ pName]: compile_action pVal bindings
+                    ][
+                        res\["data-feel-detect-phase-" ++ pName]: to :string pVal
+                    ]
+                    pi: pi + 1
+                ]
+            ][
+                switch equal? vType :block [
+                    asPairs: false
+                    vlen: size val
+                    if greaterOrEqual? vlen 2 [
+                        if equal? mod vlen 2 0 [
+                            asPairs: true
+                            vi: 0
+                            while [less? vi vlen][
+                                pkTok: get val vi
+                                pkType: type pkTok
+                                if not? any? @[equal? pkType :word equal? pkType :label equal? pkType :string] [
+                                    asPairs: false
+                                    break
+                                ]
+                                vi: vi + 2
+                            ]
+                        ]
+                    ]
+                    if asPairs [
+                        vi: 0
+                        while [less? vi vlen][
+                            pkTok: get val vi
+                            pName: lower to :string pkTok
+                            pName: replace pName "_" "-"
+                            pVal: get val (vi + 1)
+                            pType: type pVal
+                            switch any? @[equal? pType :block equal? pType :dictionary] [
+                                if equal? pType :dictionary [
+                                    pVal: dict_to_block pVal
+                                ]
+                                res\["data-feel-detect-phase-" ++ pName]: compile_action pVal bindings
+                            ][
+                                res\["data-feel-detect-phase-" ++ pName]: to :string pVal
+                            ]
+                            vi: vi + 2
+                        ]
+                    ] [
+                        res\["data-feel-detect"]: compile_action val bindings
+                    ]
+                ][
+                    res\["data-feel-detect"]: to :string val
+                ]
+            ]
+        ]
+        if key? res "on-redraw" [
+            val: res\["on-redraw"]
+            res: attrs_without res "on-redraw"
+            vType: type val
+            switch equal? vType :dictionary [
+                pKeys: keys val
+                pi: 0
+                plen: size pKeys
+                while [less? pi plen][
+                    pk: get pKeys pi
+                    pName: lower to :string pk
+                    pName: replace pName "_" "-"
+                    pVal: val\[pk]
+                    pType: type pVal
+                    switch any? @[equal? pType :block equal? pType :dictionary] [
+                        if equal? pType :dictionary [
+                            pVal: dict_to_block pVal
+                        ]
+                        res\["data-feel-redraw-phase-" ++ pName]: compile_action pVal bindings
+                    ][
+                        res\["data-feel-redraw-phase-" ++ pName]: to :string pVal
+                    ]
+                    pi: pi + 1
+                ]
+            ][
+                switch equal? vType :block [
+                    asPairs: false
+                    vlen: size val
+                    if greaterOrEqual? vlen 2 [
+                        if equal? mod vlen 2 0 [
+                            asPairs: true
+                            vi: 0
+                            while [less? vi vlen][
+                                pkTok: get val vi
+                                pkType: type pkTok
+                                if not? any? @[equal? pkType :word equal? pkType :label equal? pkType :string] [
+                                    asPairs: false
+                                    break
+                                ]
+                                vi: vi + 2
+                            ]
+                        ]
+                    ]
+                    if asPairs [
+                        vi: 0
+                        while [less? vi vlen][
+                            pkTok: get val vi
+                            pName: lower to :string pkTok
+                            pName: replace pName "_" "-"
+                            pVal: get val (vi + 1)
+                            pType: type pVal
+                            switch any? @[equal? pType :block equal? pType :dictionary] [
+                                if equal? pType :dictionary [
+                                    pVal: dict_to_block pVal
+                                ]
+                                res\["data-feel-redraw-phase-" ++ pName]: compile_action pVal bindings
+                            ][
+                                res\["data-feel-redraw-phase-" ++ pName]: to :string pVal
+                            ]
+                            vi: vi + 2
+                        ]
+                    ] [
+                        res\["data-feel-redraw"]: compile_action val bindings
+                    ]
+                ][
+                    res\["data-feel-redraw"]: to :string val
+                ]
+            ]
+        ]
+        if key? res "on-pointer-down" [
+            val: res\["on-pointer-down"]
+            res: attrs_without res "on-pointer-down"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-pointer-down"]: compile_action val bindings
+            ][
+                res\["data-feel-pointer-down"]: to :string val
+            ]
+        ]
+        if key? res "on-pointer-move" [
+            val: res\["on-pointer-move"]
+            res: attrs_without res "on-pointer-move"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-pointer-move"]: compile_action val bindings
+            ][
+                res\["data-feel-pointer-move"]: to :string val
+            ]
+        ]
+        if key? res "on-pointer-up" [
+            val: res\["on-pointer-up"]
+            res: attrs_without res "on-pointer-up"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-pointer-up"]: compile_action val bindings
+            ][
+                res\["data-feel-pointer-up"]: to :string val
+            ]
+        ]
+        if key? res "on-pointer-cancel" [
+            val: res\["on-pointer-cancel"]
+            res: attrs_without res "on-pointer-cancel"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-pointer-cancel"]: compile_action val bindings
+            ][
+                res\["data-feel-pointer-cancel"]: to :string val
+            ]
+        ]
+        if key? res "on-tap" [
+            val: res\["on-tap"]
+            res: attrs_without res "on-tap"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-tap"]: compile_action val bindings
+            ][
+                res\["data-feel-tap"]: to :string val
+            ]
+        ]
+        if key? res "on-long-press" [
+            val: res\["on-long-press"]
+            res: attrs_without res "on-long-press"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-feel-long-press"]: compile_action val bindings
+            ][
+                res\["data-feel-long-press"]: to :string val
+            ]
+        ]
+        if key? res "on-long-press-ms" [
+            val: res\["on-long-press-ms"]
+            res: attrs_without res "on-long-press-ms"
+            res\["data-feel-long-press-ms"]: to :string val
+        ]
+        if key? res "on-dragstart" [
+            val: res\["on-dragstart"]
+            res: attrs_without res "on-dragstart"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-dragstart"]: compile_action val bindings
+            ][
+                res\["data-dnd-dragstart"]: to :string val
+            ]
+            if not? key? res "draggable" [
+                res\draggable: true
+            ]
+        ]
+        if key? res "on-dragover" [
+            val: res\["on-dragover"]
+            res: attrs_without res "on-dragover"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-dragover"]: compile_action val bindings
+            ][
+                res\["data-dnd-dragover"]: to :string val
+            ]
+        ]
+        if key? res "on-drop" [
+            val: res\["on-drop"]
+            res: attrs_without res "on-drop"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-drop"]: compile_action val bindings
+            ][
+                res\["data-dnd-drop"]: to :string val
+            ]
+        ]
+        if key? res "on-dragenter" [
+            val: res\["on-dragenter"]
+            res: attrs_without res "on-dragenter"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-dragenter"]: compile_action val bindings
+            ][
+                res\["data-dnd-dragenter"]: to :string val
+            ]
+        ]
+        if key? res "on-dragleave" [
+            val: res\["on-dragleave"]
+            res: attrs_without res "on-dragleave"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-dragleave"]: compile_action val bindings
+            ][
+                res\["data-dnd-dragleave"]: to :string val
+            ]
+        ]
+        if key? res "on-dragend" [
+            val: res\["on-dragend"]
+            res: attrs_without res "on-dragend"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-dnd-dragend"]: compile_action val bindings
+            ][
+                res\["data-dnd-dragend"]: to :string val
+            ]
+        ]
+        if key? res "on-tick" [
+            val: res\["on-tick"]
+            res: attrs_without res "on-tick"
+            vType: type val
+            switch any? @[equal? vType :block equal? vType :dictionary] [
+                if equal? vType :dictionary [
+                    val: dict_to_block val
+                ]
+                res\["data-rate-on-tick"]: compile_action val bindings
+            ][
+                res\["data-rate-on-tick"]: to :string val
+            ]
+        ]
+        res
+]
+
+prepare_attrs: function [attrs bindings] [
+        attrs: merge_layout_scopes attrs
+        attrs: apply_layout_attrs attrs
+        attrs: apply_facet_attrs attrs
+        attrs: apply_event_attrs attrs bindings
+        if greater? (size keys vista_state\layout_pending_attrs) 0 [
+            attrs: merge_pending_attrs attrs vista_state\layout_pending_attrs
+            vista_state\layout_pending_attrs: #[]
+        ]
+        attrs
+]
+
+merge_class_attr: function [attrs baseClass] [
+        if notEqual? (type attrs) :dictionary [
+            attrs: #[]
+        ]
+        classVal: baseClass
+        if key? attrs "class" [
+            classVal: baseClass ++ " " ++ to :string attrs\class
+        ]
+        rest: attrs_without attrs "class"
+        #[
+            class: classVal
+            attrs: rest
+        ]
+]
+
+js_literal: function [value] [
+        t: type value
+        switch equal? t :string [
+            escaped: js_escape_single value
+            out: "'"
+            out: out ++ escaped
+            out: out ++ "'"
+            out
+        ][
+            switch equal? t :integer [
+                to :string value
+            ][
+                switch equal? t :floating [
+                    to :string value
+                ][
+                    switch equal? t :logical [
+                        to :string value
+                    ][
+                        switch equal? t :null [
+                            "null"
+                        ][
+                            escaped: js_escape_single (to :string value)
+                            out: "'"
+                            out: out ++ escaped
+                            out: out ++ "'"
+                            out
+                        ]
+                    ]
+                ]
+            ]
+        ]
+]
+
+add_binding: function [bindings word] [
+        unless key? bindings word [
+            keyName: to :string word
+            val: ""
+            sym: symbols
+            has_value: key? sym keyName
+            switch has_value [
+                valCandidate: sym\[keyName]
+                switch equal? (type valCandidate) :function [
+                    val: ""
+                ][
+                    val: valCandidate
+                ]
+            ][
+                val: ""
+            ]
+            bindings\[word]: val
+        ]
+]
+
+js_token: function [token bindings] [
+        t: type token
+        switch equal? t :word [
+            add_binding bindings token
+            "state." ++ to :string token
+        ][
+            switch equal? t :symbol [
+                to :string token
+            ][
+                switch equal? t :string [
+                    escaped: js_escape_single token
+                    out: "'"
+                    out: out ++ escaped
+                    out: out ++ "'"
+                    out
+                ][
+                    switch equal? t :integer [
+                        to :string token
+                    ][
+                        switch equal? t :floating [
+                            to :string token
+                        ][
+                            switch equal? t :logical [
+                                to :string token
+                            ][
+                                switch equal? t :null [
+                                    "null"
+                                ][
+                                    escaped: js_escape_single (to :string token)
+                                    out: "'"
+                                    out: out ++ escaped
+                                    out: out ++ "'"
+                                    out
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+]
+
+compile_expr: function [tokens bindings] [
+        expr: ""
+        tokens_len: size tokens
+        if equal? tokens_len 0 [
+            return "null"
+        ]
+        i: 0
+        while [less? i tokens_len][
+            part: js_token (get tokens i) bindings
+            switch equal? expr "" [
+                expr: part
+            ][
+                expr: expr ++ " " ++ part
+            ]
+            i: i + 1
+        ]
+        expr
+]
+
+dict_to_block: function [d] [
+        out: []
+        if notEqual? (type d) :dictionary [
+                return out
+        ]
+        keysList: keys d
+        i: 0
+        klen: size keysList
+        while [less? i klen][
+                k: get keysList i
+                out: append_value out (to :label (to :string k))
+                out: append_value out d\[k]
+                i: i + 1
+        ]
+        out
+]
+
+action_command_supported?: function [name] [
+        in? name [
+                "ai-chat" "ai-settings-save" "ai-settings-load" "ai_chat" "ai_settings_save" "ai_settings_load"
+                "alert" "dialog" "dialog-open" "dialog-close" "dialog_open" "dialog_close" "clip" "unclip"
+                "auth-login" "auth-signup" "auth-mfa-verify" "auth-update-email" "auth-update-password" "auth-enable-mfa" "auth-disable-mfa" "auth-logout"
+                "auth_login" "auth_signup" "auth_mfa_verify" "auth_update_email" "auth_update_password" "auth_enable_mfa" "auth_disable_mfa" "auth_logout"
+        ]
+]
+
+action_cfg_from_arg: function [arg] [
+        argType: type arg
+        switch equal? argType :dictionary [
+                arg
+        ][
+                switch equal? argType :block [
+                        header_from_block arg
+                ][
+                        #[]
+                ]
+        ]
+]
+
+action_cfg_key: function [cfg keyName defaultVal] [
+        keyStr: to :string keyName
+        if key? cfg keyStr [
+                val: cfg\[keyStr]
+                valType: type val
+                switch equal? valType :word [
+                        return js_literal (to :string val)
+                ][
+                        switch equal? valType :string [
+                                return js_literal val
+                        ][
+                                return js_literal (to :string val)
+                        ]
+                ]
+        ]
+        js_literal defaultVal
+]
+
+action_cfg_bool: function [cfg keyName defaultVal] [
+        keyStr: to :string keyName
+        if key? cfg keyStr [
+                val: cfg\[keyStr]
+                if equal? (type val) :logical [
+                        return to :string val
+                ]
+                valStr: lower to :string val
+                if equal? valStr "true" [return "true"]
+                if equal? valStr "false" [return "false"]
+        ]
+        to :string defaultVal
+]
+
+compile_action_command: function [name cfg] [
+        if any? @[equal? name "ai-chat" equal? name "ai_chat"] [
+                apiBaseKey: action_cfg_key cfg "api_base_key" "api_base"
+                providerKey: action_cfg_key cfg "provider_key" "provider"
+                modelKey: action_cfg_key cfg "model_key" "model"
+                temperatureKey: action_cfg_key cfg "temperature_key" "temperature"
+                topPKey: action_cfg_key cfg "top_p_key" "top_p"
+                maxTokensKey: action_cfg_key cfg "max_tokens_key" "max_tokens"
+                promptKey: action_cfg_key cfg "prompt_key" "message"
+                systemKey: action_cfg_key cfg "system_key" "system_prompt"
+                logKey: action_cfg_key cfg "log_key" "chat_log"
+                statusKey: action_cfg_key cfg "status_key" "status"
+                clearPrompt: action_cfg_bool cfg "clear_prompt" true
+                return "window._vistaAiSend({apiBaseKey:" ++ apiBaseKey ++ ",providerKey:" ++ providerKey ++ ",modelKey:" ++ modelKey ++ ",temperatureKey:" ++ temperatureKey ++ ",topPKey:" ++ topPKey ++ ",maxTokensKey:" ++ maxTokensKey ++ ",promptKey:" ++ promptKey ++ ",systemKey:" ++ systemKey ++ ",logKey:" ++ logKey ++ ",statusKey:" ++ statusKey ++ ",clearPrompt:" ++ clearPrompt ++ "});"
+        ]
+        if any? @[equal? name "ai-settings-save" equal? name "ai_settings_save"] [
+                apiBaseKey: action_cfg_key cfg "api_base_key" "api_base"
+                providerKey: action_cfg_key cfg "provider_key" "provider"
+                modelKey: action_cfg_key cfg "model_key" "model"
+                temperatureKey: action_cfg_key cfg "temperature_key" "temperature"
+                topPKey: action_cfg_key cfg "top_p_key" "top_p"
+                maxTokensKey: action_cfg_key cfg "max_tokens_key" "max_tokens"
+                statusKey: action_cfg_key cfg "status_key" "status"
+                return "window._vistaAiSaveSettings({apiBaseKey:" ++ apiBaseKey ++ ",providerKey:" ++ providerKey ++ ",modelKey:" ++ modelKey ++ ",temperatureKey:" ++ temperatureKey ++ ",topPKey:" ++ topPKey ++ ",maxTokensKey:" ++ maxTokensKey ++ ",statusKey:" ++ statusKey ++ "});"
+        ]
+        if any? @[equal? name "ai-settings-load" equal? name "ai_settings_load"] [
+                apiBaseKey: action_cfg_key cfg "api_base_key" "api_base"
+                providerKey: action_cfg_key cfg "provider_key" "provider"
+                modelKey: action_cfg_key cfg "model_key" "model"
+                temperatureKey: action_cfg_key cfg "temperature_key" "temperature"
+                topPKey: action_cfg_key cfg "top_p_key" "top_p"
+                maxTokensKey: action_cfg_key cfg "max_tokens_key" "max_tokens"
+                statusKey: action_cfg_key cfg "status_key" "status"
+                return "window._vistaAiLoadSettings({apiBaseKey:" ++ apiBaseKey ++ ",providerKey:" ++ providerKey ++ ",modelKey:" ++ modelKey ++ ",temperatureKey:" ++ temperatureKey ++ ",topPKey:" ++ topPKey ++ ",maxTokensKey:" ++ maxTokensKey ++ ",statusKey:" ++ statusKey ++ "});"
+        ]
+        if equal? name "alert" [
+                messageKey: action_cfg_key cfg "message_key" "ui_message"
+                textVal: action_cfg_key cfg "text" ""
+                return "window._vistaUiAlert({messageKey:" ++ messageKey ++ ",text:" ++ textVal ++ "});"
+        ]
+        if equal? name "dialog" [
+                messageKey: action_cfg_key cfg "message_key" "ui_message"
+                titleKey: action_cfg_key cfg "title_key" "ui_title"
+                dialogId: action_cfg_key cfg "dialog_id" ""
+                dialogIdKey: action_cfg_key cfg "dialog_id_key" ""
+                statusKey: action_cfg_key cfg "status_key" "status"
+                closeReasonKey: action_cfg_key cfg "close_reason_key" "dialog_close_reason"
+                return "window._vistaUiDialog({messageKey:" ++ messageKey ++ ",titleKey:" ++ titleKey ++ ",dialogId:" ++ dialogId ++ ",dialogIdKey:" ++ dialogIdKey ++ ",statusKey:" ++ statusKey ++ ",closeReasonKey:" ++ closeReasonKey ++ "});"
+        ]
+        if any? @[equal? name "dialog-open" equal? name "dialog_open"] [
+                dialogId: action_cfg_key cfg "dialog_id" ""
+                dialogIdKey: action_cfg_key cfg "dialog_id_key" ""
+                statusKey: action_cfg_key cfg "status_key" "status"
+                closeReasonKey: action_cfg_key cfg "close_reason_key" "dialog_close_reason"
+                return "window._vistaDialogOpen({dialogId:" ++ dialogId ++ ",dialogIdKey:" ++ dialogIdKey ++ ",statusKey:" ++ statusKey ++ ",closeReasonKey:" ++ closeReasonKey ++ "});"
+        ]
+        if any? @[equal? name "dialog-close" equal? name "dialog_close"] [
+                dialogId: action_cfg_key cfg "dialog_id" ""
+                dialogIdKey: action_cfg_key cfg "dialog_id_key" ""
+                reason: action_cfg_key cfg "reason" ""
+                statusKey: action_cfg_key cfg "status_key" "status"
+                closeReasonKey: action_cfg_key cfg "close_reason_key" "dialog_close_reason"
+                return "window._vistaDialogClose({dialogId:" ++ dialogId ++ ",dialogIdKey:" ++ dialogIdKey ++ ",reason:" ++ reason ++ ",statusKey:" ++ statusKey ++ ",closeReasonKey:" ++ closeReasonKey ++ "});"
+        ]
+        if equal? name "clip" [
+                textKey: action_cfg_key cfg "text_key" "ui_message"
+                textVal: action_cfg_key cfg "text" ""
+                statusKey: action_cfg_key cfg "status_key" "status"
+                return "window._vistaUiClip({textKey:" ++ textKey ++ ",text:" ++ textVal ++ ",statusKey:" ++ statusKey ++ "});"
+        ]
+        if equal? name "unclip" [
+                targetKey: action_cfg_key cfg "target_key" "ui_message"
+                statusKey: action_cfg_key cfg "status_key" "status"
+                return "window._vistaUiUnclip({targetKey:" ++ targetKey ++ ",statusKey:" ++ statusKey ++ "});"
+        ]
+        if any? @[equal? name "auth-login" equal? name "auth_login"] [
+                apiBaseKey: action_cfg_key cfg "api_base_key" "api_base"
+                emailKey: action_cfg_key cfg "email_key" "email"
+                passwordKey: action_cfg_key cfg "password_key" "password"
+                mfaCodeKey: action_cfg_key cfg "mfa_code_key" "mfa_code"
+                mfaChallengeKey: action_cfg_key cfg "mfa_challenge_key" "mfa_challenge"
+                tokenKey: action_cfg_key cfg "token_key" "auth_token"
+                statusKey: action_cfg_key cfg "status_key" "auth_status"
+                profileKey: action_cfg_key cfg "profile_key" "profile_label"
+                return "window._vistaAuthLogin({apiBaseKey:" ++ apiBaseKey ++ ",emailKey:" ++ emailKey ++ ",passwordKey:" ++ passwordKey ++ ",mfaCodeKey:" ++ mfaCodeKey ++ ",mfaChallengeKey:" ++ mfaChallengeKey ++ ",tokenKey:" ++ tokenKey ++ ",statusKey:" ++ statusKey ++ ",profileKey:" ++ profileKey ++ "});"
+        ]
+        if any? @[equal? name "auth-signup" equal? name "auth_signup"] [
+                apiBaseKey: action_cfg_key cfg "api_base_key" "api_base"
+                emailKey: action_cfg_key cfg "email_key" "email"
+                passwordKey: action_cfg_key cfg "password_key" "password"
+                statusKey: action_cfg_key cfg "status_key" "auth_status"
+                return "window._vistaAuthSignup({apiBaseKey:" ++ apiBaseKey ++ ",emailKey:" ++ emailKey ++ ",passwordKey:" ++ passwordKey ++ ",statusKey:" ++ statusKey ++ "});"
+        ]
+        if any? @[equal? name "auth-mfa-verify" equal? name "auth_mfa_verify"] [
+                apiBaseKey: action_cfg_key cfg "api_base_key" "api_base"
+                mfaChallengeKey: action_cfg_key cfg "mfa_challenge_key" "mfa_challenge"
+                mfaCodeKey: action_cfg_key cfg "mfa_code_key" "mfa_code"
+                tokenKey: action_cfg_key cfg "token_key" "auth_token"
+                statusKey: action_cfg_key cfg "status_key" "auth_status"
+                profileKey: action_cfg_key cfg "profile_key" "profile_label"
+                return "window._vistaAuthMfaVerify({apiBaseKey:" ++ apiBaseKey ++ ",mfaChallengeKey:" ++ mfaChallengeKey ++ ",mfaCodeKey:" ++ mfaCodeKey ++ ",tokenKey:" ++ tokenKey ++ ",statusKey:" ++ statusKey ++ ",profileKey:" ++ profileKey ++ "});"
+        ]
+        if any? @[equal? name "auth-update-email" equal? name "auth_update_email"] [
+                apiBaseKey: action_cfg_key cfg "api_base_key" "api_base"
+                tokenKey: action_cfg_key cfg "token_key" "auth_token"
+                newEmailKey: action_cfg_key cfg "new_email_key" "new_email"
+                statusKey: action_cfg_key cfg "status_key" "auth_status"
+                profileKey: action_cfg_key cfg "profile_key" "profile_label"
+                return "window._vistaAuthUpdateEmail({apiBaseKey:" ++ apiBaseKey ++ ",tokenKey:" ++ tokenKey ++ ",newEmailKey:" ++ newEmailKey ++ ",statusKey:" ++ statusKey ++ ",profileKey:" ++ profileKey ++ "});"
+        ]
+        if any? @[equal? name "auth-update-password" equal? name "auth_update_password"] [
+                apiBaseKey: action_cfg_key cfg "api_base_key" "api_base"
+                tokenKey: action_cfg_key cfg "token_key" "auth_token"
+                oldPasswordKey: action_cfg_key cfg "old_password_key" "old_password"
+                newPasswordKey: action_cfg_key cfg "new_password_key" "new_password"
+                statusKey: action_cfg_key cfg "status_key" "auth_status"
+                return "window._vistaAuthUpdatePassword({apiBaseKey:" ++ apiBaseKey ++ ",tokenKey:" ++ tokenKey ++ ",oldPasswordKey:" ++ oldPasswordKey ++ ",newPasswordKey:" ++ newPasswordKey ++ ",statusKey:" ++ statusKey ++ "});"
+        ]
+        if any? @[equal? name "auth-enable-mfa" equal? name "auth_enable_mfa"] [
+                apiBaseKey: action_cfg_key cfg "api_base_key" "api_base"
+                tokenKey: action_cfg_key cfg "token_key" "auth_token"
+                statusKey: action_cfg_key cfg "status_key" "auth_status"
+                return "window._vistaAuthEnableMfa({apiBaseKey:" ++ apiBaseKey ++ ",tokenKey:" ++ tokenKey ++ ",statusKey:" ++ statusKey ++ "});"
+        ]
+        if any? @[equal? name "auth-disable-mfa" equal? name "auth_disable_mfa"] [
+                apiBaseKey: action_cfg_key cfg "api_base_key" "api_base"
+                tokenKey: action_cfg_key cfg "token_key" "auth_token"
+                statusKey: action_cfg_key cfg "status_key" "auth_status"
+                return "window._vistaAuthDisableMfa({apiBaseKey:" ++ apiBaseKey ++ ",tokenKey:" ++ tokenKey ++ ",statusKey:" ++ statusKey ++ "});"
+        ]
+        if any? @[equal? name "auth-logout" equal? name "auth_logout"] [
+                apiBaseKey: action_cfg_key cfg "api_base_key" "api_base"
+                tokenKey: action_cfg_key cfg "token_key" "auth_token"
+                statusKey: action_cfg_key cfg "status_key" "auth_status"
+                profileKey: action_cfg_key cfg "profile_key" "profile_label"
+                mfaChallengeKey: action_cfg_key cfg "mfa_challenge_key" "mfa_challenge"
+                return "window._vistaAuthLogout({apiBaseKey:" ++ apiBaseKey ++ ",tokenKey:" ++ tokenKey ++ ",statusKey:" ++ statusKey ++ ",profileKey:" ++ profileKey ++ ",mfaChallengeKey:" ++ mfaChallengeKey ++ "});"
+        ]
+        ""
+]
+
+compile_action: function [blk bindings] [
+        if equal? (type blk) :dictionary [
+                blk: dict_to_block blk
+        ]
+        js: ""
+        blk_len: size blk
+        i: 0
+        while [less? i blk_len][
+            tok: get blk i
+            tok_type: type tok
+            switch equal? tok_type :label [
+                nameStr: to :string tok
+                nameWord: to :word nameStr
+                add_binding bindings nameWord
+                i: i + 1
+                exprTokens: []
+                while [less? i blk_len][
+                    next_type: type (get blk i)
+                    if equal? next_type :label [
+                        break
+                    ]
+                    exprTokens: append_value exprTokens (get blk i)
+                    i: i + 1
+                ]
+                expr: compile_expr exprTokens bindings
+                js: js ++ "state." ++ nameStr ++ " = " ++ expr ++ "; render();"
+            ][
+                switch equal? tok_type :word [
+                        nameStr: to :string tok
+                        if action_command_supported? nameStr [
+                                cfg: #[]
+                                if less? (i + 1) blk_len [
+                                        cfg: action_cfg_from_arg (get blk (i + 1))
+                                        if notEqual? (size keys cfg) 0 [
+                                                i: i + 1
+                                        ]
+                                ]
+                                js: js ++ compile_action_command nameStr cfg
+                        ]
+                ][
+                        ""
+                ]
+                i: i + 1
+            ]
+        ]
+        js
+]
+
+render_script: function [bindings] [
+        keysList: keys bindings
+        keys_len: size keysList
+        statePairs: ""
+        i: 0
+        while [less? i keys_len][
+            k: get keysList i
+            v: bindings\[k]
+            vStr: js_literal v
+            pair: to :string k ++ ": " ++ vStr
+            switch equal? statePairs "" [
+                statePairs: pair
+            ][
+                statePairs: statePairs ++ ", " ++ pair
+            ]
+            i: i + 1
+        ]
+        script: ""
+        if notEqual? statePairs "" [
+            script: script ++ "const state = {" ++ statePairs ++ "};"
+        ] [
+            script: script ++ "const state = {};"
+        ]
+        script: script ++ "window.__vistaAllowDynamicEval=(window.__vistaAllowDynamicEval===true);"
+        script: script ++ "function _vistaParsePx(v){const n=parseFloat(v);return isNaN(n)?0:n;}"
+        script: script ++ "function _vistaMeasureText(text,font){const c=_vistaMeasureText._c||(_vistaMeasureText._c=document.createElement('canvas'));const ctx=c.getContext('2d');ctx.font=font||'16px sans-serif';const lines=String(text||'').split('\\n');let maxW=0;lines.forEach(line=>{const w=ctx.measureText(line).width;if(w>maxW){maxW=w;}});let lineHeight=0;const m=ctx.measureText('M');if((m.actualBoundingBoxAscent||0)+(m.actualBoundingBoxDescent||0)>0){lineHeight=m.actualBoundingBoxAscent+m.actualBoundingBoxDescent;}if(!lineHeight){const fontSize=_vistaParsePx((font||'').match(/\\d+px/)?(font.match(/\\d+px/)[0]):'16px');lineHeight=fontSize*1.2;}let height=lineHeight*lines.length;return {width:maxW,height:height};}"
+        script: script ++ "function autoSize(){document.querySelectorAll('[data-auto-size]').forEach(el=>{const hasInlineWidth=!!el.style.width;const hasInlineHeight=!!el.style.height;const managed=el.dataset.autoSizeManaged==='1';if((hasInlineWidth||hasInlineHeight) && !managed){return;}const style=getComputedStyle(el);const text=el.textContent||'';const m=_vistaMeasureText(text,style.font);const padX=_vistaParsePx(style.paddingLeft)+_vistaParsePx(style.paddingRight);const padY=_vistaParsePx(style.paddingTop)+_vistaParsePx(style.paddingBottom);const borderX=_vistaParsePx(style.borderLeftWidth)+_vistaParsePx(style.borderRightWidth);const borderY=_vistaParsePx(style.borderTopWidth)+_vistaParsePx(style.borderBottomWidth);const lineHeight=(style.lineHeight&&style.lineHeight!=='normal')?_vistaParsePx(style.lineHeight):0;const lines=Math.max(1,String(text||'').split('\\n').length);if(lineHeight>0){m.height=Math.max(m.height,lineHeight*lines);}const w=Math.ceil(m.width+padX+borderX);const h=Math.ceil(m.height+padY+borderY);if(w>0){el.style.width=w+'px';}if(h>0){el.style.height=h+'px';}el.dataset.autoSizeManaged='1';});}"
+        script: script ++ "function _vistaAiNorm(s){return String(s||'').replace(/\\\\n/g,'\\n').replace(/\\\\r/g,'\\r');}"
+        script: script ++ "function _vistaAiClientId(cfg){const key=cfg.clientIdKey||'client_id';let clientId=String(state[key]||'').trim();if(!clientId){clientId='vista-'+Date.now()+'-'+Math.floor(Math.random()*1000000);state[key]=clientId;render();}return clientId;}"
+        script: script ++ "function _vistaAiV2(cfg,method,path,body){const apiBase=String(state[cfg.apiBaseKey||'api_base']||'http://localhost:18969').trim();const enc=encodeURIComponent;const clientId=_vistaAiClientId(cfg);const tokenKey=cfg.tokenKey||'auth_token';const token=String(state[tokenKey]||'').trim();return fetch(apiBase+'/api/v2/security/csrf/'+enc(clientId),{headers:{'x-auth-token':token||''}}).then(_vistaAiParseResponse).then((csrfPayload)=>{if(!csrfPayload||csrfPayload.ok===false||!csrfPayload.data||!csrfPayload.data.token){throw new Error('csrf token fetch failed');}const csrf=String(csrfPayload.data.token||'');const jsonStr=JSON.stringify(body||{});const payload=btoa(unescape(encodeURIComponent(jsonStr)));const url=apiBase+path+'/'+enc(clientId)+'/'+enc(csrf)+'/'+enc(payload);const headers={'Content-Type':'application/json','x-client-id':clientId,'x-csrf-token':csrf};if(token){headers['x-auth-token']=token;}return fetch(url,{method:method,headers:headers}).then(_vistaAiParseResponse);});}"
+        script: script ++ "function _vistaAiParseResponse(r){if(!r||typeof r.text!=='function'){return Promise.reject(new Error('invalid response'));}return r.text().then((body)=>{let payload=null;try{payload=JSON.parse(body||'{}');}catch(_e){}if(payload){return payload;}const status=(typeof r.status==='number')?r.status:0;const brief=String(body||'').slice(0,200).trim();throw new Error(status?('HTTP '+status+(brief?(': '+brief):'')):(brief||'request failed'));});}"
+        script: script ++ "function _vistaAiJsonp(buildUrl){return new Promise((resolve,reject)=>{const reqId='r'+Date.now()+'_'+Math.floor(Math.random()*1000000);const script=document.createElement('script');const cleanup=()=>{if(script&&script.parentNode){script.parentNode.removeChild(script);}if(window.__vistaAiJsonpMap){delete window.__vistaAiJsonpMap[reqId];}};const timer=setTimeout(()=>{cleanup();reject(new Error('script timeout'));},20000);if(!window.__vistaAiJsonpMap){window.__vistaAiJsonpMap={};}if(!window.__vistaAiJsonp){window.__vistaAiJsonp=(id,payload)=>{if(window.__vistaAiJsonpMap&&window.__vistaAiJsonpMap[id]){window.__vistaAiJsonpMap[id](payload);}};}window.__vistaAiJsonpMap[reqId]=(payload)=>{clearTimeout(timer);cleanup();resolve(payload);};script.onerror=()=>{clearTimeout(timer);cleanup();reject(new Error('script load failed'));};script.src=buildUrl(reqId);document.head.appendChild(script);});}"
+        script: script ++ "window.__vistaAiCatalog=window.__vistaAiCatalog||{};"
+        script: script ++ "function _vistaAiSel(key){return document.querySelector('select[data-bind=\"'+key+'\"]');}"
+        script: script ++ "function _vistaAiSetSelectOptions(key,options,selected){const el=_vistaAiSel(key);if(!el){return;}const list=Array.isArray(options)?options:[];const want=String(selected==null?'':selected);el.innerHTML=list.map(v=>{const s=String(v);const sel=(s===want)?' selected':'';return '<option value=\"'+s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;')+'\"'+sel+'>'+s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</option>';}).join('');if(want!==''&&list.indexOf(want)>=0){el.value=want;}else if(list.length>0){el.value=String(list[0]);}}"
+        script: script ++ "function _vistaAiCatalogProviderNames(catalog){if(!catalog||typeof catalog!=='object'){return [];}return Object.keys(catalog).filter(k=>catalog[k]&&typeof catalog[k]==='object'&&Array.isArray(catalog[k].models));}"
+        script: script ++ "function _vistaAiApplyCatalogToState(cfg){const providerKey=cfg.providerKey||'provider';const modelKey=cfg.modelKey||'model';const temperatureKey=cfg.temperatureKey||'temperature';const topPKey=cfg.topPKey||'top_p';const maxTokensKey=cfg.maxTokensKey||'max_tokens';const providers=_vistaAiCatalogProviderNames(window.__vistaAiCatalog);if(providers.length===0){return;}let provider=String(state[providerKey]||'');if(providers.indexOf(provider)<0){provider=providers[0];state[providerKey]=provider;}const providerCfg=window.__vistaAiCatalog[provider]||{};const models=Array.isArray(providerCfg.models)?providerCfg.models:[];if(models.length>0&&models.indexOf(String(state[modelKey]||''))<0){state[modelKey]=String(providerCfg.default_model||models[0]);}const tOpts=Array.isArray(providerCfg.temperature_options)?providerCfg.temperature_options:['0.0','0.2','0.4','0.7','1.0'];const pOpts=Array.isArray(providerCfg.top_p_options)?providerCfg.top_p_options:['0.7','0.9','1.0'];const mOpts=Array.isArray(providerCfg.max_tokens_options)?providerCfg.max_tokens_options:['64','128','256','512'];if(tOpts.indexOf(String(state[temperatureKey]||''))<0){state[temperatureKey]=String(tOpts[0]);}if(pOpts.indexOf(String(state[topPKey]||''))<0){state[topPKey]=String(pOpts[0]);}if(mOpts.indexOf(String(state[maxTokensKey]||''))<0){state[maxTokensKey]=String(mOpts[0]);}render();_vistaAiSetSelectOptions(providerKey,providers,state[providerKey]);_vistaAiSetSelectOptions(modelKey,models,state[modelKey]);_vistaAiSetSelectOptions(temperatureKey,tOpts,state[temperatureKey]);_vistaAiSetSelectOptions(topPKey,pOpts,state[topPKey]);_vistaAiSetSelectOptions(maxTokensKey,mOpts,state[maxTokensKey]);}"
+        script: script ++ "function _vistaAiBindProviderWatch(cfg){const providerKey=cfg.providerKey||'provider';const el=_vistaAiSel(providerKey);if(!el||el.dataset.vistaAiProviderBound==='1'){return;}el.addEventListener('change',()=>{state[providerKey]=el.value;_vistaAiApplyCatalogToState(cfg);});el.dataset.vistaAiProviderBound='1';}"
+        script: script ++ "function _vistaAiLoadProviders(cfg){cfg=cfg||{};const enc=encodeURIComponent;const apiBaseKey=cfg.apiBaseKey||'api_base';const apiBase=String(state[apiBaseKey]||'http://localhost:18969').trim();const callFetch=()=>fetch(apiBase+'/api/ai/providers',{method:'GET'}).then(_vistaAiParseResponse);const callScript=()=>_vistaAiJsonp((reqId)=>apiBase+'/api/ai/providers-script/'+enc(reqId));return callFetch().catch(()=>callScript()).then((payload)=>{if(payload&&payload.ok&&payload.data){window.__vistaAiCatalog=payload.data||{};_vistaAiApplyCatalogToState(cfg);_vistaAiBindProviderWatch(cfg);return true;}return false;}).catch(()=>false);}"
+        script: script ++ "function _vistaAiApplySettings(cfg,payload){if(!payload||!payload.ok||!payload.data){return false;}const d=payload.data;const providerKey=cfg.providerKey||'provider';const modelKey=cfg.modelKey||'model';const temperatureKey=cfg.temperatureKey||'temperature';const topPKey=cfg.topPKey||'top_p';const maxTokensKey=cfg.maxTokensKey||'max_tokens';if(d.provider!=null){state[providerKey]=String(d.provider);}if(d.model!=null){state[modelKey]=String(d.model);}if(d.temperature!=null){state[temperatureKey]=String(d.temperature);}if(d.top_p!=null){state[topPKey]=String(d.top_p);}if(d.max_tokens!=null){state[maxTokensKey]=String(d.max_tokens);}render();_vistaAiApplyCatalogToState(cfg);return true;}"
+        script: script ++ "function _vistaAiSetStatus(cfg,text){const statusKey=cfg.statusKey||'status';if(statusKey){state[statusKey]=text;render();}}"
+        script: script ++ "window._vistaAiSend=function(cfg){cfg=cfg||{};const enc=encodeURIComponent;const apiBaseKey=cfg.apiBaseKey||'api_base';const providerKey=cfg.providerKey||'provider';const modelKey=cfg.modelKey||'model';const temperatureKey=cfg.temperatureKey||'temperature';const topPKey=cfg.topPKey||'top_p';const maxTokensKey=cfg.maxTokensKey||'max_tokens';const promptKey=cfg.promptKey||'message';const systemKey=cfg.systemKey||'system_prompt';const logKey=cfg.logKey||'chat_log';const statusKey=cfg.statusKey||'status';const clearPrompt=(cfg.clearPrompt!==false);const prompt=String(state[promptKey]||'').trim();if(!prompt){if(statusKey){state[statusKey]='Type a prompt first';render();}return;}const provider=String(state[providerKey]||'openai');const model=String(state[modelKey]||'gpt-4o-mini');const temperature=String(state[temperatureKey]||'0.2');const topP=String(state[topPKey]||'0.9');const maxTokens=String(state[maxTokensKey]||'128');const systemPrompt=String(state[systemKey]||'').trim();const apiBase=String(state[apiBaseKey]||'http://localhost:18969').trim();const appendTurn=(userText,aiText)=>{const block='you: '+_vistaAiNorm(userText)+'\\nai: '+_vistaAiNorm(aiText);const prev=String(state[logKey]||'');state[logKey]=(prev?(prev+'\\n\\n'):'')+block;render();setTimeout(()=>{const el=document.querySelector('textarea[data-bind=\"'+logKey+'\"]');if(el){el.scrollTop=el.scrollHeight;}},0);};if(statusKey){state[statusKey]='Sending...';render();}const path='/api/v2/ai/chat';const body={provider:provider,model:model,prompt:prompt,temperature:parseFloat(temperature),top_p:parseFloat(topP),max_tokens:parseInt(maxTokens,10)};if(systemPrompt){body.system=systemPrompt;}_vistaAiV2(cfg,'POST',path,body).then((payload)=>{if(!payload||payload.ok===false){const msg=(payload&&payload.error&&payload.error.message)?payload.error.message:'request failed';throw new Error(msg);}const text=(payload&&payload.data&&payload.data.text)?String(payload.data.text).trim():'';appendTurn(prompt,text||'[empty response]');if(clearPrompt){state[promptKey]='';render();}if(statusKey){state[statusKey]='Ready';render();}}).catch((err)=>{const msg=(err&&err.message)?err.message:'request failed';appendTurn(prompt,'[error] '+msg);if(statusKey){state[statusKey]='Error';render();}});};"
+        script: script ++ "window._vistaAiSaveSettings=function(cfg){cfg=cfg||{};const apiBaseKey=cfg.apiBaseKey||'api_base';const providerKey=cfg.providerKey||'provider';const modelKey=cfg.modelKey||'model';const temperatureKey=cfg.temperatureKey||'temperature';const topPKey=cfg.topPKey||'top_p';const maxTokensKey=cfg.maxTokensKey||'max_tokens';const tokenKey=cfg.tokenKey||'auth_token';const apiBase=String(state[apiBaseKey]||'http://localhost:18969').trim();const token=String(state[tokenKey]||'').trim();if(!token){_vistaAiSetStatus(cfg,'[error] Sign in to save settings');return;}const provider=encodeURIComponent(String(state[providerKey]||'openai'));const model=encodeURIComponent(String(state[modelKey]||'gpt-4o-mini'));const temperature=encodeURIComponent(String(state[temperatureKey]||'0.2'));const topP=encodeURIComponent(String(state[topPKey]||'0.9'));const maxTokens=encodeURIComponent(String(state[maxTokensKey]||'128'));_vistaAiSetStatus(cfg,'Saving settings...');const path='/api/v2/ai/settings'+provider+'/'+model+'/'+temperature+'/'+topP+'/'+maxTokens;fetch(apiBase+path,{method:'POST',headers:{'x-auth-token':token}}).then(_vistaAiParseResponse).then((payload)=>{if(!_vistaAiApplySettings(cfg,payload)){const msg=(payload&&payload.error&&payload.error.message)?payload.error.message:'settings save failed';throw new Error(msg);} _vistaAiSetStatus(cfg,'Settings saved');}).catch((err)=>{const msg=(err&&err.message)?err.message:'settings save failed';_vistaAiSetStatus(cfg,'[error] '+msg);});};"
+        script: script ++ "window._vistaAiLoadSettings=function(cfg){cfg=cfg||{};const apiBaseKey=cfg.apiBaseKey||'api_base';const tokenKey=cfg.tokenKey||'auth_token';const apiBase=String(state[apiBaseKey]||'http://localhost:18969').trim();const token=String(state[tokenKey]||'').trim();if(!token){_vistaAiSetStatus(cfg,'Sign in to load settings');return;}_vistaAiSetStatus(cfg,'Loading settings...');fetch(apiBase+'/api/ai/settings',{method:'GET',headers:{'x-auth-token':token}}).then(_vistaAiParseResponse).then((payload)=>{if(!_vistaAiApplySettings(cfg,payload)){const msg=(payload&&payload.error&&payload.error.message)?payload.error.message:'settings load failed';throw new Error(msg);} _vistaAiSetStatus(cfg,'Settings loaded');}).catch((err)=>{const msg=(err&&err.message)?err.message:'settings load failed';_vistaAiSetStatus(cfg,'[error] '+msg);});};"
+        script: script ++ "function _vistaUiEscHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}"
+        script: script ++ "window._vistaUiAlert=function(cfg){cfg=cfg||{};const key=cfg.messageKey||'ui_message';const txt=(cfg.text!=null&&String(cfg.text)!=='')?cfg.text:state[key];window.alert(String(txt==null?'':txt));};"
+        script: script ++ "window._vistaDialogFind=function(id){const s=String(id||'').trim();if(!s){return null;}const byId=document.getElementById(s);if(byId&&byId.tagName==='DIALOG'){return byId;}const byFace=document.querySelector('dialog[data-face-id=\"'+s+'\"]');if(byFace){return byFace;}const byName=document.querySelector('dialog[name=\"'+s.replace(/\"/g,'\\\\\"')+'\"]');if(byName){return byName;}return null;};"
+        script: script ++ "window._vistaDialogFocusable=function(el){if(!el){return [];}return [...el.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex=\"-1\"])')].filter(n=>!n.hasAttribute('disabled')&&n.getAttribute('aria-hidden')!=='true');};"
+        script: script ++ "window._vistaDialogFocus=function(el){if(!el){return;}const target=el.querySelector('[autofocus]')||window._vistaDialogFocusable(el)[0];if(target&&typeof target.focus==='function'){target.focus();return;}if(typeof el.focus==='function'){el.focus();}};"
+        script: script ++ "window._vistaDialogBind=function(el,cfg){if(!el||el.dataset.vistaDialogBound==='1'){return;}cfg=cfg||{};const statusKey=cfg.statusKey||'status';const closeReasonKey=cfg.closeReasonKey||'dialog_close_reason';el.dataset.vistaDialogBound='1';el.addEventListener('close',()=>{if(closeReasonKey){state[closeReasonKey]=String(el.returnValue||'');}if(statusKey){state[statusKey]='Dialog closed';}const openerId=el.dataset.vistaDialogOpener;if(openerId){const opener=document.getElementById(openerId);if(opener&&typeof opener.focus==='function'){opener.focus();}}render();});el.addEventListener('cancel',()=>{if(closeReasonKey){state[closeReasonKey]='cancel';}if(statusKey){state[statusKey]='Dialog cancelled';}render();});el.addEventListener('keydown',(e)=>{if(e.key!=='Tab'){return;}const nodes=window._vistaDialogFocusable(el);if(nodes.length===0){return;}const first=nodes[0];const last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});};"
+        script: script ++ "window._vistaDialogOpen=function(cfg){cfg=cfg||{};const statusKey=cfg.statusKey||'status';const closeReasonKey=cfg.closeReasonKey||'dialog_close_reason';let id='';if(cfg.dialogId!=null&&String(cfg.dialogId).trim()!==''){id=String(cfg.dialogId).trim();}else if(cfg.dialogIdKey){id=String(state[cfg.dialogIdKey]||'').trim();}if(!id){const first=document.querySelector('dialog');if(first){id=first.id||first.getAttribute('data-face-id')||'';}}const el=window._vistaDialogFind(id);if(!el){if(statusKey){state[statusKey]='[error] dialog not found';render();}return false;}if(!el.id){el.id='vista-dialog-'+Math.floor(Math.random()*1000000);}const active=document.activeElement;if(active&&active.id){el.dataset.vistaDialogOpener=active.id;}window._vistaDialogBind(el,cfg);try{if(typeof el.showModal==='function'){if(!el.open){el.showModal();}}else{el.setAttribute('open','true');}}catch(_e){el.setAttribute('open','true');}window._vistaDialogFocus(el);if(statusKey){state[statusKey]='Dialog opened';render();}return true;};"
+        script: script ++ "window._vistaDialogClose=function(cfg){cfg=cfg||{};const statusKey=cfg.statusKey||'status';const closeReasonKey=cfg.closeReasonKey||'dialog_close_reason';let id='';if(cfg.dialogId!=null&&String(cfg.dialogId).trim()!==''){id=String(cfg.dialogId).trim();}else if(cfg.dialogIdKey){id=String(state[cfg.dialogIdKey]||'').trim();}const reason=(cfg.reason!=null)?String(cfg.reason):'';const el=window._vistaDialogFind(id)||document.querySelector('dialog[open]');if(!el){if(statusKey){state[statusKey]='[error] dialog not found';render();}return false;}if(reason){el.returnValue=reason;}try{if(typeof el.close==='function'){el.close(reason);}else{el.removeAttribute('open');}}catch(_e){el.removeAttribute('open');}if(closeReasonKey&&reason){state[closeReasonKey]=reason;}if(statusKey){state[statusKey]='Dialog closed';render();}return true;};"
+        script: script ++ "window._vistaUiDialog=function(cfg){cfg=cfg||{};const hasDialogId=(cfg.dialogId!=null&&String(cfg.dialogId).trim()!=='')||(cfg.dialogIdKey&&String(state[cfg.dialogIdKey]||'').trim()!=='')||document.querySelector('dialog');if(hasDialogId){return window._vistaDialogOpen(cfg);}const msg=String(state[cfg.messageKey||'ui_message']||'');const title=String(state[cfg.titleKey||'ui_title']||'Dialog');let host=document.getElementById('__vistaRuntimeDialog');if(host){host.remove();}host=document.createElement('div');host.id='__vistaRuntimeDialog';host.setAttribute('role','dialog');host.setAttribute('aria-modal','true');host.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;z-index:99999;padding:18px;';const card=document.createElement('div');card.style.cssText='background:#fff;border:1px solid #ded6c2;border-radius:12px;min-width:320px;max-width:860px;max-height:86vh;overflow:auto;padding:14px;box-shadow:0 18px 40px rgba(0,0,0,.22);';card.innerHTML='<h3 id=\"__vistaRuntimeDialogTitle\" style=\"margin:0 0 8px 0;\">'+_vistaUiEscHtml(title)+'</h3><pre style=\"white-space:pre-wrap;background:#fff;border:1px solid #ded6c2;border-radius:10px;padding:12px;\">'+_vistaUiEscHtml(msg)+'</pre><div style=\"display:flex;justify-content:flex-end;\"><button id=\"__vistaRuntimeDialogClose\" style=\"padding:8px 12px;border:1px solid #ded6c2;background:#fff;border-radius:8px;cursor:pointer;\">Close</button></div>';host.setAttribute('aria-labelledby','__vistaRuntimeDialogTitle');host.appendChild(card);const remove=()=>{host.remove();};host.addEventListener('click',function(e){if(e.target===host){remove();}});host.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();remove();}});document.body.appendChild(host);const b=document.getElementById('__vistaRuntimeDialogClose');if(b){b.addEventListener('click',remove);b.focus();}return true;};"
+        script: script ++ "window._vistaUiClip=function(cfg){cfg=cfg||{};const textKey=cfg.textKey||'ui_message';const statusKey=cfg.statusKey||'status';const txt=(cfg.text!=null&&String(cfg.text)!=='')?String(cfg.text):String(state[textKey]||'');const set=(m)=>{if(statusKey){state[statusKey]=m;render();}};const fallback=()=>{try{const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.focus();ta.select();const ok=document.execCommand('copy');document.body.removeChild(ta);set(ok?'Copied to clipboard':'[error] Clipboard copy failed');}catch(_e){set('[error] Clipboard copy failed');}};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>set('Copied to clipboard')).catch(()=>fallback());}else{fallback();}};"
+        script: script ++ "window._vistaUiUnclip=function(cfg){cfg=cfg||{};const targetKey=cfg.targetKey||'ui_message';const statusKey=cfg.statusKey||'status';const set=(m)=>{if(statusKey){state[statusKey]=m;render();}};const apply=(t)=>{state[targetKey]=String(t==null?'':t);render();set('Pasted from clipboard');};if(navigator.clipboard&&navigator.clipboard.readText){navigator.clipboard.readText().then(apply).catch(()=>{const t=window.prompt('Paste text:','');if(t!=null){apply(t);}else{set('[error] Clipboard read cancelled');}});}else{const t=window.prompt('Paste text:','');if(t!=null){apply(t);}else{set('[error] Clipboard read unavailable');}}};"
+        script: script ++ "function _vistaAuthSetStatus(cfg,text){const statusKey=cfg.statusKey||'auth_status';if(statusKey){state[statusKey]=text;render();}}"
+        script: script ++ "function _vistaAuthProfileLabel(user){const u=user||{};return 'Signed in as '+String(u.email||'')+' (role: '+String(u.role||'')+')';}"
+        script: script ++ "function _vistaAuthClientId(cfg){const key=cfg.clientIdKey||'client_id';let clientId=String(state[key]||'').trim();if(!clientId){clientId='vista-'+Date.now()+'-'+Math.floor(Math.random()*1000000);state[key]=clientId;render();}return clientId;}"
+        script: script ++ "function _vistaAuthV2(cfg,method,path,body){const apiBase=String(state[cfg.apiBaseKey||'api_base']||'http://localhost:18969').trim();const enc=encodeURIComponent;const clientId=_vistaAuthClientId(cfg);const tokenKey=cfg.tokenKey||'auth_token';const token=String(state[tokenKey]||'').trim();return fetch(apiBase+'/api/v2/security/csrf/'+enc(clientId),{method:'GET'}).then(_vistaAiParseResponse).then((csrfPayload)=>{if(!csrfPayload||csrfPayload.ok===false||!csrfPayload.data||!csrfPayload.data.token){throw new Error('csrf token fetch failed');}const csrf=String(csrfPayload.data.token||'');const jsonStr=JSON.stringify(body||{});const payload=btoa(unescape(encodeURIComponent(jsonStr)));const url=apiBase+path+'/'+enc(clientId)+'/'+enc(csrf)+'/'+enc(payload);const headers={'Content-Type':'application/json','x-client-id':clientId,'x-csrf-token':csrf};if(token){headers['x-auth-token']=token;}return fetch(url,{method:method,headers:headers}).then(_vistaAiParseResponse);});}"
+        script: script ++ "window._vistaAuthLogin=function(cfg){cfg=cfg||{};const emailKey=cfg.emailKey||'email';const passwordKey=cfg.passwordKey||'password';const mfaCodeKey=cfg.mfaCodeKey||'mfa_code';const mfaChallengeKey=cfg.mfaChallengeKey||'mfa_challenge';const tokenKey=cfg.tokenKey||'auth_token';const profileKey=cfg.profileKey||'profile_label';const showLoginKey=cfg.showLoginKey||'show_login';const showSignupKey=cfg.showSignupKey||'show_signup';const showAccountKey=cfg.showAccountKey||'show_account';const email=String(state[emailKey]||'').trim();const password=String(state[passwordKey]||'');if(!email||!password){_vistaAuthSetStatus(cfg,'Provide email and password');return;}state[tokenKey]='';_vistaAuthSetStatus(cfg,'Signing in...');_vistaAuthV2(cfg,'POST','/api/v2/auth/login',{email:email,password:password}).then((payload)=>{if(!payload||payload.ok===false){const msg=(payload&&payload.error&&payload.error.message)?payload.error.message:'Login failed';throw new Error(msg);}if(payload.mfa_required){state[mfaChallengeKey]=String((payload.data&&payload.data.challenge_id)||'');state[profileKey]='Signed out';state[showLoginKey]=true;state[showSignupKey]=false;state[showAccountKey]=false;_vistaAuthSetStatus(cfg,'MFA required');render();return;}const data=(payload&&payload.data)||{};state[tokenKey]=String(data.token||'');state[mfaChallengeKey]='';state[profileKey]=_vistaAuthProfileLabel(data.user||{});state[showLoginKey]=false;state[showSignupKey]=false;state[showAccountKey]=true;_vistaAuthSetStatus(cfg,'Signed in');render();}).catch((err)=>{const msg=(err&&err.message)?err.message:'Login failed';_vistaAuthSetStatus(cfg,msg);});};"
+        script: script ++ "window._vistaAuthSignup=function(cfg){cfg=cfg||{};const showLoginKey=cfg.showLoginKey||'show_login';const showSignupKey=cfg.showSignupKey||'show_signup';const showAccountKey=cfg.showAccountKey||'show_account';const email=String(state[cfg.emailKey||'email']||'').trim();const password=String(state[cfg.passwordKey||'password']||'');if(!email||!password){_vistaAuthSetStatus(cfg,'Provide email and password');return;}_vistaAuthSetStatus(cfg,'Creating account...');_vistaAuthV2(cfg,'POST','/api/v2/auth/signup',{email:email,password:password}).then((payload)=>{if(!payload||payload.ok===false){const msg=(payload&&payload.error&&payload.error.message)?payload.error.message:'Signup failed';throw new Error(msg);}state[showLoginKey]=true;state[showSignupKey]=false;state[showAccountKey]=false;_vistaAuthSetStatus(cfg,'Account created. Please sign in.');render();}).catch((err)=>{const msg=(err&&err.message)?err.message:'Signup failed';_vistaAuthSetStatus(cfg,msg);});};"
+        script: script ++ "window._vistaAuthMfaVerify=function(cfg){cfg=cfg||{};const mfaChallengeKey=cfg.mfaChallengeKey||'mfa_challenge';const mfaCodeKey=cfg.mfaCodeKey||'mfa_code';const tokenKey=cfg.tokenKey||'auth_token';const profileKey=cfg.profileKey||'profile_label';const showLoginKey=cfg.showLoginKey||'show_login';const showSignupKey=cfg.showSignupKey||'show_signup';const showAccountKey=cfg.showAccountKey||'show_account';const challenge=String(state[mfaChallengeKey]||'').trim();const code=String(state[mfaCodeKey]||'').trim();if(!challenge||!code){_vistaAuthSetStatus(cfg,'Provide MFA challenge and code');return;}_vistaAuthSetStatus(cfg,'Verifying MFA...');_vistaAuthV2(cfg,'POST','/api/v2/auth/mfa/verify',{challenge_id:challenge,code:code}).then((payload)=>{if(!payload||payload.ok===false){const msg=(payload&&payload.error&&payload.error.message)?payload.error.message:'MFA verification failed';throw new Error(msg);}const data=(payload&&payload.data)||{};state[tokenKey]=String(data.token||'');state[mfaChallengeKey]='';state[profileKey]=_vistaAuthProfileLabel(data.user||{});state[showLoginKey]=false;state[showSignupKey]=false;state[showAccountKey]=true;_vistaAuthSetStatus(cfg,'Signed in (MFA)');render();}).catch((err)=>{const msg=(err&&err.message)?err.message:'MFA verification failed';_vistaAuthSetStatus(cfg,msg);});};"
+        script: script ++ "window._vistaAuthUpdateEmail=function(cfg){cfg=cfg||{};const tokenKey=cfg.tokenKey||'auth_token';const token=String(state[tokenKey]||'').trim();const email=String(state[cfg.newEmailKey||'new_email']||'').trim();const profileKey=cfg.profileKey||'profile_label';if(!token){_vistaAuthSetStatus(cfg,'Sign in first');return;}if(!email){_vistaAuthSetStatus(cfg,'Provide new email');return;}_vistaAuthSetStatus(cfg,'Updating email...');_vistaAuthV2(cfg,'PUT','/api/v2/auth/email',{token:token,email:email}).then((payload)=>{if(!payload||payload.ok===false){const msg=(payload&&payload.error&&payload.error.message)?payload.error.message:'Email update failed';throw new Error(msg);}const data=(payload&&payload.data)||{};if(data.token){state[tokenKey]=String(data.token);}state[profileKey]=_vistaAuthProfileLabel(data.user||{});_vistaAuthSetStatus(cfg,'Email updated');render();}).catch((err)=>{const msg=(err&&err.message)?err.message:'Email update failed';_vistaAuthSetStatus(cfg,msg);});};"
+        script: script ++ "window._vistaAuthUpdatePassword=function(cfg){cfg=cfg||{};const tokenKey=cfg.tokenKey||'auth_token';const token=String(state[tokenKey]||'').trim();const oldPass=String(state[cfg.oldPasswordKey||'old_password']||'');const newPass=String(state[cfg.newPasswordKey||'new_password']||'');if(!token){_vistaAuthSetStatus(cfg,'Sign in first');return;}if(!oldPass||!newPass){_vistaAuthSetStatus(cfg,'Provide current and new password');return;}_vistaAuthSetStatus(cfg,'Updating password...');_vistaAuthV2(cfg,'PUT','/api/v2/auth/password',{token:token,old_password:oldPass,new_password:newPass}).then((payload)=>{if(!payload||payload.ok===false){const msg=(payload&&payload.error&&payload.error.message)?payload.error.message:'Password update failed';throw new Error(msg);}const data=(payload&&payload.data)||{};if(data.token){state[tokenKey]=String(data.token);} _vistaAuthSetStatus(cfg,'Password updated');render();}).catch((err)=>{const msg=(err&&err.message)?err.message:'Password update failed';_vistaAuthSetStatus(cfg,msg);});};"
+        script: script ++ "window._vistaAuthEnableMfa=function(cfg){cfg=cfg||{};const token=String(state[cfg.tokenKey||'auth_token']||'').trim();const profileKey=cfg.profileKey||'profile_label';if(!token){_vistaAuthSetStatus(cfg,'Sign in first');return;}_vistaAuthSetStatus(cfg,'Enabling MFA...');_vistaAuthV2(cfg,'POST','/api/v2/auth/mfa/enable',{}).then((payload)=>{if(!payload||payload.ok===false){const msg=(payload&&payload.error&&payload.error.message)?payload.error.message:'MFA enable failed';throw new Error(msg);}if(payload.data){state[profileKey]=_vistaAuthProfileLabel(payload.data);} _vistaAuthSetStatus(cfg,'MFA enabled');render();}).catch((err)=>{const msg=(err&&err.message)?err.message:'MFA enable failed';_vistaAuthSetStatus(cfg,msg);});};"
+        script: script ++ "window._vistaAuthDisableMfa=function(cfg){cfg=cfg||{};const token=String(state[cfg.tokenKey||'auth_token']||'').trim();const profileKey=cfg.profileKey||'profile_label';if(!token){_vistaAuthSetStatus(cfg,'Sign in first');return;}_vistaAuthSetStatus(cfg,'Disabling MFA...');_vistaAuthV2(cfg,'POST','/api/v2/auth/mfa/disable',{}).then((payload)=>{if(!payload||payload.ok===false){const msg=(payload&&payload.error&&payload.error.message)?payload.error.message:'MFA disable failed';throw new Error(msg);}if(payload.data){state[profileKey]=_vistaAuthProfileLabel(payload.data);} _vistaAuthSetStatus(cfg,'MFA disabled');render();}).catch((err)=>{const msg=(err&&err.message)?err.message:'MFA disable failed';_vistaAuthSetStatus(cfg,msg);});};"
+        script: script ++ "window._vistaAuthLogout=function(cfg){cfg=cfg||{};const tokenKey=cfg.tokenKey||'auth_token';const statusKey=cfg.statusKey||'auth_status';const profileKey=cfg.profileKey||'profile_label';const mfaChallengeKey=cfg.mfaChallengeKey||'mfa_challenge';const showLoginKey=cfg.showLoginKey||'show_login';const showSignupKey=cfg.showSignupKey||'show_signup';const showAccountKey=cfg.showAccountKey||'show_account';const applyLocalSignout=(statusText)=>{state[tokenKey]='';state[mfaChallengeKey]='';state[profileKey]='Signed out';state[showLoginKey]=true;state[showSignupKey]=false;state[showAccountKey]=false;if(statusKey){state[statusKey]=statusText;}render();};const token=String(state[tokenKey]||'').trim();if(!token){applyLocalSignout('Already signed out');return;}_vistaAuthV2(cfg,'POST','/api/v2/auth/logout',{token:token}).then((_payload)=>{applyLocalSignout('Signed out');}).catch((_err)=>{applyLocalSignout('Signed out (offline)');});};"
+        script: script ++ "function bindInputs(){document.querySelectorAll('[data-bind]').forEach(el=>{if(el.dataset.vistaBound==='1'){return;}el.dataset.vistaBound='1';const key=el.getAttribute('data-bind');if(el.tagName==='INPUT'){if(el.type==='checkbox'){el.addEventListener('change',()=>{state[key]=el.checked;render();if(window.vistaPushState){vistaPushState();}});}else if(el.type==='radio'){el.addEventListener('change',()=>{if(el.checked){state[key]=el.value;}render();if(window.vistaPushState){vistaPushState();}});}else{el.addEventListener('input',()=>{state[key]=el.value;const action=el.dataset.oninputAction;if(window.__vistaAllowDynamicEval&&action){try{eval(action);}catch(e){}}render();if(window.vistaPushState){vistaPushState();}});}}else if(el.tagName==='TEXTAREA'){el.addEventListener('input',()=>{state[key]=el.value;render();if(window.vistaPushState){vistaPushState();}});}else if(el.tagName==='SELECT'){el.addEventListener('change',()=>{state[key]=el.value;render();if(window.vistaPushState){vistaPushState();}});}});}"
+        script: script ++ "function bindActions(){document.querySelectorAll('[data-vista-action]').forEach(el=>{if(el.dataset.vistaActionBound==='1'){return;}el.dataset.vistaActionBound='1';el.addEventListener('click',(e)=>{const action=el.dataset.vistaAction;if(!action){return;}e.preventDefault();switch(action){case 'auth_show_splash':state['show_splash']=true;state['show_login']=false;state['show_signup']=false;state['show_account']=false;if('show_ai_settings' in state){state['show_ai_settings']=false;}state['auth_prev_panel']='splash';render();break;case 'auth_show_login':state['show_splash']=false;state['show_login']=true;state['show_signup']=false;state['show_account']=false;if('show_ai_settings' in state){state['show_ai_settings']=false;}state['auth_prev_panel']='login';render();break;case 'auth_show_signup':state['show_splash']=false;state['show_login']=false;state['show_signup']=true;state['show_account']=false;if('show_ai_settings' in state){state['show_ai_settings']=false;}state['auth_prev_panel']='signup';render();break;case 'auth_show_ai_settings':{let prev='splash';if(state['show_account']){prev='account';}else if(state['show_login']){prev='login';}else if(state['show_signup']){prev='signup';}else if(state['show_splash']){prev='splash';}state['auth_prev_panel']=prev;state['show_splash']=false;state['show_login']=false;state['show_signup']=false;state['show_account']=false;if('show_ai_settings' in state){state['show_ai_settings']=true;}render();break;}case 'auth_close_ai_settings':{const prev=String(state['auth_prev_panel']||'splash');if('show_ai_settings' in state){state['show_ai_settings']=false;}state['show_splash']=prev==='splash';state['show_login']=prev==='login';state['show_signup']=prev==='signup';state['show_account']=prev==='account';render();break;}case 'auth_show_account':state['show_splash']=false;state['show_login']=false;state['show_signup']=false;state['show_account']=true;if('show_ai_settings' in state){state['show_ai_settings']=false;}state['auth_prev_panel']='account';render();break;case 'auth_logout':state['auth_token']='';state['show_splash']=true;state['show_login']=false;state['show_signup']=false;state['show_account']=false;if('show_ai_settings' in state){state['show_ai_settings']=false;}state['auth_prev_panel']='splash';state['profile_label']='Signed out';state['auth_status']='Signed out';render();break;case 'toggle_ai_settings':state['show_ai_settings']=!state['show_ai_settings'];render();break;case 'load_selected_mission':{const applyMission=(name)=>{state['selected_mission']=name;switch(name){case 'Mission 1':state['mission_subtitle']='The Awakening of Awareness';state['mission_description']='Foundations of Social Engineering Defense';state['objective_lines']='- The Signal Repair\\n- The Trigger Mirror\\n- The Awareness Compass';break;case 'Mission 2':state['mission_subtitle']='Hall of Pretexts';state['mission_description']='Attack Patterns and Context Analysis';state['objective_lines']='- The Pretext Codex\\n- The Chainbreaker Path\\n- The Context Sentinel';break;case 'Mission 3':state['mission_subtitle']='Workshop of Human Factors';state['mission_description']='Biases and Response Protocols';state['objective_lines']='- The Defensive Plan Spell\\n- The Role Inversion Circle\\n- The Protocol Seal';break;case 'Mission 4':state['mission_subtitle']='Hall of Syndicates';state['mission_description']='Multi-Stage Campaigns and Evidence Habits';state['objective_lines']='- The Architect\\'s Shield\\n- The Red Thread Map\\n- The Signal Archive';break;case 'Mission 5':state['mission_subtitle']='Labyrinth of Channels';state['mission_description']='Email, SMS, Voice, and Chat Attack Surfaces';state['objective_lines']='- The Phishing Gallery\\n- The Voice Veil\\n- The Surface Map';break;case 'Mission 6':state['mission_subtitle']='Vault of Credentials';state['mission_description']='Identity and Authentication Defense';state['objective_lines']='- The Keymaker\\'s Dilemma\\n- The Token Ward\\n- The Access Ledger';break;case 'Mission 7':state['mission_subtitle']='Citadel of Teams';state['mission_description']='Culture, Escalation, and Reporting';state['objective_lines']='- The Beacon Protocol\\n- The Whisper Network Audit\\n- The Ritual of Drills';break;case 'Mission 8':state['mission_subtitle']='Theater of Adversaries';state['mission_description']='Attacker Personas and TTP Patterns';state['objective_lines']='- The Mask Gallery\\n- The Playbook Scribe\\n- The Shadow Forecast';break;case 'Mission 9':state['mission_subtitle']='Mirror of the Self';state['mission_description']='Personal Threat Modeling and Boundaries';state['objective_lines']='- The Footprint Cartographer\\n- The Boundary Ward\\n- The Habit Weave';break;case 'Mission 10':state['mission_subtitle']='Constellation of Defenders';state['mission_description']='Capstone and Teaching Others';state['objective_lines']='- The Narrative Codex\\n- The Dual Path Trial\\n- The Legacy Circuit';break;}};applyMission(String(state['selected_mission']||'Mission 1'));if('train_status' in state){state['train_status']='LIVE_CONNECTION';}if(state['chat_log']!=null){state['chat_log']=String(state['chat_log'])+'\\nRHO::SYSTEM> Loaded '+String(state['selected_mission'])+': '+String(state['mission_subtitle']||'');}render();break;}case 'next_mission':{const cur=String(state['selected_mission']||'Mission 1');const m=cur.match(/^Mission\\s+(\\d+)$/i);let n=1;if(m){const parsed=parseInt(m[1],10);if(!isNaN(parsed)){n=parsed;}}n=Math.min(10,n+1);state['selected_mission']='Mission '+n;const applyMission=(name)=>{switch(name){case 'Mission 1':state['mission_subtitle']='The Awakening of Awareness';state['mission_description']='Foundations of Social Engineering Defense';state['objective_lines']='- The Signal Repair\\n- The Trigger Mirror\\n- The Awareness Compass';break;case 'Mission 2':state['mission_subtitle']='Hall of Pretexts';state['mission_description']='Attack Patterns and Context Analysis';state['objective_lines']='- The Pretext Codex\\n- The Chainbreaker Path\\n- The Context Sentinel';break;case 'Mission 3':state['mission_subtitle']='Workshop of Human Factors';state['mission_description']='Biases and Response Protocols';state['objective_lines']='- The Defensive Plan Spell\\n- The Role Inversion Circle\\n- The Protocol Seal';break;case 'Mission 4':state['mission_subtitle']='Hall of Syndicates';state['mission_description']='Multi-Stage Campaigns and Evidence Habits';state['objective_lines']='- The Architect\\'s Shield\\n- The Red Thread Map\\n- The Signal Archive';break;case 'Mission 5':state['mission_subtitle']='Labyrinth of Channels';state['mission_description']='Email, SMS, Voice, and Chat Attack Surfaces';state['objective_lines']='- The Phishing Gallery\\n- The Voice Veil\\n- The Surface Map';break;case 'Mission 6':state['mission_subtitle']='Vault of Credentials';state['mission_description']='Identity and Authentication Defense';state['objective_lines']='- The Keymaker\\'s Dilemma\\n- The Token Ward\\n- The Access Ledger';break;case 'Mission 7':state['mission_subtitle']='Citadel of Teams';state['mission_description']='Culture, Escalation, and Reporting';state['objective_lines']='- The Beacon Protocol\\n- The Whisper Network Audit\\n- The Ritual of Drills';break;case 'Mission 8':state['mission_subtitle']='Theater of Adversaries';state['mission_description']='Attacker Personas and TTP Patterns';state['objective_lines']='- The Mask Gallery\\n- The Playbook Scribe\\n- The Shadow Forecast';break;case 'Mission 9':state['mission_subtitle']='Mirror of the Self';state['mission_description']='Personal Threat Modeling and Boundaries';state['objective_lines']='- The Footprint Cartographer\\n- The Boundary Ward\\n- The Habit Weave';break;case 'Mission 10':state['mission_subtitle']='Constellation of Defenders';state['mission_description']='Capstone and Teaching Others';state['objective_lines']='- The Narrative Codex\\n- The Dual Path Trial\\n- The Legacy Circuit';break;}};applyMission(String(state['selected_mission']));if('train_status' in state){state['train_status']='LIVE_CONNECTION';}render();break;}}});});}"
+        script: script ++ "function render(){document.querySelectorAll('[data-bind]').forEach(el=>{const key=el.getAttribute('data-bind');if(el.tagName==='INPUT'){if(el.type==='checkbox'){el.checked=!!state[key];}else if(el.type==='radio'){el.checked=(state[key]==null?'':state[key])==el.value;}else{el.value=(state[key]==null?'':state[key]);}}else if(el.tagName==='TEXTAREA'){el.value=(state[key]==null?'':state[key]);}else if(el.tagName==='SELECT'){el.value=(state[key]==null?'':state[key]);}else if(el.tagName==='PROGRESS'){el.value=(state[key]==null?0:state[key]);}else if(el.tagName==='IMG'||el.tagName==='AUDIO'||el.tagName==='VIDEO'){if(state[key]!=null){el.src=state[key];if(el.tagName==='AUDIO'||el.tagName==='VIDEO'){try{el.load();}catch(_e5){}}}}else{el.textContent=(state[key]==null?'':state[key]);}});document.querySelectorAll('[data-show-bind]').forEach(el=>{const key=el.dataset.showBind;const expected=el.dataset.showValue;const cur=state[key];let show=false;if(expected==null||expected===''){show=!!cur;}else{show=String(cur)===expected;}el.style.display=show?'':'none';});document.querySelectorAll('ul[data-list-bind]').forEach(ul=>{const key=ul.dataset.listBind;const multi=ul.dataset.multi==='true';const items=[...ul.querySelectorAll('li[data-value]')];const setActive=(idx)=>{if(idx<0||idx>=items.length){return;}ul.dataset.activeIndex=String(idx);items.forEach((li,i)=>{li.classList.toggle('is-active',i===idx);});};const applyRange=(a,b,additive)=>{let start=Math.min(a,b);let end=Math.max(a,b);let values=items.slice(start,end+1).map(li=>li.dataset.value);let cur=state[key];if(!Array.isArray(cur)){cur=[];}if(!additive){cur=[];}values.forEach(v=>{if(!cur.includes(v)){cur.push(v);}});state[key]=cur;};const toggleValue=(v)=>{let cur=state[key];if(!Array.isArray(cur)){cur=[];}if(cur.includes(v)){cur=cur.filter(x=>x!==v);}else{cur=[...cur,v];}state[key]=cur;};const selectIndex=(idx,evt)=>{if(idx<0||idx>=items.length){return;}setActive(idx);const v=items[idx].dataset.value;if(!multi){state[key]=v;render();if(window.vistaPushState){vistaPushState();}return;}const shift=evt&&evt.shiftKey;const additive=evt&&(evt.ctrlKey||evt.metaKey);if(shift){const anchor=parseInt(ul.dataset.anchorIndex||String(idx),10);applyRange(anchor,idx,additive);}else if(additive){toggleValue(v);}else{state[key]=[v];}if(!shift){ul.dataset.anchorIndex=String(idx);}render();if(window.vistaPushState){vistaPushState();}};items.forEach((li,idx)=>{li.addEventListener('click',e=>{selectIndex(idx,e);});});ul.addEventListener('keydown',e=>{if(!items.length){return;}const selectedIndex=items.findIndex(li=>li.classList.contains('is-selected'));let idx=selectedIndex>=0?selectedIndex:0;if(e.key==='ArrowDown'){e.preventDefault();idx=Math.min(items.length-1,idx+1);if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(idx);return;}selectIndex(idx,e);}else if(e.key==='ArrowUp'){e.preventDefault();idx=Math.max(0,idx-1);if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(idx);return;}selectIndex(idx,e);}else if(e.key==='Home'){e.preventDefault();if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(0);return;}selectIndex(0,e);}else if(e.key==='End'){e.preventDefault();if(multi&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){setActive(items.length-1);return;}selectIndex(items.length-1,e);}else if(e.key===' '||e.key==='Enter'){e.preventDefault();selectIndex(idx,e);}else if(e.key.length===1 && !e.ctrlKey && !e.metaKey){const ch=e.key.toLowerCase();const buf=(ul._vistaTypeBuf||'')+ch;ul._vistaTypeBuf=buf;clearTimeout(ul._vistaTypeTimer);ul._vistaTypeTimer=setTimeout(()=>{ul._vistaTypeBuf='';},500);const found=items.findIndex(li=>li.textContent.trim().toLowerCase().startsWith(buf));if(found>=0){selectIndex(found,e);}} });});const handleKey=(el,e)=>{const bind=el.dataset.keyBind;const mode=el.dataset.keyMode||'keydown';if((mode==='keyup'&&e.type!=='keyup')||(mode!=='keyup'&&e.type!=='keydown')){return;}let value='';const modifiersOnly=el.dataset.keyModifiers==='true';if(modifiersOnly){const mods=[];if(e.shiftKey){mods.push('Shift');}if(e.ctrlKey){mods.push('Ctrl');}if(e.altKey){mods.push('Alt');}if(e.metaKey){mods.push('Meta');}value=mods.join('+');}else{value=e.key;}const filter=(el.dataset.keyFilter||'').split(',').map(s=>s.trim()).filter(Boolean);if(filter.length>0 && value!=='' && !filter.includes(value)){return;}state[bind]=value;render();if(window.__vistaAllowDynamicEval&&el.dataset.keyAction){try{eval(el.dataset.keyAction);}catch(e){}}if(window.vistaPushState){vistaPushState();}};document.querySelectorAll('[data-key-bind]').forEach(el=>{el.addEventListener('keydown',e=>handleKey(el,e));el.addEventListener('keyup',e=>handleKey(el,e));});autoSize();}"
+        script: script ++ "setTimeout(()=>{render();bindInputs();bindActions();const aiCfg={apiBaseKey:'api_base',providerKey:'provider',modelKey:'model',temperatureKey:'temperature',topPKey:'top_p',maxTokensKey:'max_tokens',statusKey:'status'};_vistaAiLoadProviders(aiCfg).then(()=>_vistaAiLoadSettings(aiCfg));},0);"
+        script: script ++ "window.vistaShow=function(id,html){const el=document.querySelector('[data-face-id=\"'+id+'\"]');if(!el){return false;}el.outerHTML=html;render();bindInputs();bindActions();return true;};"
+        switch webview_state_sync_from_ui [
+            script: script ++ "window.vistaPushState=function(){if(window.__vistaPushTimer){clearTimeout(window.__vistaPushTimer);}window.__vistaPushTimer=setTimeout(()=>{fetch('/vista-state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)}).catch(()=>{});},"
+            script: script ++ to :string webview_state_push_ms
+            script: script ++ ");};"
+        ][
+            ""
+        ]
+        switch greater? webview_state_sync_ms 0 [
+            script: script ++ "document.addEventListener('DOMContentLoaded', ()=>{render();bindInputs();bindActions();setInterval(()=>{fetch('/vista-sync').then(r=>r.json()).then(data=>{Object.keys(data||{}).forEach(k=>{state[k]=data[k];});render();});},"
+            script: script ++ to :string webview_state_sync_ms
+            script: script ++ ");});"
+        ][
+            script: script ++ "document.addEventListener('DOMContentLoaded', ()=>{render();bindInputs();bindActions();});"
+        ]
+        script
+]
+
+tabs_script: function [] [
+        "document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('[data-tabs]').forEach(container=>{const buttons=[...container.querySelectorAll('.vista-tab-btn')];const panels=[...container.querySelectorAll('.vista-tab-panel')];const activate=id=>{buttons.forEach(btn=>{btn.classList.toggle('is-active',btn.dataset.tab===id);});panels.forEach(panel=>{panel.classList.toggle('is-active',panel.dataset.tab===id);});};let selectedIndex=parseInt(container.dataset.tabsSelected||'0',10);if(isNaN(selectedIndex)){selectedIndex=0;}if(buttons.length>0){const idx=Math.max(0,Math.min(selectedIndex,buttons.length-1));activate(buttons[idx].dataset.tab);}buttons.forEach((btn,idx)=>{btn.addEventListener('click',()=>activate(btn.dataset.tab));btn.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();const next=(idx+1)%buttons.length;buttons[next].click();buttons[next].focus();}else if(e.key==='ArrowLeft'){e.preventDefault();const prev=(idx-1+buttons.length)%buttons.length;buttons[prev].click();buttons[prev].focus();}else if(e.key==='Home'){e.preventDefault();buttons[0].click();buttons[0].focus();}else if(e.key==='End'){e.preventDefault();buttons[buttons.length-1].click();buttons[buttons.length-1].focus();}});});});});"
+]
+
+menubar_script: function [] [
+        "document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('.vista-menubar').forEach(bar=>{const buttons=[...bar.querySelectorAll('[data-menu]')];const panels=[...bar.querySelectorAll('[data-menu-panel]')];let openKey=null;const closeAll=()=>{panels.forEach(p=>p.classList.remove('is-open'));buttons.forEach(b=>b.classList.remove('is-active'));openKey=null;};const openMenu=(key,btn)=>{const panel=panels.find(p=>p.dataset.menuPanel===key);if(!panel){return;}panels.forEach(p=>p.classList.toggle('is-open',p===panel));buttons.forEach(b=>b.classList.toggle('is-active',b===btn));const barRect=bar.getBoundingClientRect();const btnRect=btn.getBoundingClientRect();panel.style.left=(btnRect.left-barRect.left)+'px';panel.style.top=(barRect.height+4)+'px';openKey=key;};buttons.forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();const key=btn.dataset.menu;if(openKey===key){closeAll();}else{openMenu(key,btn);}});btn.addEventListener('mouseenter',()=>{if(openKey){openMenu(btn.dataset.menu,btn);}});});document.addEventListener('click',()=>{if(openKey){closeAll();}});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();}});panels.forEach(panel=>{panel.addEventListener('click',e=>e.stopPropagation());});});});"
+]
+
+table_script: function [] [
+        "document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('table[data-row-select]').forEach(table=>{table.querySelectorAll('tbody tr').forEach(row=>{row.addEventListener('click',()=>{table.querySelectorAll('tbody tr').forEach(r=>r.classList.remove('is-selected'));row.classList.add('is-selected');table.dataset.selectedText=row.textContent.trim();});});});});"
+]
+
+rate_feel_script: function [] [
+        script: "document.addEventListener('DOMContentLoaded',()=>{"
+        script: script ++ "document.querySelectorAll('[data-rate]').forEach(el=>{const ms=parseInt(el.getAttribute('data-rate')||'0',10);if(!(ms>0)){return;}const tickCode=el.getAttribute('data-rate-on-tick')||'';setInterval(()=>{try{if(window.__vistaAllowDynamicEval&&tickCode){(new Function('event','value',tickCode)).call(el,null,('value' in el)?el.value:el.textContent);}}catch(_e){}try{el.dispatchEvent(new CustomEvent('vista-rate-tick'));}catch(_e2){}},ms);});"
+        script: script ++ "document.querySelectorAll('*').forEach(el=>{const hasPrefix=(prefix)=>{const attrs=el.attributes||[];for(let i=0;i<attrs.length;i++){const name=attrs[i]&&attrs[i].name?attrs[i].name:'';if(name.indexOf(prefix)===0){return true;}}return false;};const engageCode=el.getAttribute('data-feel-engage')||'';const detectCode=el.getAttribute('data-feel-detect')||'';const redrawCode=el.getAttribute('data-feel-redraw')||'';const hasEngagePhases=hasPrefix('data-feel-engage-phase-');const hasDetectPhases=hasPrefix('data-feel-detect-phase-');const hasRedrawPhases=hasPrefix('data-feel-redraw-phase-');if(!(engageCode||detectCode||redrawCode||hasEngagePhases||hasDetectPhases||hasRedrawPhases)){return;}if(el.dataset.vistaFeelCompatBound==='1'){return;}el.dataset.vistaFeelCompatBound='1';const run=(code,event,value)=>{if(!code){return;}try{if(window.__vistaAllowDynamicEval){(new Function('event','value',code)).call(el,event,value);}}catch(_e){}};const phaseCode=(prefix,phase)=>el.getAttribute(prefix+phase)||'';const resolvePhase=(prefix,phase,aliases)=>{if(phaseCode(prefix,phase)){return phase;}const list=Array.isArray(aliases)?aliases:[];for(let i=0;i<list.length;i++){if(phaseCode(prefix,list[i])){return list[i];}}return phase;};const pointOf=(evt)=>{if(!evt){return {x:null,y:null,pageX:null,pageY:null,screenX:null,screenY:null};}const t=(evt.touches&&evt.touches[0])||(evt.changedTouches&&evt.changedTouches[0])||evt;const x=(t&&typeof t.clientX==='number')?t.clientX:null;const y=(t&&typeof t.clientY==='number')?t.clientY:null;const pageX=(t&&typeof t.pageX==='number')?t.pageX:null;const pageY=(t&&typeof t.pageY==='number')?t.pageY:null;const screenX=(t&&typeof t.screenX==='number')?t.screenX:null;const screenY=(t&&typeof t.screenY==='number')?t.screenY:null;return {x:x,y:y,pageX:pageX,pageY:pageY,screenX:screenX,screenY:screenY};};const normalize=(action,phase,evt)=>{const pt=pointOf(evt);const target=(evt&&evt.target)?evt.target:el;const value=(target&&'value' in target)?target.value:((target&&target.textContent!=null)?String(target.textContent):'');const timestamp=(evt&&typeof evt.timeStamp==='number')?evt.timeStamp:Date.now();const payload={action:action,type:action,phase:phase,eventType:evt&&evt.type?String(evt.type):'',faceId:el.getAttribute('data-face-id')||el.id||'',targetId:(target&&target.id)?target.id:'',targetName:(target&&target.name)?target.name:'',targetTag:(target&&target.tagName)?String(target.tagName).toLowerCase():'',timestamp:timestamp,x:pt.x,y:pt.y,pageX:pt.pageX,pageY:pt.pageY,screenX:pt.screenX,screenY:pt.screenY,dx:(evt&&typeof evt.movementX==='number')?evt.movementX:0,dy:(evt&&typeof evt.movementY==='number')?evt.movementY:0,button:(evt&&typeof evt.button==='number')?evt.button:null,buttons:(evt&&typeof evt.buttons==='number')?evt.buttons:null,key:evt&&evt.key?String(evt.key):'',code:evt&&evt.code?String(evt.code):'',keyCode:(evt&&typeof evt.keyCode==='number')?evt.keyCode:null,which:(evt&&typeof evt.which==='number')?evt.which:null,detail:(evt&&typeof evt.detail==='number')?evt.detail:null,pointerType:evt&&evt.pointerType?String(evt.pointerType):'',pointerId:(evt&&typeof evt.pointerId==='number')?evt.pointerId:null,pressure:(evt&&typeof evt.pressure==='number')?evt.pressure:null,tiltX:(evt&&typeof evt.tiltX==='number')?evt.tiltX:null,tiltY:(evt&&typeof evt.tiltY==='number')?evt.tiltY:null,twist:(evt&&typeof evt.twist==='number')?evt.twist:null,wheelX:(evt&&typeof evt.deltaX==='number')?evt.deltaX:0,wheelY:(evt&&typeof evt.deltaY==='number')?evt.deltaY:0,wheelZ:(evt&&typeof evt.deltaZ==='number')?evt.deltaZ:0,deltaMode:(evt&&typeof evt.deltaMode==='number')?evt.deltaMode:null,alt:!!(evt&&evt.altKey),ctrl:!!(evt&&evt.ctrlKey),shift:!!(evt&&evt.shiftKey),meta:!!(evt&&evt.metaKey),modifiers:{alt:!!(evt&&evt.altKey),ctrl:!!(evt&&evt.ctrlKey),shift:!!(evt&&evt.shiftKey),meta:!!(evt&&evt.metaKey)},value:value,checked:!!(target&&target.checked),selectedIndex:(target&&typeof target.selectedIndex==='number')?target.selectedIndex:null};return payload;};const dispatch=(kind,prefix,baseCode,phase,aliases,evt)=>{const resolved=resolvePhase(prefix,phase,aliases);const payload=normalize(kind,resolved,evt);payload.requestedPhase=phase;const pCode=phaseCode(prefix,resolved);if(pCode){run(pCode,evt,payload);return;}run(baseCode,evt,payload);};const engage=(phase,evt,aliases)=>dispatch('engage','data-feel-engage-phase-',engageCode,phase,aliases,evt);const detect=(phase,evt,aliases)=>dispatch('detect','data-feel-detect-phase-',detectCode,phase,aliases,evt);const redraw=(phase,evt,aliases)=>dispatch('redraw','data-feel-redraw-phase-',redrawCode,phase,aliases,evt);if(engageCode||hasEngagePhases){el.addEventListener('mousedown',e=>{if(e&&typeof e.button==='number'){if(e.button===1){engage('aux-down',e,['alt-down','down']);return;}if(e.button===2){engage('alt-down',e,['menu','down']);return;}}engage('down',e,['pointer-down','press']);});el.addEventListener('mouseup',e=>{if(e&&typeof e.button==='number'){if(e.button===1){engage('aux-up',e,['alt-up','up']);return;}if(e.button===2){engage('alt-up',e,['up']);return;}}engage('up',e,['pointer-up','release']);});el.addEventListener('click',e=>engage('click',e,['tap']));el.addEventListener('dblclick',e=>engage('double-click',e,['dbl-click']));el.addEventListener('contextmenu',e=>engage('menu',e,['context-menu']));el.addEventListener('mouseenter',e=>engage('over',e,['enter','hover']));el.addEventListener('mouseleave',e=>engage('away',e,['out','leave']));el.addEventListener('focus',e=>engage('focus',e,[]));el.addEventListener('blur',e=>engage('blur',e,[]));el.addEventListener('keydown',e=>engage('key',e,['key-down']));el.addEventListener('keyup',e=>engage('key-up',e,['key']));el.addEventListener('change',e=>engage('change',e,[]));el.addEventListener('input',e=>engage('input',e,[]));el.addEventListener('submit',e=>engage('submit',e,[]));el.addEventListener('wheel',e=>engage('wheel',e,['scroll-wheel']));if(window.PointerEvent){el.addEventListener('pointerdown',e=>engage('pointer-down',e,['down']));el.addEventListener('pointerup',e=>engage('pointer-up',e,['up']));el.addEventListener('pointercancel',e=>engage('pointer-cancel',e,['cancel']));el.addEventListener('pointerenter',e=>engage('enter',e,['over']));el.addEventListener('pointerleave',e=>engage('leave',e,['away']));}el.addEventListener('touchstart',e=>engage('touch-start',e,['down']));el.addEventListener('touchend',e=>engage('touch-end',e,['up','tap']));el.addEventListener('touchcancel',e=>engage('touch-cancel',e,['cancel']));}if(detectCode||hasDetectPhases){el.addEventListener('mousemove',e=>detect('move',e,[]));el.addEventListener('mouseenter',e=>detect('over',e,['enter']));el.addEventListener('mouseleave',e=>detect('away',e,['leave','out']));el.addEventListener('wheel',e=>detect('wheel',e,['scroll']));el.addEventListener('scroll',e=>detect('scroll',e,['wheel']));if(window.PointerEvent){el.addEventListener('pointermove',e=>detect('move',e,['pointer-move']));}el.addEventListener('touchmove',e=>detect('move',e,['touch-move']));}if(redrawCode||hasRedrawPhases){el.addEventListener('vista-rate-tick',e=>redraw('tick',e,[]));el.addEventListener('change',e=>redraw('change',e,[]));el.addEventListener('input',e=>redraw('input',e,[]));el.addEventListener('scroll',e=>redraw('scroll',e,['move']));if(window.addEventListener){window.addEventListener('resize',e=>redraw('resize',e,['show']));document.addEventListener('visibilitychange',e=>redraw(document.hidden?'hide':'show',e,['show']));}setTimeout(()=>redraw('show',null,[]),0);}});"
+        script: script ++ "document.querySelectorAll('[data-feel-drag],[data-feel-pointer-down],[data-feel-pointer-move],[data-feel-pointer-up],[data-feel-pointer-cancel],[data-feel-tap],[data-feel-long-press]').forEach(el=>{const run=(code,event,value)=>{if(!code){return;}try{if(window.__vistaAllowDynamicEval){(new Function('event','value',code)).call(el,event,value);}}catch(_e){}};const dragCode=el.getAttribute('data-feel-drag')||'';const ptrDown=el.getAttribute('data-feel-pointer-down')||'';const ptrMove=el.getAttribute('data-feel-pointer-move')||'';const ptrUp=el.getAttribute('data-feel-pointer-up')||'';const ptrCancel=el.getAttribute('data-feel-pointer-cancel')||'';const tapCode=el.getAttribute('data-feel-tap')||'';const longCode=el.getAttribute('data-feel-long-press')||'';const longMs=Math.max(0,parseInt(el.getAttribute('data-feel-long-press-ms')||'500',10)||500);const pointOf=(evt)=>{if(!evt){return {x:null,y:null,pageX:null,pageY:null,screenX:null,screenY:null};}const t=(evt.touches&&evt.touches[0])||(evt.changedTouches&&evt.changedTouches[0])||evt;const x=(t&&typeof t.clientX==='number')?t.clientX:null;const y=(t&&typeof t.clientY==='number')?t.clientY:null;const pageX=(t&&typeof t.pageX==='number')?t.pageX:null;const pageY=(t&&typeof t.pageY==='number')?t.pageY:null;const screenX=(t&&typeof t.screenX==='number')?t.screenX:null;const screenY=(t&&typeof t.screenY==='number')?t.screenY:null;return {x:x,y:y,pageX:pageX,pageY:pageY,screenX:screenX,screenY:screenY};};const normalized=(action,phase,evt,extra)=>{const pt=pointOf(evt);const target=(evt&&evt.target)?evt.target:el;const value=(target&&'value' in target)?target.value:((target&&target.textContent!=null)?String(target.textContent):'');const payload={action:action,type:action,phase:phase,eventType:evt&&evt.type?String(evt.type):'',faceId:el.getAttribute('data-face-id')||el.id||'',targetId:(target&&target.id)?target.id:'',targetName:(target&&target.name)?target.name:'',targetTag:(target&&target.tagName)?String(target.tagName).toLowerCase():'',timestamp:(evt&&typeof evt.timeStamp==='number')?evt.timeStamp:Date.now(),x:pt.x,y:pt.y,pageX:pt.pageX,pageY:pt.pageY,screenX:pt.screenX,screenY:pt.screenY,dx:(evt&&typeof evt.movementX==='number')?evt.movementX:0,dy:(evt&&typeof evt.movementY==='number')?evt.movementY:0,button:(evt&&typeof evt.button==='number')?evt.button:null,buttons:(evt&&typeof evt.buttons==='number')?evt.buttons:null,key:evt&&evt.key?String(evt.key):'',code:evt&&evt.code?String(evt.code):'',keyCode:(evt&&typeof evt.keyCode==='number')?evt.keyCode:null,which:(evt&&typeof evt.which==='number')?evt.which:null,detail:(evt&&typeof evt.detail==='number')?evt.detail:null,pointerType:evt&&evt.pointerType?String(evt.pointerType):'',pointerId:(evt&&typeof evt.pointerId==='number')?evt.pointerId:null,pressure:(evt&&typeof evt.pressure==='number')?evt.pressure:null,tiltX:(evt&&typeof evt.tiltX==='number')?evt.tiltX:null,tiltY:(evt&&typeof evt.tiltY==='number')?evt.tiltY:null,twist:(evt&&typeof evt.twist==='number')?evt.twist:null,wheelX:(evt&&typeof evt.deltaX==='number')?evt.deltaX:0,wheelY:(evt&&typeof evt.deltaY==='number')?evt.deltaY:0,wheelZ:(evt&&typeof evt.deltaZ==='number')?evt.deltaZ:0,deltaMode:(evt&&typeof evt.deltaMode==='number')?evt.deltaMode:null,alt:!!(evt&&evt.altKey),ctrl:!!(evt&&evt.ctrlKey),shift:!!(evt&&evt.shiftKey),meta:!!(evt&&evt.metaKey),modifiers:{alt:!!(evt&&evt.altKey),ctrl:!!(evt&&evt.ctrlKey),shift:!!(evt&&evt.shiftKey),meta:!!(evt&&evt.metaKey)},value:value,checked:!!(target&&target.checked),selectedIndex:(target&&typeof target.selectedIndex==='number')?target.selectedIndex:null};if(extra&&typeof extra==='object'){Object.keys(extra).forEach(k=>{payload[k]=extra[k];});}return payload;};let down=false,sx=0,sy=0,pressedAt=0,longTimer=null,longFired=false,moved=false;const clearLong=()=>{if(longTimer){clearTimeout(longTimer);longTimer=null;}};const start=(x,y,e)=>{down=true;sx=x;sy=y;pressedAt=Date.now();longFired=false;moved=false;clearLong();run(ptrDown,e,normalized('engage','pointer-down',e,{x:x,y:y,startX:x,startY:y}));if(longCode){longTimer=setTimeout(()=>{if(down&&!moved){longFired=true;run(longCode,e,normalized('engage','long-press',e,{x:x,y:y,startX:sx,startY:sy,duration:Date.now()-pressedAt}));}},longMs);}};const move=(x,y,e)=>{run(ptrMove,e,normalized('detect','pointer-move',e,{x:x,y:y,startX:sx,startY:sy,dx:x-sx,dy:y-sy}));if(!down){return;}const dx=x-sx;const dy=y-sy;if(Math.abs(dx)>8||Math.abs(dy)>8){moved=true;clearLong();}if(dragCode){run(dragCode,e,normalized('engage','drag',e,{x:x,y:y,startX:sx,startY:sy,dx:dx,dy:dy,duration:Date.now()-pressedAt}));}};const finish=(x,y,e,cancelled)=>{if(!down){if(cancelled){run(ptrCancel,e,normalized('engage','pointer-cancel',e,{x:x,y:y,startX:sx,startY:sy}));}return;}down=false;const dx=x-sx;const dy=y-sy;const dur=Date.now()-pressedAt;clearLong();if(cancelled){run(ptrCancel,e,normalized('engage','pointer-cancel',e,{x:x,y:y,startX:sx,startY:sy,dx:dx,dy:dy,duration:dur}));return;}run(ptrUp,e,normalized('engage','pointer-up',e,{x:x,y:y,startX:sx,startY:sy,dx:dx,dy:dy,duration:dur}));if(tapCode&&!longFired&&!moved&&dur<longMs){run(tapCode,e,normalized('engage','tap',e,{x:x,y:y,startX:sx,startY:sy,duration:dur}));}};if(window.PointerEvent){el.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0){return;}start(e.clientX,e.clientY,e);});window.addEventListener('pointermove',e=>{move(e.clientX,e.clientY,e);});window.addEventListener('pointerup',e=>{finish(e.clientX,e.clientY,e,false);});window.addEventListener('pointercancel',e=>{finish(e.clientX,e.clientY,e,true);});}else{el.addEventListener('mousedown',e=>{if(e.button!==0){return;}start(e.clientX,e.clientY,e);});window.addEventListener('mousemove',e=>{move(e.clientX,e.clientY,e);});window.addEventListener('mouseup',e=>{finish(e.clientX,e.clientY,e,false);});el.addEventListener('touchstart',e=>{if(!e.touches||e.touches.length===0){return;}const t=e.touches[0];start(t.clientX,t.clientY,e);},{passive:true});window.addEventListener('touchmove',e=>{if(!e.touches||e.touches.length===0){return;}const t=e.touches[0];move(t.clientX,t.clientY,e);if(down){e.preventDefault();}},{passive:false});window.addEventListener('touchend',e=>{const t=e.changedTouches&&e.changedTouches[0];if(t){finish(t.clientX,t.clientY,e,false);}else{finish(sx,sy,e,false);}});window.addEventListener('touchcancel',e=>{const t=e.changedTouches&&e.changedTouches[0];if(t){finish(t.clientX,t.clientY,e,true);}else{finish(sx,sy,e,true);}});}});"
+        script: script ++ "document.querySelectorAll('[data-dnd-dragstart],[data-dnd-dragover],[data-dnd-drop],[data-dnd-dragenter],[data-dnd-dragleave],[data-dnd-dragend]').forEach(el=>{const run=(code,event,payload)=>{if(!code){return;}try{if(window.__vistaAllowDynamicEval){(new Function('event','value',code)).call(el,event,payload);}}catch(_e){}};const payloadAttr=el.getAttribute('data-dnd-payload')||'';const dragStartCode=el.getAttribute('data-dnd-dragstart')||'';const dragOverCode=el.getAttribute('data-dnd-dragover')||'';const dropCode=el.getAttribute('data-dnd-drop')||'';const dragEnterCode=el.getAttribute('data-dnd-dragenter')||'';const dragLeaveCode=el.getAttribute('data-dnd-dragleave')||'';const dragEndCode=el.getAttribute('data-dnd-dragend')||'';const dropEffect=el.getAttribute('data-dnd-drop-effect')||'';if(dragStartCode&&!el.hasAttribute('draggable')){el.setAttribute('draggable','true');}el.addEventListener('dragstart',e=>{const payload=payloadAttr!==''?payloadAttr:(el.getAttribute('data-value')||el.textContent||'');if(e.dataTransfer){try{e.dataTransfer.setData('text/plain',payload);}catch(_e1){}e.dataTransfer.effectAllowed='copyMove';}run(dragStartCode,e,payload);});el.addEventListener('dragover',e=>{e.preventDefault();if(e.dataTransfer&&dropEffect!==''){e.dataTransfer.dropEffect=dropEffect;}run(dragOverCode,e,null);});el.addEventListener('drop',e=>{e.preventDefault();let payload='';if(e.dataTransfer){try{payload=e.dataTransfer.getData('text/plain')||'';}catch(_e2){}}el.setAttribute('data-dnd-last-payload',payload);run(dropCode,e,payload);});el.addEventListener('dragenter',e=>{e.preventDefault();run(dragEnterCode,e,null);});el.addEventListener('dragleave',e=>{run(dragLeaveCode,e,null);});el.addEventListener('dragend',e=>{run(dragEndCode,e,null);});});"
+        script: script ++ "});"
+        script
+]
+
+auto_reload_script: function [] [
+        if webview_auto_reload [
+            return "setInterval(()=>{location.reload();}," ++ (to :string webview_reload_ms) ++ ");"
+        ]
+        ""
+]
+
+merge_bindings: function [dest src] [
+        keysList: keys src
+        i: 0
+        keys_len: size keysList
+        while [less? i keys_len][
+            k: get keysList i
+            dest\[k]: src\[k]
+            i: i + 1
+        ]
+]

@@ -1,0 +1,4 @@
+; Vista UI Framework for Arturo - root entrypoint
+; Canonical implementation lives under src/vista.
+
+import "../vendor/vista/src/vista/vista.art"!

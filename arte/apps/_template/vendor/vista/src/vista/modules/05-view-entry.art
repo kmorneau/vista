@@ -1,0 +1,719 @@
+; Host split: render HTML independently from host delivery side effects.
+safe_key?: function [dict keyName] [
+    dictType: type dict
+    if any? @[
+        equal? dictType :dictionary
+        equal? dictType :object
+    ] [
+        return key? dict keyName
+    ]
+    false
+]
+
+safe_attr?: function [name] [
+    result: false
+    err: try [
+        result: attr? name
+    ]
+    if error? err [
+        return false
+    ]
+    result
+]
+
+safe_attr: function [name] [
+    result: null
+    err: try [
+        result: attr name
+    ]
+    if error? err [
+        return null
+    ]
+    result
+]
+
+view_render_html: function [layoutBlock] [
+    apply_arturo_header
+    vista_state\webview_open: false
+    build_full_html layoutBlock
+]
+
+view_host_options: function [] [
+    noWebview: false
+    hasNoWebviewAttr: safe_attr? "noWebview"
+    if hasNoWebviewAttr [
+        noWebview: true
+    ]
+    env_vars: env
+    envHasVistaNoWebview: safe_key? env_vars "VISTA_NO_WEBVIEW"
+    if envHasVistaNoWebview [
+        noWebview: true
+    ]
+    envHasNoWebview: safe_key? env_vars "NO_WEBVIEW"
+    if envHasNoWebview [
+        noWebview: true
+    ]
+    filePath: safe_attr "file"
+    fileName: "ui.html"
+    if notEqual? filePath null [
+        fileName: to :string filePath
+    ]
+    #[
+        noWebview: noWebview
+        absPath: absolute fileName
+    ]
+]
+
+view_host_deliver_default: function [fullHtml hostOptions] [
+    absPath: hostOptions\absPath
+    noWebview: hostOptions\noWebview
+    write fullHtml absPath
+    if noWebview [
+        vista_state\webview_open: false
+        return fullHtml
+    ]
+    safePath: replace absPath "\"" "\\\""
+    openCmd: "open \"" ++ safePath ++ "\" >/dev/null 2>&1 &"
+    if error? err: <= try [
+        execute openCmd
+    ] [
+        ; If browser launch fails, keep behavior non-blocking and still return HTML.
+    ]
+    fullHtml
+]
+
+; View function: generate full HTML and serve through the default host adapter.
+view: function [layoutBlock] [
+    fullHtml: view_render_html layoutBlock
+    shouldReturnHtml: safe_attr? "returnHtml"
+    if shouldReturnHtml [
+        return fullHtml
+    ]
+    hostOptions: view_host_options
+    view_host_deliver_default fullHtml hostOptions
+]
+
+vid: function [layoutBlock] [
+    prev: vista_vid_mode
+    vista_vid_mode: true
+    result: null
+    returnHtml: safe_attr? "returnHtml"
+    if returnHtml [
+        returnHtml: true
+    ]
+    switch returnHtml [
+        result: view .returnHtml layoutBlock
+    ][
+        hasFileAttr: safe_attr? "file"
+        switch hasFileAttr [
+            path: safe_attr "file"
+            hasNoWebviewAttr: safe_attr? "noWebview"
+            switch hasNoWebviewAttr [
+                result: view .file:path .noWebview layoutBlock
+            ][
+                result: view .file:path layoutBlock
+            ]
+        ][
+            hasNoWebviewAttr: safe_attr? "noWebview"
+            switch hasNoWebviewAttr [
+                result: view .noWebview layoutBlock
+            ][
+                result: view layoutBlock
+            ]
+        ]
+    ]
+    vista_vid_mode: prev
+    result
+]
+
+vista_runtime_webview_inject: function [js] [
+    if not? webview_enabled [
+        return false
+    ]
+    if not? vista_state\webview_open [
+        return false
+    ]
+    env_vars: env
+    envHasVistaNoWebview: safe_key? env_vars "VISTA_NO_WEBVIEW"
+    envHasNoWebview: safe_key? env_vars "NO_WEBVIEW"
+    if any? @[envHasVistaNoWebview envHasNoWebview] [
+        return false
+    ]
+    webview .inject: js ""
+    true
+]
+
+alert: function [message] [
+    msg: to :string message
+    js: "window.alert('" ++ js_escape_single msg ++ "');"
+    if vista_runtime_webview_inject js [
+        return true
+    ]
+    print msg
+    true
+]
+
+dialog: function [layoutOrText] [
+    if equal? (type layoutOrText) :block [
+        innerHtml: layout layoutOrText
+        js: "(()=>{var old=document.getElementById('__vistaRuntimeDialog');if(old){old.remove();}var host=document.createElement('div');host.id='__vistaRuntimeDialog';host.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.38);display:flex;align-items:center;justify-content:center;z-index:99999;padding:18px;';var card=document.createElement('div');card.style.cssText='background:#fff;border:1px solid #ded6c2;border-radius:12px;min-width:320px;max-width:860px;max-height:86vh;overflow:auto;padding:14px;box-shadow:0 18px 40px rgba(0,0,0,.22);';card.innerHTML='" ++ js_escape_single innerHtml ++ "';host.appendChild(card);host.addEventListener('click',function(e){if(e.target===host){host.remove();}});document.body.appendChild(host);})();"
+        if vista_runtime_webview_inject js [
+            return true
+        ]
+    ]
+    alert layoutOrText
+    true
+]
+
+clip: function [facePath] [
+    value: to :string facePath
+    clipTmp: absolute ".vista-clip.tmp"
+    write value clipTmp
+    safePath: replace clipTmp "\"" "\\\""
+    if not? error? err: <= try [
+        execute "cat \"" ++ safePath ++ "\" | pbcopy"
+    ] [
+        return true
+    ]
+    if not? error? err: <= try [
+        execute "cat \"" ++ safePath ++ "\" | xclip -selection clipboard"
+    ] [
+        return true
+    ]
+    if not? error? err: <= try [
+        execute "cat \"" ++ safePath ++ "\" | wl-copy"
+    ] [
+        return true
+    ]
+    false
+]
+
+unclip: function [] [
+    if not? error? err: <= try [
+        return execute "pbpaste"
+    ] [
+    ]
+    if not? error? err: <= try [
+        return execute "xclip -selection clipboard -o"
+    ] [
+    ]
+    if not? error? err: <= try [
+        return execute "wl-paste"
+    ] [
+    ]
+    ""
+]
+
+; Runtime helpers for rate/feel semantics
+set_rate: function [faceId rateMs] [
+    face: get_face faceId
+    if equal? face null [
+        return false
+    ]
+    attrs: face\attrs
+    attrs\["data-rate"]: to :string rateMs
+    update_face face\id #[attrs: attrs]
+    true
+]
+
+get_rate: function [faceId] [
+    face: get_face faceId
+    if equal? face null [
+        return null
+    ]
+    if key? face\attrs "data-rate" [
+        return face\attrs\["data-rate"]
+    ]
+    null
+]
+
+clear_rate: function [faceId] [
+    face: get_face faceId
+    if equal? face null [
+        return false
+    ]
+    attrs: attrs_without face\attrs "data-rate"
+    attrs: attrs_without attrs "data-rate-on-tick"
+    update_face face\id #[attrs: attrs]
+    true
+]
+
+apply_facets: function [faceId facetsDef] [
+    face: get_face faceId
+    if any? @[equal? face null notEqual? (type facetsDef) :dictionary] [
+        return false
+    ]
+    attrs: face\attrs
+    pair_xy: function [v] [
+        vt: type v
+        if equal? vt :block [
+            if greaterEq? (size v) 2 [
+                return #[x: get v 0 y: get v 1]
+            ]
+        ]
+        if equal? vt :string [
+            parts: split v "x"
+            if greaterEq? (size parts) 2 [
+                return #[x: to :number get parts 0 y: to :number get parts 1]
+            ]
+        ]
+        null
+    ]
+    value_css: function [v] [
+        vt: type v
+        if equal? vt :number [ return to :string v ++ "px" ]
+        to :string v
+    ]
+    add_style: function [s line] [
+        base: s
+        if any? @[equal? base null equal? base ""] [
+            return line
+        ]
+        if equal? (slice base (size base) 1) ";" [
+            return base ++ " " ++ line
+        ]
+        base ++ "; " ++ line
+    ]
+    to_bool: function [v defaultVal] [
+        if equal? (type v) :logical [ return v ]
+        vs: lower to :string v
+        if equal? vs "true" [ return true ]
+        if equal? vs "false" [ return false ]
+        defaultVal
+    ]
+    if key? facetsDef "color" [ attrs\color: facetsDef\color ]
+    if key? facetsDef "font" [ attrs\font: facetsDef\font ]
+    if key? facetsDef "para" [ attrs\para: facetsDef\para ]
+    if key? facetsDef "edge" [ attrs\edge: facetsDef\edge ]
+    if key? facetsDef "effect" [ attrs\effect: facetsDef\effect ]
+    if key? facetsDef "rate" [ attrs\["data-rate"]: to :string facetsDef\rate ]
+    if key? facetsDef "options" [ attrs\["data-options"]: to :string facetsDef\options ]
+    if key? facetsDef "size" [
+        sz: pair_xy facetsDef\size
+        if notEqual? sz null [
+            styleVal: ""
+            if key? attrs "style" [ styleVal: to :string attrs\style ]
+            styleVal: add_style styleVal ("width: " ++ value_css sz\x ++ ";")
+            styleVal: add_style styleVal ("height: " ++ value_css sz\y ++ ";")
+            attrs\style: styleVal
+        ]
+    ]
+    if any? @[key? facetsDef "offset" key? facetsDef "origin" key? facetsDef "at"] [
+        posVal: null
+        if key? facetsDef "offset" [ posVal: facetsDef\offset ]
+        if all? @[equal? posVal null key? facetsDef "origin"] [ posVal: facetsDef\origin ]
+        if all? @[equal? posVal null key? facetsDef "at"] [ posVal: facetsDef\at ]
+        pos: pair_xy posVal
+        if notEqual? pos null [
+            styleVal: ""
+            if key? attrs "style" [ styleVal: to :string attrs\style ]
+            styleVal: add_style styleVal "position: relative;"
+            styleVal: add_style styleVal ("left: " ++ value_css pos\x ++ ";")
+            styleVal: add_style styleVal ("top: " ++ value_css pos\y ++ ";")
+            attrs\style: styleVal
+        ]
+    ]
+    if key? facetsDef "enabled" [
+        enabledVal: to_bool facetsDef\enabled true
+        if enabledVal [
+            attrs: attrs_without attrs "disabled"
+        ] [
+            attrs\disabled: true
+        ]
+    ]
+    if key? facetsDef "disabled" [
+        disabledVal: to_bool facetsDef\disabled false
+        if disabledVal [
+            attrs\disabled: true
+        ] [
+            attrs: attrs_without attrs "disabled"
+        ]
+    ]
+    if any? @[key? facetsDef "visible" key? facetsDef "show" key? facetsDef "hidden"] [
+        visible: true
+        if key? facetsDef "visible" [ visible: to_bool facetsDef\visible visible ]
+        if key? facetsDef "show" [ visible: to_bool facetsDef\show visible ]
+        if key? facetsDef "hidden" [ visible: not? to_bool facetsDef\hidden false ]
+        styleVal: ""
+        if key? attrs "style" [ styleVal: to :string attrs\style ]
+        if visible [
+            if notEqual? (find styleVal "display: none;") null [
+                styleVal: replace styleVal "display: none;" ""
+            ]
+        ] [
+            styleVal: styleVal ++ " display: none;"
+        ]
+        attrs\style: styleVal
+    ]
+    if key? facetsDef "alpha" [
+        styleVal: ""
+        if key? attrs "style" [ styleVal: to :string attrs\style ]
+        styleVal: add_style styleVal ("opacity: " ++ to :string facetsDef\alpha ++ ";")
+        attrs\style: styleVal
+    ]
+    update_face face\id #[attrs: attrs]
+    actor_to_feel: function [actorVal] [
+        if notEqual? (type actorVal) :dictionary [
+            return #[]
+        ]
+        feelMap: #[]
+        if key? actorVal "on-click" [ feelMap\click: actorVal\["on-click"] ]
+        if key? actorVal "click" [ feelMap\click: actorVal\click ]
+        if key? actorVal "action" [ feelMap\click: actorVal\action ]
+        if key? actorVal "on-down" [ feelMap\down: actorVal\["on-down"] ]
+        if key? actorVal "down" [ feelMap\down: actorVal\down ]
+        if key? actorVal "on-up" [ feelMap\up: actorVal\["on-up"] ]
+        if key? actorVal "up" [ feelMap\up: actorVal\up ]
+        if key? actorVal "on-over" [ feelMap\hover: actorVal\["on-over"] ]
+        if key? actorVal "over" [ feelMap\hover: actorVal\over ]
+        if key? actorVal "on-out" [ feelMap\away: actorVal\["on-out"] ]
+        if key? actorVal "away" [ feelMap\away: actorVal\away ]
+        if key? actorVal "on-key" [ feelMap\key: actorVal\["on-key"] ]
+        if key? actorVal "key" [ feelMap\key: actorVal\key ]
+        if key? actorVal "on-move" [ feelMap\move: actorVal\["on-move"] ]
+        if key? actorVal "move" [ feelMap\move: actorVal\move ]
+        if key? actorVal "on-input" [ feelMap\input: actorVal\["on-input"] ]
+        if key? actorVal "input" [ feelMap\input: actorVal\input ]
+        if key? actorVal "on-focus" [ feelMap\focus: actorVal\["on-focus"] ]
+        if key? actorVal "focus" [ feelMap\focus: actorVal\focus ]
+        if key? actorVal "on-blur" [ feelMap\blur: actorVal\["on-blur"] ]
+        if key? actorVal "blur" [ feelMap\blur: actorVal\blur ]
+        if key? actorVal "on-change" [ feelMap\change: actorVal\["on-change"] ]
+        if key? actorVal "change" [ feelMap\change: actorVal\change ]
+        if key? actorVal "on-engage" [ feelMap\engage: actorVal\["on-engage"] ]
+        if key? actorVal "engage" [
+            feelMap\engage: actorVal\engage
+        ]
+        if key? actorVal "on-detect" [ feelMap\detect: actorVal\["on-detect"] ]
+        if key? actorVal "detect" [
+            feelMap\detect: actorVal\detect
+        ]
+        if key? actorVal "on-redraw" [ feelMap\redraw: actorVal\["on-redraw"] ]
+        if key? actorVal "redraw" [
+            feelMap\redraw: actorVal\redraw
+        ]
+        if key? actorVal "on-pointer-down" [ feelMap\["pointer-down"]: actorVal\["on-pointer-down"] ]
+        if key? actorVal "pointer-down" [ feelMap\["pointer-down"]: actorVal\["pointer-down"] ]
+        if key? actorVal "pointer_down" [ feelMap\pointer_down: actorVal\pointer_down ]
+        if key? actorVal "on-pointer-move" [ feelMap\["pointer-move"]: actorVal\["on-pointer-move"] ]
+        if key? actorVal "pointer-move" [ feelMap\["pointer-move"]: actorVal\["pointer-move"] ]
+        if key? actorVal "pointer_move" [ feelMap\pointer_move: actorVal\pointer_move ]
+        if key? actorVal "on-pointer-up" [ feelMap\["pointer-up"]: actorVal\["on-pointer-up"] ]
+        if key? actorVal "pointer-up" [ feelMap\["pointer-up"]: actorVal\["pointer-up"] ]
+        if key? actorVal "pointer_up" [ feelMap\pointer_up: actorVal\pointer_up ]
+        if key? actorVal "on-pointer-cancel" [ feelMap\["pointer-cancel"]: actorVal\["on-pointer-cancel"] ]
+        if key? actorVal "pointer-cancel" [ feelMap\["pointer-cancel"]: actorVal\["pointer-cancel"] ]
+        if key? actorVal "pointer_cancel" [ feelMap\pointer_cancel: actorVal\pointer_cancel ]
+        if key? actorVal "on-tap" [ feelMap\tap: actorVal\["on-tap"] ]
+        if key? actorVal "tap" [ feelMap\tap: actorVal\tap ]
+        if key? actorVal "on-long-press" [ feelMap\["long-press"]: actorVal\["on-long-press"] ]
+        if key? actorVal "long-press" [ feelMap\["long-press"]: actorVal\["long-press"] ]
+        if key? actorVal "long_press" [ feelMap\long_press: actorVal\long_press ]
+        if key? actorVal "on-long-press-ms" [ feelMap\["long-press-ms"]: actorVal\["on-long-press-ms"] ]
+        if key? actorVal "long-press-ms" [ feelMap\["long-press-ms"]: actorVal\["long-press-ms"] ]
+        if key? actorVal "long_press_ms" [ feelMap\long_press_ms: actorVal\long_press_ms ]
+        if key? actorVal "on-dragstart" [ feelMap\dragstart: actorVal\["on-dragstart"] ]
+        if key? actorVal "dragstart" [ feelMap\dragstart: actorVal\dragstart ]
+        if key? actorVal "on-dragover" [ feelMap\dragover: actorVal\["on-dragover"] ]
+        if key? actorVal "dragover" [ feelMap\dragover: actorVal\dragover ]
+        if key? actorVal "on-drop" [ feelMap\drop: actorVal\["on-drop"] ]
+        if key? actorVal "drop" [ feelMap\drop: actorVal\drop ]
+        if key? actorVal "on-dragenter" [ feelMap\dragenter: actorVal\["on-dragenter"] ]
+        if key? actorVal "dragenter" [ feelMap\dragenter: actorVal\dragenter ]
+        if key? actorVal "on-dragleave" [ feelMap\dragleave: actorVal\["on-dragleave"] ]
+        if key? actorVal "dragleave" [ feelMap\dragleave: actorVal\dragleave ]
+        if key? actorVal "on-dragend" [ feelMap\dragend: actorVal\["on-dragend"] ]
+        if key? actorVal "dragend" [ feelMap\dragend: actorVal\dragend ]
+        if key? actorVal "drag-data" [ feelMap\["drag-data"]: actorVal\["drag-data"] ]
+        if key? actorVal "drag_data" [ feelMap\drag_data: actorVal\drag_data ]
+        if key? actorVal "drop-effect" [ feelMap\["drop-effect"]: actorVal\["drop-effect"] ]
+        if key? actorVal "drop_effect" [ feelMap\drop_effect: actorVal\drop_effect ]
+        feelMap
+    ]
+    mergedFeel: #[]
+    if key? facetsDef "actor" [
+        mergedFeel: actor_to_feel facetsDef\actor
+    ]
+    if key? facetsDef "feel" [
+        if equal? (type facetsDef\feel) :dictionary [
+            fkeys: keys facetsDef\feel
+            fi: 0
+            flen: size fkeys
+            while [less? fi flen][
+                fk: get fkeys fi
+                mergedFeel\[fk]: facetsDef\feel\[fk]
+                fi: fi + 1
+            ]
+        ]
+    ]
+    if greater? (size keys mergedFeel) 0 [
+        apply_feel faceId mergedFeel
+    ]
+    true
+]
+
+apply_actor: function [faceId actorDef] [
+    if notEqual? (type actorDef) :dictionary [
+        return false
+    ]
+    feelDef: #[]
+    if key? actorDef "on-click" [ feelDef\click: actorDef\["on-click"] ]
+    if key? actorDef "click" [ feelDef\click: actorDef\click ]
+    if key? actorDef "action" [ feelDef\click: actorDef\action ]
+    if key? actorDef "on-down" [ feelDef\down: actorDef\["on-down"] ]
+    if key? actorDef "down" [ feelDef\down: actorDef\down ]
+    if key? actorDef "on-up" [ feelDef\up: actorDef\["on-up"] ]
+    if key? actorDef "up" [ feelDef\up: actorDef\up ]
+    if key? actorDef "on-over" [ feelDef\hover: actorDef\["on-over"] ]
+    if key? actorDef "over" [ feelDef\hover: actorDef\over ]
+    if key? actorDef "on-out" [ feelDef\away: actorDef\["on-out"] ]
+    if key? actorDef "away" [ feelDef\away: actorDef\away ]
+    if key? actorDef "on-key" [ feelDef\key: actorDef\["on-key"] ]
+    if key? actorDef "key" [ feelDef\key: actorDef\key ]
+    if key? actorDef "on-move" [ feelDef\move: actorDef\["on-move"] ]
+    if key? actorDef "move" [ feelDef\move: actorDef\move ]
+    if key? actorDef "on-input" [ feelDef\input: actorDef\["on-input"] ]
+    if key? actorDef "input" [ feelDef\input: actorDef\input ]
+    if key? actorDef "on-focus" [ feelDef\focus: actorDef\["on-focus"] ]
+    if key? actorDef "focus" [ feelDef\focus: actorDef\focus ]
+    if key? actorDef "on-blur" [ feelDef\blur: actorDef\["on-blur"] ]
+    if key? actorDef "blur" [ feelDef\blur: actorDef\blur ]
+    if key? actorDef "on-change" [ feelDef\change: actorDef\["on-change"] ]
+    if key? actorDef "change" [ feelDef\change: actorDef\change ]
+    if key? actorDef "on-engage" [ feelDef\engage: actorDef\["on-engage"] ]
+    if key? actorDef "engage" [ feelDef\engage: actorDef\engage ]
+    if key? actorDef "on-detect" [ feelDef\detect: actorDef\["on-detect"] ]
+    if key? actorDef "detect" [ feelDef\detect: actorDef\detect ]
+    if key? actorDef "on-redraw" [ feelDef\redraw: actorDef\["on-redraw"] ]
+    if key? actorDef "redraw" [ feelDef\redraw: actorDef\redraw ]
+    if key? actorDef "on-pointer-down" [ feelDef\["pointer-down"]: actorDef\["on-pointer-down"] ]
+    if key? actorDef "pointer-down" [ feelDef\["pointer-down"]: actorDef\["pointer-down"] ]
+    if key? actorDef "pointer_down" [ feelDef\pointer_down: actorDef\pointer_down ]
+    if key? actorDef "on-pointer-move" [ feelDef\["pointer-move"]: actorDef\["on-pointer-move"] ]
+    if key? actorDef "pointer-move" [ feelDef\["pointer-move"]: actorDef\["pointer-move"] ]
+    if key? actorDef "pointer_move" [ feelDef\pointer_move: actorDef\pointer_move ]
+    if key? actorDef "on-pointer-up" [ feelDef\["pointer-up"]: actorDef\["on-pointer-up"] ]
+    if key? actorDef "pointer-up" [ feelDef\["pointer-up"]: actorDef\["pointer-up"] ]
+    if key? actorDef "pointer_up" [ feelDef\pointer_up: actorDef\pointer_up ]
+    if key? actorDef "on-pointer-cancel" [ feelDef\["pointer-cancel"]: actorDef\["on-pointer-cancel"] ]
+    if key? actorDef "pointer-cancel" [ feelDef\["pointer-cancel"]: actorDef\["pointer-cancel"] ]
+    if key? actorDef "pointer_cancel" [ feelDef\pointer_cancel: actorDef\pointer_cancel ]
+    if key? actorDef "on-tap" [ feelDef\tap: actorDef\["on-tap"] ]
+    if key? actorDef "tap" [ feelDef\tap: actorDef\tap ]
+    if key? actorDef "on-long-press" [ feelDef\["long-press"]: actorDef\["on-long-press"] ]
+    if key? actorDef "long-press" [ feelDef\["long-press"]: actorDef\["long-press"] ]
+    if key? actorDef "long_press" [ feelDef\long_press: actorDef\long_press ]
+    if key? actorDef "on-long-press-ms" [ feelDef\["long-press-ms"]: actorDef\["on-long-press-ms"] ]
+    if key? actorDef "long-press-ms" [ feelDef\["long-press-ms"]: actorDef\["long-press-ms"] ]
+    if key? actorDef "long_press_ms" [ feelDef\long_press_ms: actorDef\long_press_ms ]
+    if key? actorDef "on-dragstart" [ feelDef\dragstart: actorDef\["on-dragstart"] ]
+    if key? actorDef "dragstart" [ feelDef\dragstart: actorDef\dragstart ]
+    if key? actorDef "on-dragover" [ feelDef\dragover: actorDef\["on-dragover"] ]
+    if key? actorDef "dragover" [ feelDef\dragover: actorDef\dragover ]
+    if key? actorDef "on-drop" [ feelDef\drop: actorDef\["on-drop"] ]
+    if key? actorDef "drop" [ feelDef\drop: actorDef\drop ]
+    if key? actorDef "on-dragenter" [ feelDef\dragenter: actorDef\["on-dragenter"] ]
+    if key? actorDef "dragenter" [ feelDef\dragenter: actorDef\dragenter ]
+    if key? actorDef "on-dragleave" [ feelDef\dragleave: actorDef\["on-dragleave"] ]
+    if key? actorDef "dragleave" [ feelDef\dragleave: actorDef\dragleave ]
+    if key? actorDef "on-dragend" [ feelDef\dragend: actorDef\["on-dragend"] ]
+    if key? actorDef "dragend" [ feelDef\dragend: actorDef\dragend ]
+    if key? actorDef "drag-data" [ feelDef\["drag-data"]: actorDef\["drag-data"] ]
+    if key? actorDef "drag_data" [ feelDef\drag_data: actorDef\drag_data ]
+    if key? actorDef "drop-effect" [ feelDef\["drop-effect"]: actorDef\["drop-effect"] ]
+    if key? actorDef "drop_effect" [ feelDef\drop_effect: actorDef\drop_effect ]
+    apply_feel faceId feelDef
+]
+
+remove_actor: function [faceId] [
+    remove_feel faceId
+]
+
+apply_feel: function [faceId feelDef] [
+    face: get_face faceId
+    if any? @[equal? face null notEqual? (type feelDef) :dictionary] [
+        return false
+    ]
+    attrs: face\attrs
+    compile: function [v] [
+        t: type v
+        switch any? @[equal? t :block equal? t :dictionary] [
+            vv: v
+            if equal? t :dictionary [
+                vv: dict_to_block v
+            ]
+            compile_action vv vista_state\last_bindings
+        ][
+            to :string v
+        ]
+    ]
+    phase_key: function [k] [
+        s: lower to :string k
+        replace s "_" "-"
+    ]
+    compile_phase_map: function [prefix phaseDef] [
+        if notEqual? (type phaseDef) :dictionary [
+            return
+        ]
+        pkeys: keys phaseDef
+        pi: 0
+        plen: size pkeys
+        while [less? pi plen][
+            pk: get pkeys pi
+            pkey: phase_key pk
+            pval: phaseDef\[pk]
+            attrs\[prefix ++ pkey]: compile pval
+            pi: pi + 1
+        ]
+    ]
+    compile_phase_pairs: function [prefix phaseBlock] [
+        if notEqual? (type phaseBlock) :block [
+            return false
+        ]
+        blen: size phaseBlock
+        if any? @[less? blen 2 notEqual? mod blen 2 0] [
+            return false
+        ]
+        bi: 0
+        while [less? bi blen][
+            pTok: get phaseBlock bi
+            pType: type pTok
+            if not? any? @[equal? pType :word equal? pType :label equal? pType :string] [
+                return false
+            ]
+            pName: phase_key pTok
+            pVal: get phaseBlock (bi + 1)
+            attrs\[prefix ++ pName]: compile pVal
+            bi: bi + 2
+        ]
+        true
+    ]
+    if key? feelDef "hover" [ attrs\onmouseenter: compile feelDef\["hover"] ]
+    if key? feelDef "away" [ attrs\onmouseleave: compile feelDef\["away"] ]
+    if key? feelDef "click" [ attrs\onclick: compile feelDef\["click"] ]
+    if key? feelDef "down" [ attrs\onmousedown: compile feelDef\["down"] ]
+    if key? feelDef "up" [ attrs\onmouseup: compile feelDef\["up"] ]
+    if key? feelDef "move" [ attrs\onmousemove: compile feelDef\["move"] ]
+    if key? feelDef "input" [ attrs\oninput: compile feelDef\["input"] ]
+    if key? feelDef "change" [ attrs\onchange: compile feelDef\["change"] ]
+    if key? feelDef "focus" [ attrs\onfocus: compile feelDef\["focus"] ]
+    if key? feelDef "blur" [ attrs\onblur: compile feelDef\["blur"] ]
+    if key? feelDef "key" [ attrs\onkeydown: compile feelDef\["key"] ]
+    if key? feelDef "engage" [
+        if equal? (type feelDef\engage) :dictionary [
+            compile_phase_map "data-feel-engage-phase-" feelDef\engage
+        ] [
+            if all? @[equal? (type feelDef\engage) :block compile_phase_pairs "data-feel-engage-phase-" feelDef\engage] [
+            ] [
+                attrs\["data-feel-engage"]: compile feelDef\engage
+            ]
+        ]
+    ]
+    if key? feelDef "detect" [
+        if equal? (type feelDef\detect) :dictionary [
+            compile_phase_map "data-feel-detect-phase-" feelDef\detect
+        ] [
+            if all? @[equal? (type feelDef\detect) :block compile_phase_pairs "data-feel-detect-phase-" feelDef\detect] [
+            ] [
+                attrs\["data-feel-detect"]: compile feelDef\detect
+            ]
+        ]
+    ]
+    if key? feelDef "redraw" [
+        if equal? (type feelDef\redraw) :dictionary [
+            compile_phase_map "data-feel-redraw-phase-" feelDef\redraw
+        ] [
+            if all? @[equal? (type feelDef\redraw) :block compile_phase_pairs "data-feel-redraw-phase-" feelDef\redraw] [
+            ] [
+                attrs\["data-feel-redraw"]: compile feelDef\redraw
+            ]
+        ]
+    ]
+    if key? feelDef "drag" [ attrs\["data-feel-drag"]: compile feelDef\["drag"] ]
+    if key? feelDef "pointer-down" [ attrs\["data-feel-pointer-down"]: compile feelDef\["pointer-down"] ]
+    if key? feelDef "pointer_down" [ attrs\["data-feel-pointer-down"]: compile feelDef\pointer_down ]
+    if key? feelDef "pointer-move" [ attrs\["data-feel-pointer-move"]: compile feelDef\["pointer-move"] ]
+    if key? feelDef "pointer_move" [ attrs\["data-feel-pointer-move"]: compile feelDef\pointer_move ]
+    if key? feelDef "pointer-up" [ attrs\["data-feel-pointer-up"]: compile feelDef\["pointer-up"] ]
+    if key? feelDef "pointer_up" [ attrs\["data-feel-pointer-up"]: compile feelDef\pointer_up ]
+    if key? feelDef "pointer-cancel" [ attrs\["data-feel-pointer-cancel"]: compile feelDef\["pointer-cancel"] ]
+    if key? feelDef "pointer_cancel" [ attrs\["data-feel-pointer-cancel"]: compile feelDef\pointer_cancel ]
+    if key? feelDef "tap" [ attrs\["data-feel-tap"]: compile feelDef\tap ]
+    if key? feelDef "long-press" [ attrs\["data-feel-long-press"]: compile feelDef\["long-press"] ]
+    if key? feelDef "long_press" [ attrs\["data-feel-long-press"]: compile feelDef\long_press ]
+    if key? feelDef "long-press-ms" [ attrs\["data-feel-long-press-ms"]: to :string feelDef\["long-press-ms"] ]
+    if key? feelDef "long_press_ms" [ attrs\["data-feel-long-press-ms"]: to :string feelDef\long_press_ms ]
+    if key? feelDef "dragstart" [
+        attrs\["data-dnd-dragstart"]: compile feelDef\dragstart
+        if not? key? attrs "draggable" [ attrs\draggable: true ]
+    ]
+    if key? feelDef "dragover" [ attrs\["data-dnd-dragover"]: compile feelDef\dragover ]
+    if key? feelDef "drop" [ attrs\["data-dnd-drop"]: compile feelDef\drop ]
+    if key? feelDef "dragenter" [ attrs\["data-dnd-dragenter"]: compile feelDef\dragenter ]
+    if key? feelDef "dragleave" [ attrs\["data-dnd-dragleave"]: compile feelDef\dragleave ]
+    if key? feelDef "dragend" [ attrs\["data-dnd-dragend"]: compile feelDef\dragend ]
+    if key? feelDef "drag-data" [ attrs\["data-dnd-payload"]: to :string feelDef\["drag-data"] ]
+    if key? feelDef "drag_data" [ attrs\["data-dnd-payload"]: to :string feelDef\drag_data ]
+    if key? feelDef "drop-effect" [ attrs\["data-dnd-drop-effect"]: to :string feelDef\["drop-effect"] ]
+    if key? feelDef "drop_effect" [ attrs\["data-dnd-drop-effect"]: to :string feelDef\drop_effect ]
+    update_face face\id #[attrs: attrs]
+    true
+]
+
+remove_feel: function [faceId] [
+    face: get_face faceId
+    if equal? face null [
+        return false
+    ]
+    attrs: face\attrs
+    remove_prefixed_attrs: function [attrsMap prefixVal] [
+        result: attrsMap
+        keysList: keys attrsMap
+        i: 0
+        n: size keysList
+        while [less? i n][
+            k: to :string get keysList i
+            if prefix? k prefixVal [
+                result: attrs_without result k
+            ]
+            i: i + 1
+        ]
+        result
+    ]
+    attrs: attrs_without attrs "onmouseenter"
+    attrs: attrs_without attrs "onmouseleave"
+    attrs: attrs_without attrs "onclick"
+    attrs: attrs_without attrs "onmousedown"
+    attrs: attrs_without attrs "onmouseup"
+    attrs: attrs_without attrs "onmousemove"
+    attrs: attrs_without attrs "oninput"
+    attrs: attrs_without attrs "onchange"
+    attrs: attrs_without attrs "onfocus"
+    attrs: attrs_without attrs "onblur"
+    attrs: attrs_without attrs "onkeydown"
+    attrs: attrs_without attrs "data-feel-drag"
+    attrs: attrs_without attrs "data-feel-engage"
+    attrs: attrs_without attrs "data-feel-detect"
+    attrs: attrs_without attrs "data-feel-redraw"
+    attrs: remove_prefixed_attrs attrs "data-feel-engage-phase-"
+    attrs: remove_prefixed_attrs attrs "data-feel-detect-phase-"
+    attrs: remove_prefixed_attrs attrs "data-feel-redraw-phase-"
+    attrs: attrs_without attrs "data-feel-pointer-down"
+    attrs: attrs_without attrs "data-feel-pointer-move"
+    attrs: attrs_without attrs "data-feel-pointer-up"
+    attrs: attrs_without attrs "data-feel-pointer-cancel"
+    attrs: attrs_without attrs "data-feel-tap"
+    attrs: attrs_without attrs "data-feel-long-press"
+    attrs: attrs_without attrs "data-feel-long-press-ms"
+    attrs: attrs_without attrs "data-dnd-dragstart"
+    attrs: attrs_without attrs "data-dnd-dragover"
+    attrs: attrs_without attrs "data-dnd-drop"
+    attrs: attrs_without attrs "data-dnd-dragenter"
+    attrs: attrs_without attrs "data-dnd-dragleave"
+    attrs: attrs_without attrs "data-dnd-dragend"
+    attrs: attrs_without attrs "data-dnd-payload"
+    attrs: attrs_without attrs "data-dnd-drop-effect"
+    attrs: attrs_without attrs "draggable"
+    update_face face\id #[attrs: attrs]
+    true
+]

@@ -522,6 +522,18 @@ copy_file_if_missing: function [src dst] [
     ]
 ]
 
+shell_escape_path: function [p] [
+    replace (to :string p) "\"" "\\\""
+]
+
+copy_dir_if_missing: function [src dst] [
+    if all? @[directory? src not? directory? dst] [
+        safeSrc: shell_escape_path src
+        safeDst: shell_escape_path dst
+        execute "cp -R \"" ++ safeSrc ++ "\" \"" ++ safeDst ++ "\""
+    ]
+]
+
 ensure_app_scaffold_dir: function [appSlug] [
     root: "arte/apps"
     if not? directory? root [
@@ -536,26 +548,36 @@ ensure_app_scaffold_dir: function [appSlug] [
 
     uiDir: appDir ++ "/ui"
     apiDir: appDir ++ "/api"
+    apiDbDir: apiDir ++ "/db"
     sharedDir: appDir ++ "/shared"
     docsDir: appDir ++ "/docs"
     dbDir: appDir ++ "/db"
+    vendorDir: appDir ++ "/vendor"
     if not? directory? uiDir [ write.directory "" uiDir ]
     if not? directory? apiDir [ write.directory "" apiDir ]
+    if not? directory? apiDbDir [ write.directory "" apiDbDir ]
     if not? directory? sharedDir [ write.directory "" sharedDir ]
     if not? directory? docsDir [ write.directory "" docsDir ]
     if not? directory? dbDir [ write.directory "" dbDir ]
+    if not? directory? vendorDir [ write.directory "" vendorDir ]
 
     copy_file_if_missing "arte/apps/_template/README.md" appDir ++ "/README.md"
     copy_file_if_missing "arte/apps/_template/ui/.gitkeep" uiDir ++ "/.gitkeep"
     copy_file_if_missing "arte/apps/_template/ui/app.art" uiDir ++ "/app.art"
     copy_file_if_missing "arte/apps/_template/ui/arte-logo.png" uiDir ++ "/arte-logo.png"
+    copy_file_if_missing "arte/apps/_template/ui/vista.art" uiDir ++ "/vista.art"
+    copy_dir_if_missing "arte/apps/_template/ui/src" uiDir ++ "/src"
+    copy_dir_if_missing "arte/apps/_template/ui/dist" uiDir ++ "/dist"
     copy_file_if_missing "arte/apps/_template/api/.gitkeep" apiDir ++ "/.gitkeep"
+    copy_file_if_missing "arte/apps/_template/api/db/.gitkeep" apiDir ++ "/db/.gitkeep"
+    copy_file_if_missing "arte/apps/_template/api/db/grafito.art" apiDir ++ "/db/grafito.art"
     copy_file_if_missing "arte/apps/_template/shared/.gitkeep" sharedDir ++ "/.gitkeep"
     copy_file_if_missing "arte/apps/_template/docs/architecture.md" docsDir ++ "/architecture.md"
     copy_file_if_missing "arte/apps/_template/docs/api-contract.md" docsDir ++ "/api-contract.md"
     copy_file_if_missing "arte/apps/_template/docs/data-model.md" docsDir ++ "/data-model.md"
     copy_file_if_missing "arte/apps/_template/db/.gitkeep" dbDir ++ "/.gitkeep"
     copy_file_if_missing "arte/apps/_template/db/grafito.graf" dbDir ++ "/grafito.graf"
+    copy_dir_if_missing "arte/apps/_template/vendor/grafito" vendorDir ++ "/grafito"
 
     #[
         path: appDir

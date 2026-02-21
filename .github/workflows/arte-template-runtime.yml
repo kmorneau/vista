@@ -1,0 +1,19 @@
+name: Arte Template Runtime Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check-template-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sync + Diff Check
+        run: |
+          set -euxo pipefail
+          bash arte/scripts/check-template-runtime.sh

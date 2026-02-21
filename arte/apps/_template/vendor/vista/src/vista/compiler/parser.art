@@ -1,0 +1,933 @@
+; Vista Compiler - IR Parser
+; Phase 4: Parse layout DSL into typed IR
+;
+; This module converts the Vista layout DSL into the intermediate
+; representation, replacing direct HTML string generation.
+
+;=============================================================================
+; PARSER STATE
+;=============================================================================
+
+; Create parser state
+parser_state: function [] [
+    #[
+        irDoc: null              ; IR document being built
+        pendingAttrs: #[]        ; Pending attributes (pad, space, etc.)
+        scopeStack: []           ; Scope attribute stack
+        faceStack: []            ; Current face hierarchy
+        bindings: #[]            ; Binding registry
+        styles: #[]              ; Style registry
+        openDivs: 0              ; Open layout div counter
+        currentIndent: 0         ; Current indentation
+    ]
+]
+
+;=============================================================================
+; BLOCK NORMALIZATION
+;=============================================================================
+
+; Normalize a block (handle compound words, etc.)
+parse_normalize_block: function [block] [
+    if notEqual? (type block) :block [ return block ]
+    
+    result: []
+    blen: size block
+    i: 0
+    
+    while [less? i blen][
+        tok: get block i
+        tokType: type tok
+        
+        ; Check for compound word (word - word pattern)
+        if equal? tokType :word [
+            if less? (i + 2) blen [
+                mid: get block (i + 1)
+                tail: get block (i + 2)
+                if all? @[
+                    equal? (type mid) :symbol
+                    equal? (to :string mid) "-"
+                    equal? (type tail) :word
+                ][
+                    ; Create compound word
+                    compound: to :string tok ++ "-" ++ to :string tail
+                    result: result ++ @[to :word compound]
+                    i: i + 3
+                    continue
+                ]
+            ]
+        ]
+        
+        result: result ++ @[tok]
+        i: i + 1
+    ]
+    
+    result
+]
+
+;=============================================================================
+; ARGUMENT COLLECTION
+;=============================================================================
+
+; Check if a word is a keyword (face type or layout directive)
+parse_is_keyword: function [word block] [
+    wordStr: to :string word
+    wordLower: lower wordStr
+    
+    ; Check face types
+    for t in IR_FACE_TYPES [
+        if equal? (lower t) wordLower [ return true ]
+    ]
+    
+    ; Check layout directives
+    for d in IR_LAYOUT_TYPES [
+        if equal? (lower d) wordLower [ return true ]
+    ]
+    
+    ; Check style names (from state)
+    if key? vista_styles wordStr [ return true ]
+    
+    false
+]
+
+; Collect arguments until next keyword
+parse_collect_args: function [block start] [
+    args: []
+    attrs: #[]
+    blen: size block
+    i: start
+    
+    while [less? i blen][
+        tok: get block i
+        tokType: type tok
+        
+        ; Check for keyword
+        if equal? tokType :word [
+            if parse_is_keyword tok block [
+                break
+            ]
+        ]
+        
+        ; Check for attribute (word: value pattern)
+        if equal? tokType :word [
+            tokStr: to :string tok
+            if less? (i + 1) blen [
+                nextTok: get block (i + 1)
+                ; Check if word ends with colon (attribute)
+                if endsWith? tokStr ":" [
+                    attrName: replace tokStr ":" ""
+                    attrName: replace attrName "_" "-"
+                    i: i + 1
+                    attrVal: get block i
+                    attrs\[attrName]: attrVal
+                    i: i + 1
+                    continue
+                ]
+            ]
+        ]
+        
+        ; Regular argument
+        args: args ++ @[tok]
+        i: i + 1
+    ]
+    
+    #[
+        args: args
+        attrs: attrs
+        next: i
+    ]
+]
+
+;=============================================================================
+; ATTRIBUTE PARSING
+;=============================================================================
+
+; Parse attributes from argument list
+parse_attrs_from_args: function [args] [
+    attrs: #[]
+    remaining: []
+    
+    alen: size args
+    ai: 0
+    
+    while [less? ai alen][
+        arg: get args ai
+        argType: type arg
+        
+        ; Check for attribute marker
+        if equal? argType :word [
+            argStr: to :string arg
+            if endsWith? argStr ":" [
+                attrName: replace argStr ":" ""
+                attrName: replace attrName "_" "-"
+                if less? (ai + 1) alen [
+                    ai: ai + 1
+                    attrVal: get args ai
+                    attrs\[attrName]: attrVal
+                    ai: ai + 1
+                    continue
+                ]
+            ]
+        ]
+        
+        remaining: remaining ++ @[arg]
+        ai: ai + 1
+    ]
+    
+    #[
+        attrs: attrs
+        args: remaining
+    ]
+]
+
+;=============================================================================
+; PENDING ATTRIBUTES
+;=============================================================================
+
+; Prepare pending attributes for a face
+parse_prepare_pending_attrs: function [state bindings] [
+    attrs: #[]
+    pending: state\pendingAttrs
+    
+    if key? pending "pad" [
+        p: pending\pad
+        if equal? (type p) :integer [
+            attrs\style: "padding:" ++ to :string p ++ "px;"
+        ]
+        if equal? (type p) :block [
+            if equal? (size p) 2 [
+                attrs\style: "padding:" ++ to :string (get p 0) ++ "px " ++ to :string (get p 1) ++ "px;"
+            ]
+            if equal? (size p) 4 [
+                attrs\style: "padding:" ++ to :string (get p 0) ++ "px " ++ to :string (get p 1) ++ "px " ++ to :string (get p 2) ++ "px " ++ to :string (get p 3) ++ "px;"
+            ]
+        ]
+    ]
+    
+    if key? pending "space" [
+        s: pending\space
+        attrs\style: (attrs\style || "") ++ "gap:" ++ to :string s ++ "px;"
+    ]
+    
+    if key? pending "align" [
+        a: pending\align
+        aStr: to :string a
+        alignVal: "flex-start"
+        if equal? (lower aStr) "left" [ alignVal: "flex-start" ]
+        if equal? (lower aStr) "center" [ alignVal: "center" ]
+        if equal? (lower aStr) "right" [ alignVal: "flex-end" ]
+        attrs\style: (attrs\style || "") ++ "justify-content:" ++ alignVal ++ ";"
+    ]
+    
+    if key? pending "valign" [
+        v: pending\valign
+        vStr: to :string v
+        valignVal: "flex-start"
+        if equal? (lower vStr) "top" [ valignVal: "flex-start" ]
+        if equal? (lower vStr) "center" [ valignVal: "center" ]
+        if equal? (lower vStr) "bottom" [ valignVal: "flex-end" ]
+        attrs\style: (attrs\style || "") ++ "align-items:" ++ valignVal ++ ";"
+    ]
+    
+    if key? pending "size" [
+        sz: pending\size
+        if equal? (type sz) :block [
+            if equal? (size sz) 2 [
+                attrs\style: (attrs\style || "") ++ "width:" ++ to :string (get sz 0) ++ ";height:" ++ to :string (get sz 1) ++ ";"
+            ]
+        ]
+    ]
+    
+    if key? pending "color" [
+        attrs\style: (attrs\style || "") ++ "background-color:" ++ to :string pending\color ++ ";"
+    ]
+    
+    if key? pending "class" [
+        attrs\class: pending\class
+    ]
+    
+    attrs
+]
+
+; Clear pending attributes
+parse_clear_pending_attrs: function [state] [
+    state\pendingAttrs: #[]
+    state
+]
+
+;=============================================================================
+; FACE PARSING
+;=============================================================================
+
+; Parse a face from the block
+parse_face: function [state block faceType startIdx] [
+    info: parse_collect_args block startIdx
+    args: info\args
+    attrs: info\attrs
+    
+    ; Merge pending attrs
+    pendingAttrs: parse_prepare_pending_attrs state state\bindings
+    attrs: merge_pending_attrs attrs pendingAttrs
+    
+    ; Clear pending after use
+    parse_clear_pending_attrs state
+    
+    ; Create IR face node
+    children: []
+    meta: #[]
+    
+    ; Process based on face type
+    faceTypeLower: lower faceType
+    
+    ; Handle binding detection
+    if greater? (size args) 0 [
+        arg0: get args 0
+        arg0Type: type arg0
+        
+        if equal? arg0Type :word [
+            ; This is a binding
+            bindName: to :string arg0
+            meta\bindName: bindName
+            state\bindings\[bindName]: true
+            
+            ; Handle specific face types
+            if any? @[equal? faceTypeLower "field" equal? faceTypeLower "input" equal? faceTypeLower "textarea"] [
+                ; Input binding
+            ]
+            if any? @[equal? faceTypeLower "checkbox" equal? faceTypeLower "toggle"] [
+                ; Checkbox/toggle binding
+                if greater? (size args) 1 [
+                    labelArg: get args 1
+                    if equal? (type labelArg) :word [
+                        state\bindings\[to :string labelArg]: true
+                        meta\labelHtml: "<span data-bind='" ++ to :string labelArg ++ "'></span>"
+                    ][
+                        meta\labelHtml: to :string labelArg
+                    ]
+                ]
+            ]
+            if any? @[equal? faceTypeLower "select" equal? faceTypeLower "drop-list"] [
+                ; Select binding
+                if greater? (size args) 1 [
+                    optsArg: get args 1
+                    if equal? (type optsArg) :block [
+                        meta\options: optsArg
+                    ]
+                ]
+            ]
+            if equal? faceTypeLower "list" [
+                ; List binding
+                if greater? (size args) 1 [
+                    optsArg: get args 1
+                    if equal? (type optsArg) :block [
+                        meta\options: optsArg
+                    ]
+                ]
+                if key? attrs "multi" [
+                    meta\multi: attrs\multi
+                    attrs: attrs_without attrs "multi"
+                ]
+            ]
+            if equal? faceTypeLower "slider" [
+                ; Slider binding
+                if key? attrs "labels" [
+                    labelsVal: attrs\labels
+                    if equal? (type labelsVal) :block [
+                        if equal? (size labelsVal) 2 [
+                            meta\labelMin: get labelsVal 0
+                            meta\labelMax: get labelsVal 1
+                        ]
+                    ]
+                    attrs: attrs_without attrs "labels"
+                ]
+            ]
+        ][
+            ; Non-binding argument
+            if any? @[equal? faceTypeLower "text" equal? faceTypeLower "title" equal? faceTypeLower "subtitle" equal? faceTypeLower "label"] [
+                children: children ++ @[arg0]
+            ]
+            if any? @[equal? faceTypeLower "field" equal? faceTypeLower "input"] [
+                meta\value: arg0
+            ]
+            if equal? faceTypeLower "button" [
+                meta\labelHtml: to :string arg0
+                if greater? (size args) 1 [
+                    actionArg: get args 1
+                    if equal? (type actionArg) :block [
+                        meta\action: ir_compile_action actionArg state\bindings
+                    ][
+                        meta\action: #[opcode: "custom" code: to :string actionArg]
+                    ]
+                ]
+            ]
+            if any? @[equal? faceTypeLower "select" equal? faceTypeLower "drop-list"] [
+                meta\bindName: "value"
+                if equal? (type arg0) :block [
+                    meta\options: arg0
+                ]
+            ]
+            if equal? faceTypeLower "list" [
+                meta\bindName: "value"
+                if equal? (type arg0) :block [
+                    meta\options: arg0
+                ]
+            ]
+            if equal? faceTypeLower "image" [
+                attrs\src: to :string arg0
+            ]
+            if equal? faceTypeLower "canvas" [
+                if equal? (type arg0) :block [
+                    meta\draw: arg0
+                ]
+            ]
+            if any? @[equal? faceTypeLower "box" equal? faceTypeLower "panel" equal? faceTypeLower "group" equal? faceTypeLower "row" equal? faceTypeLower "col"] [
+                if equal? (type arg0) :block [
+                    ; Parse nested block
+                    nestedResult: parse_block state arg0
+                    children: nestedResult\nodes
+                ][
+                    children: children ++ @[arg0]
+                ]
+            ]
+            if equal? faceTypeLower "grid" [
+                if equal? (type arg0) :integer [
+                    meta\cols: arg0
+                    if greater? (size args) 1 [
+                        bodyArg: get args 1
+                        if equal? (type bodyArg) :block [
+                            nestedResult: parse_block state bodyArg
+                            children: nestedResult\nodes
+                        ]
+                    ]
+                ][
+                    if equal? (type arg0) :block [
+                        nestedResult: parse_block state arg0
+                        children: nestedResult\nodes
+                    ]
+                ]
+            ]
+            if equal? faceTypeLower "tabs" [
+                if equal? (type arg0) :block [
+                    ; Parse tabs structure
+                    tabsResult: parse_tabs state arg0
+                    children: tabsResult\children
+                    meta\tabsId: tabsResult\tabsId
+                ]
+            ]
+            if equal? faceTypeLower "form" [
+                if equal? (type arg0) :block [
+                    nestedResult: parse_block state arg0
+                    children: nestedResult\nodes
+                ]
+                if greater? (size args) 1 [
+                    actionArg: get args 1
+                    if equal? (type actionArg) :block [
+                        meta\action: ir_compile_action actionArg state\bindings
+                    ]
+                ]
+            ]
+            if any? @[equal? faceTypeLower "table" equal? faceTypeLower "table-row" equal? faceTypeLower "table-cell" equal? faceTypeLower "table-head" equal? faceTypeLower "table-body" equal? faceTypeLower "table-foot"] [
+                if equal? (type arg0) :block [
+                    nestedResult: parse_block state arg0
+                    children: nestedResult\nodes
+                ]
+            ]
+            if equal? faceTypeLower "split" [
+                if equal? (type arg0) :block [
+                    nestedResult: parse_block state arg0
+                    children: nestedResult\nodes
+                ]
+                if greater? (size args) 1 [
+                    rightArg: get args 1
+                    if equal? (type rightArg) :block [
+                        rightResult: parse_block state rightArg
+                        children: children ++ rightResult\nodes
+                    ]
+                ]
+            ]
+            if equal? faceTypeLower "dialog" [
+                if equal? (type arg0) :block [
+                    nestedResult: parse_block state arg0
+                    children: nestedResult\nodes
+                ][
+                    if equal? (type arg0) :word [
+                        meta\bindName: to :string arg0
+                        state\bindings\[to :string arg0]: true
+                    ]
+                ]
+            ]
+            if equal? faceTypeLower "details" [
+                if equal? (type arg0) :word [
+                    meta\bindName: to :string arg0
+                    state\bindings\[to :string arg0]: true
+                ][
+                    meta\summaryHtml: to :string arg0
+                ]
+                if greater? (size args) 1 [
+                    bodyArg: get args 1
+                    if equal? (type bodyArg) :block [
+                        nestedResult: parse_block state bodyArg
+                        children: nestedResult\nodes
+                    ]
+                ]
+            ]
+        ]
+    ]
+    
+    ; Create the IR face node
+    face: ir_face faceType attrs children meta
+    
+    ; Register in document
+    faceId: ir_register_face state\irDoc face
+    
+    #[
+        node: face
+        next: info\next
+    ]
+]
+
+;=============================================================================
+; TABS PARSING
+;=============================================================================
+
+; Parse tabs structure
+parse_tabs: function [state block] [
+    tabsId: "tabs-" ++ to :string state\irDoc\nextId
+    children: []
+    
+    blen: size block
+    i: 0
+    tabIndex: 0
+    
+    while [less? i blen][
+        tok: get block i
+        if equal? (type tok) :word [
+            tokStr: to :string tok
+            if equal? (lower tokStr) "tab" [
+                i: i + 1
+                if less? i blen [
+                    titleVal: get block i
+                    i: i + 1
+                    bodyVal: null
+                    if less? i blen [
+                        bodyVal: get block i
+                        i: i + 1
+                    ]
+                    
+                    tabKey: tabsId ++ "-" ++ to :string tabIndex
+                    tabIndex: tabIndex + 1
+                    
+                    ; Create tab button
+                    titleHtml: ""
+                    if equal? (type titleVal) :word [
+                        state\bindings\[to :string titleVal]: true
+                        titleHtml: "<span data-bind='" ++ to :string titleVal ++ "'></span>"
+                    ][
+                        titleHtml: to :string titleVal
+                    ]
+                    
+                    ; Create tab panel
+                    panelChildren: []
+                    if equal? (type bodyVal) :block [
+                        nestedResult: parse_block state bodyVal
+                        panelChildren: nestedResult\nodes
+                    ]
+                    
+                    ; Add panel as child
+                    panelNode: ir_face "box" #[class: "vista-tab-panel" "data-tab": tabKey] panelChildren #[]
+                    children: children ++ @[panelNode]
+                ]
+            ]
+        ]
+        i: i + 1
+    ]
+    
+    #[
+        tabsId: tabsId
+        children: children
+    ]
+]
+
+;=============================================================================
+; LAYOUT DIRECTIVE PARSING
+;=============================================================================
+
+; Parse a layout directive
+parse_layout_directive: function [state block directive startIdx] [
+    dirLower: lower directive
+    
+    do case dirLower [
+        "pad" -> [
+            if less? startIdx (size block) [
+                v: get block startIdx
+                state\pendingAttrs\pad: v
+                return startIdx + 1
+            ]
+        ]
+        "space" -> [
+            if less? startIdx (size block) [
+                v: get block startIdx
+                state\pendingAttrs\space: v
+                return startIdx + 1
+            ]
+        ]
+        "align" -> [
+            if less? startIdx (size block) [
+                v: get block startIdx
+                state\pendingAttrs\align: v
+                return startIdx + 1
+            ]
+        ]
+        "valign" -> [
+            if less? startIdx (size block) [
+                v: get block startIdx
+                state\pendingAttrs\valign: v
+                return startIdx + 1
+            ]
+        ]
+        "size" -> [
+            if less? startIdx (size block) [
+                v: get block startIdx
+                state\pendingAttrs\size: v
+                return startIdx + 1
+            ]
+        ]
+        "origin" -> [
+            if less? startIdx (size block) [
+                v: get block startIdx
+                state\pendingAttrs\origin: v
+                return startIdx + 1
+            ]
+        ]
+        "offset" "at" -> [
+            if less? startIdx (size block) [
+                v: get block startIdx
+                state\pendingAttrs\offset: v
+                return startIdx + 1
+            ]
+        ]
+        "indent" -> [
+            if less? startIdx (size block) [
+                v: get block startIdx
+                state\pendingAttrs\indent: v
+                return startIdx + 1
+            ]
+        ]
+        "guide" -> [
+            if key? state\pendingAttrs "class" [
+                state\pendingAttrs\class: to :string state\pendingAttrs\class ++ " vista-guide"
+            ][
+                state\pendingAttrs\class: "vista-guide"
+            ]
+            return startIdx
+        ]
+        "backcolor" -> [
+            if less? startIdx (size block) [
+                v: get block startIdx
+                state\pendingAttrs\color: v
+                return startIdx + 1
+            ]
+        ]
+        "across" -> [
+            ; Create layout node for across (flex row)
+            node: ir_layout "across" []
+            ir_add_node state\irDoc node
+            state\openDivs: state\openDivs + 1
+            return startIdx
+        ]
+        "below" -> [
+            ; Create layout node for below (flex column)
+            node: ir_layout "below" []
+            ir_add_node state\irDoc node
+            state\openDivs: state\openDivs + 1
+            return startIdx
+        ]
+        "return" -> [
+            ; End current layout, start new row
+            if greater? state\openDivs 0 [
+                node: ir_layout "end" []
+                ir_add_node state\irDoc node
+            ]
+            node: ir_layout "across" []
+            ir_add_node state\irDoc node
+            return startIdx
+        ]
+        "end" -> [
+            if greater? state\openDivs 0 [
+                node: ir_layout "end" []
+                ir_add_node state\irDoc node
+                state\openDivs: state\openDivs - 1
+            ]
+            return startIdx
+        ]
+        "scope" -> [
+            ; Parse scope block
+            info: parse_collect_args block startIdx
+            if greater? (size info\args) 0 [
+                bodyVal: get info\args 0
+                if equal? (type bodyVal) :block [
+                    ; Push scope attrs
+                    state\scopeStack: state\scopeStack ++ @[state\pendingAttrs]
+                    state\pendingAttrs: #[]
+                    
+                    ; Parse nested block
+                    nestedResult: parse_block state bodyVal
+                    
+                    ; Pop scope
+                    if greater? (size state\scopeStack) 0 [
+                        lastIdx: (size state\scopeStack) - 1
+                        state\pendingAttrs: get state\scopeStack lastIdx
+                        state\scopeStack: chop state\scopeStack
+                    ]
+                    
+                    return info\next
+                ]
+            ]
+            return info\next
+        ]
+        any -> [
+            return startIdx
+        ]
+    ]
+    
+    startIdx
+]
+
+;=============================================================================
+; STYLE PARSING
+;=============================================================================
+
+; Parse a style definition
+parse_style: function [state block startIdx] [
+    if less? startIdx (size block) [
+        styleName: get block startIdx
+        if equal? (type styleName) :word [
+            styleNameStr: to :string styleName
+            
+            ; Collect style body
+            info: parse_collect_args block (startIdx + 1)
+            styleBody: info\args
+            
+            ; Register style
+            state\styles\[styleNameStr]: styleBody
+            state\irDoc\styles\[styleNameStr]: styleBody
+            
+            return info\next
+        ]
+    ]
+    startIdx + 1
+]
+
+;=============================================================================
+; BLOCK PARSING
+;=============================================================================
+
+; Parse a block into IR nodes
+parse_block: function [state block] [
+    block: parse_normalize_block block
+    nodes: []
+    blen: size block
+    i: 0
+    
+    while [less? i blen][
+        tok: get block i
+        tokType: type tok
+        
+        if equal? tokType :word [
+            tokStr: to :string tok
+            tokLower: lower tokStr
+            
+            ; Check if it's a style reference
+            if key? vista_styles tokStr [
+                info: parse_collect_args block (i + 1)
+                styleBlock: vista_styles\[tokStr]
+                ; Apply style with args
+                styledBlock: apply_style_args styleBlock info\args info\attrs
+                ; Parse styled block
+                nestedResult: parse_block state styledBlock
+                nodes: nodes ++ nestedResult\nodes
+                i: info\next
+                continue
+            ]
+            
+            ; Check if it's a face type
+            isFace: false
+            for t in IR_FACE_TYPES [
+                if equal? (lower t) tokLower [
+                    isFace: true
+                    break
+                ]
+            ]
+            
+            if isFace [
+                result: parse_face state block tokStr (i + 1)
+                nodes: nodes ++ @[result\node]
+                i: result\next
+                continue
+            ]
+            
+            ; Check if it's a layout directive
+            isLayout: false
+            for d in IR_LAYOUT_TYPES [
+                if equal? (lower d) tokLower [
+                    isLayout: true
+                    break
+                ]
+            ]
+            
+            if isLayout [
+                i: parse_layout_directive state block tokStr (i + 1)
+                continue
+            ]
+            
+            ; Check for style definition
+            if equal? tokLower "style" [
+                i: parse_style state block (i + 1)
+                continue
+            ]
+            
+            ; Check for styles application
+            if equal? tokLower "styles" [
+                if less? (i + 1) blen [
+                    sheetVal: get block (i + 1)
+                    ; Apply stylesheet
+                    i: i + 2
+                    continue
+                ]
+            ]
+            
+            ; Check for raw
+            if equal? tokLower "raw" [
+                info: parse_collect_args block (i + 1)
+                if greater? (size info\args) 0 [
+                    rawVal: get info\args 0
+                    node: ir_raw to :string rawVal
+                    nodes: nodes ++ @[node]
+                ]
+                i: info\next
+                continue
+            ]
+            
+            ; Check for script
+            if equal? tokLower "script" [
+                info: parse_collect_args block (i + 1)
+                content: ""
+                if greater? (size info\args) 0 [
+                    content: to :string (get info\args 0)
+                ]
+                node: ir_script content info\attrs
+                nodes: nodes ++ @[node]
+                i: info\next
+                continue
+            ]
+            
+            ; Check for do
+            if equal? tokLower "do" [
+                if less? (i + 1) blen [
+                    doBlock: get block (i + 1)
+                    if equal? (type doBlock) :block [
+                        do doBlock
+                    ]
+                    i: i + 2
+                    continue
+                ]
+            ]
+            
+            ; Unknown word - add diagnostic
+            ir_add_diagnostic state\irDoc IR_DIAG_WARNING 
+                "Unknown keyword: '" ++ tokStr ++ "'" 
+                "block index " ++ to :string i
+        ]
+        
+        i: i + 1
+    ]
+    
+    #[
+        nodes: nodes
+    ]
+]
+
+;=============================================================================
+; TOP-LEVEL PARSING
+;=============================================================================
+
+; Parse a layout block into an IR document
+parse_layout_to_ir: function [block] [
+    ; Initialize state
+    state: parser_state []
+    state\irDoc: ir_document []
+    
+    ; Parse the block
+    result: parse_block state block
+    
+    ; Add nodes to document
+    for node in result\nodes [
+        ir_add_node state\irDoc node
+    ]
+    
+    ; Copy bindings
+    state\irDoc\bindings: state\bindings
+    
+    state\irDoc
+]
+
+;=============================================================================
+; COMPATIBILITY LAYER
+;=============================================================================
+
+; Parse layout and return legacy-compatible result
+parse_layout_compat: function [block] [
+    irDoc: parse_layout_to_ir block
+    
+    ; Emit HTML
+    emitResult: emit_document irDoc
+    
+    ; Return in legacy format
+    #[
+        html: emitResult\html
+        bindings: emitResult\bindings
+        faces: emitResult\faces
+        root: emitResult\root
+        diagnostics: emitResult\diagnostics
+    ]
+]
+
+;=============================================================================
+; HELPER FUNCTIONS (from existing codebase)
+;=============================================================================
+
+; Merge pending attrs into main attrs
+merge_pending_attrs: function [attrs pending] [
+    if equal? attrs null [ attrs: #[] ]
+    if equal? pending null [ pending: #[] ]
+    
+    result: #[]
+    
+    ; Copy base attrs
+    for k in keys attrs [
+        result\[k]: attrs\[k]
+    ]
+    
+    ; Merge pending
+    for k in keys pending [
+        if key? result k [
+            ; Merge style
+            if equal? k "style" [
+                result\style: result\style ++ " " ++ to :string pending\[k]
+            ][
+                ; Override with pending
+                result\[k]: pending\[k]
+            ]
+        ][
+            result\[k]: pending\[k]
+        ]
+    ]
+    
+    result
+]
+
+; Apply style args (placeholder - would use existing implementation)
+apply_style_args: function [styleBlock args attrs] [
+    ; This would integrate with the existing style system
+    ; For now, return the style block as-is
+    styleBlock
+]

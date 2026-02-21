@@ -34,6 +34,10 @@ Primary flow (from Arte UI):
 4. Arte API will auto-create `arte/apps/<app-slug>/` from template, including:
    - `ui/app.art` with splash + auth + AI chat + settings
    - `ui/arte-logo.png` (default logo)
+   - `ui/vista.art` + `ui/src/vista/` (vendored Vista runtime)
+   - `ui/src/vista/graphics/` (vendored Vista Graphics modules)
+   - `ui/dist/assets/icons/` (vendored icon set used by auth/components)
+   - `vendor/grafito/` (vendored Grafito package)
    - `db/grafito.graf` (default Grafito DB)
    - `docs/` starter docs
    - `api/` and `shared/` folders
@@ -49,3 +53,24 @@ Manual flow (optional):
 4. Implement UI/API/shared in that folder.
 
 Use `arte/docs` as the baseline reference, then specialize per app.
+
+## Isolation Notes
+
+- New app templates import local vendored dependencies from app-local paths.
+- App runtime/package dependencies do not need to import from project root.
+
+## Keeping Template Runtime Fresh
+
+When Vista runtime/icons (or Grafito package) change, run:
+
+```bash
+bash arte/scripts/sync-template-runtime.sh
+```
+
+To verify no drift:
+
+```bash
+bash arte/scripts/check-template-runtime.sh
+```
+
+CI also runs this check in `.github/workflows/arte-template-runtime.yml`.

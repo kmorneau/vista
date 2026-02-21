@@ -1,0 +1,8 @@
+; Vista Graphics (Rebol/View Draw-style) for HTML5 Canvas
+; Modular entrypoint
+
+import "src/vista/graphics/utils.art"!
+import "src/vista/graphics/colors.art"!
+import "src/vista/graphics/parsing.art"!
+import "src/vista/graphics/drawing.art"!
+import "src/vista/graphics/charts.art"!

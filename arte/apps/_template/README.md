@@ -20,3 +20,7 @@ Default template includes:
 - AI settings screen
 - Default logo file: `ui/arte-logo.png`
 - Default Grafito DB file: `db/grafito.graf`
+- Vendored runtime + package dependencies:
+- `ui/vista.art` + `ui/src/vista/` (includes `graphics/`)
+- `ui/dist/assets/icons/` (icons used by auth/UI components)
+- `vendor/grafito/`

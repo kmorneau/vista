@@ -1,0 +1,482 @@
+; Vista Compiler - Source Mapping
+; Phase 5: Performance + Developer UX
+;
+; This module provides source mapping capabilities to map generated
+; output nodes back to .art source line references.
+
+;=============================================================================
+; SOURCE MAP STRUCTURE
+;=============================================================================
+
+; Source map entry structure:
+; #[
+;     generatedLine: integer      ; Line in generated HTML
+;     generatedColumn: integer    ; Column in generated HTML
+;     sourceFile: string          ; Source .art file path
+;     sourceLine: integer         ; Line in source file
+;     sourceColumn: integer       ; Column in source file
+;     name: string                ; Optional name (face type, etc.)
+; ]
+
+; Global source map
+vista_source_map: #[
+    version: 3
+    file: ""
+    sourceRoot: ""
+    sources: []
+    names: []
+    mappings: ""
+    entries: []
+]
+
+;=============================================================================
+; SOURCE TRACKING DURING PARSING
+;=============================================================================
+
+; Create a source location tracker
+sourcemap_tracker: function [] [
+    #[
+        currentFile: "unknown"
+        currentLine: 1
+        currentColumn: 1
+        entries: []
+    ]
+]
+
+; Update tracker position
+sourcemap_update_position: function [tracker line column file] [
+    if notEqual? line null [ tracker\currentLine: line ]
+    if notEqual? column null [ tracker\currentColumn: column ]
+    if notEqual? file null [ tracker\currentFile: file ]
+    tracker
+]
+
+; Record a source mapping entry
+sourcemap_record: function [tracker genLine genCol name] [
+    entry: #[
+        generatedLine: genLine
+        generatedColumn: genCol
+        sourceFile: tracker\currentFile
+        sourceLine: tracker\currentLine
+        sourceColumn: tracker\currentColumn
+        name: name
+    ]
+    tracker\entries: tracker\entries ++ @[entry]
+    entry
+]
+
+;=============================================================================
+; IR NODE SOURCE ANNOTATION
+;=============================================================================
+
+; Annotate an IR node with source location
+sourcemap_annotate_node: function [node sourceLine sourceColumn sourceFile] [
+    if equal? node null [ return node ]
+    
+    ; Add source location to node
+    node\sourceLocation: #[
+        line: sourceLine
+        column: sourceColumn
+        file: sourceFile
+    ]
+    
+    node
+]
+
+; Get source location from IR node
+sourcemap_get_location: function [node] [
+    if equal? node null [ return null ]
+    if not? key? node "sourceLocation" [ return null ]
+    node\sourceLocation
+]
+
+; Format source location for display
+sourcemap_format_location: function [loc] [
+    if equal? loc null [ return "unknown" ]
+    
+    file: loc\file
+    if equal? file null [ file: "unknown" ]
+    
+    file ++ ":" ++ to :string loc\line ++ ":" ++ to :string loc\column
+]
+
+;=============================================================================
+; SOURCE MAP GENERATION
+;=============================================================================
+
+; Generate a source map from IR document
+sourcemap_generate: function [irDoc generatedHtml filename] [
+    ; Reset source map
+    vista_source_map: #[
+        version: 3
+        file: filename
+        sourceRoot: ""
+        sources: []
+        names: []
+        mappings: ""
+        entries: []
+    ]
+    
+    ; Collect all source files
+    sourceFiles: #[]
+    
+    ; Process IR nodes
+    entries: sourcemap_collect_entries irDoc\children
+    
+    ; Build source map
+    for entry in entries [
+        ; Add source file if not already present
+        sf: entry\sourceFile
+        if not? key? sourceFiles sf [
+            sourceFiles\[sf]: size (keys sourceFiles)
+            vista_source_map\sources: vista_source_map\sources ++ @[sf]
+        ]
+        
+        ; Add name if not already present
+        name: entry\name
+        if notEqual? name null [
+            if not? contains? vista_source_map\names name [
+                vista_source_map\names: vista_source_map\names ++ @[name]
+            ]
+        ]
+        
+        vista_source_map\entries: vista_source_map\entries ++ @[entry]
+    ]
+    
+    ; Generate VLQ mappings
+    vista_source_map\mappings: sourcemap_encode_mappings vista_source_map\entries sourceFiles
+    
+    vista_source_map
+]
+
+; Collect source entries from IR nodes
+sourcemap_collect_entries: function [nodes] [
+    entries: []
+    
+    for node in nodes [
+        if key? node "sourceLocation" [
+            loc: node\sourceLocation
+            name: ""
+            if equal? node\type "face" [
+                name: node\faceType
+            ]
+            
+            entry: #[
+                generatedLine: 1        ; Would be computed during emission
+                generatedColumn: 0
+                sourceFile: loc\file
+                sourceLine: loc\line
+                sourceColumn: loc\column
+                name: name
+            ]
+            entries: entries ++ @[entry]
+        ]
+        
+        ; Recurse into children
+        if key? node "children" [
+            childEntries: sourcemap_collect_entries node\children
+            entries: entries ++ childEntries
+        ]
+    ]
+    
+    entries
+]
+
+;=============================================================================
+; VLQ ENCODING (Source Map Standard)
+;=============================================================================
+
+; VLQ character set
+VISTA_VLQ_CHARS: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+; Encode a number as VLQ
+sourcemap_vlq_encode: function [num] [
+    ; Convert to signed VLQ
+    if less? num 0 [
+        num: (num * -1) << 1
+        num: num | 1
+    ][
+        num: num << 1
+    ]
+    
+    result: ""
+    continue: true
+    while [continue][
+        digit: num % 64
+        num: num >> 6
+        
+        if greater? num 0 [
+            digit: digit | 64  ; Set continuation bit
+        ][
+            continue: false
+        ]
+        
+        result: result ++ (get VISTA_VLQ_CHARS digit)
+    ]
+    
+    result
+]
+
+; Encode mappings to VLQ format
+sourcemap_encode_mappings: function [entries sourceFiles] [
+    if equal? entries null [ return "" ]
+    if equal? (size entries) 0 [ return "" ]
+    
+    mappings: ""
+    prevGenLine: 0
+    prevGenCol: 0
+    prevSourceIdx: 0
+    prevSourceLine: 0
+    prevSourceCol: 0
+    prevNameIdx: 0
+    
+    for entry in entries [
+        ; Line separator
+        if notEqual? entry\generatedLine prevGenLine [
+            if greater? prevGenLine 0 [
+                mappings: mappings ++ ";"
+            ]
+            prevGenLine: entry\generatedLine
+            prevGenCol: 0
+        ][
+            mappings: mappings ++ ","
+        ]
+        
+        ; Encode fields (relative to previous)
+        sourceIdx: sourceFiles\[entry\sourceFile]
+        nameIdx: 0
+        if notEqual? entry\name null [
+            nameIdx: index? vista_source_map\names entry\name
+            if equal? nameIdx null [ nameIdx: 0 ]
+        ]
+        
+        ; Generated column (relative)
+        mappings: mappings ++ sourcemap_vlq_encode (entry\generatedColumn - prevGenCol)
+        prevGenCol: entry\generatedColumn
+        
+        ; Source file index (relative)
+        mappings: mappings ++ sourcemap_vlq_encode (sourceIdx - prevSourceIdx)
+        prevSourceIdx: sourceIdx
+        
+        ; Source line (relative, 0-based)
+        mappings: mappings ++ sourcemap_vlq_encode ((entry\sourceLine - 1) - prevSourceLine)
+        prevSourceLine: entry\sourceLine - 1
+        
+        ; Source column (relative)
+        mappings: mappings ++ sourcemap_vlq_encode (entry\sourceColumn - prevSourceCol)
+        prevSourceCol: entry\sourceColumn
+        
+        ; Name index (optional)
+        if notEqual? entry\name null [
+            mappings: mappings ++ sourcemap_vlq_encode (nameIdx - prevNameIdx)
+            prevNameIdx: nameIdx
+        ]
+    ]
+    
+    mappings
+]
+
+;=============================================================================
+; SOURCE MAP OUTPUT
+;=============================================================================
+
+; Export source map as JSON
+sourcemap_to_json: function [] [
+    out: "{\n"
+    out: out ++ "  \"version\": " ++ to :string vista_source_map\version ++ ",\n"
+    out: out ++ "  \"file\": \"" ++ vista_source_map\file ++ "\",\n"
+    out: out ++ "  \"sourceRoot\": \"" ++ vista_source_map\sourceRoot ++ "\",\n"
+    
+    ; Sources array
+    out: out ++ "  \"sources\": ["
+    sources: vista_source_map\sources
+    slen: size sources
+    si: 0
+    while [less? si slen][
+        if greater? si 0 [ out: out ++ ", " ]
+        out: out ++ "\"" ++ (get sources si) ++ "\""
+        si: si + 1
+    ]
+    out: out ++ "],\n"
+    
+    ; Names array
+    out: out ++ "  \"names\": ["
+    names: vista_source_map\names
+    nlen: size names
+    ni: 0
+    while [less? ni nlen][
+        if greater? ni 0 [ out: out ++ ", " ]
+        out: out ++ "\"" ++ (get names ni) ++ "\""
+        ni: ni + 1
+    ]
+    out: out ++ "],\n"
+    
+    ; Mappings
+    out: out ++ "  \"mappings\": \"" ++ vista_source_map\mappings ++ "\"\n"
+    
+    out ++ "}"
+]
+
+; Write source map to file
+sourcemap_write: function [path] [
+    if equal? path null [ path: "out.js.map" ]
+    
+    json: sourcemap_to_json []
+    write json path
+    
+    "Source map written to " ++ path
+]
+
+;=============================================================================
+; SOURCE MAP CONSUMER (for reverse lookup)
+;=============================================================================
+
+; Find the source location for a generated position
+sourcemap_original_position: function [genLine genCol] [
+    entries: vista_source_map\entries
+    
+    bestMatch: null
+    bestDist: 999999
+    
+    for entry in entries [
+        if equal? entry\generatedLine genLine [
+            dist: abs (entry\generatedColumn - genCol)
+            if less? dist bestDist [
+                bestDist: dist
+                bestMatch: entry
+            ]
+        ]
+    ]
+    
+    if notEqual? bestMatch null [
+        return #[
+            source: bestMatch\sourceFile
+            line: bestMatch\sourceLine
+            column: bestMatch\sourceColumn
+            name: bestMatch\name
+        ]
+    ]
+    
+    null
+]
+
+; Find all generated positions for a source location
+sourcemap_generated_positions: function [sourceFile sourceLine sourceCol] [
+    positions: []
+    
+    for entry in vista_source_map\entries [
+        if all? @[
+            equal? entry\sourceFile sourceFile
+            equal? entry\sourceLine sourceLine
+        ][
+            positions: positions ++ @[#[
+                line: entry\generatedLine
+                column: entry\generatedColumn
+            ]]
+        ]
+    ]
+    
+    positions
+]
+
+;=============================================================================
+; HTML DATA ATTRIBUTES FOR DEBUGGING
+;=============================================================================
+
+; Add source location as data attributes to HTML element
+sourcemap_data_attrs: function [node] [
+    loc: sourcemap_get_location node
+    if equal? loc null [ return "" ]
+    
+    " data-src-file='" ++ loc\file ++ "' data-src-line='" ++ to :string loc\line ++ "' data-src-col='" ++ to :string loc\column ++ "'"
+]
+
+;=============================================================================
+; INTEGRATION WITH EMITTER
+;=============================================================================
+
+; Emit HTML with source map annotations
+sourcemap_emit_with_annotations: function [irDoc] [
+    ; Generate HTML with data attributes for source locations
+    state: emitter_state []
+    html: ""
+    
+    for node in irDoc\children [
+        html: html ++ sourcemap_emit_node node state
+    ]
+    
+    ; Generate source map
+    sourcemap_generate irDoc html "output.html"
+    
+    #[
+        html: html
+        sourceMap: vista_source_map
+    ]
+]
+
+; Emit a node with source annotations
+sourcemap_emit_node: function [node state] [
+    ; Add source data attributes
+    srcAttrs: sourcemap_data_attrs node
+    
+    ; Emit the node (simplified)
+    nodeType: node\type
+    
+    if equal? nodeType "face" [
+        tagName: "div"
+        switch equal? node\faceType "text" [ tagName: "span" ]
+        switch equal? node\faceType "button" [ tagName: "button" ]
+        switch equal? node\faceType "field" "input" [ tagName: "input" ]
+        
+        attrs: node\attrs
+        attrStr: deterministic_attrs_to_html attrs
+        
+        if equal? tagName "input" [
+            return "<" ++ tagName ++ attrStr ++ srcAttrs ++ ">"
+        ]
+        
+        childHtml: ""
+        if key? node "children" [
+            for child in node\children [
+                childHtml: childHtml ++ sourcemap_emit_node child state
+            ]
+        ]
+        
+        "<" ++ tagName ++ attrStr ++ srcAttrs ++ ">" ++ childHtml ++ "</" ++ tagName ++ ">"
+    ][
+        if equal? nodeType "text" [
+            deterministic_text node\content
+        ][
+            ""
+        ]
+    ]
+]
+
+;=============================================================================
+; UTILITY FUNCTIONS
+;=============================================================================
+
+; Calculate absolute value
+abs: function [n] [
+    if less? n 0 [ return n * -1 ]
+    n
+]
+
+; Check if a value is in a block
+contains?: function [block val] [
+    for v in block [
+        if equal? v val [ return true ]
+    ]
+    false
+]
+
+; Find index of value in block
+index?: function [block val] [
+    blen: size block
+    bi: 0
+    while [less? bi blen][
+        if equal? (get block bi) val [ return bi ]
+        bi: bi + 1
+    ]
+    null
+]

@@ -1,0 +1,824 @@
+; Vista Compiler - HTML Emitter
+; Phase 4: Emit HTML/CSS/JS from typed IR
+;
+; This module takes the intermediate representation and produces
+; the final HTML output with embedded CSS and JavaScript.
+
+;=============================================================================
+; IMPORTS
+;=============================================================================
+; Note: In production, these would be imported from other modules
+; For now, we reference functions that exist in the current codebase
+
+;=============================================================================
+; EMITTER STATE
+;=============================================================================
+
+; Create emitter state
+emitter_state: function [] [
+    #[
+        html: ""              ; Accumulated HTML output
+        css: ""               ; Accumulated CSS
+        js: ""                ; Accumulated JavaScript
+        indent: 0             ; Current indentation level
+        openTags: []          ; Stack of open tag names
+        faceStack: []         ; Stack of face IDs
+        bindings: #[]         ; Binding registry
+        nextBindingId: 1      ; Next binding ID
+    ]
+]
+
+;=============================================================================
+; HTML UTILITIES
+;=============================================================================
+
+; Escape HTML text content
+emit_escape_text: function [text] [
+    s: to :string text
+    s: replace s "&" "&"
+    s: replace s "<" "<"
+    s: replace s ">" ">"
+    s
+]
+
+; Escape HTML attribute value
+emit_escape_attr: function [val] [
+    s: to :string val
+    s: replace s "&" "&"
+    s: replace s "<" "<"
+    s: replace s ">" ">"
+    s: replace s "\"" """
+    s: replace s "'" "'"
+    s
+]
+
+; Convert attributes dictionary to HTML string
+emit_attrs_to_html: function [attrs] [
+    if equal? attrs null [ return "" ]
+    if notEqual? (type attrs) :dictionary [ return "" ]
+    
+    out: ""
+    keys: keys attrs
+    klen: size keys
+    ki: 0
+    while [less? ki klen][
+        k: get keys ki
+        v: attrs\[k]
+        kstr: to :string k
+        vstr: emit_escape_attr v
+        
+        ; Handle boolean attributes
+        if equal? (type v) :logic [
+            if v [
+                out: out ++ " " ++ kstr
+            ]
+        ][
+            out: out ++ " " ++ kstr ++ "='" ++ vstr ++ "'"
+        ]
+        ki: ki + 1
+    ]
+    out
+]
+
+; Add indentation
+emit_indent: function [state] [
+    spaces: ""
+    i: 0
+    while [less? i state\indent][
+        spaces: spaces ++ "    "
+        i: i + 1
+    ]
+    spaces
+]
+
+;=============================================================================
+; EVENT HANDLER EMISSION
+;=============================================================================
+
+; Emit an event handler from structured action
+emit_event_handler: function [action state] [
+    if equal? action null [ return "" ]
+    if equal? (type action) :string [
+        ; Legacy string handler - pass through with validation flag
+        return "data-vista-handler='legacy';" ++ action
+    ]
+    
+    ; Structured action with opcode
+    opcode: action\opcode
+    
+    do case opcode [
+        "set" -> [
+            keyName: action\key
+            valExpr: action\value
+            "state." ++ keyName ++ "=" ++ valExpr ++ ";render();"
+        ]
+        "toggle" -> [
+            keyName: action\key
+            "state." ++ keyName ++ "=!state." ++ keyName ++ ";render();"
+        ]
+        "increment" -> [
+            keyName: action\key
+            "state." ++ keyName ++ "=(state." ++ keyName ++ "||0)+1;render();"
+        ]
+        "decrement" -> [
+            keyName: action\key
+            "state." ++ keyName ++ "=(state." ++ keyName ++ "||0)-1;render();"
+        ]
+        "alert" -> [
+            msg: action\message
+            "window.alert(" ++ msg ++ ");"
+        ]
+        "navigate" -> [
+            url: action\url
+            "window.location.href=" ++ url ++ ";"
+        ]
+        "reload" -> [
+            "window.location.reload();"
+        ]
+        "show-dialog" -> [
+            cfg: action\config
+            if equal? (type cfg) :dictionary [
+                "_vistaDialogOpen(" ++ (json cfg) ++ ");"
+            ][
+                "_vistaUiDialog({});"
+            ]
+        ]
+        "close-dialog" -> [
+            cfg: action\config
+            if notEqual? cfg null [
+                "_vistaDialogClose(" ++ (json cfg) ++ ");"
+            ][
+                "_vistaDialogClose({});"
+            ]
+        ]
+        "copy" -> [
+            cfg: action\config
+            if notEqual? cfg null [
+                "_vistaUiClip(" ++ (json cfg) ++ ");"
+            ][
+                "_vistaUiClip({});"
+            ]
+        ]
+        "paste" -> [
+            cfg: action\config
+            if notEqual? cfg null [
+                "_vistaUiUnclip(" ++ (json cfg) ++ ");"
+            ][
+                "_vistaUiUnclip({});"
+            ]
+        ]
+        "emit" -> [
+            evtName: action\event
+            evtData: action\data
+            if notEqual? evtData null [
+                "this.dispatchEvent(new CustomEvent('" ++ evtName ++ "',{detail:" ++ (json evtData) ++ "}));"
+            ][
+                "this.dispatchEvent(new CustomEvent('" ++ evtName ++ "'));"
+            ]
+        ]
+        "sequence" -> [
+            ; Multiple steps
+            steps: action\steps
+            out: ""
+            slen: size steps
+            si: 0
+            while [less? si slen][
+                step: get steps si
+                out: out ++ emit_event_handler step state
+                si: si + 1
+            ]
+            out
+        ]
+        "custom" -> [
+            ; Custom JS (validated at compile time)
+            code: action\code
+            if notEqual? code null [ code ][ "" ]
+        ]
+        any -> [
+            ; Unknown opcode
+            ""
+        ]
+    ]
+]
+
+; Emit event attribute name
+emit_event_attr_name: function [eventType] [
+    do case eventType [
+        "click" -> "onclick"
+        "dblclick" -> "ondblclick"
+        "mousedown" -> "onmousedown"
+        "mouseup" -> "onmouseup"
+        "mousemove" -> "onmousemove"
+        "mouseenter" -> "onmouseenter"
+        "mouseleave" -> "onmouseleave"
+        "mouseover" -> "onmouseover"
+        "mouseout" -> "onmouseout"
+        "keydown" -> "onkeydown"
+        "keyup" -> "onkeyup"
+        "keypress" -> "onkeypress"
+        "input" -> "oninput"
+        "change" -> "onchange"
+        "submit" -> "onsubmit"
+        "reset" -> "onreset"
+        "focus" -> "onfocus"
+        "blur" -> "onblur"
+        ; Pointer events (use data attributes for custom handling)
+        "pointer-down" -> "data-feel-pointer-down"
+        "pointer-move" -> "data-feel-pointer-move"
+        "pointer-up" -> "data-feel-pointer-up"
+        "pointer-cancel" -> "data-feel-pointer-cancel"
+        "tap" -> "data-feel-tap"
+        "long-press" -> "data-feel-long-press"
+        ; Drag events
+        "dragstart" -> "data-dnd-dragstart"
+        "dragover" -> "data-dnd-dragover"
+        "drop" -> "data-dnd-drop"
+        "dragenter" -> "data-dnd-dragenter"
+        "dragleave" -> "data-dnd-dragleave"
+        "dragend" -> "data-dnd-dragend"
+        ; Custom events
+        "rate-tick" -> "data-rate-on-tick"
+        any -> "data-event-unknown"
+    ]
+]
+
+;=============================================================================
+; FACE EMISSION
+;=============================================================================
+
+; Emit a face node to HTML
+emit_face: function [node state] [
+    faceType: node\faceType
+    attrs: node\attrs
+    children: node\children
+    meta: node\meta
+    id: node\id
+    
+    ; Add face ID attribute
+    if notEqual? id null [
+        if not? key? attrs "data-face-id" [
+            attrs\["data-face-id"]: id
+        ]
+    ]
+    
+    ; Process children first
+    childHtml: ""
+    if notEqual? children null [
+        clen: size children
+        ci: 0
+        while [less? ci clen][
+            child: get children ci
+            childHtml: childHtml ++ emit_node child state
+            ci: ci + 1
+        ]
+    ]
+    
+    ; Emit based on face type
+    do case faceType [
+        ; Text faces
+        "text" -> [
+            if key? meta "bindName" [
+                bindName: meta\bindName
+                "<span data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ "></span>"
+            ][
+                textContent: ""
+                if greater? (size children) 0 [
+                    textContent: emit_escape_text (get children 0)
+                ]
+                "<span" ++ emit_attrs_to_html attrs ++ ">" ++ textContent ++ "</span>"
+            ]
+        ]
+        "title" -> [
+            if key? meta "bindName" [
+                bindName: meta\bindName
+                "<h1 data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ "></h1>"
+            ][
+                textContent: ""
+                if greater? (size children) 0 [
+                    textContent: emit_escape_text (get children 0)
+                ]
+                "<h1" ++ emit_attrs_to_html attrs ++ ">" ++ textContent ++ "</h1>"
+            ]
+        ]
+        "subtitle" -> [
+            if key? meta "bindName" [
+                bindName: meta\bindName
+                "<h2 data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ "></h2>"
+            ][
+                textContent: ""
+                if greater? (size children) 0 [
+                    textContent: emit_escape_text (get children 0)
+                ]
+                "<h2" ++ emit_attrs_to_html attrs ++ ">" ++ textContent ++ "</h2>"
+            ]
+        ]
+        "label" -> [
+            if key? meta "bindName" [
+                bindName: meta\bindName
+                "<label data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ "></label>"
+            ][
+                textContent: ""
+                if greater? (size children) 0 [
+                    textContent: emit_escape_text (get children 0)
+                ]
+                "<label" ++ emit_attrs_to_html attrs ++ ">" ++ textContent ++ "</label>"
+            ]
+        ]
+        
+        ; Input faces
+        "field" "input" -> [
+            inputType: "text"
+            if key? attrs "type" [
+                inputType: to :string attrs\type
+                attrs: attrs_without attrs "type"
+            ]
+            if key? meta "bindName" [
+                bindName: meta\bindName
+                "<input type='" ++ inputType ++ "' data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ ">"
+            ][
+                val: ""
+                if key? meta "value" [ val: emit_escape_attr meta\value ]
+                "<input type='" ++ inputType ++ "' value='" ++ val ++ "'" ++ emit_attrs_to_html attrs ++ ">"
+            ]
+        ]
+        "info" -> [
+            attrs\readonly: true
+            if key? meta "bindName" [
+                bindName: meta\bindName
+                "<input type='text' data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ ">"
+            ][
+                val: ""
+                if key? meta "value" [ val: emit_escape_attr meta\value ]
+                "<input type='text' value='" ++ val ++ "'" ++ emit_attrs_to_html attrs ++ ">"
+            ]
+        ]
+        "textarea" -> [
+            if key? meta "bindName" [
+                bindName: meta\bindName
+                "<textarea data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ "></textarea>"
+            ][
+                val: ""
+                if key? meta "value" [ val: emit_escape_text meta\value ]
+                "<textarea" ++ emit_attrs_to_html attrs ++ ">" ++ val ++ "</textarea>"
+            ]
+        ]
+        
+        ; Button faces
+        "button" -> [
+            labelHtml: ""
+            if key? meta "labelHtml" [ labelHtml: meta\labelHtml ]
+            if equal? labelHtml "" [
+                if greater? (size children) 0 [
+                    labelHtml: emit_escape_text (get children 0)
+                ]
+            ]
+            action: ""
+            if key? meta "action" [
+                action: emit_event_handler meta\action state
+            ]
+            if notEqual? action "" [
+                attrs\onclick: action
+            ]
+            "<button" ++ emit_attrs_to_html attrs ++ ">" ++ labelHtml ++ "</button>"
+        ]
+        "key" -> [
+            labelHtml: ""
+            if key? meta "labelHtml" [ labelHtml: meta\labelHtml ]
+            bindName: ""
+            if key? meta "bindName" [ bindName: meta\bindName ]
+            "<button data-key-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ ">" ++ labelHtml ++ "</button>"
+        ]
+        
+        ; Selection faces
+        "checkbox" "toggle" -> [
+            labelHtml: ""
+            if key? meta "labelHtml" [ labelHtml: meta\labelHtml ]
+            bindName: ""
+            if key? meta "bindName" [ bindName: meta\bindName ]
+            inputType: "checkbox"
+            if equal? faceType "toggle" [
+                if not? key? attrs "class" [
+                    attrs\class: "vista-toggle"
+                ]
+            ]
+            "<label" ++ emit_attrs_to_html attrs ++ "><input type='" ++ inputType ++ "' data-bind='" ++ bindName ++ "'>" ++ labelHtml ++ "</label>"
+        ]
+        "radio" "radio-group" -> [
+            bindName: "value"
+            if key? meta "bindName" [ bindName: meta\bindName ]
+            opts: []
+            if key? meta "options" [ opts: meta\options ]
+            ; Emit radio options
+            out: "<div" ++ emit_attrs_to_html attrs ++ ">"
+            olen: size opts
+            oi: 0
+            while [less? oi olen][
+                opt: get opts oi
+                optStr: to :string opt
+                out: out ++ "<label><input type='radio' name='" ++ bindName ++ "' value='" ++ emit_escape_attr optStr ++ "' data-bind='" ++ bindName ++ "'>" ++ emit_escape_text optStr ++ "</label>"
+                oi: oi + 1
+            ]
+            out ++ "</div>"
+        ]
+        "select" "drop-list" -> [
+            bindName: "value"
+            if key? meta "bindName" [ bindName: meta\bindName ]
+            opts: []
+            if key? meta "options" [ opts: meta\options ]
+            out: "<select data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ ">"
+            olen: size opts
+            oi: 0
+            while [less? oi olen][
+                opt: get opts oi
+                optStr: to :string opt
+                out: out ++ "<option value='" ++ emit_escape_attr optStr ++ "'>" ++ emit_escape_text optStr ++ "</option>"
+                oi: oi + 1
+            ]
+            out ++ "</select>"
+        ]
+        "list" "text-list" -> [
+            bindName: "value"
+            if key? meta "bindName" [ bindName: meta\bindName ]
+            opts: []
+            if key? meta "options" [ opts: meta\options ]
+            multi: false
+            if key? meta "multi" [ multi: meta\multi ]
+            tag: "select"
+            if multi [
+                tag: "select multiple"
+                attrs\multiple: true
+            ]
+            out: "<" ++ tag ++ " data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ ">"
+            olen: size opts
+            oi: 0
+            while [less? oi olen][
+                opt: get opts oi
+                optStr: to :string opt
+                out: out ++ "<option value='" ++ emit_escape_attr optStr ++ "'>" ++ emit_escape_text optStr ++ "</option>"
+                oi: oi + 1
+            ]
+            out ++ "</select>"
+        ]
+        
+        ; Range faces
+        "slider" -> [
+            bindName: "value"
+            if key? meta "bindName" [ bindName: meta\bindName ]
+            labelMin: null
+            labelMax: null
+            if key? meta "labelMin" [ labelMin: meta\labelMin ]
+            if key? meta "labelMax" [ labelMax: meta\labelMax ]
+            sliderHtml: "<input type='range' data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ ">"
+            if any? @[notEqual? labelMin null notEqual? labelMax null] [
+                out: "<div class='vista-slider-wrap'>"
+                if notEqual? labelMin null [ out: out ++ "<span class='vista-slider-label'>" ++ emit_escape_text labelMin ++ "</span>" ]
+                out: out ++ sliderHtml
+                if notEqual? labelMax null [ out: out ++ "<span class='vista-slider-label'>" ++ emit_escape_text labelMax ++ "</span>" ]
+                out ++ "</div>"
+            ][
+                sliderHtml
+            ]
+        ]
+        "rotary" -> [
+            bindName: "value"
+            if key? meta "bindName" [ bindName: meta\bindName ]
+            "<input type='range' class='vista-rotary' data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ ">"
+        ]
+        "progress" -> [
+            if key? meta "bindName" [
+                bindName: meta\bindName
+                "<progress data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ "></progress>"
+            ][
+                val: ""
+                if key? meta "value" [ val: " value='" ++ emit_escape_attr meta\value ++ "'" ]
+                "<progress" ++ val ++ emit_attrs_to_html attrs ++ "></progress>"
+            ]
+        ]
+        
+        ; Media faces
+        "image" -> [
+            if key? meta "bindName" [
+                bindName: meta\bindName
+                "<img data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ ">"
+            ][
+                src: ""
+                if greater? (size children) 0 [
+                    src: emit_escape_attr (get children 0)
+                    attrs\src: src
+                ]
+                "<img" ++ emit_attrs_to_html attrs ++ ">"
+            ]
+        ]
+        "icon" -> [
+            if not? key? attrs "class" [ attrs\class: "vista-icon" ]
+            if greater? (size children) 0 [
+                attrs\src: emit_escape_attr (get children 0)
+            ]
+            "<img" ++ emit_attrs_to_html attrs ++ ">"
+        ]
+        "anim" -> [
+            if not? key? attrs "class" [ attrs\class: "vista-anim" ]
+            if greater? (size children) 0 [
+                attrs\src: emit_escape_attr (get children 0)
+            ]
+            "<img" ++ emit_attrs_to_html attrs ++ ">"
+        ]
+        "audio" -> [
+            if not? key? attrs "controls" [ attrs\controls: true ]
+            mediaHtml: ""
+            if key? meta "media_html" [ mediaHtml: meta\media_html ]
+            if key? meta "bindName" [
+                bindName: meta\bindName
+                "<audio data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ ">" ++ mediaHtml ++ "</audio>"
+            ][
+                if greater? (size children) 0 [
+                    attrs\src: emit_escape_attr (get children 0)
+                ]
+                "<audio" ++ emit_attrs_to_html attrs ++ ">" ++ mediaHtml ++ "</audio>"
+            ]
+        ]
+        "video" -> [
+            if not? key? attrs "controls" [ attrs\controls: true ]
+            mediaHtml: ""
+            if key? meta "media_html" [ mediaHtml: meta\media_html ]
+            if key? meta "bindName" [
+                bindName: meta\bindName
+                "<video data-bind='" ++ bindName ++ "'" ++ emit_attrs_to_html attrs ++ ">" ++ mediaHtml ++ "</video>"
+            ][
+                if greater? (size children) 0 [
+                    attrs\src: emit_escape_attr (get children 0)
+                ]
+                "<video" ++ emit_attrs_to_html attrs ++ ">" ++ mediaHtml ++ "</video>"
+            ]
+        ]
+        "canvas" -> [
+            "<canvas" ++ emit_attrs_to_html attrs ++ "></canvas>"
+        ]
+        
+        ; Container faces
+        "box" -> [
+            "<div" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</div>"
+        ]
+        "panel" -> [
+            titleHtml: ""
+            if key? meta "titleHtml" [ titleHtml: meta\titleHtml ]
+            "<fieldset" ++ emit_attrs_to_html attrs ++ "><legend>" ++ titleHtml ++ "</legend>" ++ childHtml ++ "</fieldset>"
+        ]
+        "group" -> [
+            "<fieldset" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</fieldset>"
+        ]
+        "row" -> [
+            if not? key? attrs "class" [ attrs\class: "vista-row" ]
+            "<div" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</div>"
+        ]
+        "col" -> [
+            if not? key? attrs "class" [ attrs\class: "vista-col" ]
+            "<div" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</div>"
+        ]
+        "grid" -> [
+            cols: 2
+            if key? meta "cols" [ cols: meta\cols ]
+            if not? key? attrs "class" [ attrs\class: "vista-grid" ]
+            if not? key? attrs "style" [
+                attrs\style: "display:grid;grid-template-columns:repeat(" ++ to :string cols ++ ",1fr);"
+            ]
+            "<div" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</div>"
+        ]
+        "split" -> [
+            if not? key? attrs "class" [ attrs\class: "vista-split" ]
+            "<div" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</div>"
+        ]
+        "spacer" -> [
+            "<div" ++ emit_attrs_to_html attrs ++ "></div>"
+        ]
+        "divider" -> [
+            "<hr" ++ emit_attrs_to_html attrs ++ ">"
+        ]
+        
+        ; Form faces
+        "form" -> [
+            action: ""
+            if key? meta "action" [ action: meta\action ]
+            if notEqual? action "" [
+                attrs\onsubmit: action
+            ]
+            "<form" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</form>"
+        ]
+        
+        ; Table faces
+        "table" -> [
+            "<table" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</table>"
+        ]
+        "table-row" -> [
+            "<tr" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</tr>"
+        ]
+        "table-cell" -> [
+            "<td" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</td>"
+        ]
+        "table-header" -> [
+            "<th" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</th>"
+        ]
+        "table-head" -> [
+            "<thead" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</thead>"
+        ]
+        "table-body" -> [
+            "<tbody" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</tbody>"
+        ]
+        "table-foot" -> [
+            "<tfoot" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</tfoot>"
+        ]
+        
+        ; Toolbar faces
+        "toolbar" -> [
+            if not? key? attrs "class" [ attrs\class: "vista-toolbar" ]
+            "<div" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</div>"
+        ]
+        "menubar" -> [
+            if not? key? attrs "class" [ attrs\class: "vista-menubar" ]
+            "<nav" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</nav>"
+        ]
+        "tool-group" -> [
+            if not? key? attrs "class" [ attrs\class: "vista-tool-group" ]
+            "<div" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</div>"
+        ]
+        
+        ; Tab faces
+        "tabs" -> [
+            if not? key? attrs "class" [ attrs\class: "vista-tabs" ]
+            "<div" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</div>"
+        ]
+        
+        ; HTML5 interactive faces
+        "dialog" -> [
+            "<dialog" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</dialog>"
+        ]
+        "details" -> [
+            "<details" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</details>"
+        ]
+        "summary" -> [
+            "<summary" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</summary>"
+        ]
+        "template" -> [
+            "<template" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</template>"
+        ]
+        
+        ; Sensor
+        "sensor" -> [
+            "<div" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</div>"
+        ]
+        
+        ; Script
+        "script" -> [
+            content: ""
+            if key? meta "content" [ content: meta\content ]
+            "<script" ++ emit_attrs_to_html attrs ++ ">" ++ content ++ "</script>"
+        ]
+        
+        any -> [
+            ; Unknown face type - emit as div with warning class
+            attrs\class: "vista-unknown-face"
+            "<div" ++ emit_attrs_to_html attrs ++ ">" ++ childHtml ++ "</div>"
+        ]
+    ]
+]
+
+;=============================================================================
+; NODE EMISSION
+;=============================================================================
+
+; Emit any IR node to HTML
+emit_node: function [node state] [
+    nodeType: node\type
+    
+    do case nodeType [
+        "face" -> [
+            emit_face node state
+        ]
+        "text" -> [
+            content: node\content
+            if node\isBinding [
+                "<span data-bind='" ++ to :string content ++ "'></span>"
+            ][
+                emit_escape_text content
+            ]
+        ]
+        "layout" -> [
+            ; Layout directives are handled during parsing
+            ; This shouldn't normally be reached
+            ""
+        ]
+        "style" -> [
+            ; Style definitions are collected separately
+            ""
+        ]
+        "binding" -> [
+            "<span data-bind='" ++ node\name ++ "'></span>"
+        ]
+        "event" -> [
+            ; Events are attached to faces, not standalone
+            ""
+        ]
+        "script" -> [
+            content: node\content
+            attrs: node\attrs
+            "<script" ++ emit_attrs_to_html attrs ++ ">" ++ content ++ "</script>"
+        ]
+        "raw" -> [
+            node\content
+        ]
+        any -> [
+            ""
+        ]
+    ]
+]
+
+;=============================================================================
+; DOCUMENT EMISSION
+;=============================================================================
+
+; Emit full HTML document from IR
+emit_document: function [irDoc] [
+    state: emitter_state
+    
+    ; Emit children
+    html: ""
+    children: irDoc\children
+    clen: size children
+    ci: 0
+    while [less? ci clen][
+        child: get children ci
+        html: html ++ emit_node child state
+        ci: ci + 1
+    ]
+    
+    ; Build result
+    #[
+        html: html
+        bindings: irDoc\bindings
+        faces: irDoc\faces
+        root: null
+        diagnostics: irDoc\diagnostics
+    ]
+]
+
+;=============================================================================
+; RUNTIME SCRIPT EMISSION
+;=============================================================================
+
+; Emit the Vista runtime script
+emit_runtime_script: function [bindings] [
+    ; Core state and render function
+    script: "var state={};var render=function(){"
+    script: script ++ "document.querySelectorAll('[data-bind]').forEach(function(el){var k=el.getAttribute('data-bind');if(k&&state.hasOwnProperty(k)){var v=state[k];if('value'in el){el.value=v;}else if('checked'in el){el.checked=!!v;}else{el.textContent=v;}}});"
+    script: script ++ "};"
+    
+    ; Event dispatch table
+    script: script ++ "var _vistaDispatch={"
+    script: script ++ "set:function(k,v){state[k]=v;render();},"
+    script: script ++ "toggle:function(k){state[k]=!state[k];render();},"
+    script: script ++ "incr:function(k){state[k]=(state[k]||0)+1;render();},"
+    script: script ++ "decr:function(k){state[k]=(state[k]||0)-1;render();},"
+    script: script ++ "alert:function(m){window.alert(m);},"
+    script: script ++ "nav:function(u){window.location.href=u;},"
+    script: script ++ "reload:function(){window.location.reload();},"
+    script: script ++ "emit:function(e,d){this.dispatchEvent(new CustomEvent(e,{detail:d}));}"
+    script: script ++ "};"
+    
+    ; Two-way binding setup
+    script: script ++ "document.addEventListener('DOMContentLoaded',function(){"
+    script: script ++ "document.querySelectorAll('[data-bind]').forEach(function(el){"
+    script: script ++ "var k=el.getAttribute('data-bind');"
+    script: script ++ "if('value'in el){el.addEventListener('input',function(){state[k]=el.value;});}"
+    script: script ++ "if('checked'in el){el.addEventListener('change',function(){state[k]=el.checked;});}"
+    script: script ++ "});render();});"
+    
+    script
+]
+
+; Emit full HTML page
+emit_full_html: function [irDoc title css] [
+    bodyHtml: emit_document irDoc
+    runtime: emit_runtime_script irDoc\bindings
+    
+    effectiveTitle: "ARTURO/VISTA"
+    if notEqual? title null [
+        effectiveTitle: title
+    ]
+    
+    effectiveCss: ""
+    if notEqual? css null [
+        effectiveCss: css
+    ]
+    
+    html: "<!DOCTYPE html><html><head>"
+    html: html ++ "<meta charset='utf-8'>"
+    html: html ++ "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+    html: html ++ "<title>" ++ emit_escape_text effectiveTitle ++ "</title>"
+    html: html ++ "<style>" ++ effectiveCss ++ "</style>"
+    html: html ++ "</head><body>"
+    html: html ++ bodyHtml\html
+    html: html ++ "<script>" ++ runtime ++ "</script>"
+    html: html ++ "</body></html>"
+    
+    html
+]

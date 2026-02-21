@@ -1,0 +1,431 @@
+; Vista Compiler - Deterministic Output
+; Phase 5: Performance + Developer UX
+;
+; This module provides deterministic output generation with stable
+; attribute/key ordering to reduce snapshot churn in tests and VCS.
+
+;=============================================================================
+; CONFIGURATION
+;=============================================================================
+
+; Enable deterministic mode
+vista_deterministic_mode: true
+
+; Attribute ordering (HTML attributes in preferred order)
+VISTA_ATTR_ORDER: @[
+    ; Global attributes first
+    "id" "class" "style" "title" "lang" "dir"
+    ; Data attributes
+    "data-face-id" "data-bind" "data-tabs" "data-tabs-selected"
+    "data-rate" "data-rate-on-tick"
+    "data-feel-drag" "data-feel-pointer-down" "data-feel-pointer-move"
+    "data-feel-pointer-up" "data-feel-pointer-cancel"
+    "data-feel-tap" "data-feel-long-press" "data-feel-long-press-ms"
+    "data-dnd-dragstart" "data-dnd-dragover" "data-dnd-drop"
+    "data-dnd-dragenter" "data-dnd-dragleave" "data-dnd-dragend"
+    "data-dnd-payload" "data-dnd-drop-effect"
+    "data-key-mode" "data-key-modifiers" "data-key-filter" "data-key-action"
+    "data-tab" "data-event"
+    ; ARIA attributes
+    "role" "aria-label" "aria-labelledby" "aria-describedby"
+    "aria-hidden" "aria-disabled" "aria-expanded" "aria-selected"
+    "aria-checked" "aria-valuemin" "aria-valuemax" "aria-valuenow"
+    ; Event handlers
+    "onclick" "ondblclick" "onmousedown" "onmouseup" "onmousemove"
+    "onmouseenter" "onmouseleave" "onmouseover" "onmouseout"
+    "onkeydown" "onkeyup" "onkeypress"
+    "oninput" "onchange" "onsubmit" "onreset"
+    "onfocus" "onblur"
+    "ondragstart" "ondragover" "ondrop" "ondragenter" "ondragleave" "ondragend"
+    ; Form attributes
+    "type" "name" "value" "placeholder" "required" "disabled" "readonly"
+    "checked" "selected" "multiple" "min" "max" "step" "pattern"
+    "autocomplete" "autofocus" "form" "formaction" "formmethod"
+    ; Media attributes
+    "src" "href" "alt" "width" "height" "controls" "autoplay" "loop"
+    "muted" "preload" "poster" "playsinline"
+    ; Table attributes
+    "colspan" "rowspan" "headers" "scope"
+    ; Other
+    "target" "rel" "download" "draggable" "tabindex" "accesskey"
+    "contenteditable" "spellcheck" "translate"
+]
+
+;=============================================================================
+; KEY SORTING
+;=============================================================================
+
+; Get the sort priority for an attribute name
+deterministic_attr_priority: function [attrName] [
+    attrStr: to :string attrName
+    attrLower: lower attrStr
+    
+    ; Check if in predefined order
+    priority: 1
+    for a in VISTA_ATTR_ORDER [
+        if equal? (lower a) attrLower [
+            return priority
+        ]
+        priority: priority + 1
+    ]
+    
+    ; Data attributes get medium priority
+    if startsWith? attrLower "data-" [
+        return 500 + (to :integer (hash attrStr) % 100)
+    ]
+    
+    ; ARIA attributes get medium-low priority
+    if startsWith? attrLower "aria-" [
+        return 600 + (to :integer (hash attrStr) % 100)
+    ]
+    
+    ; Unknown attributes get low priority (sorted alphabetically)
+    1000 + (to :integer (hash attrStr) % 1000)
+]
+
+; Sort keys deterministically
+deterministic_sort_keys: function [keys] [
+    if notEqual? (type keys) :block [ return keys ]
+    
+    ; Create sortable pairs
+    pairs: []
+    for k in keys [
+        priority: deterministic_attr_priority k
+        pairs: pairs ++ @[[priority to :string k k]]
+    ]
+    
+    ; Sort by priority, then by name
+    sorted: sort pairs
+    
+    ; Extract just the keys
+    result: []
+    for p in sorted [
+        result: result ++ @[get p 2]
+    ]
+    
+    result
+]
+
+;=============================================================================
+; DETERMINISTIC ATTRIBUTE EMISSION
+;=============================================================================
+
+; Convert attributes to HTML string with deterministic ordering
+deterministic_attrs_to_html: function [attrs] [
+    if equal? attrs null [ return "" ]
+    if notEqual? (type attrs) :dictionary [ return "" ]
+    
+    ; Get sorted keys
+    keys: keys attrs
+    if not? vista_deterministic_mode [
+        ; Non-deterministic mode: use natural order
+        keys: keys attrs
+    ][
+        ; Deterministic mode: sort keys
+        keys: deterministic_sort_keys keys
+    ]
+    
+    ; Build attribute string
+    out: ""
+    for k in keys [
+        v: attrs\[k]
+        kstr: to :string k
+        
+        ; Handle boolean attributes
+        if equal? (type v) :logic [
+            if v [
+                out: out ++ " " ++ kstr
+            ]
+        ][
+            vstr: deterministic_escape_attr v
+            out: out ++ " " ++ kstr ++ "='" ++ vstr ++ "'"
+        ]
+    ]
+    
+    out
+]
+
+; Escape attribute value deterministically
+deterministic_escape_attr: function [val] [
+    s: to :string val
+    
+    ; Deterministic escape order
+    s: replace s "&" "&"
+    s: replace s "<" "<"
+    s: replace s ">" ">"
+    s: replace s "\"" """
+    s: replace s "'" "'"
+    
+    s
+]
+
+;=============================================================================
+; DETERMINISTIC HTML GENERATION
+;=============================================================================
+
+; Generate deterministic HTML for a tag
+deterministic_tag: function [tagName attrs content selfClosing] [
+    tag: "<" ++ tagName
+    
+    ; Add attributes in deterministic order
+    tag: tag ++ deterministic_attrs_to_html attrs
+    
+    if selfClosing [
+        return tag ++ ">"
+    ]
+    
+    tag ++ ">" ++ content ++ "</" ++ tagName ++ ">"
+]
+
+; Generate deterministic text content
+deterministic_text: function [text] [
+    s: to :string text
+    s: replace s "&" "&"
+    s: replace s "<" "<"
+    s: replace s ">" ">"
+    s
+]
+
+;=============================================================================
+; DETERMINISTIC JSON OUTPUT
+;=============================================================================
+
+; Convert dictionary to JSON with deterministic key ordering
+deterministic_to_json: function [dict indent] [
+    if equal? indent null [ indent: 0 ]
+    if equal? dict null [ return "null" ]
+    if notEqual? (type dict) :dictionary [
+        return deterministic_json_value dict
+    ]
+    
+    ; Get sorted keys
+    keys: keys dict
+    if vista_deterministic_mode [
+        keys: deterministic_sort_keys keys
+    ]
+    
+    ; Build JSON
+    ind: ""
+    i: 0
+    while [less? i indent][
+        ind: ind ++ "  "
+        i: i + 1
+    ]
+    
+    out: "{\n"
+    klen: size keys
+    ki: 0
+    while [less? ki klen][
+        k: get keys ki
+        v: dict\[k]
+        
+        out: out ++ ind ++ "  \"" ++ to :string k ++ "\": "
+        out: out ++ deterministic_json_value v (indent + 1)
+        
+        if less? (ki + 1) klen [
+            out: out ++ ","
+        ]
+        out: out ++ "\n"
+        
+        ki: ki + 1
+    ]
+    
+    out ++ ind ++ "}"
+]
+
+; Convert a value to JSON
+deterministic_json_value: function [val indent] [
+    if equal? indent null [ indent: 0 ]
+    if equal? val null [ return "null" ]
+    
+    vtype: type val
+    
+    switch equal? vtype :string [
+        "\"" ++ (replace (replace val "\\" "\\\\") "\"" "\\\"") ++ "\""
+    ][
+        switch equal? vtype :integer [
+            to :string val
+        ][
+            switch equal? vtype :floating [
+                to :string val
+            ][
+                switch equal? vtype :logic [
+                    if val [ "true" ][ "false" ]
+                ][
+                    switch equal? vtype :block [
+                        deterministic_json_array val indent
+                    ][
+                        switch equal? vtype :dictionary [
+                            deterministic_to_json val indent
+                        ][
+                            "\"" ++ to :string val ++ "\""
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+]
+
+; Convert array to JSON
+deterministic_json_array: function [arr indent] [
+    if equal? indent null [ indent: 0 ]
+    if equal? arr null [ return "[]" ]
+    if notEqual? (type arr) :block [ return "[]" ]
+    
+    ind: ""
+    i: 0
+    while [less? i indent][
+        ind: ind ++ "  "
+        i: i + 1
+    ]
+    
+    out: "[\n"
+    alen: size arr
+    ai: 0
+    while [less? ai alen][
+        v: get arr ai
+        out: out ++ ind ++ "  " ++ deterministic_json_value v (indent + 1)
+        if less? (ai + 1) alen [
+            out: out ++ ","
+        ]
+        out: out ++ "\n"
+        ai: ai + 1
+    ]
+    
+    out ++ ind ++ "]"
+]
+
+;=============================================================================
+; DETERMINISTIC IR OUTPUT
+;=============================================================================
+
+; Generate deterministic string representation of IR node
+deterministic_ir_to_string: function [node indent] [
+    if equal? indent null [ indent: 0 ]
+    if equal? node null [ return "null" ]
+    
+    ind: ""
+    i: 0
+    while [less? i indent][
+        ind: ind ++ "  "
+        i: i + 1
+    ]
+    
+    nodeType: node\type
+    
+    out: ind ++ nodeType
+    
+    switch equal? nodeType "face" [
+        out: out ++ " (" ++ node\faceType ++ ")"
+        if notEqual? node\id null [
+            out: out ++ " #" ++ node\id
+        ]
+        attrs: node\attrs
+        if greater? (size keys attrs) 0 [
+            out: out ++ " " ++ deterministic_attrs_to_html attrs
+        ]
+        out: out ++ "\n"
+        children: node\children
+        if notEqual? children null [
+            for child in children [
+                out: out ++ deterministic_ir_to_string child (indent + 1)
+            ]
+        ]
+    ][
+        switch equal? nodeType "text" [
+            out: out ++ ": " ++ to :string node\content ++ "\n"
+        ][
+            out: out ++ "\n"
+        ]
+    ]
+    
+    out
+]
+
+;=============================================================================
+; CONTROL FUNCTIONS
+;=============================================================================
+
+; Enable deterministic mode
+deterministic_enable: function [] [
+    vista_deterministic_mode: true
+    "Deterministic mode enabled"
+]
+
+; Disable deterministic mode
+deterministic_disable: function [] [
+    vista_deterministic_mode: false
+    "Deterministic mode disabled"
+]
+
+; Check if deterministic mode is enabled
+deterministic_is_enabled: function [] [
+    vista_deterministic_mode
+]
+
+;=============================================================================
+; SNAPSHOT TESTING HELPERS
+;=============================================================================
+
+; Generate a snapshot-friendly string for an IR document
+deterministic_snapshot: function [irDoc] [
+    out: "# Vista IR Snapshot\n"
+    out: out ++ "# Generated: " ++ to :string now ++ "\n\n"
+    
+    ; Output children
+    children: irDoc\children
+    for child in children [
+        out: out ++ deterministic_ir_to_string child 0
+    ]
+    
+    ; Output diagnostics if any
+    if greater? (size irDoc\diagnostics) 0 [
+        out: out ++ "\n# Diagnostics:\n"
+        for diag in irDoc\diagnostics [
+            out: out ++ "# [" ++ diag\level ++ "] " ++ diag\message
+            if notEqual? diag\source null [
+                out: out ++ " (" ++ to :string diag\source ++ ")"
+            ]
+            out: out ++ "\n"
+        ]
+    ]
+    
+    out
+]
+
+; Compare two snapshots
+deterministic_compare_snapshots: function [oldSnap newSnap] [
+    if equal? oldSnap newSnap [
+        return #[equal: true diff: ""]
+    ]
+    
+    ; Simple line-by-line diff
+    oldLines: split oldSnap "\n"
+    newLines: split newSnap "\n"
+    
+    diff: ""
+    maxLen: size oldLines
+    if greater? (size newLines) maxLen [ maxLen: size newLines ]
+    
+    li: 0
+    while [less? li maxLen][
+        oldLine: ""
+        newLine: ""
+        if less? li (size oldLines) [ oldLine: get oldLines li ]
+        if less? li (size newLines) [ newLine: get newLines li ]
+        
+        if notEqual? oldLine newLine [
+            diff: diff ++ "Line " ++ to :string (li + 1) ++ ":\n"
+            if notEqual? oldLine "" [
+                diff: diff ++ "- " ++ oldLine ++ "\n"
+            ]
+            if notEqual? newLine "" [
+                diff: diff ++ "+ " ++ newLine ++ "\n"
+            ]
+        ]
+        li: li + 1
+    ]
+    
+    #[equal: false diff: diff]
+]

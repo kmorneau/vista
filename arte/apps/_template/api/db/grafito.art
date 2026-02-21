@@ -1,0 +1,16 @@
+import "../../vendor/grafito/grafito.art"!
+
+app_db_name: "app_db"
+app_db_file: app_db_name ++ ".graf"
+
+with_app_db: function [blk] [
+    switch not? exists? app_db_file [
+        initBlk: [
+            updateMeta 'colors Grafito\nodeColors
+            updateMeta 'palette Grafito\Palette
+        ] ++ blk
+        graph .create app_db_name initBlk
+    ][
+        graph app_db_name blk
+    ]
+]

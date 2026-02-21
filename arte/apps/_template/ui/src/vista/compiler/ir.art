@@ -1,0 +1,645 @@
+; Vista Compiler - Intermediate Representation (IR)
+; Phase 4: Typed IR for structured compilation pipeline
+; 
+; This module defines the IR types and structures that sit between
+; the DSL parser and the HTML/CSS/JS emitters.
+
+;=============================================================================
+; IR TYPE CONSTANTS
+;=============================================================================
+
+; IR node types
+IR_NODE_FACE: "face"              ; A UI face/element
+IR_NODE_TEXT: "text"              ; Text content
+IR_NODE_LAYOUT: "layout"          ; Layout directive (across, below, etc.)
+IR_NODE_STYLE: "style"            ; Style definition
+IR_NODE_BINDING: "binding"        ; Data binding
+IR_NODE_EVENT: "event"            ; Event handler
+IR_NODE_SCRIPT: "script"          ; Script content
+IR_NODE_RAW: "raw"                ; Raw HTML content
+
+; Face type constants (valid face types)
+IR_FACE_TYPES: @[
+    "text" "title" "subtitle" "label"
+    "field" "info" "input" "textarea"
+    "button" "key"
+    "checkbox" "toggle" "radio" "radio-group"
+    "select" "drop-list" "list" "text-list"
+    "slider" "rotary" "progress"
+    "image" "icon" "anim"
+    "audio" "video" "canvas"
+    "box" "panel" "group" "row" "col"
+    "grid" "split" "spacer" "divider"
+    "form" "table" "table-row" "table-cell" "table-header"
+    "table-head" "table-body" "table-foot"
+    "toolbar" "menubar" "tool-group"
+    "tabs" "dialog" "details" "summary" "template"
+    "sensor" "script"
+]
+
+; Layout directive types
+IR_LAYOUT_TYPES: @[
+    "across" "below" "return" "end"
+    "scope" "pad" "space" "align" "valign"
+    "size" "origin" "offset" "at" "indent"
+    "guide" "backcolor"
+]
+
+; Event types (structured event handlers)
+IR_EVENT_TYPES: @[
+    ; Mouse events
+    "click" "dblclick" "mousedown" "mouseup" "mousemove"
+    "mouseenter" "mouseleave" "mouseover" "mouseout"
+    ; Pointer events
+    "pointer-down" "pointer-move" "pointer-up" "pointer-cancel"
+    "tap" "long-press"
+    ; Keyboard events
+    "keydown" "keyup" "keypress"
+    ; Form events
+    "input" "change" "submit" "reset"
+    ; Focus events
+    "focus" "blur"
+    ; Drag events
+    "dragstart" "dragover" "drop" "dragenter" "dragleave" "dragend"
+    ; Custom events
+    "rate-tick"
+]
+
+;=============================================================================
+; IR NODE CONSTRUCTORS
+;=============================================================================
+
+; Create an IR face node
+; type: face type (string)
+; attrs: attribute dictionary
+; children: child IR nodes (block)
+; meta: metadata dictionary (bindName, options, etc.)
+ir_face: function [faceType attrs children meta] [
+    if equal? attrs null [ attrs: #[] ]
+    if equal? children null [ children: [] ]
+    if equal? meta null [ meta: #[] ]
+    #[
+        type: IR_NODE_FACE
+        faceType: faceType
+        attrs: attrs
+        children: children
+        meta: meta
+        id: null              ; Will be assigned during compilation
+        html: null            ; Will be generated during emission
+    ]
+]
+
+; Create an IR text node
+; content: text content (string or binding reference)
+ir_text: function [content] [
+    #[
+        type: IR_NODE_TEXT
+        content: content
+        isBinding: equal? (type content) :word
+    ]
+]
+
+; Create an IR layout directive node
+; directive: layout type (string)
+; args: arguments for the directive
+ir_layout: function [directive args] [
+    if equal? args null [ args: [] ]
+    #[
+        type: IR_NODE_LAYOUT
+        directive: directive
+        args: args
+    ]
+]
+
+; Create an IR style definition node
+; name: style name
+; body: style body block
+ir_style: function [name body] [
+    #[
+        type: IR_NODE_STYLE
+        name: name
+        body: body
+    ]
+]
+
+; Create an IR binding node
+; name: binding variable name
+; ir_binding: function [name] [
+    #[
+        type: IR_NODE_BINDING
+        name: name
+    ]
+]
+
+; Create an IR event handler node
+; eventType: type of event (string)
+; action: action configuration (dictionary with opcode, handler, etc.)
+ir_event: function [eventType action] [
+    #[
+        type: IR_NODE_EVENT
+        eventType: eventType
+        action: action
+    ]
+]
+
+; Create an IR script node
+; content: script content
+; attrs: script attributes
+ir_script: function [content attrs] [
+    if equal? attrs null [ attrs: #[] ]
+    #[
+        type: IR_NODE_SCRIPT
+        content: content
+        attrs: attrs
+    ]
+]
+
+; Create an IR raw HTML node
+; content: raw HTML content
+ir_raw: function [content] [
+    #[
+        type: IR_NODE_RAW
+        content: content
+    ]
+]
+
+;=============================================================================
+; IR DOCUMENT STRUCTURE
+;=============================================================================
+
+; Create an IR document (root container)
+ir_document: function [] [
+    #[
+        type: "document"
+        children: []           ; Top-level IR nodes
+        styles: #[]           ; Named styles
+        bindings: #[]         ; Binding names used
+        faces: #[]            ; Face registry (id -> face)
+        faceNames: #[]        ; Name -> id mapping
+        diagnostics: []       ; Compile-time diagnostics
+        nextId: 1             ; Next face ID counter
+    ]
+]
+
+; Add a node to an IR document
+ir_add_node: function [doc node] [
+    doc\children: doc\children ++ @[node]
+    doc
+]
+
+; Add a diagnostic to an IR document
+; level: "error", "warning", "info"
+; message: diagnostic message
+; source: source location or context
+ir_add_diagnostic: function [doc level message source] [
+    diag: #[
+        level: level
+        message: message
+        source: source
+    ]
+    doc\diagnostics: doc\diagnostics ++ @[diag]
+    doc
+]
+
+; Generate next face ID
+ir_next_id: function [doc] [
+    id: "face-" ++ to :string doc\nextId
+    doc\nextId: doc\nextId + 1
+    id
+]
+
+; Register a face in the document
+ir_register_face: function [doc face] [
+    id: ir_next_id doc
+    face\id: id
+    doc\faces\[id]: face
+    if key? face\attrs "id" [
+        nameStr: to :string face\attrs\id
+        doc\faceNames\[nameStr]: id
+    ]
+    id
+]
+
+;=============================================================================
+; EVENT OPCODE SYSTEM
+;=============================================================================
+
+; Event opcodes for structured handlers
+; These replace dynamic eval with a dispatch table approach
+IR_OPCODES: #[
+    ; State operations
+    "set": "set"              ; Set state value
+    "toggle": "toggle"        ; Toggle boolean state
+    "increment": "incr"       ; Increment numeric state
+    "decrement": "decr"       ; Decrement numeric state
+    
+    ; Navigation operations
+    "navigate": "nav"         ; Navigate to URL
+    "reload": "reload"        ; Reload page
+    
+    ; UI operations
+    "show-dialog": "dlgOpen"  ; Show a dialog
+    "close-dialog": "dlgClose"; Close a dialog
+    "alert": "alert"          ; Show alert
+    "confirm": "confirm"      ; Show confirm dialog
+    
+    ; Clipboard operations
+    "copy": "clip"            ; Copy to clipboard
+    "paste": "unclip"         ; Paste from clipboard
+    
+    ; Form operations
+    "submit": "submit"        ; Submit form
+    "reset": "reset"          ; Reset form
+    
+    ; AI operations
+    "ai-send": "aiSend"       ; Send AI request
+    "ai-save": "aiSave"       ; Save AI settings
+    "ai-load": "aiLoad"       ; Load AI settings
+    
+    ; Auth operations
+    "auth-login": "authLogin" ; Login
+    "auth-logout": "authLogout"; Logout
+    "auth-signup": "authSignup"; Signup
+    
+    ; Custom
+    "custom": "custom"        ; Custom JS (with validation)
+    "emit": "emit"            ; Emit custom event
+]
+
+; Create a structured action from a block
+; This converts the action block to an opcode-based structure
+ir_compile_action: function [actionBlock bindings] [
+    if equal? (type actionBlock) :dictionary [
+        return actionBlock
+    ]
+    if notEqual? (type actionBlock) :block [
+        return #[opcode: "custom" code: to :string actionBlock]
+    ]
+    
+    ; Parse action block into structured form
+    result: #[opcode: "sequence" steps: []]
+    blen: size actionBlock
+    i: 0
+    
+    while [less? i blen][
+        tok: get actionBlock i
+        if equal? (type tok) :word [
+            cmdName: to :string tok
+            cmdNameLower: lower cmdName
+            
+            ; Check for known opcodes
+            do case cmdNameLower [
+                "set" -> [
+                    if less? (i + 2) blen [
+                        keyName: to :string (get actionBlock (i + 1))
+                        valExpr: get actionBlock (i + 2)
+                        step: #[opcode: "set" key: keyName value: ir_value_to_js valExpr]
+                        result\steps: result\steps ++ @[step]
+                        i: i + 3
+                        continue
+                    ]
+                ]
+                "toggle" -> [
+                    if less? (i + 1) blen [
+                        keyName: to :string (get actionBlock (i + 1))
+                        step: #[opcode: "toggle" key: keyName]
+                        result\steps: result\steps ++ @[step]
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "increment" -> [
+                    if less? (i + 1) blen [
+                        keyName: to :string (get actionBlock (i + 1))
+                        step: #[opcode: "increment" key: keyName]
+                        result\steps: result\steps ++ @[step]
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "decrement" -> [
+                    if less? (i + 1) blen [
+                        keyName: to :string (get actionBlock (i + 1))
+                        step: #[opcode: "decrement" key: keyName]
+                        result\steps: result\steps ++ @[step]
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "alert" -> [
+                    if less? (i + 1) blen [
+                        msgExpr: get actionBlock (i + 1)
+                        step: #[opcode: "alert" message: ir_value_to_js msgExpr]
+                        result\steps: result\steps ++ @[step]
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "navigate" -> [
+                    if less? (i + 1) blen [
+                        urlExpr: get actionBlock (i + 1)
+                        step: #[opcode: "navigate" url: ir_value_to_js urlExpr]
+                        result\steps: result\steps ++ @[step]
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "reload" -> [
+                    step: #[opcode: "reload"]
+                    result\steps: result\steps ++ @[step]
+                    i: i + 1
+                    continue
+                ]
+                "show-dialog" -> [
+                    if less? (i + 1) blen [
+                        cfgExpr: get actionBlock (i + 1)
+                        step: #[opcode: "show-dialog" config: cfgExpr]
+                        result\steps: result\steps ++ @[step]
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "close-dialog" -> [
+                    step: #[opcode: "close-dialog"]
+                    if less? (i + 1) blen [
+                        maybeCfg: get actionBlock (i + 1)
+                        if equal? (type maybeCfg) :dictionary [
+                            step\config: maybeCfg
+                            i: i + 2
+                        ] [
+                            i: i + 1
+                        ]
+                    ] [
+                        i: i + 1
+                    ]
+                    result\steps: result\steps ++ @[step]
+                    continue
+                ]
+                "copy" -> [
+                    if less? (i + 1) blen [
+                        cfgExpr: get actionBlock (i + 1)
+                        step: #[opcode: "copy" config: cfgExpr]
+                        result\steps: result\steps ++ @[step]
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "paste" -> [
+                    step: #[opcode: "paste"]
+                    if less? (i + 1) blen [
+                        maybeCfg: get actionBlock (i + 1)
+                        if equal? (type maybeCfg) :dictionary [
+                            step\config: maybeCfg
+                            i: i + 2
+                        ] [
+                            i: i + 1
+                        ]
+                    ] [
+                        i: i + 1
+                    ]
+                    result\steps: result\steps ++ @[step]
+                    continue
+                ]
+                "ai-send" -> [
+                    if less? (i + 1) blen [
+                        cfgExpr: get actionBlock (i + 1)
+                        step: #[opcode: "ai-send" config: cfgExpr]
+                        result\steps: result\steps ++ @[step]
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "auth-login" -> [
+                    if less? (i + 1) blen [
+                        cfgExpr: get actionBlock (i + 1)
+                        step: #[opcode: "auth-login" config: cfgExpr]
+                        result\steps: result\steps ++ @[step]
+                        i: i + 2
+                        continue
+                    ]
+                ]
+                "auth-logout" -> [
+                    step: #[opcode: "auth-logout"]
+                    if less? (i + 1) blen [
+                        maybeCfg: get actionBlock (i + 1)
+                        if equal? (type maybeCfg) :dictionary [
+                            step\config: maybeCfg
+                            i: i + 2
+                        ] [
+                            i: i + 1
+                        ]
+                    ] [
+                        i: i + 1
+                    ]
+                    result\steps: result\steps ++ @[step]
+                    continue
+                ]
+                "emit" -> [
+                    if less? (i + 2) blen [
+                        eventName: to :string (get actionBlock (i + 1))
+                        eventData: get actionBlock (i + 2)
+                        step: #[opcode: "emit" event: eventName data: eventData]
+                        result\steps: result\steps ++ @[step]
+                        i: i + 3
+                        continue
+                    ]
+                ]
+                any -> [
+                    ; Unknown command - treat as custom JS or pass through
+                    step: #[opcode: "custom" code: ir_block_to_js actionBlock i]
+                    result\steps: result\steps ++ @[step]
+                    i: blen  ; Skip rest
+                ]
+            ]
+        ]
+        i: i + 1
+    ]
+    
+    ; If single step, unwrap
+    if equal? (size result\steps) 1 [
+        return get result\steps 0
+    ]
+    result
+]
+
+; Convert a value to JS expression string
+ir_value_to_js: function [val] [
+    vtype: type val
+    switch equal? vtype :string [
+        return "'" ++ (replace (replace val "\\" "\\\\") "'" "\\'") ++ "'"
+    ][
+        switch equal? vtype :integer [
+            return to :string val
+        ][
+            switch equal? vtype :floating [
+                return to :string val
+            ][
+                switch equal? vtype :logic [
+                    if val [ return "true" ]
+                    return "false"
+                ][
+                    switch equal? vtype :word [
+                        ; State reference
+                        return "state." ++ to :string val
+                    ][
+                        switch equal? vtype :block [
+                            ; Array or inline object
+                            if equal? (size val) 0 [
+                                return "[]"
+                            ]
+                            return to :string val
+                        ][
+                            switch equal? vtype :dictionary [
+                                return "JSON.parse('" ++ (replace (json val) "'" "\\'") ++ "')"
+                            ][
+                                ; Default: stringify
+                                return "'" ++ (replace (to :string val) "'" "\\'") ++ "'"
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+]
+
+; Convert remaining block to JS (for custom handlers)
+ir_block_to_js: function [block startIdx] [
+    ; This is a fallback for unrecognized patterns
+    ; In production, this would be more sophisticated
+    out: ""
+    blen: size block
+    i: startIdx
+    while [less? i blen][
+        tok: get block i
+        if not? equal? out "" [
+            out: out ++ " "
+        ]
+        out: out ++ to :string tok
+        i: i + 1
+    ]
+    out
+]
+
+;=============================================================================
+; DIAGNOSTIC SYSTEM
+;=============================================================================
+
+; Diagnostic severity levels
+IR_DIAG_ERROR: "error"      ; Compilation error - blocks output
+IR_DIAG_WARNING: "warning"  ; Warning - continues compilation
+IR_DIAG_INFO: "info"        ; Informational message
+IR_DIAG_HINT: "hint"        ; Suggestion for improvement
+
+; Check if a face type is valid
+ir_validate_face_type: function [doc faceType source] [
+    valid: false
+    for t in IR_FACE_TYPES [
+        if equal? t faceType [
+            valid: true
+            break
+        ]
+    ]
+    if not? valid [
+        ir_add_diagnostic doc IR_DIAG_WARNING 
+            "Unknown face type: '" ++ faceType ++ "'" 
+            source
+    ]
+    valid
+]
+
+; Check if a layout directive is valid
+ir_validate_layout_directive: function [doc directive source] [
+    valid: false
+    for d in IR_LAYOUT_TYPES [
+        if equal? d directive [
+            valid: true
+            break
+        ]
+    ]
+    if not? valid [
+        ir_add_diagnostic doc IR_DIAG_WARNING 
+            "Unknown layout directive: '" ++ directive ++ "'" 
+            source
+    ]
+    valid
+]
+
+; Check if an event type is valid
+ir_validate_event_type: function [doc eventType source] [
+    valid: false
+    for e in IR_EVENT_TYPES [
+        if equal? e eventType [
+            valid: true
+            break
+        ]
+    ]
+    if not? valid [
+        ir_add_diagnostic doc IR_DIAG_WARNING 
+            "Unknown event type: '" ++ eventType ++ "'" 
+            source
+    ]
+    valid
+]
+
+; Check if an attribute is known/valid for a face type
+ir_validate_attr: function [doc faceType attrName source] [
+    ; Common valid attributes
+    commonAttrs: @["id" "class" "style" "title" "tabindex" "role"
+                   "aria-label" "aria-labelledby" "aria-describedby"
+                   "aria-hidden" "aria-disabled" "data-*"]
+    
+    ; Face-specific attributes would be checked here
+    ; For now, we allow data-* and common attrs
+    isCommon: false
+    for a in commonAttrs [
+        if equal? a attrName [
+            isCommon: true
+            break
+        ]
+    ]
+    isDataAttr: startsWith? attrName "data-"
+    
+    if not? any? @[isCommon isDataAttr] [
+        ; Could add warning for unknown attributes
+        ; For now, allow all through
+    ]
+    true
+]
+
+; Check if document has any errors
+ir_has_errors: function [doc] [
+    for diag in doc\diagnostics [
+        if equal? diag\level IR_DIAG_ERROR [
+            return true
+        ]
+    ]
+    false
+]
+
+; Get all diagnostics of a specific level
+ir_get_diagnostics: function [doc level] [
+    result: []
+    for diag in doc\diagnostics [
+        if equal? diag\level level [
+            result: result ++ @[diag]
+        ]
+    ]
+    result
+]
+
+;=============================================================================
+; IR TO LEGACY COMPATIBILITY
+;=============================================================================
+
+; Convert IR document to legacy format for backward compatibility
+; This allows gradual migration of the codebase
+ir_to_legacy: function [doc] [
+    #[
+        html: ""              ; Will be filled by emitter
+        bindings: doc\bindings
+        faces: doc\faces
+        root: null            ; Will be set during emission
+        diagnostics: doc\diagnostics
+    ]
+]

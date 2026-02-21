@@ -1,0 +1,782 @@
+; Vista Graphics Charts (Canvas Draw helpers)
+
+w_pen: to :word "pen"
+w_fill_pen: to :word "fill-pen"
+w_line_width: to :word "line-width"
+w_line_cap: to :word "line-cap"
+w_line: to :word "line"
+w_box: to :word "box"
+w_polygon: to :word "polygon"
+w_circle: to :word "circle"
+w_arc: to :word "arc"
+w_text: to :word "text"
+w_font: to :word "font"
+w_text_align: to :word "text-align"
+w_text_baseline: to :word "text-baseline"
+
+chart_min: function [a b] [
+    if less? a b [return a]
+    b
+]
+
+chart_default_palette: function [] [
+    [
+        "#1f5cff"
+        "#18a999"
+        "#f4b400"
+        "#ff6b6b"
+        "#845ec2"
+        "#00c2ff"
+        "#ff8b3d"
+    ]
+]
+
+chart_default_opts: function [] [
+    #[
+        w: 600
+        h: 180
+        padding: 16
+        grid: true
+        gridLines: 4
+        gridColor: "#e6eaf0"
+        axes: true
+        axisColor: "#cfd8e3"
+        textColor: "#5b6472"
+        font: "12px sans-serif"
+        lineWidth: 2
+        pointRadius: 3
+        barGap: 6
+        stackGap: 2
+        donutThickness: 16
+        heatmapPadding: 2
+        bins: 10
+        areaColor: "rgba(31,92,255,0.25)"
+        labels: true
+        labelOffset: 12
+        centerLabel: null
+        xLabel: null
+        yLabel: null
+    ]
+]
+
+chart_opts: function [opts] [
+    res: chart_default_opts
+    if equal? (type opts) :dictionary [
+        keysList: keys opts
+        i: 0
+        klen: size keysList
+        while [less? i klen][
+            k: get keysList i
+            res\[k]: opts\[k]
+            i: i + 1
+        ]
+    ]
+    res
+]
+
+chart_palette: function [opts] [
+    if key? opts "palette" [
+        return opts\palette
+    ]
+    chart_default_palette
+]
+
+chart_plot_rect: function [opts] [
+    pad: opts\padding
+    w: opts\w
+    h: opts\h
+    #[
+        x0: pad
+        y0: pad
+        x1: w - pad
+        y1: h - pad
+        w: w
+        h: h
+    ]
+]
+
+chart_min_max_values: function [vals] [
+    vlen: size vals
+    if equal? vlen 0 [
+        return #[min: 0 max: 1]
+    ]
+    minv: get vals 0
+    maxv: get vals 0
+    i: 1
+    while [less? i vlen][
+        v: get vals i
+        if less? v minv [minv: v]
+        if greater? v maxv [maxv: v]
+        i: i + 1
+    ]
+    if equal? minv maxv [
+        minv: minv - 1
+        maxv: maxv + 1
+    ]
+    #[min: minv max: maxv]
+]
+
+chart_min_max_points: function [pts] [
+    plen: size pts
+    if equal? plen 0 [
+        return #[minX: 0 maxX: 1 minY: 0 maxY: 1]
+    ]
+    p0: get pts 0
+    minX: get p0 0
+    maxX: get p0 0
+    minY: get p0 1
+    maxY: get p0 1
+    i: 1
+    while [less? i plen][
+        p: get pts i
+        x: get p 0
+        y: get p 1
+        if less? x minX [minX: x]
+        if greater? x maxX [maxX: x]
+        if less? y minY [minY: y]
+        if greater? y maxY [maxY: y]
+        i: i + 1
+    ]
+    if equal? minX maxX [
+        minX: minX - 1
+        maxX: maxX + 1
+    ]
+    if equal? minY maxY [
+        minY: minY - 1
+        maxY: maxY + 1
+    ]
+    #[minX: minX maxX: maxX minY: minY maxY: maxY]
+]
+
+chart_scale_y: function [rect minY maxY val] [
+    range: maxY - minY
+    if equal? range 0 [range: 1]
+    rect\y1 - ((val - minY) / range) * (rect\y1 - rect\y0)
+]
+
+chart_scale_x: function [rect minX maxX val] [
+    range: maxX - minX
+    if equal? range 0 [range: 1]
+    rect\x0 + ((val - minX) / range) * (rect\x1 - rect\x0)
+]
+
+chart_grid_draw: function [rect opts] [
+    out: []
+    if not? opts\grid [
+        return out
+    ]
+    lines: opts\gridLines
+    if not? greater? lines 0 [
+        return out
+    ]
+    out: out ++ @[w_pen opts\gridColor w_line_width 1]
+    i: 1
+    while [less? i (lines + 1)][
+        y: rect\y0 + ((rect\y1 - rect\y0) * i / (lines + 1))
+        out: out ++ @[w_line @[rect\x0 y] @[rect\x1 y]]
+        i: i + 1
+    ]
+    out
+]
+
+chart_axes_draw: function [rect opts] [
+    out: []
+    if not? opts\axes [
+        return out
+    ]
+    out: out ++ @[w_pen opts\axisColor w_line_width 1]
+    out: out ++ @[w_line @[rect\x0 rect\y1] @[rect\x1 rect\y1]]
+    out: out ++ @[w_line @[rect\x0 rect\y0] @[rect\x0 rect\y1]]
+    out
+]
+
+chart_text: function [out opts x y text align baseline] [
+    out: out ++ @[
+        w_font opts\font
+        w_pen opts\textColor
+        w_text_align align
+        w_text_baseline baseline
+        w_text @[x y] text
+    ]
+    out
+]
+
+chart_format_value: function [val] [
+    to :string val
+]
+
+chart_axes_labels_numeric: function [rect opts minX maxX minY maxY] [
+    out: []
+    if not? opts\labels [
+        return out
+    ]
+    off: opts\labelOffset
+    out: chart_text out opts rect\x0 (rect\y1 + off) (chart_format_value minX) "left" "top"
+    out: chart_text out opts rect\x1 (rect\y1 + off) (chart_format_value maxX) "right" "top"
+    out: chart_text out opts (rect\x0 - 6) rect\y0 (chart_format_value maxY) "right" "top"
+    out: chart_text out opts (rect\x0 - 6) rect\y1 (chart_format_value minY) "right" "bottom"
+    if not? equal? opts\xLabel null [
+        out: chart_text out opts ((rect\x0 + rect\x1) / 2) (rect\y1 + (off * 2)) (to :string opts\xLabel) "center" "top"
+    ]
+    if not? equal? opts\yLabel null [
+        out: chart_text out opts (rect\x0 - (off * 2)) ((rect\y0 + rect\y1) / 2) (to :string opts\yLabel) "right" "middle"
+    ]
+    out
+]
+
+chart_line: function [series opts] [
+    opts: chart_opts opts
+    rect: chart_plot_rect opts
+    n: size series
+    if equal? n 0 [return []]
+
+    has_xy: false
+    first: get series 0
+    if all? @[equal? (type first) :block equal? (size first) 2] [
+        has_xy: true
+    ]
+
+    out: []
+    out: out ++ chart_grid_draw rect opts
+    out: out ++ chart_axes_draw rect opts
+
+    palette: chart_palette opts
+    color: get palette 0
+    out: out ++ @[w_pen color w_line_width opts\lineWidth]
+
+    if has_xy [
+        stats: chart_min_max_points series
+        i: 0
+        prevX: 0
+        prevY: 0
+        while [less? i n][
+            p: get series i
+            x: chart_scale_x rect stats\minX stats\maxX (get p 0)
+            y: chart_scale_y rect stats\minY stats\maxY (get p 1)
+            if greater? i 0 [
+                out: out ++ @[w_line @[prevX prevY] @[x y]]
+            ]
+            prevX: x
+            prevY: y
+            i: i + 1
+        ]
+        out: out ++ chart_axes_labels_numeric rect opts stats\minX stats\maxX stats\minY stats\maxY
+        return out
+    ]
+
+    stats: chart_min_max_values series
+    i: 0
+    prevX: 0
+    prevY: 0
+    while [less? i n][
+        x: rect\x0
+        if greater? n 1 [
+            x: rect\x0 + ((rect\x1 - rect\x0) * i / (n - 1))
+        ] [
+            x: (rect\x0 + rect\x1) / 2
+        ]
+        y: chart_scale_y rect stats\min stats\max (get series i)
+        if greater? i 0 [
+            out: out ++ @[w_line @[prevX prevY] @[x y]]
+        ]
+        prevX: x
+        prevY: y
+        i: i + 1
+    ]
+    out: out ++ chart_axes_labels_numeric rect opts 0 (n - 1) stats\min stats\max
+    out
+]
+
+chart_area: function [series opts] [
+    opts: chart_opts opts
+    rect: chart_plot_rect opts
+    n: size series
+    if equal? n 0 [return []]
+
+    has_xy: false
+    first: get series 0
+    if all? @[equal? (type first) :block equal? (size first) 2] [
+        has_xy: true
+    ]
+
+    out: []
+    out: out ++ chart_grid_draw rect opts
+    out: out ++ chart_axes_draw rect opts
+
+    palette: chart_palette opts
+    lineColor: get palette 0
+
+    points: []
+    if has_xy [
+        stats: chart_min_max_points series
+        i: 0
+        while [less? i n][
+            p: get series i
+            x: chart_scale_x rect stats\minX stats\maxX (get p 0)
+            y: chart_scale_y rect stats\minY stats\maxY (get p 1)
+            points: points ++ @[@[x y]]
+            i: i + 1
+        ]
+    ] [
+        stats: chart_min_max_values series
+        i: 0
+        while [less? i n][
+            x: rect\x0
+            if greater? n 1 [
+                x: rect\x0 + ((rect\x1 - rect\x0) * i / (n - 1))
+            ] [
+                x: (rect\x0 + rect\x1) / 2
+            ]
+            y: chart_scale_y rect stats\min stats\max (get series i)
+            points: points ++ @[@[x y]]
+            i: i + 1
+        ]
+    ]
+
+    if greater? (size points) 0 [
+        firstPt: get points 0
+        lastPt: get points (size points - 1)
+        areaPts: points ++ @[@[get lastPt 0 rect\y1] @[get firstPt 0 rect\y1]]
+        out: out ++ @[w_pen "transparent" w_fill_pen opts\areaColor w_polygon areaPts]
+    ]
+
+    ; draw the line on top
+    out: out ++ @[w_pen lineColor w_line_width opts\lineWidth]
+    i: 1
+    plen: size points
+    while [less? i plen][
+        p0: get points (i - 1)
+        p1: get points i
+        out: out ++ @[w_line @[get p0 0 get p0 1] @[get p1 0 get p1 1]]
+        i: i + 1
+    ]
+    if has_xy [
+        stats: chart_min_max_points series
+        out: out ++ chart_axes_labels_numeric rect opts stats\minX stats\maxX stats\minY stats\maxY
+    ] [
+        stats: chart_min_max_values series
+        out: out ++ chart_axes_labels_numeric rect opts 0 (n - 1) stats\min stats\max
+    ]
+    out
+]
+
+chart_bar: function [series opts] [
+    opts: chart_opts opts
+    rect: chart_plot_rect opts
+    n: size series
+    if equal? n 0 [return []]
+
+    vals: []
+    i: 0
+    while [less? i n][
+        item: get series i
+        val: item
+        if all? @[equal? (type item) :block greaterOrEqual? (size item) 2] [
+            val: get item 1
+        ]
+        vals: vals ++ @[val]
+        i: i + 1
+    ]
+    stats: chart_min_max_values vals
+    if less? stats\min 0 [stats\min: 0]
+
+    out: []
+    out: out ++ chart_grid_draw rect opts
+    out: out ++ chart_axes_draw rect opts
+
+    palette: chart_palette opts
+    color: get palette 0
+    out: out ++ @[w_pen "transparent" w_fill_pen color]
+
+    bw: (rect\x1 - rect\x0) / n
+    gap: opts\barGap
+    i: 0
+    while [less? i n][
+        x0: rect\x0 + (i * bw) + (gap / 2)
+        x1: x0 + (bw - gap)
+        y: chart_scale_y rect stats\min stats\max (get vals i)
+        if less? x1 x0 [x1: x0]
+        out: out ++ @[w_box @[x0 y] @[x1 rect\y1]]
+        i: i + 1
+    ]
+    out: out ++ chart_axes_labels_numeric rect opts 0 (n - 1) stats\min stats\max
+    if opts\labels [
+        i: 0
+        while [less? i n][
+            item: get series i
+            label: ""
+            if all? @[equal? (type item) :block greaterOrEqual? (size item) 2] [
+                label: get item 0
+            ] [
+                label: to :string i
+            ]
+            x0: rect\x0 + (i * bw)
+            x1: x0 + bw
+            cx: (x0 + x1) / 2
+            out: chart_text out opts cx (rect\y1 + opts\labelOffset) (to :string label) "center" "top"
+            i: i + 1
+        ]
+    ]
+    out
+]
+
+chart_stacked_bar: function [series opts] [
+    opts: chart_opts opts
+    rect: chart_plot_rect opts
+    n: size series
+    if equal? n 0 [return []]
+
+    totals: []
+    i: 0
+    while [less? i n][
+        item: get series i
+        vals: []
+        if all? @[equal? (type item) :block greaterOrEqual? (size item) 2] [
+            vals: get item 1
+        ]
+        sum: 0
+        vlen: size vals
+        j: 0
+        while [less? j vlen][
+            sum: sum + (get vals j)
+            j: j + 1
+        ]
+        totals: totals ++ @[sum]
+        i: i + 1
+    ]
+    stats: chart_min_max_values totals
+    if less? stats\min 0 [stats\min: 0]
+
+    out: []
+    out: out ++ chart_grid_draw rect opts
+    out: out ++ chart_axes_draw rect opts
+
+    palette: chart_palette opts
+    bw: (rect\x1 - rect\x0) / n
+    gap: opts\barGap
+    stackGap: opts\stackGap
+
+    i: 0
+    while [less? i n][
+        item: get series i
+        vals: []
+        if all? @[equal? (type item) :block greaterOrEqual? (size item) 2] [
+            vals: get item 1
+        ]
+        x0: rect\x0 + (i * bw) + (gap / 2)
+        x1: x0 + (bw - gap)
+        if less? x1 x0 [x1: x0]
+        yBase: rect\y1
+        vlen: size vals
+        j: 0
+        while [less? j vlen][
+            v: get vals j
+            h: ((rect\y1 - rect\y0) * v) / (stats\max - stats\min)
+            yTop: yBase - h
+            color: get palette (j % (size palette))
+            out: out ++ @[w_pen "transparent" w_fill_pen color w_box @[x0 yTop] @[x1 yBase]]
+            yBase: yTop - stackGap
+            j: j + 1
+        ]
+        i: i + 1
+    ]
+    out: out ++ chart_axes_labels_numeric rect opts 0 (n - 1) stats\min stats\max
+    if opts\labels [
+        i: 0
+        while [less? i n][
+            item: get series i
+            label: ""
+            if all? @[equal? (type item) :block greaterOrEqual? (size item) 2] [
+                label: get item 0
+            ] [
+                label: to :string i
+            ]
+            x0: rect\x0 + (i * bw)
+            x1: x0 + bw
+            cx: (x0 + x1) / 2
+            out: chart_text out opts cx (rect\y1 + opts\labelOffset) (to :string label) "center" "top"
+            i: i + 1
+        ]
+    ]
+    out
+]
+
+chart_inc_count: function [counts idx] [
+    out: []
+    i: 0
+    len: size counts
+    while [less? i len][
+        v: get counts i
+        if equal? i idx [v: v + 1]
+        out: out ++ @[v]
+        i: i + 1
+    ]
+    out
+]
+
+chart_histogram: function [series opts] [
+    opts: chart_opts opts
+    n: size series
+    if equal? n 0 [return []]
+
+    stats: chart_min_max_values series
+    minv: stats\min
+    maxv: stats\max
+    bins: opts\bins
+    if not? greater? bins 1 [
+        bins: 1
+    ]
+    range: maxv - minv
+    if equal? range 0 [
+        bins: 1
+        range: 1
+    ]
+    binSize: range / bins
+    counts: []
+    i: 0
+    while [less? i bins][
+        counts: counts ++ @[0]
+        i: i + 1
+    ]
+    i: 0
+    while [less? i n][
+        v: get series i
+        idx: to :integer ((v - minv) / binSize)
+        if greaterOrEqual? idx bins [idx: bins - 1]
+        counts: chart_inc_count counts idx
+        i: i + 1
+    ]
+    chart_bar counts opts
+]
+
+chart_scatter: function [series opts] [
+    opts: chart_opts opts
+    rect: chart_plot_rect opts
+    n: size series
+    if equal? n 0 [return []]
+
+    stats: chart_min_max_points series
+    out: []
+    out: out ++ chart_grid_draw rect opts
+    out: out ++ chart_axes_draw rect opts
+
+    palette: chart_palette opts
+    color: get palette 0
+    out: out ++ @[w_pen "transparent" w_fill_pen color]
+
+    i: 0
+    while [less? i n][
+        p: get series i
+        x: chart_scale_x rect stats\minX stats\maxX (get p 0)
+        y: chart_scale_y rect stats\minY stats\maxY (get p 1)
+        out: out ++ @[w_circle @[x y] opts\pointRadius]
+        i: i + 1
+    ]
+    out: out ++ chart_axes_labels_numeric rect opts stats\minX stats\maxX stats\minY stats\maxY
+    out
+]
+
+chart_funnel: function [series opts] [
+    opts: chart_opts opts
+    rect: chart_plot_rect opts
+    n: size series
+    if equal? n 0 [return []]
+
+    vals: []
+    i: 0
+    while [less? i n][
+        item: get series i
+        val: item
+        if all? @[equal? (type item) :block greaterOrEqual? (size item) 2] [
+            val: get item 1
+        ]
+        vals: vals ++ @[val]
+        i: i + 1
+    ]
+    stats: chart_min_max_values vals
+    maxv: stats\max
+    if equal? maxv 0 [maxv: 1]
+
+    out: []
+    palette: chart_palette opts
+    height: (rect\y1 - rect\y0) / n
+    i: 0
+    while [less? i n][
+        v: get vals i
+        vNext: v
+        if less? (i + 1) n [
+            vNext: get vals (i + 1)
+        ]
+        wTop: (rect\x1 - rect\x0) * (v / maxv)
+        wBottom: (rect\x1 - rect\x0) * (vNext / maxv)
+        yTop: rect\y0 + (i * height)
+        yBottom: yTop + height
+        cx: (rect\x0 + rect\x1) / 2
+        x1: cx - (wTop / 2)
+        x2: cx + (wTop / 2)
+        x3: cx + (wBottom / 2)
+        x4: cx - (wBottom / 2)
+        color: get palette (i % (size palette))
+        out: out ++ @[w_pen "transparent" w_fill_pen color w_polygon @[@[x1 yTop] @[x2 yTop] @[x3 yBottom] @[x4 yBottom]]]
+        if opts\labels [
+            label: ""
+            item: get series i
+            if all? @[equal? (type item) :block greaterOrEqual? (size item) 2] [
+                label: get item 0
+            ] [
+                label: to :string i
+            ]
+            out: chart_text out opts (rect\x0 - 6) ((yTop + yBottom) / 2) (to :string label) "right" "middle"
+        ]
+        i: i + 1
+    ]
+    out
+]
+
+chart_donut: function [series opts] [
+    opts: chart_opts opts
+    rect: chart_plot_rect opts
+    n: size series
+    if equal? n 0 [return []]
+
+    vals: []
+    total: 0
+    i: 0
+    while [less? i n][
+        item: get series i
+        val: item
+        if all? @[equal? (type item) :block greaterOrEqual? (size item) 2] [
+            val: get item 1
+        ]
+        vals: vals ++ @[val]
+        total: total + val
+        i: i + 1
+    ]
+    if equal? total 0 [total: 1]
+
+    palette: chart_palette opts
+    cx: (rect\x0 + rect\x1) / 2
+    cy: (rect\y0 + rect\y1) / 2
+    r: (chart_min rect\w rect\h) / 2 - opts\padding - (opts\donutThickness / 2)
+    if less? r 1 [r: 1]
+
+    out: []
+    out: out ++ @[w_line_width opts\donutThickness w_line_cap "butt"]
+    out: out ++ @[w_pen opts\gridColor w_arc @[cx cy] r @[0 360]]
+
+    angle: 0
+    i: 0
+    while [less? i n][
+        v: get vals i
+        span: (v / total) * 360
+        color: get palette (i % (size palette))
+        out: out ++ @[w_pen color w_arc @[cx cy] r @[angle (angle + span)]]
+        angle: angle + span
+        i: i + 1
+    ]
+    if not? equal? opts\centerLabel null [
+        out: chart_text out opts cx cy (to :string opts\centerLabel) "center" "middle"
+    ]
+    out
+]
+
+chart_index_of: function [arr value] [
+    i: 0
+    len: size arr
+    while [less? i len][
+        if equal? (get arr i) value [
+            return i
+        ]
+        i: i + 1
+    ]
+    -1
+]
+
+chart_heatmap_palette: function [opts] [
+    if key? opts "heatmapPalette" [
+        return opts\heatmapPalette
+    ]
+    chart_default_palette
+]
+
+chart_heatmap: function [series opts] [
+    opts: chart_opts opts
+    rect: chart_plot_rect opts
+    n: size series
+    if equal? n 0 [return []]
+
+    xs: []
+    ys: []
+    vals: []
+    i: 0
+    while [less? i n][
+        item: get series i
+        x: get item 0
+        y: get item 1
+        v: get item 2
+        if equal? (chart_index_of xs x) -1 [xs: xs ++ @[x]]
+        if equal? (chart_index_of ys y) -1 [ys: ys ++ @[y]]
+        vals: vals ++ @[v]
+        i: i + 1
+    ]
+    stats: chart_min_max_values vals
+    palette: chart_heatmap_palette opts
+    plen: size palette
+    if not? greater? plen 1 [
+        palette: ["#1f5cff" "#ff6b6b"]
+        plen: size palette
+    ]
+    cols: size xs
+    rows: size ys
+    if equal? cols 0 [cols: 1]
+    if equal? rows 0 [rows: 1]
+    cellW: (rect\x1 - rect\x0) / cols
+    cellH: (rect\y1 - rect\y0) / rows
+    pad: opts\heatmapPadding
+
+    out: []
+    out: out ++ @[w_pen "transparent"]
+    i: 0
+    while [less? i n][
+        item: get series i
+        x: get item 0
+        y: get item 1
+        v: get item 2
+        xi: chart_index_of xs x
+        yi: chart_index_of ys y
+        norm: (v - stats\min) / (stats\max - stats\min)
+        if less? norm 0 [norm: 0]
+        if greater? norm 1 [norm: 1]
+        idx: to :integer (norm * (plen - 1))
+        if less? idx 0 [idx: 0]
+        if greaterOrEqual? idx plen [idx: plen - 1]
+        color: get palette idx
+        x0: rect\x0 + (xi * cellW) + pad
+        y0: rect\y0 + (yi * cellH) + pad
+        x1: rect\x0 + ((xi + 1) * cellW) - pad
+        y1: rect\y0 + ((yi + 1) * cellH) - pad
+        if less? x1 x0 [x1: x0]
+        if less? y1 y0 [y1: y0]
+        out: out ++ @[w_fill_pen color w_box @[x0 y0] @[x1 y1]]
+        i: i + 1
+    ]
+    if opts\labels [
+        i: 0
+        while [less? i cols][
+            x: rect\x0 + (i * cellW) + (cellW / 2)
+            out: chart_text out opts x (rect\y1 + opts\labelOffset) (to :string (get xs i)) "center" "top"
+            i: i + 1
+        ]
+        i: 0
+        while [less? i rows][
+            y: rect\y0 + (i * cellH) + (cellH / 2)
+            out: chart_text out opts (rect\x0 - 6) y (to :string (get ys i)) "right" "middle"
+            i: i + 1
+        ]
+    ]
+    out
+]
+
+chart_cohort: function [series opts] [
+    chart_heatmap series opts
+]

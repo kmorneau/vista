@@ -1,0 +1,470 @@
+; Vista Compiler - Event Dispatch Runtime
+; Phase 4: Structured event handlers replacing dynamic eval
+;
+; This module provides the runtime dispatch system for event handlers.
+; Instead of using `new Function()` to evaluate arbitrary JS strings,
+; we use a dispatch table with predefined, validated operations.
+
+;=============================================================================
+; DISPATCH TABLE CONFIGURATION
+;=============================================================================
+
+; Build the dispatch table JavaScript code
+dispatch_build_table: function [] [
+    table: "var __vistaDispatch={"
+    
+    ; State operations
+    table: table ++ "_set:function(k,v){if(typeof k==='string'){state[k]=v;render();}},"
+    table: table ++ "_toggle:function(k){if(typeof k==='string'){state[k]=!state[k];render();}},"
+    table: table ++ "_incr:function(k,n){if(typeof k==='string'){state[k]=(state[k]||0)+(typeof n==='number'?n:1);render();}},"
+    table: table ++ "_decr:function(k,n){if(typeof k==='string'){state[k]=(state[k]||0)-(typeof n==='number'?n:1);render();}},"
+    
+    ; Navigation operations
+    table: table ++ "_nav:function(u){if(typeof u==='string'){window.location.href=u;}},"
+    table: table ++ "_reload:function(){window.location.reload();},"
+    table: table ++ "_back:function(){window.history.back();},"
+    table: table ++ "_forward:function(){window.history.forward();},"
+    
+    ; UI operations
+    table: table ++ "_alert:function(m){window.alert(String(m||''));},"
+    table: table ++ "_confirm:function(m,okKey){var r=window.confirm(String(m||''));if(okKey&&r){state[okKey]=true;render();}},"
+    table: table ++ "_prompt:function(m,key){var r=window.prompt(String(m||''));if(key&&r!==null){state[key]=r;render();}},"
+    
+    ; Dialog operations
+    table: table ++ "_dialogOpen:function(cfg){if(typeof _vistaDialogOpen==='function'){_vistaDialogOpen(cfg||{});}},"
+    table: table ++ "_dialogClose:function(cfg){if(typeof _vistaDialogClose==='function'){_vistaDialogClose(cfg||{});}},"
+    table: table ++ "_dialogShow:function(cfg){if(typeof _vistaUiDialog==='function'){_vistaUiDialog(cfg||{});}},"
+    
+    ; Clipboard operations
+    table: table ++ "_copy:function(cfg){if(typeof _vistaUiClip==='function'){_vistaUiClip(cfg||{});}},"
+    table: table ++ "_paste:function(cfg){if(typeof _vistaUiUnclip==='function'){_vistaUiUnclip(cfg||{});}},"
+    
+    ; AI operations
+    table: table ++ "_aiSend:function(cfg){if(typeof _vistaAiSend==='function'){_vistaAiSend(cfg||{});}},"
+    table: table ++ "_aiSave:function(cfg){if(typeof _vistaAiSaveSettings==='function'){_vistaAiSaveSettings(cfg||{});}},"
+    table: table ++ "_aiLoad:function(cfg){if(typeof _vistaAiLoadSettings==='function'){_vistaAiLoadSettings(cfg||{});}},"
+    
+    ; Auth operations
+    table: table ++ "_authLogin:function(cfg){if(typeof _vistaAuthLogin==='function'){_vistaAuthLogin(cfg||{});}},"
+    table: table ++ "_authLogout:function(cfg){if(typeof _vistaAuthLogout==='function'){_vistaAuthLogout(cfg||{});}},"
+    table: table ++ "_authSignup:function(cfg){if(typeof _vistaAuthSignup==='function'){_vistaAuthSignup(cfg||{});}},"
+    
+    ; Event emission
+    table: table ++ "_emit:function(el,name,detail){if(el&&typeof name==='string'){var evt=new CustomEvent(name,{detail:detail,bubbles:true});el.dispatchEvent(evt);}},"
+    
+    ; Form operations
+    table: table ++ "_submit:function(form){if(form&&form.submit){form.submit();}},"
+    table: table ++ "_reset:function(form){if(form&&form.reset){form.reset();}},"
+    
+    ; DOM operations
+    table: table ++ "_focus:function(sel){var el=typeof sel==='string'?document.querySelector(sel):sel;if(el&&el.focus){el.focus();}},"
+    table: table ++ "_blur:function(sel){var el=typeof sel==='string'?document.querySelector(sel):sel;if(el&&el.blur){el.blur();}},"
+    table: table ++ "_show:function(sel){var el=typeof sel==='string'?document.querySelector(sel):sel;if(el){el.style.display='';}},"
+    table: table ++ "_hide:function(sel){var el=typeof sel==='string'?document.querySelector(sel):sel;if(el){el.style.display='none';}},"
+    table: table ++ "_toggleShow:function(sel){var el=typeof sel==='string'?document.querySelector(sel):sel;if(el){el.style.display=el.style.display==='none'?'':'none';}},"
+    
+    ; Class operations
+    table: table ++ "_addClass:function(sel,cls){var el=typeof sel==='string'?document.querySelector(sel):sel;if(el&&cls){el.classList.add(cls);}},"
+    table: table ++ "_removeClass:function(sel,cls){var el=typeof sel==='string'?document.querySelector(sel):sel;if(el&&cls){el.classList.remove(cls);}},"
+    table: table ++ "_toggleClass:function(sel,cls){var el=typeof sel==='string'?document.querySelector(sel):sel;if(el&&cls){el.classList.toggle(cls);}},"
+    
+    ; Attribute operations
+    table: table ++ "_setAttr:function(sel,name,val){var el=typeof sel==='string'?document.querySelector(sel):sel;if(el&&name){el.setAttribute(name,String(val||''));}},"
+    table: table ++ "_removeAttr:function(sel,name){var el=typeof sel==='string'?document.querySelector(sel):sel;if(el&&name){el.removeAttribute(name);}},"
+    
+    ; Style operations
+    table: table ++ "_setStyle:function(sel,prop,val){var el=typeof sel==='string'?document.querySelector(sel):sel;if(el&&prop){el.style[prop]=val;}},"
+    
+    ; Close dispatch table
+    table: table ++ "};"
+    
+    table
+]
+
+;=============================================================================
+; OPCODE TO DISPATCH MAPPING
+;=============================================================================
+
+; Map an opcode to a dispatch table call
+dispatch_opcode_call: function [opcode args] [
+    do case opcode [
+        ; State operations
+        "set" -> [
+            key: get args 0
+            val: get args 1
+            "__vistaDispatch._set('" ++ key ++ "'," ++ val ++ ")"
+        ]
+        "toggle" -> [
+            key: get args 0
+            "__vistaDispatch._toggle('" ++ key ++ "')"
+        ]
+        "increment" -> [
+            key: get args 0
+            n: "1"
+            if greater? (size args) 1 [ n: get args 1 ]
+            "__vistaDispatch._incr('" ++ key ++ "'," ++ n ++ ")"
+        ]
+        "decrement" -> [
+            key: get args 0
+            n: "1"
+            if greater? (size args) 1 [ n: get args 1 ]
+            "__vistaDispatch._decr('" ++ key ++ "'," ++ n ++ ")"
+        ]
+        
+        ; Navigation
+        "navigate" -> [
+            url: get args 0
+            "__vistaDispatch._nav(" ++ url ++ ")"
+        ]
+        "reload" -> [
+            "__vistaDispatch._reload()"
+        ]
+        "back" -> [
+            "__vistaDispatch._back()"
+        ]
+        "forward" -> [
+            "__vistaDispatch._forward()"
+        ]
+        
+        ; UI
+        "alert" -> [
+            msg: get args 0
+            "__vistaDispatch._alert(" ++ msg ++ ")"
+        ]
+        "confirm" -> [
+            msg: get args 0
+            okKey: ""
+            if greater? (size args) 1 [ okKey: get args 1 ]
+            "__vistaDispatch._confirm(" ++ msg ++ ",'" ++ okKey ++ "')"
+        ]
+        "prompt" -> [
+            msg: get args 0
+            key: ""
+            if greater? (size args) 1 [ key: get args 1 ]
+            "__vistaDispatch._prompt(" ++ msg ++ ",'" ++ key ++ "')"
+        ]
+        
+        ; Dialog
+        "show-dialog" -> [
+            cfg: "{}"
+            if greater? (size args) 0 [ cfg: json (get args 0) ]
+            "__vistaDispatch._dialogOpen(" ++ cfg ++ ")"
+        ]
+        "close-dialog" -> [
+            cfg: "{}"
+            if greater? (size args) 0 [ cfg: json (get args 0) ]
+            "__vistaDispatch._dialogClose(" ++ cfg ++ ")"
+        ]
+        
+        ; Clipboard
+        "copy" -> [
+            cfg: "{}"
+            if greater? (size args) 0 [ cfg: json (get args 0) ]
+            "__vistaDispatch._copy(" ++ cfg ++ ")"
+        ]
+        "paste" -> [
+            cfg: "{}"
+            if greater? (size args) 0 [ cfg: json (get args 0) ]
+            "__vistaDispatch._paste(" ++ cfg ++ ")"
+        ]
+        
+        ; AI
+        "ai-send" -> [
+            cfg: "{}"
+            if greater? (size args) 0 [ cfg: json (get args 0) ]
+            "__vistaDispatch._aiSend(" ++ cfg ++ ")"
+        ]
+        "ai-save" -> [
+            cfg: "{}"
+            if greater? (size args) 0 [ cfg: json (get args 0) ]
+            "__vistaDispatch._aiSave(" ++ cfg ++ ")"
+        ]
+        "ai-load" -> [
+            cfg: "{}"
+            if greater? (size args) 0 [ cfg: json (get args 0) ]
+            "__vistaDispatch._aiLoad(" ++ cfg ++ ")"
+        ]
+        
+        ; Auth
+        "auth-login" -> [
+            cfg: "{}"
+            if greater? (size args) 0 [ cfg: json (get args 0) ]
+            "__vistaDispatch._authLogin(" ++ cfg ++ ")"
+        ]
+        "auth-logout" -> [
+            cfg: "{}"
+            if greater? (size args) 0 [ cfg: json (get args 0) ]
+            "__vistaDispatch._authLogout(" ++ cfg ++ ")"
+        ]
+        "auth-signup" -> [
+            cfg: "{}"
+            if greater? (size args) 0 [ cfg: json (get args 0) ]
+            "__vistaDispatch._authSignup(" ++ cfg ++ ")"
+        ]
+        
+        ; Events
+        "emit" -> [
+            name: get args 0
+            detail: "null"
+            if greater? (size args) 1 [ detail: json (get args 1) ]
+            "__vistaDispatch._emit(this,'" ++ name ++ "'," ++ detail ++ ")"
+        ]
+        
+        ; Form
+        "submit" -> [
+            "__vistaDispatch._submit(this.form||this)"
+        ]
+        "reset" -> [
+            "__vistaDispatch._reset(this.form||this)"
+        ]
+        
+        ; DOM
+        "focus" -> [
+            sel: "this"
+            if greater? (size args) 0 [ sel: get args 0 ]
+            "__vistaDispatch._focus(" ++ sel ++ ")"
+        ]
+        "blur" -> [
+            sel: "this"
+            if greater? (size args) 0 [ sel: get args 0 ]
+            "__vistaDispatch._blur(" ++ sel ++ ")"
+        ]
+        "show" -> [
+            sel: "this"
+            if greater? (size args) 0 [ sel: get args 0 ]
+            "__vistaDispatch._show(" ++ sel ++ ")"
+        ]
+        "hide" -> [
+            sel: "this"
+            if greater? (size args) 0 [ sel: get args 0 ]
+            "__vistaDispatch._hide(" ++ sel ++ ")"
+        ]
+        "toggle-show" -> [
+            sel: "this"
+            if greater? (size args) 0 [ sel: get args 0 ]
+            "__vistaDispatch._toggleShow(" ++ sel ++ ")"
+        ]
+        "add-class" -> [
+            sel: "this"
+            cls: ""
+            if greater? (size args) 0 [ cls: get args 0 ]
+            if greater? (size args) 1 [ sel: get args 0; cls: get args 1 ]
+            "__vistaDispatch._addClass(" ++ sel ++ ",'" ++ cls ++ "')"
+        ]
+        "remove-class" -> [
+            sel: "this"
+            cls: ""
+            if greater? (size args) 0 [ cls: get args 0 ]
+            if greater? (size args) 1 [ sel: get args 0; cls: get args 1 ]
+            "__vistaDispatch._removeClass(" ++ sel ++ ",'" ++ cls ++ "')"
+        ]
+        "toggle-class" -> [
+            sel: "this"
+            cls: ""
+            if greater? (size args) 0 [ cls: get args 0 ]
+            if greater? (size args) 1 [ sel: get args 0; cls: get args 1 ]
+            "__vistaDispatch._toggleClass(" ++ sel ++ ",'" ++ cls ++ "')"
+        ]
+        
+        any -> [
+            ; Unknown opcode - return empty
+            ""
+        ]
+    ]
+]
+
+;=============================================================================
+; COMPILED HANDLER GENERATION
+;=============================================================================
+
+; Generate a compiled handler from an action structure
+dispatch_compile_handler: function [action] [
+    if equal? action null [ return "" ]
+    
+    aType: type action
+    
+    ; String handler (legacy)
+    if equal? aType :string [
+        ; Validate the string doesn't contain dangerous patterns
+        if dispatch_validate_js action [
+            return action
+        ]
+        return ""
+    ]
+    
+    ; Dictionary with opcode
+    if equal? aType :dictionary [
+        opcode: action\opcode
+        if equal? opcode null [ return "" ]
+        
+        ; Sequence of steps
+        if equal? opcode "sequence" [
+            steps: action\steps
+            out: ""
+            slen: size steps
+            si: 0
+            while [less? si slen][
+                step: get steps si
+                stepJs: dispatch_compile_handler step
+                if notEqual? stepJs "" [
+                    out: out ++ stepJs
+                ]
+                si: si + 1
+            ]
+            return out
+        ]
+        
+        ; Single opcode
+        args: []
+        if key? action "key" [
+            args: args ++ @[action\key]
+        ]
+        if key? action "value" [
+            args: args ++ @[action\value]
+        ]
+        if key? action "message" [
+            args: args ++ @[action\message]
+        ]
+        if key? action "url" [
+            args: args ++ @[action\url]
+        ]
+        if key? action "config" [
+            args: args ++ @[action\config]
+        ]
+        if key? action "event" [
+            args: args ++ @[action\event]
+        ]
+        if key? action "data" [
+            args: args ++ @[action\data]
+        ]
+        
+        ; Custom JS (validated)
+        if equal? opcode "custom" [
+            code: action\code
+            if notEqual? code null [
+                if dispatch_validate_js code [
+                    return code
+                ]
+            ]
+            return ""
+        ]
+        
+        return dispatch_opcode_call opcode args
+    ]
+    
+    ""
+]
+
+;=============================================================================
+; JS VALIDATION
+;=============================================================================
+
+; Validate JS code for safety
+; Returns true if the code is safe to execute
+dispatch_validate_js: function [code] [
+    if equal? code null [ return false ]
+    if notEqual? (type code) :string [ return false ]
+    
+    ; Block dangerous patterns
+    dangerous: @[
+        "eval("
+        "Function("
+        "new Function"
+        "document.write"
+        "document.writeln"
+        "innerHTML="
+        "outerHTML="
+        "document.cookie"
+        "window.location="
+        ";window.location"
+        ",window.location"
+    ]
+    
+    codeLower: lower code
+    
+    for pattern in dangerous [
+        if contains? codeLower (lower pattern) [
+            return false
+        ]
+    ]
+    
+    true
+]
+
+;=============================================================================
+; RUNTIME INITIALIZATION
+;=============================================================================
+
+; Generate the full dispatch runtime script
+dispatch_runtime_script: function [] [
+    script: dispatch_build_table []
+    
+    ; Add helper for executing compiled handlers
+    script: script ++ "var __vistaExec=function(fn){try{if(typeof fn==='function'){fn.call(this,event);}else if(typeof fn==='string'){(function(){__vistaAllowDynamicEval=true;eval(fn);__vistaAllowDynamicEval=false;}).call(this);}}catch(e){console.error('Vista handler error:',e);}};"
+    
+    ; Add safe eval wrapper (only for validated code)
+    script: script ++ "var __vistaSafeEval=function(code,ctx){if(!__vistaAllowDynamicEval){return;}try{var fn=new Function('event','value','state','render',code);fn.call(ctx||this,event,('value'in this)?this.value:this.textContent,state,render);}catch(e){console.error('Vista eval error:',e);}};"
+    
+    ; Add global flag for dynamic eval (default false for security)
+    script: script ++ "var __vistaAllowDynamicEval=false;"
+    
+    script
+]
+
+;=============================================================================
+; EVENT BINDING HELPERS
+;=============================================================================
+
+; Generate event binding script for an element
+dispatch_bind_event: function [faceId eventType handler] [
+    "document.querySelector('[data-face-id=\"" ++ faceId ++ "\"]').addEventListener('" ++ eventType ++ "',function(e){" ++ handler ++ "});"
+]
+
+; Generate DOMContentLoaded setup for all events
+dispatch_setup_events: function [eventBindings] [
+    script: "document.addEventListener('DOMContentLoaded',function(){"
+    
+    for binding in eventBindings [
+        faceId: binding\faceId
+        eventType: binding\eventType
+        handler: binding\handler
+        script: script ++ dispatch_bind_event faceId eventType handler
+    ]
+    
+    script: script ++ "});"
+    script
+]
+
+;=============================================================================
+; LEGACY COMPATIBILITY LAYER
+;=============================================================================
+
+; Convert legacy action block to dispatch-based handler
+; This provides backward compatibility while using the new dispatch system
+dispatch_from_legacy: function [legacyBlock bindings] [
+    if equal? legacyBlock null [ return "" ]
+    
+    lType: type legacyBlock
+    
+    ; Already a string
+    if equal? lType :string [
+        if dispatch_validate_js legacyBlock [
+            return legacyBlock
+        ]
+        return ""
+    ]
+    
+    ; Dictionary with config
+    if equal? lType :dictionary [
+        return dispatch_compile_handler legacyBlock
+    ]
+    
+    ; Block - parse and convert
+    if equal? lType :block [
+        ; Try to parse as opcodes
+        action: ir_compile_action legacyBlock bindings
+        return dispatch_compile_handler action
+    ]
+    
+    ""
+]
