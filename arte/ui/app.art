@@ -16,7 +16,7 @@ vista_app_logo_path: arte_logo
 auth_logo_data: logo_data_url arte_logo
 
 ARTURO [
-    Title: "Arte"
+    Title: "Arturo/Arte"
     Logo: "arte-logo.png"
     Width: 1180
     Height: 820
@@ -82,210 +82,203 @@ ai_max_tokens: "128"
 ai_prompt: ""
 ai_chat_log: "ai: Ready."
 ai_status: "AI idle"
+nav_items: ["AI Chat" "Workspace" "Apps" "Settings"]
+selected_nav: "AI Chat"
 
 view_body: [
     raw {<div id="arte-toast" class="arte-toast"></div>}
-    title "Arte" .class:"arte-title"
-    text "API health, apps, pages, layout, and preview" .class:"arte-subtitle"
 
-    row .space:10 [
-        button "Check API" "arteCheckHealth()" .class:"arte-btn"
-        text health_status .class:"arte-status"
-    ]
-    text health_detail .class:"arte-detail"
-
-    box .class:"arte-panel" [
-        title "Auth" .class:"arte-panel-title"
-        auth_app "Arte" "Sign in or create an account to continue."
-        text auth_status .class:"arte-detail"
-        text auth_user_label .class:"arte-detail"
-    ]
-
-    box .class:"arte-panel" [
-        title "Workspace Members" .class:"arte-panel-title"
-        text auth_user_label .class:"arte-detail"
-        row .space:10 [
-            field members_email .placeholder:"user@example.com" .class:"arte-input"
-            field members_role .placeholder:"admin|builder|viewer" .class:"arte-input"
-            button "Add Member" "arteAddMember()" .class:"arte-btn"
-            button "Refresh" "arteLoadMembers()" .class:"arte-btn"
-        ]
-        text members_status .class:"arte-detail"
-        raw {<div id="arte-members-list" class="arte-list"></div>}
-    ]
-
-    box .class:"arte-panel" [
-        title "Invites" .class:"arte-panel-title"
-        row .space:10 [
-            field invite_email .placeholder:"invitee@example.com" .class:"arte-input"
-            field invite_role .placeholder:"admin|builder|viewer" .class:"arte-input"
-            button "Create Invite" "arteCreateInvite()" .class:"arte-btn"
-        ]
-        row .space:10 [
-            field invite_code .placeholder:"Invite code" .class:"arte-input"
-            field invite_password .placeholder:"New password" .class:"arte-input"
-            button "Accept Invite" "arteAcceptInvite()" .class:"arte-btn"
-        ]
-        text invite_status .class:"arte-detail"
-        row .space:10 [
-            button "Refresh Invites" "arteLoadInvites()" .class:"arte-btn"
-            button "Revoke Expired" "arteRevokeExpiredInvites()" .class:"arte-btn-danger"
-            button "Revoke All" "arteRevokeAllInvites()" .class:"arte-btn-danger"
-        ]
-        text invite_list_status .class:"arte-detail"
-        raw {<div id="arte-invite-list" class="arte-list"></div>}
-    ]
-
-    box .class:"arte-panel" [
-        title "AI Chat" .class:"arte-panel-title"
-        row .space:10 [
-            field ai_provider .placeholder:"openai|gemini|echo" .class:"arte-input"
-            field ai_model .placeholder:"Model" .class:"arte-input"
-            field ai_temperature .placeholder:"0.2" .class:"arte-input"
-            field ai_top_p .placeholder:"0.9" .class:"arte-input"
-            field ai_max_tokens .placeholder:"128" .class:"arte-input"
-        ]
-        row .space:10 [
-            button "Load AI Settings" "arteAiLoadSettings()" .class:"arte-btn"
-            button "Save AI Settings" "arteAiSaveSettings()" .class:"arte-btn"
-        ]
-        textarea ai_chat_log .class:"arte-textarea" .readonly:true
-        textarea ai_prompt .class:"arte-textarea" .placeholder:"Type your AI prompt..."
-        row .space:10 [
-            button "Send Prompt" "arteAiSend()" .class:"arte-btn"
-            button "Clear Chat" "arteAiClear()" .class:"arte-btn"
-        ]
-        text ai_status .class:"arte-detail"
-    ]
-
-    divider
-
-    split .ratio:13 .class:"arte-shell" [
-        box .class:"arte-panel" [
-            title "Apps" .class:"arte-panel-title"
-
-            row .space:10 [
-                field app_name .placeholder:"New app name" .class:"arte-input"
-                button "Create" "arteCreateApp()" .class:"arte-btn"
-            ]
-
-            row .space:10 [
-                button "Rename" "arteRenameSelectedApp()" .class:"arte-btn"
-                button "Delete" "arteDeleteSelectedApp()" .class:"arte-btn-danger"
-            ]
-
-            text apps_status .class:"arte-detail"
-
-            list selected_app apps .class:"arte-list"
+    split .ratio:22 .class:"arte-main" [
+        box .class:"arte-panel arte-nav" [
+            title "Welcome to Arturo/Arte" .class:"arte-panel-title"
+            list selected_nav nav_items .class:"arte-list arte-nav-list"
+            text auth_user_label .class:"arte-detail"
         ]
     ] [
-        box .class:"arte-panel" [
-            title "Pages" .class:"arte-panel-title"
-
-            row .space:10 [
-                field page_name .placeholder:"New page name" .class:"arte-input"
-                button "Create" "arteCreatePage()" .class:"arte-btn"
+        col .space:12 [
+            box .class:"arte-panel arte-authbar" .data-show-bind:"show_account" .data-show-value:"true" [
+                row .space:10 [
+                    text profile_label .class:"arte-detail"
+                    button "Sign out" .data-vista-action:"auth_logout" .class:"arte-btn"
+                ]
             ]
 
-            row .space:10 [
-                button "Rename" "arteRenameSelectedPage()" .class:"arte-btn"
-                button "Delete" "arteDeleteSelectedPage()" .class:"arte-btn-danger"
+            col .space:12 .data-show-bind:"show_account" .data-show-value:"true" [
+                box .class:"arte-panel arte-section" .data-show-bind:"selected_nav" .data-show-value:"AI Chat" [
+                    title "AI Chat" .class:"arte-panel-title"
+                    textarea ai_chat_log .class:"arte-textarea" .readonly:true
+                    textarea ai_prompt .class:"arte-textarea" .placeholder:"Type your AI prompt..."
+                    row .space:10 [
+                        button "Send Prompt" "arteAiSend()" .class:"arte-btn"
+                        button "Clear Chat" "arteAiClear()" .class:"arte-btn"
+                    ]
+                    text ai_status .class:"arte-detail"
+                ]
+
+                box .class:"arte-panel arte-section" .data-show-bind:"selected_nav" .data-show-value:"Workspace" [
+                    title "Workspace" .class:"arte-panel-title"
+                    title "Workspace Members" .class:"arte-panel-title"
+                    row .space:10 [
+                        field members_email .placeholder:"user@example.com" .class:"arte-input"
+                        field members_role .placeholder:"admin|builder|viewer" .class:"arte-input"
+                        button "Add Member" "arteAddMember()" .class:"arte-btn"
+                        button "Refresh" "arteLoadMembers()" .class:"arte-btn"
+                    ]
+                    text members_status .class:"arte-detail"
+                    raw {<div id="arte-members-list" class="arte-list"></div>}
+                    divider
+                    title "Invites" .class:"arte-panel-title"
+                    row .space:10 [
+                        field invite_email .placeholder:"invitee@example.com" .class:"arte-input"
+                        field invite_role .placeholder:"admin|builder|viewer" .class:"arte-input"
+                        button "Create Invite" "arteCreateInvite()" .class:"arte-btn"
+                    ]
+                    row .space:10 [
+                        field invite_code .placeholder:"Invite code" .class:"arte-input"
+                        field invite_password .placeholder:"New password" .class:"arte-input"
+                        button "Accept Invite" "arteAcceptInvite()" .class:"arte-btn"
+                    ]
+                    text invite_status .class:"arte-detail"
+                    row .space:10 [
+                        button "Refresh Invites" "arteLoadInvites()" .class:"arte-btn"
+                        button "Revoke Expired" "arteRevokeExpiredInvites()" .class:"arte-btn-danger"
+                        button "Revoke All" "arteRevokeAllInvites()" .class:"arte-btn-danger"
+                    ]
+                    text invite_list_status .class:"arte-detail"
+                    raw {<div id="arte-invite-list" class="arte-list"></div>}
+                ]
+
+                box .class:"arte-panel arte-section" .data-show-bind:"selected_nav" .data-show-value:"Apps" [
+                    title "Apps" .class:"arte-panel-title"
+                    split .ratio:13 .class:"arte-shell" [
+                    box .class:"arte-panel" [
+                        title "Apps" .class:"arte-panel-title"
+                        row .space:10 [
+                            field app_name .placeholder:"New app name" .class:"arte-input"
+                            button "Create" "arteCreateApp()" .class:"arte-btn"
+                        ]
+                        row .space:10 [
+                            button "Rename" "arteRenameSelectedApp()" .class:"arte-btn"
+                            button "Delete" "arteDeleteSelectedApp()" .class:"arte-btn-danger"
+                        ]
+                        text apps_status .class:"arte-detail"
+                        list selected_app apps .class:"arte-list"
+                    ]
+                ] [
+                    box .class:"arte-panel" [
+                        title "Pages" .class:"arte-panel-title"
+                        row .space:10 [
+                            field page_name .placeholder:"New page name" .class:"arte-input"
+                            button "Create" "arteCreatePage()" .class:"arte-btn"
+                        ]
+                        row .space:10 [
+                            button "Rename" "arteRenameSelectedPage()" .class:"arte-btn"
+                            button "Delete" "arteDeleteSelectedPage()" .class:"arte-btn-danger"
+                        ]
+                        text pages_status .class:"arte-detail"
+                        list selected_page pages .class:"arte-list"
+                    ]
+                ] [
+                    box .class:"arte-panel" [
+                        title "Palette + Layout" .class:"arte-panel-title"
+                        row .space:8 [
+                            button "Title" "arteAddComponent('title')" .class:"arte-btn"
+                            button "Text" "arteAddComponent('text')" .class:"arte-btn"
+                            button "Button" "arteAddComponent('button')" .class:"arte-btn"
+                            button "Input" "arteAddComponent('input')" .class:"arte-btn"
+                            button "Row" "arteAddComponent('row')" .class:"arte-btn"
+                        ]
+                        row .space:8 [
+                            button "Box" "arteAddComponent('box')" .class:"arte-btn"
+                            button "Col" "arteAddComponent('col')" .class:"arte-btn"
+                            button "Canvas" "arteAddComponent('canvas')" .class:"arte-btn"
+                            button "Image" "arteAddComponent('image')" .class:"arte-btn"
+                            button "Divider" "arteAddComponent('divider')" .class:"arte-btn"
+                            button "Raw Vista" "arteAddComponent('raw_vista')" .class:"arte-btn"
+                        ]
+                        row .space:8 [
+                            button "Line Chart" "arteAddComponent('chart_line')" .class:"arte-btn"
+                            button "Bar Chart" "arteAddComponent('chart_bar')" .class:"arte-btn"
+                            button "Pie Chart" "arteAddComponent('chart_pie')" .class:"arte-btn"
+                        ]
+                        text "Click a palette item to append it to the layout JSON." .class:"arte-detail"
+                        divider
+                        row .space:10 [
+                            button "Load" "arteLoadLayout()" .class:"arte-btn"
+                            button "Save" "arteSaveLayout()" .class:"arte-btn"
+                            button "Generate Vista" "arteGenerateVista()" .class:"arte-btn"
+                            button "Export .art" "arteExportPage()" .class:"arte-btn"
+                        ]
+                        textarea layout_json .class:"arte-textarea" .placeholder:"[{\"type\":\"canvas\",\"props\":\"{\\\"width\\\":180,\\\"height\\\":64,\\\"draw\\\":\\\"fill-pen \\\\\\\"#edf1ff\\\\\\\"\\\\nbox [0 0] [180 64]\\\"}\"}]"
+                        text layout_status .class:"arte-detail"
+                        divider
+                        title "Layout Order" .class:"arte-panel-title"
+                        raw {<div id="arte-order-list" class="arte-order-list"></div>}
+                        divider
+                        title "Component Editor" .class:"arte-panel-title"
+                        text "Select a layout item to edit its props." .class:"arte-detail"
+                        row .space:10 [
+                            text "Label:" .class:"arte-detail"
+                            field selected_component_label .class:"arte-input"
+                        ]
+                        row .space:10 [
+                            text "Placeholder:" .class:"arte-detail"
+                            field selected_component_placeholder .class:"arte-input"
+                        ]
+                        row .space:10 [
+                            text "Size:" .class:"arte-detail"
+                            field selected_component_size .class:"arte-input"
+                        ]
+                        row .space:10 [
+                            text "Type:" .class:"arte-detail"
+                            field selected_component_type .readonly:true .class:"arte-input"
+                        ]
+                        row .space:10 [
+                            text "Props:" .class:"arte-detail"
+                            field selected_component_props .class:"arte-input"
+                        ]
+                        text "Children JSON (row/box/col):" .class:"arte-detail"
+                        textarea selected_component_children .class:"arte-textarea" .placeholder:"[{\"type\":\"text\",\"props\":\"Hi\"}]"
+                        row .space:10 [
+                            button "Apply" "arteApplyComponentEdits()" .class:"arte-btn"
+                            button "Delete" "arteDeleteComponent()" .class:"arte-btn-danger"
+                        ]
+                    ]
+                ]
+                box .class:"arte-preview" [
+                    title "Preview" .class:"arte-panel-title"
+                    raw {<iframe id="arte-preview-frame" class="arte-preview-frame"></iframe>}
+                    text "Click Load or Save to refresh the preview." .class:"arte-detail"
+                ]
+                box .class:"arte-preview" [
+                    title "Vista Output" .class:"arte-panel-title"
+                    textarea vista_code .class:"arte-textarea" .placeholder:"Generated Vista markup will appear here" .readonly:true
+                ]
             ]
 
-            text pages_status .class:"arte-detail"
+            box .class:"arte-panel arte-section" .data-show-bind:"selected_nav" .data-show-value:"Settings" [
+                title "Settings" .class:"arte-panel-title"
+                title "AI Chat Settings" .class:"arte-panel-title"
+                row .space:10 [
+                    field ai_provider .placeholder:"openai|gemini|echo" .class:"arte-input"
+                    field ai_model .placeholder:"Model" .class:"arte-input"
+                    field ai_temperature .placeholder:"0.2" .class:"arte-input"
+                    field ai_top_p .placeholder:"0.9" .class:"arte-input"
+                    field ai_max_tokens .placeholder:"128" .class:"arte-input"
+                ]
+                row .space:10 [
+                    button "Load AI Settings" "arteAiLoadSettings()" .class:"arte-btn"
+                    button "Save AI Settings" "arteAiSaveSettings()" .class:"arte-btn"
+                ]
+                text ai_status .class:"arte-detail"
+            ]
+            ]
 
-            list selected_page pages .class:"arte-list"
+            box .class:"arte-panel arte-section" .data-show-bind:"show_account" .data-show-value:"false" [
+                auth_app "Arturo/Arte" "Sign in or create an account to continue."
+                text auth_status .class:"arte-detail"
+            ]
         ]
-    ] [
-        box .class:"arte-panel" [
-            title "Palette" .class:"arte-panel-title"
-
-            row .space:8 [
-                button "Title" "arteAddComponent('title')" .class:"arte-btn"
-                button "Text" "arteAddComponent('text')" .class:"arte-btn"
-                button "Button" "arteAddComponent('button')" .class:"arte-btn"
-                button "Input" "arteAddComponent('input')" .class:"arte-btn"
-                button "Row" "arteAddComponent('row')" .class:"arte-btn"
-            ]
-            row .space:8 [
-                button "Box" "arteAddComponent('box')" .class:"arte-btn"
-                button "Col" "arteAddComponent('col')" .class:"arte-btn"
-                button "Canvas" "arteAddComponent('canvas')" .class:"arte-btn"
-                button "Image" "arteAddComponent('image')" .class:"arte-btn"
-                button "Divider" "arteAddComponent('divider')" .class:"arte-btn"
-                button "Raw Vista" "arteAddComponent('raw_vista')" .class:"arte-btn"
-            ]
-            row .space:8 [
-                button "Line Chart" "arteAddComponent('chart_line')" .class:"arte-btn"
-                button "Bar Chart" "arteAddComponent('chart_bar')" .class:"arte-btn"
-                button "Pie Chart" "arteAddComponent('chart_pie')" .class:"arte-btn"
-            ]
-
-            text "Click a palette item to append it to the layout JSON." .class:"arte-detail"
-
-            divider
-
-            title "Layout (JSON)" .class:"arte-panel-title"
-
-            row .space:10 [
-                button "Load" "arteLoadLayout()" .class:"arte-btn"
-                button "Save" "arteSaveLayout()" .class:"arte-btn"
-                button "Generate Vista" "arteGenerateVista()" .class:"arte-btn"
-                button "Export .art" "arteExportPage()" .class:"arte-btn"
-            ]
-
-            textarea layout_json .class:"arte-textarea" .placeholder:"[{\"type\":\"canvas\",\"props\":\"{\\\"width\\\":180,\\\"height\\\":64,\\\"draw\\\":\\\"fill-pen \\\\\\\"#edf1ff\\\\\\\"\\\\nbox [0 0] [180 64]\\\"}\"}]"
-            text layout_status .class:"arte-detail"
-
-            divider
-
-            title "Layout Order" .class:"arte-panel-title"
-            raw {<div id="arte-order-list" class="arte-order-list"></div>}
-
-            divider
-
-            title "Component Editor" .class:"arte-panel-title"
-            text "Select a layout item to edit its props." .class:"arte-detail"
-            title "Property Editor" .class:"arte-panel-title"
-            text "Use these fields for common component properties." .class:"arte-detail"
-            row .space:10 [
-                text "Label:" .class:"arte-detail"
-                field selected_component_label .class:"arte-input"
-            ]
-            row .space:10 [
-                text "Placeholder:" .class:"arte-detail"
-                field selected_component_placeholder .class:"arte-input"
-            ]
-            row .space:10 [
-                text "Size:" .class:"arte-detail"
-                field selected_component_size .class:"arte-input"
-            ]
-            row .space:10 [
-                text "Type:" .class:"arte-detail"
-                field selected_component_type .readonly:true .class:"arte-input"
-            ]
-            row .space:10 [
-                text "Props:" .class:"arte-detail"
-                field selected_component_props .class:"arte-input"
-            ]
-            text "Children JSON (row/box/col):" .class:"arte-detail"
-            textarea selected_component_children .class:"arte-textarea" .placeholder:"[{\"type\":\"text\",\"props\":\"Hi\"}]"
-            row .space:10 [
-                button "Apply" "arteApplyComponentEdits()" .class:"arte-btn"
-                button "Delete" "arteDeleteComponent()" .class:"arte-btn-danger"
-            ]
-        ]
-    ]
-
-    box .class:"arte-preview" [
-        title "Preview" .class:"arte-panel-title"
-        raw {<iframe id="arte-preview-frame" class="arte-preview-frame"></iframe>}
-        text "Click Load or Save to refresh the preview." .class:"arte-detail"
-    ]
-
-    box .class:"arte-preview" [
-        title "Vista Output" .class:"arte-panel-title"
-        textarea vista_code .class:"arte-textarea" .placeholder:"Generated Vista markup will appear here" .readonly:true
     ]
 
     raw {<style>
@@ -313,17 +306,42 @@ view_body: [
             color:var(--arte-muted);
             margin:0 0 16px;
         }
-        .arte-shell{gap:16px;}
+        .arte-main{gap:22px;align-items:flex-start;}
+        .arte-nav{position:sticky;top:80px;}
+        .arte-nav .arte-panel-title{
+            font-size:18px;
+            line-height:1.2;
+            margin-bottom:14px;
+        }
+        .arte-nav .arte-detail{
+            margin-top:12px;
+            margin-bottom:0;
+        }
+        .arte-nav-list{
+            min-width:220px;
+            max-height:none;
+            padding:10px;
+        }
+        .arte-nav-list li{
+            padding:10px 12px;
+            margin-bottom:8px;
+            border-radius:8px;
+        }
+        .arte-nav-list li:last-child{
+            margin-bottom:0;
+        }
+        .arte-section{margin-bottom:0;}
+        .arte-shell{gap:20px;}
         .arte-panel{
             background:var(--arte-panel);
             border:1px solid var(--arte-border);
             border-radius:14px;
-            padding:12px;
+            padding:18px;
         }
         .arte-panel-title{
             font-size:16px;
             font-weight:800;
-            margin:0 0 8px;
+            margin:0 0 12px;
         }
         .arte-btn{
             background:var(--arte-accent);
@@ -348,12 +366,14 @@ view_body: [
         .arte-detail{
             color:var(--arte-muted);
             font-size:12px;
+            line-height:1.5;
+            margin-bottom:8px;
         }
         .arte-input{
-            min-width:220px;
+            min-width:260px;
             border:1px solid var(--arte-border);
             border-radius:10px;
-            padding:6px 10px;
+            padding:9px 12px;
             background:#fff;
         }
         .arte-list{
@@ -430,13 +450,14 @@ view_body: [
         }
         .arte-textarea{
             width:100%;
-            min-height:200px;
+            min-height:220px;
             border:1px solid var(--arte-border);
             border-radius:10px;
-            padding:8px 10px;
+            padding:10px 12px;
             background:#fff;
             font-family:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
             font-size:12px;
+            line-height:1.45;
         }
         .arte-preview{
             margin-top:12px;
@@ -499,9 +520,40 @@ view_body: [
         .arte-toast.ok{
             background:#14532d;
         }
+        .arte-panel .vista-row{
+            gap:14px !important;
+            margin-bottom:10px;
+            align-items:flex-end;
+        }
+        .arte-panel .vista-col{
+            gap:12px;
+        }
+        .arte-panel .vista-panel{
+            margin-bottom:10px;
+        }
+        .arte-panel .vista-panel-body{
+            padding:16px;
+        }
+        .arte-panel .vista-auth-card{
+            max-width:100%;
+        }
+        .arte-panel .vista-auth-card .vista-panel-body input[type='text'],
+        .arte-panel .vista-auth-card .vista-panel-body input[type='password'],
+        .arte-panel .vista-auth-card .vista-panel-body input[type='email'],
+        .arte-panel .vista-auth-card .vista-panel-body textarea,
+        .arte-panel .vista-auth-card .vista-panel-body select{
+            min-width:340px;
+            width:100%;
+        }
+        .arte-panel .vista-auth-card .vista-panel-body button{
+            margin-top:8px;
+        }
         @media (max-width: 980px){
+            .arte-main{display:block;}
+            .arte-nav{position:static;}
             .arte-shell{display:block;}
             .arte-panel{margin-bottom:12px;}
+            .arte-input{min-width:0;width:100%;}
         }
     </style>
 <script>
