@@ -6,87 +6,54 @@
   "body": {
     <h1>Event System</h1>
 
-    <p>Vista's event system provides a declarative way to handle user interactions through event attributes.</p>
+    <p>Vista's event system maps declarative face attributes to normalized runtime events and handler blocks.</p>
 
     <h2>Event Attributes</h2>
-    <p>Events are attached to components using event attributes:</p>
+    <p>Common attributes:</p>
     <ul>
-      <li><code>on-click</code>: Button click</li>
-      <li><code>on-over</code>: Mouse enter</li>
-      <li><code>on-out</code>: Mouse leave</li>
-      <li><code>on-down</code>: Mouse down</li>
-      <li><code>on-up</code>: Mouse up</li>
-      <li><code>on-change</code>: Value change</li>
-      <li><code>on-input</code>: Input event</li>
-      <li><code>on-key</code>: Keyboard event</li>
-      <li><code>on-focus</code>: Focus gained</li>
-      <li><code>on-blur</code>: Focus lost</li>
+      <li><code>on-click</code>, <code>on-dblclick</code></li>
+      <li><code>on-over</code>, <code>on-out</code>, <code>on-down</code>, <code>on-up</code></li>
+      <li><code>on-input</code>, <code>on-change</code></li>
+      <li><code>on-key</code>, <code>on-keydown</code>, <code>on-keyup</code></li>
+      <li><code>on-focus</code>, <code>on-blur</code></li>
+      <li><code>on-tick</code> (with <code>.rate</code> for timer-driven updates)</li>
     </ul>
 
-    <h2>Click Events</h2>
-    <pre><code>
-    view .html [
-        button "Click Me" [
-            print "Button was clicked!"
-        ]
-    ]
-    </code></pre>
+    <h2>REBOL-Style Feel Channels</h2>
+    <p>Vista also supports compatibility channels:</p>
+    <ul>
+      <li><code>engage</code></li>
+      <li><code>detect</code></li>
+      <li><code>redraw</code></li>
+    </ul>
+    <p>These channels can be declared with phase maps and are normalized into runtime handlers.</p>
 
-    <h2>Mouse Events</h2>
-    <pre><code>
-    view .html [
-        box "Hover me"
-            .on-over [
-                print "Mouse entered"
-            ]
-            .on-out [
-                print "Mouse left"
-            ]
-    ]
-    </code></pre>
+    <h2>Normalized Event Payload</h2>
+    <p>Handler <code>value</code> includes stable keys such as:</p>
+    <ul>
+      <li>action metadata: <code>action</code>, <code>phase</code>, <code>requestedPhase</code>, <code>eventType</code></li>
+      <li>target identity: <code>faceId</code>, <code>targetId</code>, <code>targetName</code>, <code>targetTag</code></li>
+      <li>pointer/position: <code>x</code>, <code>y</code>, <code>pageX</code>, <code>pageY</code>, <code>button</code>, <code>buttons</code></li>
+      <li>keyboard/modifiers: <code>key</code>, <code>code</code>, <code>alt</code>, <code>ctrl</code>, <code>shift</code>, <code>meta</code></li>
+      <li>state/value: <code>value</code>, <code>checked</code>, <code>selectedIndex</code></li>
+    </ul>
 
-    <h2>Input Events</h2>
-    <pre><code>
-    view .html [
-        field "Type here"
-            .on-change [
-                print ["Value changed to:" fieldValue]
-            ]
-            .on-input [
-                print ["Input:" fieldValue]
-            ]
-    ]
-    </code></pre>
+    <h2>Example</h2>
+    <pre><code class="language-arturo">button "Submit" .on-click:[print "submit"]
 
-    <h2>Keyboard Events</h2>
-    <pre><code>
-    view .html [
-        field .bind: 'searchText
-            .on-key [
-                if equal? searchText "escape" [
-                    print "User pressed escape"
-                ]
-            ]
-    ]
-    </code></pre>
+field msg
+.on-input:[print value\value]</code></pre>
 
-    <h2>Event Actions</h2>
-    <p>Event blocks can contain multiple actions:</p>
-    <pre><code>
-    view .html [
-        button "Submit"
-            on-click [
-                print "Processing..."
-                do-submit
-                print "Done!"
-            ]
-    ]
-    </code></pre>
+    <p>Timer example:</p>
+    <pre><code class="language-arturo">box "Splash"
+.rate:5000
+.on-tick:[show_intro_splash: false show_login: true]</code></pre>
 
     <h2>See Also</h2>
     <ul>
-      <li><a href="/wiki/core/events/click-events/">Click Events</a> - Click handling</li>
-      <li><a href="/wiki/core/events/mouse-events/">Mouse Events</a> - Mouse interaction</li>
-      <li><a href="/wiki/core/events/keyboard-events/">Keyboard Events</a> - Keyboard input</li>
+      <li><a href="/wiki/core/events/event-overview/">Event Overview</a> - Event categories and actions</li>
+      <li><a href="/wiki/shared/migration/vid-parity/">VID Parity</a> - Parity status for event channels</li>
+      <li><a href="/wiki/shared/migration/from-rebol-view/">Migration from REBOL View</a> - Compatibility details</li>
     </ul>
+  }
 ]

@@ -6,21 +6,30 @@
   "body": {
     <h1>Migration</h1>
 
-    <p>Guides for migrating from other frameworks and maintaining compatibility.</p>
+    <p>Guides for migrating from REBOL/View and VID-style Vista apps.</p>
 
     <h2>Migration Topics</h2>
     <ul>
-      <li><a href="/wiki/shared/migration/from-rebol-view/">From Rebol View</a> - Migration from Rebol</li>
-      <li><a href="/wiki/shared/migration/vid-compatibility/">VID Compatibility</a> - VID compatibility guide</li>
-      <li><a href="/wiki/shared/migration/vid-parity/">VID Parity</a> - VID parity status</li>
+      <li><a href="/wiki/shared/migration/from-rebol-view/">From Rebol View</a> - Mapping REBOL/View idioms to Vista</li>
+      <li><a href="/wiki/shared/migration/vid-compatibility/">VID Compatibility</a> - Compatibility mode and migration behavior</li>
+      <li><a href="/wiki/shared/migration/vid-parity/">VID Parity</a> - Current feature parity and runtime notes</li>
+    </ul>
+
+    <h2>Current Status</h2>
+    <ul>
+      <li>Facet dictionaries (<code>.facets:#[]</code>) are supported.</li>
+      <li>Actor dictionaries (<code>.actor:#[]</code>) are supported and normalized into feel channels.</li>
+      <li>Feel channels (<code>engage</code>, <code>detect</code>, <code>redraw</code>) support phase maps.</li>
+      <li>Event payloads are normalized for View-like handlers.</li>
+      <li>Auth intro splash/login flow is standardized (<code>.rate</code> + <code>.on-tick</code>).</li>
     </ul>
 
     <h2>Migration Process</h2>
     <ol>
-      <li>Review the migration guide for your source framework</li>
-      <li>Identify components that need updating</li>
-      <li>Update event handlers and data binding</li>
-      <li>Test the converted application</li>
+      <li>Review the migration guide for your source framework.</li>
+      <li>Update legacy face/event declarations as needed.</li>
+      <li>Verify event payload assumptions in handlers.</li>
+      <li>Test migrated flows, including auth splash/login transitions.</li>
     </ol>
 
     <h2>See Also</h2>

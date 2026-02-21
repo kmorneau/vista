@@ -7,75 +7,47 @@ tags: ["migration", "vid", "compatibility", "legacy"]
 
 # VID Compatibility
 
-Vista maintains backward compatibility with VID (View It Desktop) syntax.
+Vista supports VID-style syntax while extending behavior for REBOL/View migration.
 
 ## Supported VID Features
 
-- **Face definitions**: All VID face types are supported
+- Face definitions and standard widgets
+- Layout keywords: `across`, `below`, `return`, `pad`, `space`
+- Attribute-based styling and events
+- Action blocks compiled to runtime handlers
 
-- **Layout keywords**: across, below, pad, space
+## Compatibility Notes
 
-- **Styling**: colors, fonts, sizes
+- `feel`, `actor`, and `facets` are supported through compatibility mappings.
+- Legacy dictionaries are normalized to Vista runtime `data-*` channels.
+- `engage`, `detect`, and `redraw` channels are preserved and executable.
+- Event objects are normalized so handlers receive stable, View-like payload keys.
 
-- **Actions**: on-click, on-change, etc.
+## Legacy to Vista Mapping
 
-## Automatic Conversion
-; VID syntax (automatically converted)
-view [
-  button "Hello" [ print "Hi" ]
-  field "Enter text"
-]
-
-## Deprecated Features
-
-Feature
-Status
-Alternative
-
-vid: dialect
-Deprecated
-Use view directly
-
-feel: object
-Deprecated
-Use on: events
-
-facets: [...]
-Deprecated
-Use attribute: syntax
-
-actor: [...]
-Deprecated
-Use on: events
+Feature | Current Status | Vista Behavior
+---|---|---
+`vid:` wrapper | Optional | Use `view [...]` directly
+`feel: object` | Supported | Mapped to feel channels and phase handlers
+`facets: [...]` | Supported | Mapped to face attributes/runtime facets
+`actor: [...]` | Supported | Normalized into feel/action channels
 
 ## Compatibility Mode
-; Enable full VID compatibility
-useVIDCompatibility []
-
-view/legacy [
-  button "Old style" [ print "works" ]
-]
-
-## Known Differences
-
-- Event handler syntax is more flexible in Vista
-
-- State binding is automatic in Vista
-
-- Layout system uses flexbox by default
+`
+; Enable VID-style migration behavior
+vista_vid_mode: true
+vista_layout_vid_mode: true
+vista_rebol_compat_mode: true
+`
 
 ## Migration Checklist
 
-- ☐ Replace feel: with on: events
-
-- ☐ Update actor: to on: handlers
-
-- ☐ Remove vid: dialect wrapper
-
-- ☐ Add state bindings where needed
+- Keep legacy `feel`/`actor`/`facets` where useful, or progressively move to direct attributes.
+- Validate phase-specific handlers (`down`, `up`, `move`, `tick`) for expected behavior.
+- Confirm event payload usage (`value\action`, pointer/keyboard keys, modifiers).
+- Test auth splash/login flows if migrating older auth examples.
 
 ## See Also
 
 - [VID Parity](/wiki/shared/migration/vid-parity/) - Full feature comparison
-
-- [From Rebol/View](/wiki/shared/migration/from-rebol-view/) - Migration from Rebol
+- [From Rebol/View](/wiki/shared/migration/from-rebol-view/) - Migration guide

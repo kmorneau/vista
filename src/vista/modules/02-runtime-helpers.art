@@ -630,6 +630,7 @@ vista_state: #[
 ]
 vista_vid_mode: false
 vista_layout_vid_mode: false
+vista_rebol_compat_mode: false
 
 next_face_id: function [] [
         vista_state\face_counter: vista_state\face_counter + 1

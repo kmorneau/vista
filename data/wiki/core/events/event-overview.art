@@ -6,104 +6,50 @@
   "body": {
     <h1>Event System Overview</h1>
 
-    <p>Vista's event system provides a declarative way to handle user interactions. Events are attached to components using attributes, and event handlers are Arturo blocks that are compiled to JavaScript.</p>
+    <p>Vista event handlers are declarative Arturo blocks compiled into browser runtime listeners.</p>
 
     <h2>Event Categories</h2>
-
-    <p>Vista supports several categories of events:</p>
     <ul>
-      <li><strong>Click Events</strong> - Button clicks, form submissions</li>
-      <li><strong>Mouse Events</strong> - Hover, enter, leave</li>
-      <li><strong>Input Events</strong> - Text changes, selection changes</li>
-      <li><strong>Keyboard Events</strong> - Key presses</li>
-      <li><strong>Focus Events</strong> - Focus gained/lost</li>
+      <li>Click events</li>
+      <li>Mouse/pointer events</li>
+      <li>Input/change events</li>
+      <li>Keyboard events</li>
+      <li>Focus events</li>
+      <li>Timer events (<code>.rate</code> + <code>.on-tick</code>)</li>
     </ul>
 
     <h2>Event Attributes</h2>
+    <pre><code class="language-arturo">button "Click Me" .on-click:[print "Clicked!"]
+field name .on-input:[status: "Typing..."]</code></pre>
 
-    <p>Events are specified as component attributes:</p>
-    <pre><code>
-    button "Click Me"
-        .on-click:[print "Clicked!"]
-
-    field name
-        .on-input:[status: "Typing..."]
-        .on-change:[validate name]
-    </code></pre>
-
-    <h2>Available Events</h2>
-
-    <h3>Click Events</h3>
-    <table>
-      <tr><td><code>on-click</code></td><td>Fired when element is clicked</td></tr>
-      <tr><td><code>on-dblclick</code></td><td>Fired on double-click</td></tr>
-    </table>
-
-    <h3>Mouse Events</h3>
-    <table>
-      <tr><td><code>on-over</code></td><td>Mouse enters element</td></tr>
-      <tr><td><code>on-out</code></td><td>Mouse leaves element</td></tr>
-      <tr><td><code>on-down</code></td><td>Mouse button pressed</td></tr>
-      <tr><td><code>on-up</code></td><td>Mouse button released</td></tr>
-    </table>
-
-    <h3>Input Events</h3>
-    <table>
-      <tr><td><code>on-input</code></td><td>Fired on every keystroke (for inputs)</td></tr>
-      <tr><td><code>on-change</code></td><td>Fired when value changes (blur or Enter)</td></tr>
-    </table>
-
-    <h3>Keyboard Events</h3>
-    <table>
-      <tr><td><code>on-key</code></td><td>Any key pressed</td></tr>
-      <tr><td><code>on-keydown</code></td><td>Key pressed down</td></tr>
-      <tr><td><code>on-keyup</code></td><td>Key released</td></tr>
-    </table>
-
-    <h3>Focus Events</h3>
-    <table>
-      <tr><td><code>on-focus</code></td><td>Element gains focus</td></tr>
-      <tr><td><code>on-blur</code></td><td>Element loses focus</td></tr>
-    </table>
-
-    <h2>Event Handler Structure</h2>
-
-    <p>Event handlers are Arturo action blocks:</p>
-    <pre><code>
-    button "Submit" [
-        print "Button clicked!"
-        name: name + "!"
-    ]
-    </code></pre>
-
-    <h2>Event Context</h2>
-
-    <p>Event handlers have access to:</p>
+    <h2>View-Like Compatibility Channels</h2>
+    <p>Compatibility mappings support:</p>
     <ul>
-      <li>Bound state variables</li>
-      <li>The event target (via <code>this</code>)</li>
-      <li>Event data (in some cases)</li>
+      <li><code>engage</code></li>
+      <li><code>detect</code></li>
+      <li><code>redraw</code></li>
+    </ul>
+    <p>Phase maps are supported (for example <code>down</code>, <code>up</code>, <code>move</code>, <code>tick</code>, <code>show</code>, <code>hide</code>).</p>
+
+    <h2>Action Vocabulary</h2>
+    <p>Common action values include:</p>
+    <ul>
+      <li>Engage: <code>down</code>, <code>up</code>, <code>click</code>, <code>double-click</code>, <code>focus</code>, <code>blur</code>, <code>key</code>, <code>key-up</code>, <code>change</code>, <code>input</code>, <code>submit</code>, <code>wheel</code></li>
+      <li>Pointer/touch aliases: <code>pointer-down</code>, <code>pointer-up</code>, <code>touch-start</code>, <code>touch-end</code>, <code>enter</code>, <code>leave</code></li>
+      <li>Detect: <code>move</code>, <code>over</code>, <code>away</code>, <code>wheel</code>, <code>scroll</code></li>
+      <li>Redraw: <code>show</code>, <code>hide</code>, <code>tick</code>, <code>change</code>, <code>input</code>, <code>scroll</code>, <code>resize</code></li>
     </ul>
 
-    <h2>Multiple Handlers</h2>
+    <h2>Event Context</h2>
+    <p>Handlers can use normalized event payload keys via <code>value</code>, including target identity, keyboard data, pointer coordinates, modifiers, and selection/value data.</p>
 
-    <p>You can attach multiple handlers to the same event:</p>
-    <pre><code>
-    field username [
-        .on-input:[
-            status: "Typing..."
-        ]
-        .on-change:[
-            validate username
-            status: "Done"
-        ]
-    ]
-    </code></pre>
+    <h2>Example</h2>
+    <pre><code class="language-arturo">field username .on-input:[print value\value]</code></pre>
 
     <h2>See Also</h2>
     <ul>
-      <li><a href="/wiki/core/events/click-events/">Click Events</a> - Click handling details</li>
-      <li><a href="/wiki/core/events/input-events/">Input Events</a> - Input change handling</li>
-      <li><a href="/wiki/core/concepts/event-system/">Event System</a> - Full event reference</li>
+      <li><a href="/wiki/core/concepts/event-system/">Event System</a> - Payload and architecture</li>
+      <li><a href="/wiki/shared/migration/vid-parity/">VID Parity</a> - Parity matrix</li>
     </ul>
+  }
 ]

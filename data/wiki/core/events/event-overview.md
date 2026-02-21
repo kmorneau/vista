@@ -7,108 +7,51 @@ tags: ["events", "handling", "core"]
 
 # Event System Overview
 
-Vista's event system provides a declarative way to handle user interactions. Events are attached to components using attributes, and event handlers are Arturo blocks that are compiled to JavaScript.
+Vista event handlers are declarative Arturo blocks compiled into browser runtime listeners.
 
 ## Event Categories
 
-Vista supports several categories of events:
-
-- **Click Events** - Button clicks, form submissions
-
-- **Mouse Events** - Hover, enter, leave
-
-- **Input Events** - Text changes, selection changes
-
-- **Keyboard Events** - Key presses
-
-- **Focus Events** - Focus gained/lost
+- Click events
+- Mouse/pointer events
+- Input/change events
+- Keyboard events
+- Focus events
+- Timer events (`.rate` + `.on-tick`)
 
 ## Event Attributes
 
-Events are specified as component attributes:
-
 `
-button "Click Me"
-.on-click:[print "Clicked!"]
-
-field name
-.on-input:[status: "Typing..."]
-.on-change:[validate name]
+button "Click Me" .on-click:[print "Clicked!"]
+field name .on-input:[status: "Typing..."]
 `
 
-## Available Events
+## View-Like Compatibility Channels
 
-### Click Events
+Compatibility mappings support:
+- `engage`
+- `detect`
+- `redraw`
 
-`on-click`Fired when element is clicked
-`on-dblclick`Fired on double-click
+Phase maps are supported (for example `down`, `up`, `move`, `tick`, `show`, `hide`).
 
-### Mouse Events
+## Action Vocabulary
 
-`on-over`Mouse enters element
-`on-out`Mouse leaves element
-`on-down`Mouse button pressed
-`on-up`Mouse button released
-
-### Input Events
-
-`on-input`Fired on every keystroke (for inputs)
-`on-change`Fired when value changes (blur or Enter)
-
-### Keyboard Events
-
-`on-key`Any key pressed
-`on-keydown`Key pressed down
-`on-keyup`Key released
-
-### Focus Events
-
-`on-focus`Element gains focus
-`on-blur`Element loses focus
-
-## Event Handler Structure
-
-Event handlers are Arturo action blocks:
-
-`
-button "Submit" [
-print "Button clicked!"
-name: name + "!"
-]
-`
+Common action values include:
+- Engage: `down`, `up`, `click`, `double-click`, `focus`, `blur`, `key`, `key-up`, `change`, `input`, `submit`, `wheel`
+- Pointer/touch aliases: `pointer-down`, `pointer-up`, `touch-start`, `touch-end`, `enter`, `leave`
+- Detect: `move`, `over`, `away`, `wheel`, `scroll`
+- Redraw: `show`, `hide`, `tick`, `change`, `input`, `scroll`, `resize`
 
 ## Event Context
 
-Event handlers have access to:
+Handlers can use normalized event payload keys via `value`, including target identity, keyboard data, pointer coordinates, modifiers, and selection/value data.
 
-- Bound state variables
-
-- The event target (via `this`)
-
-- Event data (in some cases)
-
-## Multiple Handlers
-
-You can attach multiple handlers to the same event:
-
+## Example
 `
-field username [
-.on-input:[
-status: "Typing..."
-]
-.on-change:[
-validate username
-status: "Done"
-]
-]
+field username .on-input:[print value\value]
 `
 
 ## See Also
 
-- [Click Events](/wiki/core/events/click-events/) - Click handling details
-
-- [Input Events](/wiki/core/events/input-events/) - Input change handling
-
-- [Event System](/wiki/core/concepts/event-system/) - Full event reference
-
-</ul
+- [Event System](/wiki/core/concepts/event-system/) - Payload and architecture
+- [VID Parity](/wiki/shared/migration/vid-parity/) - Parity matrix

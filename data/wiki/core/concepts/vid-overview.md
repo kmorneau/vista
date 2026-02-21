@@ -7,36 +7,38 @@ tags: ["vid", "ui", "dialect", "core"]
 
 # VID Overview
 
-VID (Visual Interface Dialect) is the declarative UI syntax used by Vista. It maps a concise block syntax to a tree of UI components.
+VID (Visual Interface Dialect) is the declarative UI syntax used by Vista. It maps concise blocks to a face tree and runtime behavior.
 
-## Concepts
+## Core Concepts
 
-- **Faces**: UI nodes with facets and state
-
-- **Layouts**: Containers and structural grouping
-
-- **Events**: Actions tied to widgets
+- **Faces**: UI nodes with facets, handlers, and state.
+- **Layout flow**: `across`, `below`, `return`, scoped containers.
+- **Action blocks**: Compiled handlers for UI interaction.
+- **Compatibility layers**: REBOL/View-style `facets`, `feel`, and `actor` mappings.
 
 ## Syntax
 `
-view .html [
+view [
 text "Label"
 button "Click Me" [print "clicked"]
 ]
 `
 
+## REBOL/View Compatibility Notes
+
+- `.facets:#[]` and `.actor:#[]` are supported.
+- `feel` channels (`engage`, `detect`, `redraw`) are supported, including phase maps.
+- Event payloads are normalized for handler stability.
+- Use `vista_rebol_compat_mode: true` for migration-heavy code.
+
 ## References
 
-- [Vista Tutorial](/tutorial/vista_tutorial)
-
-- [VID Compatibility](/docs/VID_COMPAT)
-
-- [VID Parity](/docs/VID_PARITY)
+- [VID Compatibility](/wiki/shared/migration/vid-compatibility/)
+- [VID Parity](/wiki/shared/migration/vid-parity/)
+- [From Rebol/View](/wiki/shared/migration/from-rebol-view/)
 
 ## See Also
 
 - [Getting Started](/wiki/getting-started/) - Quick start with Vista
-
-- [Face Model](/wiki/core/concepts/face-model/) - Understanding the face/facet architecture
-
-- [Layout System](/wiki/core/concepts/layout-overview/) - Layout concepts and patterns
+- [Face Model](/wiki/core/concepts/face-model/) - Face/facet architecture
+- [Layout System](/wiki/core/concepts/layout-overview/) - Layout patterns

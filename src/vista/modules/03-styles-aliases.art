@@ -1152,7 +1152,229 @@ apply_effect_attrs: function [style effectVal] [
         ]
 ]
 
+facet_pair_xy: function [val] [
+        t: type val
+        switch equal? t :block [
+            if greaterOrEqual? size val 2 [
+                xVal: get val 0
+                yVal: get val 1
+                return #[
+                    x: xVal
+                    y: yVal
+                ]
+            ]
+        ][
+            switch equal? t :string [
+                parts: split val "x"
+                if greaterOrEqual? size parts 2 [
+                    xVal: get parts 0
+                    yVal: get parts 1
+                    return #[
+                        x: xVal
+                        y: yVal
+                    ]
+                ]
+            ][
+                null
+            ]
+        ]
+        null
+]
+
+facet_bool: function [val defaultVal] [
+        if equal? (type val) :logical [
+            return val
+        ]
+        valStr: lower to :string val
+        if equal? valStr "true" [ return true ]
+        if equal? valStr "false" [ return false ]
+        defaultVal
+]
+
+rebol_facets_merge_attrs: function [attrs facets] [
+        if notEqual? (type facets) :dictionary [
+            return attrs
+        ]
+        out: attrs
+        if key? facets "color" [ out\color: facets\color ]
+        if key? facets "font" [ out\font: facets\font ]
+        if key? facets "para" [ out\para: facets\para ]
+        if key? facets "edge" [ out\edge: facets\edge ]
+        if key? facets "effect" [ out\effect: facets\effect ]
+        if key? facets "rate" [ out\rate: facets\rate ]
+        if key? facets "options" [ out\options: facets\options ]
+        if key? facets "feel" [ out\feel: facets\feel ]
+        if key? facets "actor" [ out\actor: facets\actor ]
+        if key? facets "size" [
+            sizePair: facet_pair_xy facets\size
+            if notEqual? sizePair null [
+                sizeX: sizePair\x
+                sizeY: sizePair\y
+                widthStr: style_value sizeX
+                heightStr: style_value sizeY
+                styleNow: ""
+                if key? out "style" [ styleNow: to :string out\style ]
+                styleNow: append_style styleNow ("width: " ++ widthStr ++ ";")
+                styleNow: append_style styleNow ("height: " ++ heightStr ++ ";")
+                out\style: styleNow
+            ]
+        ]
+        if any? @[key? facets "offset" key? facets "origin" key? facets "at"] [
+            posVal: null
+            if key? facets "offset" [ posVal: facets\offset ]
+            if all? @[equal? posVal null key? facets "origin"] [ posVal: facets\origin ]
+            if all? @[equal? posVal null key? facets "at"] [ posVal: facets\at ]
+            posPair: facet_pair_xy posVal
+            if notEqual? posPair null [
+                posX: posPair\x
+                posY: posPair\y
+                leftStr: style_value posX
+                topStr: style_value posY
+                styleNow: ""
+                if key? out "style" [ styleNow: to :string out\style ]
+                styleNow: append_style styleNow "position: relative;"
+                styleNow: append_style styleNow ("left: " ++ leftStr ++ ";")
+                styleNow: append_style styleNow ("top: " ++ topStr ++ ";")
+                out\style: styleNow
+            ]
+        ]
+        if any? @[key? facets "visible" key? facets "show" key? facets "hidden"] [
+            visible: true
+            if key? facets "visible" [ visible: facet_bool facets\visible visible ]
+            if key? facets "show" [ visible: facet_bool facets\show visible ]
+            if key? facets "hidden" [
+                visible: not? facet_bool facets\hidden false
+            ]
+            if not? visible [
+                styleNow: ""
+                if key? out "style" [ styleNow: to :string out\style ]
+                styleNow: append_style styleNow "display: none;"
+                out\style: styleNow
+            ]
+        ]
+        if any? @[key? facets "enabled" key? facets "disabled"] [
+            enabled: true
+            if key? facets "enabled" [ enabled: facet_bool facets\enabled enabled ]
+            if key? facets "disabled" [ enabled: not? facet_bool facets\disabled false ]
+            if not? enabled [ out\disabled: true ]
+        ]
+        if key? facets "alpha" [
+            styleNow: ""
+            if key? out "style" [ styleNow: to :string out\style ]
+            styleNow: append_style styleNow ("opacity: " ++ to :string facets\alpha ++ ";")
+            out\style: styleNow
+        ]
+        out
+]
+
+rebol_actor_to_feel: function [actorVal] [
+        if notEqual? (type actorVal) :dictionary [
+            return #[]
+        ]
+        feel: #[]
+        if key? actorVal "on-click" [ feel\click: actorVal\["on-click"] ]
+        if key? actorVal "click" [ feel\click: actorVal\click ]
+        if key? actorVal "action" [ feel\click: actorVal\action ]
+        if key? actorVal "on-down" [ feel\down: actorVal\["on-down"] ]
+        if key? actorVal "down" [ feel\down: actorVal\down ]
+        if key? actorVal "on-up" [ feel\up: actorVal\["on-up"] ]
+        if key? actorVal "up" [ feel\up: actorVal\up ]
+        if key? actorVal "on-over" [ feel\hover: actorVal\["on-over"] ]
+        if key? actorVal "over" [ feel\hover: actorVal\over ]
+        if key? actorVal "on-out" [ feel\away: actorVal\["on-out"] ]
+        if key? actorVal "away" [ feel\away: actorVal\away ]
+        if key? actorVal "on-change" [ feel\change: actorVal\["on-change"] ]
+        if key? actorVal "change" [ feel\change: actorVal\change ]
+        if key? actorVal "on-key" [ feel\key: actorVal\["on-key"] ]
+        if key? actorVal "key" [ feel\key: actorVal\key ]
+        if key? actorVal "on-move" [ feel\move: actorVal\["on-move"] ]
+        if key? actorVal "move" [ feel\move: actorVal\move ]
+        if key? actorVal "on-input" [ feel\input: actorVal\["on-input"] ]
+        if key? actorVal "input" [ feel\input: actorVal\input ]
+        if key? actorVal "on-focus" [ feel\focus: actorVal\["on-focus"] ]
+        if key? actorVal "focus" [ feel\focus: actorVal\focus ]
+        if key? actorVal "on-blur" [ feel\blur: actorVal\["on-blur"] ]
+        if key? actorVal "blur" [ feel\blur: actorVal\blur ]
+        if key? actorVal "on-engage" [ feel\engage: actorVal\["on-engage"] ]
+        if key? actorVal "engage" [
+            feel\engage: actorVal\engage
+        ]
+        if key? actorVal "on-detect" [ feel\detect: actorVal\["on-detect"] ]
+        if key? actorVal "detect" [
+            feel\detect: actorVal\detect
+        ]
+        if key? actorVal "on-redraw" [ feel\redraw: actorVal\["on-redraw"] ]
+        if key? actorVal "redraw" [
+            feel\redraw: actorVal\redraw
+        ]
+        if key? actorVal "on-pointer-down" [ feel\["pointer-down"]: actorVal\["on-pointer-down"] ]
+        if key? actorVal "pointer-down" [ feel\["pointer-down"]: actorVal\["pointer-down"] ]
+        if key? actorVal "pointer_down" [ feel\pointer_down: actorVal\pointer_down ]
+        if key? actorVal "on-pointer-move" [ feel\["pointer-move"]: actorVal\["on-pointer-move"] ]
+        if key? actorVal "pointer-move" [ feel\["pointer-move"]: actorVal\["pointer-move"] ]
+        if key? actorVal "pointer_move" [ feel\pointer_move: actorVal\pointer_move ]
+        if key? actorVal "on-pointer-up" [ feel\["pointer-up"]: actorVal\["on-pointer-up"] ]
+        if key? actorVal "pointer-up" [ feel\["pointer-up"]: actorVal\["pointer-up"] ]
+        if key? actorVal "pointer_up" [ feel\pointer_up: actorVal\pointer_up ]
+        if key? actorVal "on-pointer-cancel" [ feel\["pointer-cancel"]: actorVal\["on-pointer-cancel"] ]
+        if key? actorVal "pointer-cancel" [ feel\["pointer-cancel"]: actorVal\["pointer-cancel"] ]
+        if key? actorVal "pointer_cancel" [ feel\pointer_cancel: actorVal\pointer_cancel ]
+        if key? actorVal "on-tap" [ feel\tap: actorVal\["on-tap"] ]
+        if key? actorVal "tap" [ feel\tap: actorVal\tap ]
+        if key? actorVal "on-long-press" [ feel\["long-press"]: actorVal\["on-long-press"] ]
+        if key? actorVal "long-press" [ feel\["long-press"]: actorVal\["long-press"] ]
+        if key? actorVal "long_press" [ feel\long_press: actorVal\long_press ]
+        if key? actorVal "on-long-press-ms" [ feel\["long-press-ms"]: actorVal\["on-long-press-ms"] ]
+        if key? actorVal "long-press-ms" [ feel\["long-press-ms"]: actorVal\["long-press-ms"] ]
+        if key? actorVal "long_press_ms" [ feel\long_press_ms: actorVal\long_press_ms ]
+        if key? actorVal "on-dragstart" [ feel\dragstart: actorVal\["on-dragstart"] ]
+        if key? actorVal "dragstart" [ feel\dragstart: actorVal\dragstart ]
+        if key? actorVal "on-dragover" [ feel\dragover: actorVal\["on-dragover"] ]
+        if key? actorVal "dragover" [ feel\dragover: actorVal\dragover ]
+        if key? actorVal "on-drop" [ feel\drop: actorVal\["on-drop"] ]
+        if key? actorVal "drop" [ feel\drop: actorVal\drop ]
+        if key? actorVal "on-dragenter" [ feel\dragenter: actorVal\["on-dragenter"] ]
+        if key? actorVal "dragenter" [ feel\dragenter: actorVal\dragenter ]
+        if key? actorVal "on-dragleave" [ feel\dragleave: actorVal\["on-dragleave"] ]
+        if key? actorVal "dragleave" [ feel\dragleave: actorVal\dragleave ]
+        if key? actorVal "on-dragend" [ feel\dragend: actorVal\["on-dragend"] ]
+        if key? actorVal "dragend" [ feel\dragend: actorVal\dragend ]
+        if key? actorVal "drag-data" [ feel\["drag-data"]: actorVal\["drag-data"] ]
+        if key? actorVal "drag_data" [ feel\drag_data: actorVal\drag_data ]
+        if key? actorVal "drop-effect" [ feel\["drop-effect"]: actorVal\["drop-effect"] ]
+        if key? actorVal "drop_effect" [ feel\drop_effect: actorVal\drop_effect ]
+        feel
+]
+
 apply_facet_attrs: function [attrs] [
+        if key? attrs "facets" [
+            attrs: rebol_facets_merge_attrs attrs attrs\facets
+            attrs: attrs_without attrs "facets"
+        ]
+        if key? attrs "actor" [
+            actorFeel: rebol_actor_to_feel attrs\actor
+            if greater? size keys actorFeel 0 [
+                if key? attrs "feel" [
+                    if equal? (type attrs\feel) :dictionary [
+                        mergedFeel: attrs\feel
+                        actorKeys: keys actorFeel
+                        ai: 0
+                        alen: size actorKeys
+                        while [less? ai alen][
+                            ak: get actorKeys ai
+                            if not? key? mergedFeel ak [
+                                mergedFeel\[ak]: actorFeel\[ak]
+                            ]
+                            ai: ai + 1
+                        ]
+                        attrs\feel: mergedFeel
+                    ]
+                ] [
+                    attrs\feel: actorFeel
+                ]
+            ]
+            attrs: attrs_without attrs "actor"
+        ]
         style: ""
         if key? attrs "style" [
             style: to :string attrs\style
@@ -1213,6 +1435,9 @@ apply_facet_attrs: function [attrs] [
                 if key? feelVal "focus" [ attrs\["on-focus"]: feelVal\focus ]
                 if key? feelVal "blur" [ attrs\["on-blur"]: feelVal\blur ]
                 if key? feelVal "key" [ attrs\["on-key"]: feelVal\key ]
+                if key? feelVal "engage" [ attrs\["on-engage"]: feelVal\engage ]
+                if key? feelVal "detect" [ attrs\["on-detect"]: feelVal\detect ]
+                if key? feelVal "redraw" [ attrs\["on-redraw"]: feelVal\redraw ]
                 if key? feelVal "drag" [ attrs\["data-feel-drag"]: to :string feelVal\drag ]
                 if key? feelVal "pointer-down" [ attrs\["on-pointer-down"]: feelVal\["pointer-down"] ]
                 if key? feelVal "pointer_down" [ attrs\["on-pointer-down"]: feelVal\pointer_down ]
@@ -1590,6 +1815,213 @@ apply_event_attrs: function [attrs bindings] [
                 res\onmousemove: to :string val
             ]
         ]
+        if key? res "on-engage" [
+            val: res\["on-engage"]
+            res: attrs_without res "on-engage"
+            vType: type val
+            switch equal? vType :dictionary [
+                pKeys: keys val
+                pi: 0
+                plen: size pKeys
+                while [less? pi plen][
+                    pk: get pKeys pi
+                    pName: lower to :string pk
+                    pName: replace pName "_" "-"
+                    pVal: val\[pk]
+                    pType: type pVal
+                    switch any? @[equal? pType :block equal? pType :dictionary] [
+                        if equal? pType :dictionary [
+                            pVal: dict_to_block pVal
+                        ]
+                        res\["data-feel-engage-phase-" ++ pName]: compile_action pVal bindings
+                    ][
+                        res\["data-feel-engage-phase-" ++ pName]: to :string pVal
+                    ]
+                    pi: pi + 1
+                ]
+            ][
+                switch equal? vType :block [
+                    asPairs: false
+                    vlen: size val
+                    if greaterOrEqual? vlen 2 [
+                        if equal? mod vlen 2 0 [
+                            asPairs: true
+                            vi: 0
+                            while [less? vi vlen][
+                                pkTok: get val vi
+                                pkType: type pkTok
+                                if not? any? @[equal? pkType :word equal? pkType :label equal? pkType :string] [
+                                    asPairs: false
+                                    break
+                                ]
+                                vi: vi + 2
+                            ]
+                        ]
+                    ]
+                    if asPairs [
+                        vi: 0
+                        while [less? vi vlen][
+                            pkTok: get val vi
+                            pName: lower to :string pkTok
+                            pName: replace pName "_" "-"
+                            pVal: get val (vi + 1)
+                            pType: type pVal
+                            switch any? @[equal? pType :block equal? pType :dictionary] [
+                                if equal? pType :dictionary [
+                                    pVal: dict_to_block pVal
+                                ]
+                                res\["data-feel-engage-phase-" ++ pName]: compile_action pVal bindings
+                            ][
+                                res\["data-feel-engage-phase-" ++ pName]: to :string pVal
+                            ]
+                            vi: vi + 2
+                        ]
+                    ] [
+                        res\["data-feel-engage"]: compile_action val bindings
+                    ]
+                ][
+                    res\["data-feel-engage"]: to :string val
+                ]
+            ]
+        ]
+        if key? res "on-detect" [
+            val: res\["on-detect"]
+            res: attrs_without res "on-detect"
+            vType: type val
+            switch equal? vType :dictionary [
+                pKeys: keys val
+                pi: 0
+                plen: size pKeys
+                while [less? pi plen][
+                    pk: get pKeys pi
+                    pName: lower to :string pk
+                    pName: replace pName "_" "-"
+                    pVal: val\[pk]
+                    pType: type pVal
+                    switch any? @[equal? pType :block equal? pType :dictionary] [
+                        if equal? pType :dictionary [
+                            pVal: dict_to_block pVal
+                        ]
+                        res\["data-feel-detect-phase-" ++ pName]: compile_action pVal bindings
+                    ][
+                        res\["data-feel-detect-phase-" ++ pName]: to :string pVal
+                    ]
+                    pi: pi + 1
+                ]
+            ][
+                switch equal? vType :block [
+                    asPairs: false
+                    vlen: size val
+                    if greaterOrEqual? vlen 2 [
+                        if equal? mod vlen 2 0 [
+                            asPairs: true
+                            vi: 0
+                            while [less? vi vlen][
+                                pkTok: get val vi
+                                pkType: type pkTok
+                                if not? any? @[equal? pkType :word equal? pkType :label equal? pkType :string] [
+                                    asPairs: false
+                                    break
+                                ]
+                                vi: vi + 2
+                            ]
+                        ]
+                    ]
+                    if asPairs [
+                        vi: 0
+                        while [less? vi vlen][
+                            pkTok: get val vi
+                            pName: lower to :string pkTok
+                            pName: replace pName "_" "-"
+                            pVal: get val (vi + 1)
+                            pType: type pVal
+                            switch any? @[equal? pType :block equal? pType :dictionary] [
+                                if equal? pType :dictionary [
+                                    pVal: dict_to_block pVal
+                                ]
+                                res\["data-feel-detect-phase-" ++ pName]: compile_action pVal bindings
+                            ][
+                                res\["data-feel-detect-phase-" ++ pName]: to :string pVal
+                            ]
+                            vi: vi + 2
+                        ]
+                    ] [
+                        res\["data-feel-detect"]: compile_action val bindings
+                    ]
+                ][
+                    res\["data-feel-detect"]: to :string val
+                ]
+            ]
+        ]
+        if key? res "on-redraw" [
+            val: res\["on-redraw"]
+            res: attrs_without res "on-redraw"
+            vType: type val
+            switch equal? vType :dictionary [
+                pKeys: keys val
+                pi: 0
+                plen: size pKeys
+                while [less? pi plen][
+                    pk: get pKeys pi
+                    pName: lower to :string pk
+                    pName: replace pName "_" "-"
+                    pVal: val\[pk]
+                    pType: type pVal
+                    switch any? @[equal? pType :block equal? pType :dictionary] [
+                        if equal? pType :dictionary [
+                            pVal: dict_to_block pVal
+                        ]
+                        res\["data-feel-redraw-phase-" ++ pName]: compile_action pVal bindings
+                    ][
+                        res\["data-feel-redraw-phase-" ++ pName]: to :string pVal
+                    ]
+                    pi: pi + 1
+                ]
+            ][
+                switch equal? vType :block [
+                    asPairs: false
+                    vlen: size val
+                    if greaterOrEqual? vlen 2 [
+                        if equal? mod vlen 2 0 [
+                            asPairs: true
+                            vi: 0
+                            while [less? vi vlen][
+                                pkTok: get val vi
+                                pkType: type pkTok
+                                if not? any? @[equal? pkType :word equal? pkType :label equal? pkType :string] [
+                                    asPairs: false
+                                    break
+                                ]
+                                vi: vi + 2
+                            ]
+                        ]
+                    ]
+                    if asPairs [
+                        vi: 0
+                        while [less? vi vlen][
+                            pkTok: get val vi
+                            pName: lower to :string pkTok
+                            pName: replace pName "_" "-"
+                            pVal: get val (vi + 1)
+                            pType: type pVal
+                            switch any? @[equal? pType :block equal? pType :dictionary] [
+                                if equal? pType :dictionary [
+                                    pVal: dict_to_block pVal
+                                ]
+                                res\["data-feel-redraw-phase-" ++ pName]: compile_action pVal bindings
+                            ][
+                                res\["data-feel-redraw-phase-" ++ pName]: to :string pVal
+                            ]
+                            vi: vi + 2
+                        ]
+                    ] [
+                        res\["data-feel-redraw"]: compile_action val bindings
+                    ]
+                ][
+                    res\["data-feel-redraw"]: to :string val
+                ]
+            ]
+        ]
         if key? res "on-pointer-down" [
             val: res\["on-pointer-down"]
             res: attrs_without res "on-pointer-down"
@@ -1921,8 +2353,8 @@ dict_to_block: function [d] [
         klen: size keysList
         while [less? i klen][
                 k: get keysList i
-                out: out ++ @[to :label (to :string k)]
-                out: out ++ @[d\[k]]
+                out: append_value out (to :label (to :string k))
+                out: append_value out d\[k]
                 i: i + 1
         ]
         out
@@ -2275,7 +2707,8 @@ table_script: function [] [
 rate_feel_script: function [] [
         script: "document.addEventListener('DOMContentLoaded',()=>{"
         script: script ++ "document.querySelectorAll('[data-rate]').forEach(el=>{const ms=parseInt(el.getAttribute('data-rate')||'0',10);if(!(ms>0)){return;}const tickCode=el.getAttribute('data-rate-on-tick')||'';setInterval(()=>{try{if(window.__vistaAllowDynamicEval&&tickCode){(new Function('event','value',tickCode)).call(el,null,('value' in el)?el.value:el.textContent);}}catch(_e){}try{el.dispatchEvent(new CustomEvent('vista-rate-tick'));}catch(_e2){}},ms);});"
-        script: script ++ "document.querySelectorAll('[data-feel-drag],[data-feel-pointer-down],[data-feel-pointer-move],[data-feel-pointer-up],[data-feel-pointer-cancel],[data-feel-tap],[data-feel-long-press]').forEach(el=>{const run=(code,event,value)=>{if(!code){return;}try{if(window.__vistaAllowDynamicEval){(new Function('event','value',code)).call(el,event,value);}}catch(_e){}};const dragCode=el.getAttribute('data-feel-drag')||'';const ptrDown=el.getAttribute('data-feel-pointer-down')||'';const ptrMove=el.getAttribute('data-feel-pointer-move')||'';const ptrUp=el.getAttribute('data-feel-pointer-up')||'';const ptrCancel=el.getAttribute('data-feel-pointer-cancel')||'';const tapCode=el.getAttribute('data-feel-tap')||'';const longCode=el.getAttribute('data-feel-long-press')||'';const longMs=Math.max(0,parseInt(el.getAttribute('data-feel-long-press-ms')||'500',10)||500);let down=false,sx=0,sy=0,pressedAt=0,longTimer=null,longFired=false,moved=false;const clearLong=()=>{if(longTimer){clearTimeout(longTimer);longTimer=null;}};const start=(x,y,e)=>{down=true;sx=x;sy=y;pressedAt=Date.now();longFired=false;moved=false;clearLong();run(ptrDown,e,{x:x,y:y});if(longCode){longTimer=setTimeout(()=>{if(down&&!moved){longFired=true;run(longCode,e,{x:x,y:y});}},longMs);}};const move=(x,y,e)=>{run(ptrMove,e,{x:x,y:y});if(!down){return;}const dx=x-sx;const dy=y-sy;if(Math.abs(dx)>8||Math.abs(dy)>8){moved=true;clearLong();}if(dragCode){run(dragCode,e,{dx:dx,dy:dy,x:x,y:y});}};const finish=(x,y,e,cancelled)=>{if(!down){if(cancelled){run(ptrCancel,e,{x:x,y:y});}return;}down=false;const dx=x-sx;const dy=y-sy;const dur=Date.now()-pressedAt;clearLong();if(cancelled){run(ptrCancel,e,{dx:dx,dy:dy,x:x,y:y,duration:dur});return;}run(ptrUp,e,{dx:dx,dy:dy,x:x,y:y,duration:dur});if(tapCode&&!longFired&&!moved&&dur<longMs){run(tapCode,e,{x:x,y:y,duration:dur});}};if(window.PointerEvent){el.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0){return;}start(e.clientX,e.clientY,e);});window.addEventListener('pointermove',e=>{move(e.clientX,e.clientY,e);});window.addEventListener('pointerup',e=>{finish(e.clientX,e.clientY,e,false);});window.addEventListener('pointercancel',e=>{finish(e.clientX,e.clientY,e,true);});}else{el.addEventListener('mousedown',e=>{if(e.button!==0){return;}start(e.clientX,e.clientY,e);});window.addEventListener('mousemove',e=>{move(e.clientX,e.clientY,e);});window.addEventListener('mouseup',e=>{finish(e.clientX,e.clientY,e,false);});el.addEventListener('touchstart',e=>{if(!e.touches||e.touches.length===0){return;}const t=e.touches[0];start(t.clientX,t.clientY,e);},{passive:true});window.addEventListener('touchmove',e=>{if(!e.touches||e.touches.length===0){return;}const t=e.touches[0];move(t.clientX,t.clientY,e);if(down){e.preventDefault();}},{passive:false});window.addEventListener('touchend',e=>{const t=e.changedTouches&&e.changedTouches[0];if(t){finish(t.clientX,t.clientY,e,false);}else{finish(sx,sy,e,false);}});window.addEventListener('touchcancel',e=>{const t=e.changedTouches&&e.changedTouches[0];if(t){finish(t.clientX,t.clientY,e,true);}else{finish(sx,sy,e,true);}});}});"
+        script: script ++ "document.querySelectorAll('*').forEach(el=>{const hasPrefix=(prefix)=>{const attrs=el.attributes||[];for(let i=0;i<attrs.length;i++){const name=attrs[i]&&attrs[i].name?attrs[i].name:'';if(name.indexOf(prefix)===0){return true;}}return false;};const engageCode=el.getAttribute('data-feel-engage')||'';const detectCode=el.getAttribute('data-feel-detect')||'';const redrawCode=el.getAttribute('data-feel-redraw')||'';const hasEngagePhases=hasPrefix('data-feel-engage-phase-');const hasDetectPhases=hasPrefix('data-feel-detect-phase-');const hasRedrawPhases=hasPrefix('data-feel-redraw-phase-');if(!(engageCode||detectCode||redrawCode||hasEngagePhases||hasDetectPhases||hasRedrawPhases)){return;}if(el.dataset.vistaFeelCompatBound==='1'){return;}el.dataset.vistaFeelCompatBound='1';const run=(code,event,value)=>{if(!code){return;}try{if(window.__vistaAllowDynamicEval){(new Function('event','value',code)).call(el,event,value);}}catch(_e){}};const phaseCode=(prefix,phase)=>el.getAttribute(prefix+phase)||'';const resolvePhase=(prefix,phase,aliases)=>{if(phaseCode(prefix,phase)){return phase;}const list=Array.isArray(aliases)?aliases:[];for(let i=0;i<list.length;i++){if(phaseCode(prefix,list[i])){return list[i];}}return phase;};const pointOf=(evt)=>{if(!evt){return {x:null,y:null,pageX:null,pageY:null,screenX:null,screenY:null};}const t=(evt.touches&&evt.touches[0])||(evt.changedTouches&&evt.changedTouches[0])||evt;const x=(t&&typeof t.clientX==='number')?t.clientX:null;const y=(t&&typeof t.clientY==='number')?t.clientY:null;const pageX=(t&&typeof t.pageX==='number')?t.pageX:null;const pageY=(t&&typeof t.pageY==='number')?t.pageY:null;const screenX=(t&&typeof t.screenX==='number')?t.screenX:null;const screenY=(t&&typeof t.screenY==='number')?t.screenY:null;return {x:x,y:y,pageX:pageX,pageY:pageY,screenX:screenX,screenY:screenY};};const normalize=(action,phase,evt)=>{const pt=pointOf(evt);const target=(evt&&evt.target)?evt.target:el;const value=(target&&'value' in target)?target.value:((target&&target.textContent!=null)?String(target.textContent):'');const timestamp=(evt&&typeof evt.timeStamp==='number')?evt.timeStamp:Date.now();const payload={action:action,type:action,phase:phase,eventType:evt&&evt.type?String(evt.type):'',faceId:el.getAttribute('data-face-id')||el.id||'',targetId:(target&&target.id)?target.id:'',targetName:(target&&target.name)?target.name:'',targetTag:(target&&target.tagName)?String(target.tagName).toLowerCase():'',timestamp:timestamp,x:pt.x,y:pt.y,pageX:pt.pageX,pageY:pt.pageY,screenX:pt.screenX,screenY:pt.screenY,dx:(evt&&typeof evt.movementX==='number')?evt.movementX:0,dy:(evt&&typeof evt.movementY==='number')?evt.movementY:0,button:(evt&&typeof evt.button==='number')?evt.button:null,buttons:(evt&&typeof evt.buttons==='number')?evt.buttons:null,key:evt&&evt.key?String(evt.key):'',code:evt&&evt.code?String(evt.code):'',keyCode:(evt&&typeof evt.keyCode==='number')?evt.keyCode:null,which:(evt&&typeof evt.which==='number')?evt.which:null,detail:(evt&&typeof evt.detail==='number')?evt.detail:null,pointerType:evt&&evt.pointerType?String(evt.pointerType):'',pointerId:(evt&&typeof evt.pointerId==='number')?evt.pointerId:null,pressure:(evt&&typeof evt.pressure==='number')?evt.pressure:null,tiltX:(evt&&typeof evt.tiltX==='number')?evt.tiltX:null,tiltY:(evt&&typeof evt.tiltY==='number')?evt.tiltY:null,twist:(evt&&typeof evt.twist==='number')?evt.twist:null,wheelX:(evt&&typeof evt.deltaX==='number')?evt.deltaX:0,wheelY:(evt&&typeof evt.deltaY==='number')?evt.deltaY:0,wheelZ:(evt&&typeof evt.deltaZ==='number')?evt.deltaZ:0,deltaMode:(evt&&typeof evt.deltaMode==='number')?evt.deltaMode:null,alt:!!(evt&&evt.altKey),ctrl:!!(evt&&evt.ctrlKey),shift:!!(evt&&evt.shiftKey),meta:!!(evt&&evt.metaKey),modifiers:{alt:!!(evt&&evt.altKey),ctrl:!!(evt&&evt.ctrlKey),shift:!!(evt&&evt.shiftKey),meta:!!(evt&&evt.metaKey)},value:value,checked:!!(target&&target.checked),selectedIndex:(target&&typeof target.selectedIndex==='number')?target.selectedIndex:null};return payload;};const dispatch=(kind,prefix,baseCode,phase,aliases,evt)=>{const resolved=resolvePhase(prefix,phase,aliases);const payload=normalize(kind,resolved,evt);payload.requestedPhase=phase;const pCode=phaseCode(prefix,resolved);if(pCode){run(pCode,evt,payload);return;}run(baseCode,evt,payload);};const engage=(phase,evt,aliases)=>dispatch('engage','data-feel-engage-phase-',engageCode,phase,aliases,evt);const detect=(phase,evt,aliases)=>dispatch('detect','data-feel-detect-phase-',detectCode,phase,aliases,evt);const redraw=(phase,evt,aliases)=>dispatch('redraw','data-feel-redraw-phase-',redrawCode,phase,aliases,evt);if(engageCode||hasEngagePhases){el.addEventListener('mousedown',e=>{if(e&&typeof e.button==='number'){if(e.button===1){engage('aux-down',e,['alt-down','down']);return;}if(e.button===2){engage('alt-down',e,['menu','down']);return;}}engage('down',e,['pointer-down','press']);});el.addEventListener('mouseup',e=>{if(e&&typeof e.button==='number'){if(e.button===1){engage('aux-up',e,['alt-up','up']);return;}if(e.button===2){engage('alt-up',e,['up']);return;}}engage('up',e,['pointer-up','release']);});el.addEventListener('click',e=>engage('click',e,['tap']));el.addEventListener('dblclick',e=>engage('double-click',e,['dbl-click']));el.addEventListener('contextmenu',e=>engage('menu',e,['context-menu']));el.addEventListener('mouseenter',e=>engage('over',e,['enter','hover']));el.addEventListener('mouseleave',e=>engage('away',e,['out','leave']));el.addEventListener('focus',e=>engage('focus',e,[]));el.addEventListener('blur',e=>engage('blur',e,[]));el.addEventListener('keydown',e=>engage('key',e,['key-down']));el.addEventListener('keyup',e=>engage('key-up',e,['key']));el.addEventListener('change',e=>engage('change',e,[]));el.addEventListener('input',e=>engage('input',e,[]));el.addEventListener('submit',e=>engage('submit',e,[]));el.addEventListener('wheel',e=>engage('wheel',e,['scroll-wheel']));if(window.PointerEvent){el.addEventListener('pointerdown',e=>engage('pointer-down',e,['down']));el.addEventListener('pointerup',e=>engage('pointer-up',e,['up']));el.addEventListener('pointercancel',e=>engage('pointer-cancel',e,['cancel']));el.addEventListener('pointerenter',e=>engage('enter',e,['over']));el.addEventListener('pointerleave',e=>engage('leave',e,['away']));}el.addEventListener('touchstart',e=>engage('touch-start',e,['down']));el.addEventListener('touchend',e=>engage('touch-end',e,['up','tap']));el.addEventListener('touchcancel',e=>engage('touch-cancel',e,['cancel']));}if(detectCode||hasDetectPhases){el.addEventListener('mousemove',e=>detect('move',e,[]));el.addEventListener('mouseenter',e=>detect('over',e,['enter']));el.addEventListener('mouseleave',e=>detect('away',e,['leave','out']));el.addEventListener('wheel',e=>detect('wheel',e,['scroll']));el.addEventListener('scroll',e=>detect('scroll',e,['wheel']));if(window.PointerEvent){el.addEventListener('pointermove',e=>detect('move',e,['pointer-move']));}el.addEventListener('touchmove',e=>detect('move',e,['touch-move']));}if(redrawCode||hasRedrawPhases){el.addEventListener('vista-rate-tick',e=>redraw('tick',e,[]));el.addEventListener('change',e=>redraw('change',e,[]));el.addEventListener('input',e=>redraw('input',e,[]));el.addEventListener('scroll',e=>redraw('scroll',e,['move']));if(window.addEventListener){window.addEventListener('resize',e=>redraw('resize',e,['show']));document.addEventListener('visibilitychange',e=>redraw(document.hidden?'hide':'show',e,['show']));}setTimeout(()=>redraw('show',null,[]),0);}});"
+        script: script ++ "document.querySelectorAll('[data-feel-drag],[data-feel-pointer-down],[data-feel-pointer-move],[data-feel-pointer-up],[data-feel-pointer-cancel],[data-feel-tap],[data-feel-long-press]').forEach(el=>{const run=(code,event,value)=>{if(!code){return;}try{if(window.__vistaAllowDynamicEval){(new Function('event','value',code)).call(el,event,value);}}catch(_e){}};const dragCode=el.getAttribute('data-feel-drag')||'';const ptrDown=el.getAttribute('data-feel-pointer-down')||'';const ptrMove=el.getAttribute('data-feel-pointer-move')||'';const ptrUp=el.getAttribute('data-feel-pointer-up')||'';const ptrCancel=el.getAttribute('data-feel-pointer-cancel')||'';const tapCode=el.getAttribute('data-feel-tap')||'';const longCode=el.getAttribute('data-feel-long-press')||'';const longMs=Math.max(0,parseInt(el.getAttribute('data-feel-long-press-ms')||'500',10)||500);const pointOf=(evt)=>{if(!evt){return {x:null,y:null,pageX:null,pageY:null,screenX:null,screenY:null};}const t=(evt.touches&&evt.touches[0])||(evt.changedTouches&&evt.changedTouches[0])||evt;const x=(t&&typeof t.clientX==='number')?t.clientX:null;const y=(t&&typeof t.clientY==='number')?t.clientY:null;const pageX=(t&&typeof t.pageX==='number')?t.pageX:null;const pageY=(t&&typeof t.pageY==='number')?t.pageY:null;const screenX=(t&&typeof t.screenX==='number')?t.screenX:null;const screenY=(t&&typeof t.screenY==='number')?t.screenY:null;return {x:x,y:y,pageX:pageX,pageY:pageY,screenX:screenX,screenY:screenY};};const normalized=(action,phase,evt,extra)=>{const pt=pointOf(evt);const target=(evt&&evt.target)?evt.target:el;const value=(target&&'value' in target)?target.value:((target&&target.textContent!=null)?String(target.textContent):'');const payload={action:action,type:action,phase:phase,eventType:evt&&evt.type?String(evt.type):'',faceId:el.getAttribute('data-face-id')||el.id||'',targetId:(target&&target.id)?target.id:'',targetName:(target&&target.name)?target.name:'',targetTag:(target&&target.tagName)?String(target.tagName).toLowerCase():'',timestamp:(evt&&typeof evt.timeStamp==='number')?evt.timeStamp:Date.now(),x:pt.x,y:pt.y,pageX:pt.pageX,pageY:pt.pageY,screenX:pt.screenX,screenY:pt.screenY,dx:(evt&&typeof evt.movementX==='number')?evt.movementX:0,dy:(evt&&typeof evt.movementY==='number')?evt.movementY:0,button:(evt&&typeof evt.button==='number')?evt.button:null,buttons:(evt&&typeof evt.buttons==='number')?evt.buttons:null,key:evt&&evt.key?String(evt.key):'',code:evt&&evt.code?String(evt.code):'',keyCode:(evt&&typeof evt.keyCode==='number')?evt.keyCode:null,which:(evt&&typeof evt.which==='number')?evt.which:null,detail:(evt&&typeof evt.detail==='number')?evt.detail:null,pointerType:evt&&evt.pointerType?String(evt.pointerType):'',pointerId:(evt&&typeof evt.pointerId==='number')?evt.pointerId:null,pressure:(evt&&typeof evt.pressure==='number')?evt.pressure:null,tiltX:(evt&&typeof evt.tiltX==='number')?evt.tiltX:null,tiltY:(evt&&typeof evt.tiltY==='number')?evt.tiltY:null,twist:(evt&&typeof evt.twist==='number')?evt.twist:null,wheelX:(evt&&typeof evt.deltaX==='number')?evt.deltaX:0,wheelY:(evt&&typeof evt.deltaY==='number')?evt.deltaY:0,wheelZ:(evt&&typeof evt.deltaZ==='number')?evt.deltaZ:0,deltaMode:(evt&&typeof evt.deltaMode==='number')?evt.deltaMode:null,alt:!!(evt&&evt.altKey),ctrl:!!(evt&&evt.ctrlKey),shift:!!(evt&&evt.shiftKey),meta:!!(evt&&evt.metaKey),modifiers:{alt:!!(evt&&evt.altKey),ctrl:!!(evt&&evt.ctrlKey),shift:!!(evt&&evt.shiftKey),meta:!!(evt&&evt.metaKey)},value:value,checked:!!(target&&target.checked),selectedIndex:(target&&typeof target.selectedIndex==='number')?target.selectedIndex:null};if(extra&&typeof extra==='object'){Object.keys(extra).forEach(k=>{payload[k]=extra[k];});}return payload;};let down=false,sx=0,sy=0,pressedAt=0,longTimer=null,longFired=false,moved=false;const clearLong=()=>{if(longTimer){clearTimeout(longTimer);longTimer=null;}};const start=(x,y,e)=>{down=true;sx=x;sy=y;pressedAt=Date.now();longFired=false;moved=false;clearLong();run(ptrDown,e,normalized('engage','pointer-down',e,{x:x,y:y,startX:x,startY:y}));if(longCode){longTimer=setTimeout(()=>{if(down&&!moved){longFired=true;run(longCode,e,normalized('engage','long-press',e,{x:x,y:y,startX:sx,startY:sy,duration:Date.now()-pressedAt}));}},longMs);}};const move=(x,y,e)=>{run(ptrMove,e,normalized('detect','pointer-move',e,{x:x,y:y,startX:sx,startY:sy,dx:x-sx,dy:y-sy}));if(!down){return;}const dx=x-sx;const dy=y-sy;if(Math.abs(dx)>8||Math.abs(dy)>8){moved=true;clearLong();}if(dragCode){run(dragCode,e,normalized('engage','drag',e,{x:x,y:y,startX:sx,startY:sy,dx:dx,dy:dy,duration:Date.now()-pressedAt}));}};const finish=(x,y,e,cancelled)=>{if(!down){if(cancelled){run(ptrCancel,e,normalized('engage','pointer-cancel',e,{x:x,y:y,startX:sx,startY:sy}));}return;}down=false;const dx=x-sx;const dy=y-sy;const dur=Date.now()-pressedAt;clearLong();if(cancelled){run(ptrCancel,e,normalized('engage','pointer-cancel',e,{x:x,y:y,startX:sx,startY:sy,dx:dx,dy:dy,duration:dur}));return;}run(ptrUp,e,normalized('engage','pointer-up',e,{x:x,y:y,startX:sx,startY:sy,dx:dx,dy:dy,duration:dur}));if(tapCode&&!longFired&&!moved&&dur<longMs){run(tapCode,e,normalized('engage','tap',e,{x:x,y:y,startX:sx,startY:sy,duration:dur}));}};if(window.PointerEvent){el.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0){return;}start(e.clientX,e.clientY,e);});window.addEventListener('pointermove',e=>{move(e.clientX,e.clientY,e);});window.addEventListener('pointerup',e=>{finish(e.clientX,e.clientY,e,false);});window.addEventListener('pointercancel',e=>{finish(e.clientX,e.clientY,e,true);});}else{el.addEventListener('mousedown',e=>{if(e.button!==0){return;}start(e.clientX,e.clientY,e);});window.addEventListener('mousemove',e=>{move(e.clientX,e.clientY,e);});window.addEventListener('mouseup',e=>{finish(e.clientX,e.clientY,e,false);});el.addEventListener('touchstart',e=>{if(!e.touches||e.touches.length===0){return;}const t=e.touches[0];start(t.clientX,t.clientY,e);},{passive:true});window.addEventListener('touchmove',e=>{if(!e.touches||e.touches.length===0){return;}const t=e.touches[0];move(t.clientX,t.clientY,e);if(down){e.preventDefault();}},{passive:false});window.addEventListener('touchend',e=>{const t=e.changedTouches&&e.changedTouches[0];if(t){finish(t.clientX,t.clientY,e,false);}else{finish(sx,sy,e,false);}});window.addEventListener('touchcancel',e=>{const t=e.changedTouches&&e.changedTouches[0];if(t){finish(t.clientX,t.clientY,e,true);}else{finish(sx,sy,e,true);}});}});"
         script: script ++ "document.querySelectorAll('[data-dnd-dragstart],[data-dnd-dragover],[data-dnd-drop],[data-dnd-dragenter],[data-dnd-dragleave],[data-dnd-dragend]').forEach(el=>{const run=(code,event,payload)=>{if(!code){return;}try{if(window.__vistaAllowDynamicEval){(new Function('event','value',code)).call(el,event,payload);}}catch(_e){}};const payloadAttr=el.getAttribute('data-dnd-payload')||'';const dragStartCode=el.getAttribute('data-dnd-dragstart')||'';const dragOverCode=el.getAttribute('data-dnd-dragover')||'';const dropCode=el.getAttribute('data-dnd-drop')||'';const dragEnterCode=el.getAttribute('data-dnd-dragenter')||'';const dragLeaveCode=el.getAttribute('data-dnd-dragleave')||'';const dragEndCode=el.getAttribute('data-dnd-dragend')||'';const dropEffect=el.getAttribute('data-dnd-drop-effect')||'';if(dragStartCode&&!el.hasAttribute('draggable')){el.setAttribute('draggable','true');}el.addEventListener('dragstart',e=>{const payload=payloadAttr!==''?payloadAttr:(el.getAttribute('data-value')||el.textContent||'');if(e.dataTransfer){try{e.dataTransfer.setData('text/plain',payload);}catch(_e1){}e.dataTransfer.effectAllowed='copyMove';}run(dragStartCode,e,payload);});el.addEventListener('dragover',e=>{e.preventDefault();if(e.dataTransfer&&dropEffect!==''){e.dataTransfer.dropEffect=dropEffect;}run(dragOverCode,e,null);});el.addEventListener('drop',e=>{e.preventDefault();let payload='';if(e.dataTransfer){try{payload=e.dataTransfer.getData('text/plain')||'';}catch(_e2){}}el.setAttribute('data-dnd-last-payload',payload);run(dropCode,e,payload);});el.addEventListener('dragenter',e=>{e.preventDefault();run(dragEnterCode,e,null);});el.addEventListener('dragleave',e=>{run(dragLeaveCode,e,null);});el.addEventListener('dragend',e=>{run(dragEndCode,e,null);});});"
         script: script ++ "});"
         script

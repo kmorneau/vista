@@ -6,35 +6,42 @@
   "body": {
     <h1>VID Overview</h1>
 
-    <p>VID (Visual Interface Dialect) is the declarative UI syntax used by Vista. It maps a concise block syntax to a tree of UI components.</p>
+    <p>VID (Visual Interface Dialect) is the declarative UI syntax used by Vista. It maps concise blocks to a face tree and runtime behavior.</p>
 
-    <h2>Concepts</h2>
+    <h2>Core Concepts</h2>
     <ul>
-      <li><strong>Faces</strong>: UI nodes with facets and state</li>
-      <li><strong>Layouts</strong>: Containers and structural grouping</li>
-      <li><strong>Events</strong>: Actions tied to widgets</li>
+      <li><strong>Faces</strong>: UI nodes with facets, handlers, and state.</li>
+      <li><strong>Layout flow</strong>: <code>across</code>, <code>below</code>, <code>return</code>, scoped containers.</li>
+      <li><strong>Action blocks</strong>: Compiled handlers for UI interaction.</li>
+      <li><strong>Compatibility layers</strong>: REBOL/View-style <code>facets</code>, <code>feel</code>, and <code>actor</code> mappings.</li>
     </ul>
 
     <h2>Syntax</h2>
-    <pre><code>
-    view .html [
-        text "Label"
-        button "Click Me" [print "clicked"]
-    ]
-    </code></pre>
+    <pre><code class="language-arturo">view [
+  text "Label"
+  button "Click Me" [print "clicked"]
+]</code></pre>
+
+    <h2>REBOL/View Compatibility Notes</h2>
+    <ul>
+      <li><code>.facets:#[]</code> and <code>.actor:#[]</code> are supported.</li>
+      <li><code>feel</code> channels (<code>engage</code>, <code>detect</code>, <code>redraw</code>) are supported, including phase maps.</li>
+      <li>Event payloads are normalized for handler stability.</li>
+      <li>Use <code>vista_rebol_compat_mode: true</code> for migration-heavy code.</li>
+    </ul>
 
     <h2>References</h2>
     <ul>
-      <li><a href="/tutorial/vista_tutorial">Vista Tutorial</a></li>
-      <li><a href="/docs/VID_COMPAT">VID Compatibility</a></li>
-      <li><a href="/docs/VID_PARITY">VID Parity</a></li>
+      <li><a href="/wiki/shared/migration/vid-compatibility/">VID Compatibility</a></li>
+      <li><a href="/wiki/shared/migration/vid-parity/">VID Parity</a></li>
+      <li><a href="/wiki/shared/migration/from-rebol-view/">From Rebol/View</a></li>
     </ul>
 
     <h2>See Also</h2>
     <ul>
       <li><a href="/wiki/getting-started/">Getting Started</a> - Quick start with Vista</li>
-      <li><a href="/wiki/core/concepts/face-model/">Face Model</a> - Understanding the face/facet architecture</li>
-      <li><a href="/wiki/core/concepts/layout-overview/">Layout System</a> - Layout concepts and patterns</li>
+      <li><a href="/wiki/core/concepts/face-model/">Face Model</a> - Face/facet architecture</li>
+      <li><a href="/wiki/core/concepts/layout-overview/">Layout System</a> - Layout patterns</li>
     </ul>
   }
 ]

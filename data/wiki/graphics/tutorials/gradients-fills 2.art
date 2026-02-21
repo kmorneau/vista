@@ -1,0 +1,41 @@
+#[
+  "title": "Gradients & Fills"
+  "layout": "docpage"
+  "category": "Tutorials"
+  "tags": ["graphics", "tutorials", "gradients", "fills", "colors"]
+  "body": {
+    <h1>Gradients & Fills</h1>
+
+    <p>Learn how to create and apply gradients and fill styles to your graphics.</p>
+
+    <h2>Linear Gradients</h2>
+    <pre><code>draw canvas [
+    fill linear 0 0 200 0 red orange yellow
+    box 0 0 200 100
+]</code></pre>
+
+    <h2>Radial Gradients</h2>
+    <pre><code>draw canvas [
+    fill radial 100 100 100 white blue
+    circle 100 100 100
+]</code></pre>
+
+    <h2>Solid Fills</h2>
+    <pre><code>draw canvas [
+    fill red
+    circle 100 100 50
+]</code></pre>
+
+    <h2>Gradient Parameters</h2>
+    <ul>
+      <li><strong>Linear</strong>: x1 y1 x2 y2 color1 color2 ...</li>
+      <li><strong>Radial</strong>: x y r color1 color2 ...</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/colors/">Colors</a> - Color reference</li>
+      <li><a href="/wiki/graphics/drawing/primitives/">Primitives</a> - Drawing primitives</li>
+    </ul>
+  }
+]

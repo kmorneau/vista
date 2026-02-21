@@ -6,21 +6,17 @@
   "body": {
     <h1>Migration from REBOL View</h1>
 
-    <p>This guide helps REBOL/View developers transition to Vista. Vista inherits the declarative layout philosophy of VID while targeting modern web technologies.</p>
+    <p>This guide helps REBOL/View developers transition to Vista. Vista keeps the declarative VID style while targeting modern HTML/WebView runtime behavior.</p>
 
     <h2>Core Philosophy</h2>
-
-    <p>Like REBOL/View, Vista uses:</p>
     <ul>
       <li>Declarative face definitions</li>
       <li>Layout words (<code>across</code>, <code>below</code>, <code>return</code>)</li>
-      <li>Data binding via word references</li>
+      <li>Data binding by word references</li>
       <li>Action blocks for interactivity</li>
     </ul>
 
     <h2>Layout Keywords</h2>
-
-    <h3>REBOL/View to Vista</h3>
     <table>
       <tr><th>REBOL/View</th><th>Vista</th></tr>
       <tr><td><code>across</code></td><td><code>across</code></td></tr>
@@ -31,161 +27,67 @@
       <tr><td><code>space</code></td><td><code>.space:</code></td></tr>
     </table>
 
-    <h2>Layout Examples</h2>
-
-    <h3>REBOL/View</h3>
-    <pre><code>
-    view layout [
-        across
-        field "Name"
-        button "Save" [save-data]
-        return
-        field "Email"
-        button "Cancel" [close]
-    ]
-    </code></pre>
-
-    <h3>Vista</h3>
-    <pre><code>
-    view [
-        across
-        field "Name"
-        button "Save" [save-data]
-        return
-        field "Email"
-        button "Cancel" [close]
-    ]
-    </code></pre>
-
     <h2>Face Mapping</h2>
-
     <table>
       <tr><th>REBOL/View</th><th>Vista</th><th>Notes</th></tr>
       <tr><td><code>text</code></td><td><code>text</code></td><td>Same syntax</td></tr>
       <tr><td><code>field</code></td><td><code>field</code></td><td>Same syntax</td></tr>
       <tr><td><code>button</code></td><td><code>button</code></td><td>Same syntax</td></tr>
-      <tr><td><code>toggle</code></td><td><code>toggle</code></td><td>Same syntax</td></tr>
-      <tr><td><code>checkbox</code></td><td><code>checkbox</code></td><td>Same syntax</td></tr>
-      <tr><td><code>radio</code></td><td><code>radio</code></td><td>Same syntax</td></tr>
-      <tr><td><code>slider</code></td><td><code>slider</code></td><td>Same syntax</td></tr>
-      <tr><td><code>drop-list</code></td><td><code>drop-list</code></td><td>Same syntax</td></tr>
       <tr><td><code>area</code></td><td><code>textarea</code></td><td>Renamed</td></tr>
-      <tr><td><code>list</code></td><td><code>text_list</code></td><td>Use <code>text_list</code> (list is reserved)</td></tr>
+      <tr><td><code>list</code></td><td><code>text_list</code></td><td><code>list</code> is reserved</td></tr>
       <tr><td><code>panel</code></td><td><code>panel</code></td><td>Same syntax</td></tr>
-      <tr><td><code>box</code></td><td><code>box</code></td><td>Same syntax</td></tr>
     </table>
 
-    <h2>Data Binding</h2>
+    <h2>Facets/Feel Compatibility</h2>
+    <p>Vista supports REBOL-like dictionaries for migration-oriented code:</p>
+    <pre><code class="language-arturo">button "OK"
+.facets:#[size:[120 36] color:"#dde7ff" enabled:true]
+.feel:#[click:[print "clicked"]]
 
-    <h3>REBOL/View</h3>
-    <pre><code>
-    name: "World"
-    view layout [
-        field name
-        text name
-    ]
-    </code></pre>
+button "Run" .actor:#[action:[print "run"]]</code></pre>
 
-    <h3>Vista</h3>
-    <pre><code>
-    name: "World"
-    view [
-        field name
-        text name
-    ]
-    </code></pre>
+    <p>Runtime updates are supported:</p>
+    <pre><code class="language-arturo">apply_facets "my-face" #[
+  size:[160 40]
+  offset:[8 4]
+  alpha:0.9
+  feel:#[click:[print "clicked"]]
+  actor:#[engage:[print "fallback click"]]
+]</code></pre>
 
-    <h2>Actions</h2>
+    <p><code>engage</code>, <code>detect</code>, and <code>redraw</code> are first-class channels and support phase maps.</p>
 
-    <h3>REBOL/View</h3>
-    <pre><code>
-    button "Click" [print "Hello"]
-    </code></pre>
-
-    <h3>Vista</h3>
-    <pre><code>
-    button "Click" [print "Hello"]
-    </code></pre>
-
-    <p>Action blocks work the same way. Vista compiles them to JavaScript.</p>
-
-    <h2>VID Style Features</h2>
-
-    <p>Enable VID compatibility mode for closer REBOL/View behavior:</p>
-    <pre><code>
-    vista_layout_vid_mode: true
-
-    view [
-        across
-        text "A"
-        text "B"
-    ]
-    </code></pre>
-
-    <h2>Draw Graphics</h2>
-
-    <p>Vista supports Draw blocks for canvas rendering:</p>
-    <pre><code>
-    canvas .width:240 .height:140 [
-        pen "#1f5cff"
-        line-width 3
-        line [20 20] [200 20]
-        fill-pen "#f0f4ff"
-        box [20 40] [200 120]
-    ]
-    </code></pre>
-
-    <h2>Common REBOL/View Idioms</h2>
-
-    <h3>Skin/Feel</h3>
-    <p>Vista uses CSS instead of VID skins. Use classes and styles:</p>
-    <pre><code>
-    button "Primary" .class:"btn-primary" [action]
-    box .style:"border: 2px solid #999" [...]
-    </code></pre>
-
-    <h3>Style Sheets</h3>
-    <p>Define reusable styles:</p>
-    <pre><code>
-    style card [
-        box [
-            title "Title"
-            text "Body"
-        ]
-    ]
-    </code></pre>
-
-    <h2>What's Different</h2>
-
+    <h2>Event Payload Contract</h2>
+    <p>Feel and actor handlers receive a normalized event object (<code>value</code>) with stable keys for:</p>
     <ul>
-      <li>Output is HTML/WebView, not native</li>
-      <li>No <code>face</code> object - uses DOM elements</li>
-      <li><code>show</code> uses JavaScript render cycle</li>
-      <li>Some VID words are reserved in Arturo (use alternatives)</li>
-      <li>Event system uses HTML event attributes</li>
+      <li>Action metadata (<code>action</code>, <code>phase</code>, <code>requestedPhase</code>, <code>eventType</code>)</li>
+      <li>Target identity (<code>faceId</code>, <code>targetId</code>, <code>targetName</code>, <code>targetTag</code>)</li>
+      <li>Pointer/position and keyboard/modifier data</li>
+      <li>Current target state (<code>value</code>, <code>checked</code>, <code>selectedIndex</code>)</li>
     </ul>
 
-    <h2>Quick Reference</h2>
+    <h2>Implemented Parity and Fixes (Current)</h2>
+    <ul>
+      <li>Facet dictionaries (<code>.facets:#[]</code>) and actor dictionaries (<code>.actor:#[]</code>) are supported.</li>
+      <li>Runtime facet updates are supported via <code>apply_facets</code> and helper mappings.</li>
+      <li><code>engage</code>, <code>detect</code>, and <code>redraw</code> channels support phase maps.</li>
+      <li>Action vocabulary includes richer pointer/touch aliases and redraw/detect actions.</li>
+      <li>Auth/UI migration fixes include centered intro splash with automatic 5-second transition to login via <code>rate</code> + <code>on-tick</code>.</li>
+    </ul>
 
-    <pre><code>
-    ; REBOL/View
-    view layout [across field name button "OK" [do something]]
-
-    ; Vista
-    view [across field name button "OK" [do something]]
-
-    ; Same for:
-    ; - field, button, text, label
-    ; - checkbox, toggle, radio
-    ; - slider, drop-list, select
-    ; - box, panel, group
-    ; - across, below, return, end
-    </code></pre>
+    <h2>What's Different</h2>
+    <ul>
+      <li>Output is HTML/WebView, not native</li>
+      <li>No direct REBOL face object; faces map to DOM/runtime structures</li>
+      <li><code>show</code> is handled through Vista runtime rendering</li>
+    </ul>
 
     <h2>See Also</h2>
     <ul>
-      <li><a href="/wiki/vid-overview/">VID Overview</a> - VID concepts in Vista</li>
+      <li><a href="/wiki/core/concepts/vid-overview/">VID Overview</a> - VID concepts in Vista</li>
       <li><a href="/wiki/getting-started/">Getting Started</a> - Quick start guide</li>
       <li><a href="/wiki/shared/troubleshooting/common-issues/">Common Issues</a> - Migration troubleshooting</li>
+      <li><a href="/docs/authentication/">Authentication</a> - Auth flow and <code>auth_app</code></li>
     </ul>
+  }
 ]

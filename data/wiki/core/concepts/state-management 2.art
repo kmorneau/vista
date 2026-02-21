@@ -1,0 +1,75 @@
+#[
+  "title": "State Management"
+  "layout": "docpage"
+  "category": "Concepts"
+  "tags": ["state", "binding", "data", "core"]
+  "body": {
+    <h1>State Management</h1>
+
+    <p>Vista's state management system provides reactive data binding that automatically synchronizes UI state with your application data.</p>
+
+    <h2>The State Dictionary</h2>
+    <p>The state is stored in a global dictionary where keys are binding names and values are the state data:</p>
+    <pre><code>
+    view .html [
+        field "Enter name" .bind: 'userName
+        text ["Hello " userName]
+    ]
+    </code></pre>
+
+    <h2>Setting State</h2>
+    <p>Use <code>set-state</code> to programmatically update state:</p>
+    <pre><code>
+    set-state 'counter 0
+    set-state 'name "World"
+    </code></pre>
+
+    <h2>Reading State</h2>
+    <p>State values are accessed directly by word name:</p>
+    <pre><code>
+    currentValue: counter
+    print ["The counter is" counter]
+    </code></pre>
+
+    <h2>Two-Way Binding</h2>
+    <p>Input components support two-way binding with the <code>.bind:</code> attribute:</p>
+    <pre><code>
+    view .html [
+        field .bind: 'username
+        text ["You typed: " username]
+    ]
+    </code></pre>
+
+    <h2>Binding Types</h2>
+    <ul>
+      <li><strong>Text Binding</strong>: Bind to text content</li>
+      <li><strong>Input Binding</strong>: Two-way binding for input fields</li>
+      <li><strong>List Binding</strong>: Binding for list selections</li>
+      <li><strong>Checkbox Binding</strong>: Boolean state binding</li>
+    </ul>
+
+    <h2>Synchronization</h2>
+    <p>Use <code>sync-state</code> to push local state changes back:</p>
+    <pre><code>
+    ; Automatically sync all bound values
+    sync-state
+    </code></pre>
+
+    <h2>State Callbacks</h2>
+    <p>Use <code>on-change</code> to respond to state changes:</p>
+    <pre><code>
+    view .html [
+        field .bind: 'name
+            .on-change [
+                print ["Name changed to" name]
+            ]
+    ]
+    </code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/data-binding/binding-overview/">Binding Overview</a> - Complete binding guide</li>
+      <li><a href="/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Input binding details</li>
+      <li><a href="/wiki/core/data-binding/auto-sync/">Auto Sync</a> - Automatic synchronization</li>
+    </ul>
+]

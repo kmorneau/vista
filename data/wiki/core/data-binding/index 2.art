@@ -1,0 +1,35 @@
+#[
+  "title": "Data Binding"
+  "layout": "docpage"
+  "category": "Data Binding"
+  "tags": ["data-binding", "state", "reactivity", "sync"]
+  "body": {
+    <h1>Data Binding</h1>
+
+    <p>Vista's data binding system enables automatic synchronization between your application state and the UI.</p>
+
+    <h2>Data Binding Topics</h2>
+    <ul>
+      <li><a href="/wiki/core/data-binding/binding-overview/">Binding Overview</a> - Introduction to data binding</li>
+      <li><a href="/wiki/core/data-binding/state-model/">State Model</a> - Managing application state</li>
+      <li><a href="/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Bidirectional data flow</li>
+      <li>Sync State - Manual state synchronization</li>
+      <li>Auto Sync - Automatic synchronization</li>
+      <li>Face Updates - Updating faces dynamically</li>
+    </ul>
+
+    <h2>Basic Binding Example</h2>
+    <pre><code>name: "World"
+view .html [
+    text "Hello, "
+    text :name
+    field :name
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/core/concepts/state-management/">State Management</a> - State concepts</li>
+      <li><a href="/wiki/core/components/input-fields/">Input Fields</a> - Input components</li>
+    </ul>
+  }
+]

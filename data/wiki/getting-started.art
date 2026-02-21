@@ -6,25 +6,42 @@
   "body": {
     <h1>Getting Started</h1>
 
-    <p>This wiki is a work-in-progress reference for the Vista UI layer.</p>
+    <p>This wiki is a practical reference for the Vista UI layer.</p>
 
     <h2>Quick Start</h2>
-    <pre><code>
-    import 'vista!
+    <pre><code class="language-arturo">import "vista.art"!
 
-    view .html [
-        text "Hello"
-        button "OK" [print "ok"]
-    ]
-    </code></pre>
+view [
+  text "Hello"
+  button "OK" [print "ok"]
+]</code></pre>
+
+    <h2>Auth Flow Quick Start</h2>
+    <p>For a managed auth flow (intro splash -&gt; login/signup -&gt; account), use <code>auth_app</code>.</p>
+    <p>Required state includes:</p>
+    <ul>
+      <li><code>show_intro_splash</code></li>
+      <li><code>show_splash</code></li>
+      <li><code>show_login</code></li>
+      <li><code>show_signup</code></li>
+      <li><code>show_account</code></li>
+    </ul>
+    <p>Recommended startup:</p>
+    <pre><code class="language-arturo">show_intro_splash: true
+show_splash: false
+show_login: false
+show_signup: false
+show_account: false</code></pre>
+    <p>The intro splash auto-transitions after 5 seconds via <code>.rate:5000</code> and <code>.on-tick</code>.</p>
 
     <h2>Build the Docs</h2>
-    <pre><code>
-    arturo tools/build.art
-    </code></pre>
+    <pre><code class="language-bash">arturo tools/build.art</code></pre>
 
     <h2>See Also</h2>
     <ul>
-      <li><a href="/wiki/vid-overview/">VID Overview</a> - Learn about the VID dialect</li>
+      <li><a href="/wiki/core/concepts/vid-overview/">VID Overview</a> - Learn about the VID dialect</li>
+      <li><a href="/wiki/shared/migration/">Migration</a> - REBOL/View and VID migration guides</li>
+      <li><a href="/docs/authentication/">Authentication</a> - Auth helpers and <code>auth_app</code></li>
     </ul>
+  }
 ]

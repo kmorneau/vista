@@ -7,11 +7,12 @@ auth_icon_password: "lock"
 auth_icon_mfa_on: "shield-check"
 auth_icon_mfa_off: "shield-off"
 auth_icon_sign_out: "log-out"
+auth_logo_data: logo_data_url vista_app_logo_path
 
 style "auth_splash" [
     box .class:"vista-auth-splash" [
         box .class:"vista-auth-splash-card" [
-            image vista_app_logo_path .class:"vista-auth-splash-logo"
+            image auth_logo_data .class:"vista-auth-splash-logo"
             text arg0 .as:"h2" .class:"vista-auth-title"
         ]
     ]
@@ -87,10 +88,22 @@ style "auth_account" [
 ; show_splash, show_login, show_signup, show_account
 style "auth_app" [
     box .style:"display:none" [
+        field show_intro_splash .type:"hidden"
         field show_splash .type:"hidden"
         field show_login .type:"hidden"
         field show_signup .type:"hidden"
         field show_account .type:"hidden"
+    ]
+
+    ; Intro splash behavior matches the AI chat example:
+    ; show centered overlay for 5s, then open login panel.
+    box .style:"display:none" .rate:5000 .on-tick:"if(typeof state!=='object'){return;}if(state.show_intro_splash===true&&state.show_account!==true){state.show_intro_splash=false;state.show_splash=false;state.show_login=true;state.show_signup=false;if(typeof render==='function'){render();}}" ""
+
+    box .data-show-bind:"show_intro_splash" .data-show-value:"true" .style:"position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.68);padding:20px;" [
+        box .style:"position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(680px,calc(100% - 40px));background:var(--arturo-primary);border:2px solid #1f1f1f;border-radius:16px;padding:28px;box-shadow:0 24px 60px rgba(2,6,23,0.35);text-align:center;" [
+            image auth_logo_data .class:"vista-auth-splash-logo"
+            title arg0 .style:"font-size:34px;font-weight:800;color:#1f1f1f;margin:0;"
+        ]
     ]
 
     box .class:"vista-auth-card" .data-show-bind:"show_splash" .data-show-value:"true" [

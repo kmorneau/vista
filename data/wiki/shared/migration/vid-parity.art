@@ -6,199 +6,47 @@
   "body": {
     <h1>VID Parity</h1>
 
-    <p>Feature comparison between VID (View It Desktop) and Vista.</p>
+    <p>Current parity status between classic VID/REBOL/View patterns and Vista.</p>
 
-    <h2>Feature Matrix</h2>
+    <h2>Core Feature Parity</h2>
     <table>
-      <tr>
-        <th>Feature</th>
-        <th>VID</th>
-        <th>Vista</th>
-        <th>Notes</th>
-      </tr>
-      <tr>
-        <td>Button</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Enhanced in Vista</td>
-      </tr>
-      <tr>
-        <td>Field</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Enhanced input handling</td>
-      </tr>
-      <tr>
-        <td>Area</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Multi-line support</td>
-      </tr>
-      <tr>
-        <td>Text</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Rich text in Vista</td>
-      </tr>
-      <tr>
-        <td>Image</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>SVG support in Vista</td>
-      </tr>
-      <tr>
-        <td>Panel</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Enhanced styling</td>
-      </tr>
-      <tr>
-        <td>Tabs</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Dynamic tabs in Vista</td>
-      </tr>
-      <tr>
-        <td>Slider</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Range sliders in Vista</td>
-      </tr>
-      <tr>
-        <td>Progress</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Animated in Vista</td>
-      </tr>
-      <tr>
-        <td>Drop-down</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Searchable in Vista</td>
-      </tr>
+      <tr><th>Feature</th><th>VID</th><th>Vista</th><th>Notes</th></tr>
+      <tr><td>Button/Field/Text/Panel</td><td>✅</td><td>✅</td><td>Supported</td></tr>
+      <tr><td>Tabs/Slider/Progress</td><td>✅</td><td>✅</td><td>Supported with extended behavior</td></tr>
+      <tr><td>Layout words (<code>across</code>, <code>below</code>, <code>return</code>)</td><td>✅</td><td>✅</td><td>Supported</td></tr>
+      <tr><td>Scoped layout</td><td>⚠️</td><td>✅</td><td>Vista adds <code>scope</code> and modern container mapping</td></tr>
     </table>
 
-    <h2>Layout Features</h2>
+    <h2>Facet/Feel/Actor Parity</h2>
     <table>
-      <tr>
-        <th>Feature</th>
-        <th>VID</th>
-        <th>Vista</th>
-        <th>Notes</th>
-      </tr>
-      <tr>
-        <td>across</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Same behavior</td>
-      </tr>
-      <tr>
-        <td>below</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Same behavior</td>
-      </tr>
-      <tr>
-        <td>pad</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Extended syntax</td>
-      </tr>
-      <tr>
-        <td>space</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Same behavior</td>
-      </tr>
-      <tr>
-        <td>indent</td>
-        <td>✅</td>
-        <td>❌</td>
-        <td>Use margin/padding</td>
-      </tr>
-      <tr>
-        <td>guide</td>
-        <td>✅</td>
-        <td>❌</td>
-        <td>Use align attributes</td>
-      </tr>
-      <tr>
-        <td>center</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Same behavior</td>
-      </tr>
+      <tr><th>Feature</th><th>VID</th><th>Vista</th><th>Notes</th></tr>
+      <tr><td><code>facets</code> dictionaries</td><td>✅</td><td>✅</td><td><code>.facets:#[]</code> supported</td></tr>
+      <tr><td><code>feel</code> dictionaries</td><td>✅</td><td>✅</td><td>Channel + phase mapping supported</td></tr>
+      <tr><td><code>actor</code> dictionaries</td><td>✅</td><td>✅</td><td>Normalized into feel/action channels</td></tr>
+      <tr><td><code>apply_facets</code> runtime updates</td><td>❌</td><td>✅</td><td>Runtime facet updates for migration flows</td></tr>
     </table>
 
-    <h2>Event Handling</h2>
+    <h2>Event/Action Parity</h2>
     <table>
-      <tr>
-        <th>Feature</th>
-        <th>VID</th>
-        <th>Vista</th>
-        <th>Notes</th>
-      </tr>
-      <tr>
-        <td>on-click</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Same syntax</td>
-      </tr>
-      <tr>
-        <td>on-change</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Same syntax</td>
-      </tr>
-      <tr>
-        <td>on-focus</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Same syntax</td>
-      </tr>
-      <tr>
-        <td>on-key</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Enhanced key codes</td>
-      </tr>
-      <tr>
-        <td>on-drag</td>
-        <td>✅</td>
-        <td>✅</td>
-        <td>Enhanced in Vista</td>
-      </tr>
-      <tr>
-        <td>on-draw</td>
-        <td>❌</td>
-        <td>✅</td>
-        <td>Canvas events</td>
-      </tr>
+      <tr><th>Feature</th><th>VID</th><th>Vista</th><th>Notes</th></tr>
+      <tr><td><code>engage</code> channel</td><td>✅</td><td>✅</td><td>Preserved, phase-aware</td></tr>
+      <tr><td><code>detect</code> channel</td><td>✅</td><td>✅</td><td>Preserved, phase-aware</td></tr>
+      <tr><td><code>redraw</code> channel</td><td>✅</td><td>✅</td><td>Preserved, supports <code>tick</code>/<code>show</code>/<code>hide</code></td></tr>
+      <tr><td>Normalized event object</td><td>⚠️</td><td>✅</td><td>Stable payload keys for handlers</td></tr>
+      <tr><td>Richer pointer/touch action aliases</td><td>❌</td><td>✅</td><td><code>pointer-down</code>, <code>touch-start</code>, <code>aux-down</code>, etc.</td></tr>
     </table>
 
-    <h2>New Features in Vista</h2>
+    <h2>Auth/UI Flow Parity Additions</h2>
     <ul>
-      <li><strong>Auto-sync</strong>: Automatic state synchronization</li>
-      <li><strong>Data binding</strong>: Declarative data flow</li>
-      <li><strong>Computed state</strong>: Derived values</li>
-      <li><strong>Canvas API</strong>: Direct drawing</li>
-      <li><strong>Animation</strong>: Built-in animation system</li>
-      <li><strong>Theming</strong>: CSS-based theming</li>
-      <li><strong>Responsive</strong>: Responsive layout support</li>
-    </ul>
-
-    <h2>Deprecated in Vista</h2>
-    <ul>
-      <li>feel: object (use on: events)</li>
-      <li>actor: [...] (use on: handlers)</li>
-      <li>facets: [...] (use attribute: syntax)</li>
-      <li>vid: dialect (use view directly)</li>
+      <li>Intro splash is centered and timed with <code>.rate:5000</code> + <code>.on-tick</code>.</li>
+      <li>Login/signup is gated until splash completes.</li>
+      <li>Auth splash behavior is aligned across auth and AI chat examples.</li>
     </ul>
 
     <h2>See Also</h2>
     <ul>
       <li><a href="/wiki/shared/migration/vid-compatibility/">VID Compatibility</a> - Compatibility guide</li>
-      <li><a href="/wiki/shared/migration/from-rebol-view/">From Rebol/View</a> - Migration from Rebol</li>
+      <li><a href="/wiki/shared/migration/from-rebol-view/">From Rebol/View</a> - Migration guide</li>
     </ul>
   }
 ]

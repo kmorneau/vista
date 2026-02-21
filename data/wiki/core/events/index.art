@@ -6,27 +6,32 @@
   "body": {
     <h1>Event System</h1>
 
-    <p>Vista provides a comprehensive event system for handling user interactions and application events.</p>
+    <p>Vista provides event handlers for standard UI events plus REBOL-style compatibility channels.</p>
 
     <h2>Event Types</h2>
     <ul>
-      <li><a href="/wiki/core/events/event-overview/">Event Overview</a> - Introduction to events</li>
-      <li><a href="/wiki/core/events/click-events/">Click Events</a> - Button clicks and taps</li>
-      <li><a href="/wiki/core/events/input-events/">Input Events</a> - Change and input events</li>
-      <li><a href="/wiki/core/events/mouse-events/">Mouse Events</a> - Hover, enter, leave, down, up</li>
-      <li><a href="/wiki/core/events/keyboard-events/">Keyboard Events</a> - Key presses and bindings</li>
-      <li><a href="/wiki/core/events/focus-events/">Focus Events</a> - Focus and blur events</li>
+      <li><a href="/wiki/core/events/event-overview/">Event Overview</a> - Categories and action vocabulary</li>
+      <li><a href="/wiki/core/events/click-events/">Click Events</a> - Click and activation</li>
+      <li><a href="/wiki/core/events/input-events/">Input Events</a> - Change and input</li>
+      <li><a href="/wiki/core/events/mouse-events/">Mouse Events</a> - Pointer movement and buttons</li>
+      <li><a href="/wiki/core/events/keyboard-events/">Keyboard Events</a> - Key handling</li>
+      <li><a href="/wiki/core/events/focus-events/">Focus Events</a> - Focus transitions</li>
+    </ul>
+
+    <h2>Runtime Notes</h2>
+    <ul>
+      <li><code>.on-tick</code> works with <code>.rate</code> for timer-driven handlers.</li>
+      <li><code>engage</code> / <code>detect</code> / <code>redraw</code> compatibility channels are available via feel/actor mappings.</li>
+      <li>Event payloads are normalized for stable handler code.</li>
     </ul>
 
     <h2>Event Example</h2>
-    <pre><code>button "Click Me" [
-    print "Button clicked!"
-]</code></pre>
+    <pre><code class="language-arturo">button "Click Me" [print "Button clicked!"]</code></pre>
 
     <h2>See Also</h2>
     <ul>
-      <li><a href="/wiki/core/components/">Components</a> - UI components</li>
-      <li><a href="/wiki/core/concepts/event-system/">Event System Concepts</a> - Architecture</li>
+      <li><a href="/wiki/core/concepts/event-system/">Event System Concepts</a> - Architecture and payload model</li>
+      <li><a href="/wiki/shared/migration/vid-parity/">VID Parity</a> - Migration parity status</li>
     </ul>
   }
 ]

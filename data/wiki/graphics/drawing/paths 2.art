@@ -1,0 +1,55 @@
+#[
+  "title": "Paths"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["graphics", "drawing", "paths", "reference"]
+  "body": {
+    <h1>Paths</h1>
+
+    <p>Reference for Vista Graphics path operations.</p>
+
+    <h2>Path Commands</h2>
+    <ul>
+      <li><strong>move</strong>: Move to position without drawing</li>
+      <li><strong>line</strong>: Draw line to position</li>
+      <li><strong>curve</strong>: Draw quadratic curve</li>
+      <li><strong>arc</strong>: Draw arc</li>
+      <li><strong>close</strong>: Close path</li>
+    </ul>
+
+    <h2>Basic Path</h2>
+    <pre><code>draw canvas [
+    path [
+        move 100 100
+        line 200 100
+        line 150 200
+        close
+    ]
+]</code></pre>
+
+    <h2>Curved Path</h2>
+    <pre><code>draw canvas [
+    path [
+        move 100 200
+        curve 100 100 200 100 200 200
+    ]
+]</code></pre>
+
+    <h2>Path with Stroke</h2>
+    <pre><code>draw canvas [
+    pen red
+    path [
+        move 100 100
+        line 200 100
+        line 150 200
+        close
+    ]
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/drawing/polygons/">Polygons</a> - Polygon drawing</li>
+      <li><a href="/wiki/graphics/drawing/pen-fill/">Pen & Fill</a> - Styling</li>
+    </ul>
+  }
+]

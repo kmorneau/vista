@@ -7,127 +7,40 @@ tags: ["face", "api", "state", "registration", "functions"]
 
 # Face Functions
 
-Face functions manage the creation, registration, and manipulation of UI elements (faces) in Vista.
+Face functions manage registration, lookup, metadata, and runtime facet updates.
 
-## Overview
-Faces are the fundamental UI building blocks. Each face has an ID, type, attributes, HTML content, and optional children.
+## Core Registration API
 
-## next_face_id
-Generates a unique face identifier.
+- `next_face_id`
+- `register_face`
+- `current_parent_id`
+- `register_face_name`
+- `set_face_attrs`
+- `set_face_attrs_and_name`
+- `set_face_html`
+- `set_face_meta`
+- `with_face_id`
+- `merge_faces`
+- `append_children_from_root`
 
-`
-id: next_face_id
-; Returns "face-1", "face-2", etc.
-`
+## REBOL-Style Facet/Actor Helpers
 
-## register_face
-Registers a new face in the faces dictionary.
+Migration-focused helpers include:
+- `apply_facets`
+- actor/facet helper mappings in the view entry layer
 
-`
-register_face faces parentId "button" attrs html
-`
-### Parameters
-
-- `faces` - The faces dictionary to register into
-
-- `parentId` - Parent face ID (or null for root)
-
-- `type` - Face type (e.g., "button", "panel")
-
-- `attrs` - Attribute dictionary
-
-- `html` - Generated HTML string
-
-### Returns
-The new face's ID.
-
-## current_parent_id
-Gets the current parent ID from a stack.
-
-`
-parentId: current_parent_id stack
-`
-
-## register_face_name
-Registers a face by its name for lookup.
-
-`
-register_face_name face
-`
-Uses the face's `id` attribute as its name.
-
-## set_face_attrs
-Updates a face's attributes.
-
-`
-set_face_attrs faces "face-1" #[class: "new-class"]
-`
-
-## set_face_attrs_and_name
-Updates attributes and registers the name.
-
-`
-set_face_attrs_and_name faces "face-1" #[id: "myButton"]
-`
-
-## set_face_html
-Updates a face's HTML content.
-
-`
-set_face_html faces "face-1" "New Text"
-`
-
-## set_face_meta
-Sets metadata on a face.
-
-`
-set_face_meta faces "face-1" #[draw: [line 0 0 100 100]]
-`
-
-## with_face_id
-Adds a data-face-id attribute to an attributes dictionary.
-
-`
-attrs: with_face_id attrs "face-1"
-`
-
-## merge_faces
-Merges all faces from source into destination dictionary.
-
-`
-merge_faces destFaces srcFaces
-`
-
-## append_children_from_root
-Copies children from a root face to a parent face.
-
-`
-append_children_from_root faces parentId rootId
-`
+These helpers support runtime updates for `facets`, `feel`, and `actor` dictionaries and emit the normalized runtime attributes used by event dispatch.
 
 ## Vista State
-The global `vista_state` dictionary tracks:
 
-- `face_counter` - Counter for generating unique IDs
-
-- `last_faces` - Most recent faces dictionary
-
-- `last_root` - Last root face ID
-
-- `face_names` - Name to ID mapping
-
-- `last_bindings` - Current data bindings
-
-- `layout_pending_attrs` - Pending layout attributes
-
-- `layout_scope_stack` - Stack for scoped layouts
-
-- `tabs_id_counter` - Counter for tab components
+`vista_state` tracks face and layout runtime state, including:
+- counters and face registries
+- face-name mappings
+- last bindings/layout context
+- render-time metadata
 
 ## See Also
 
-- [Face Model](/wiki/core/concepts/face-model/) - Face architecture concepts
-
-- [State Model](/wiki/core/data-binding/state-model/) - State management
-
-</ul
+- [Face Model](/wiki/core/concepts/face-model/) - Face architecture
+- [Render Scripts](/wiki/core/api-reference/render-scripts/) - Runtime JS generation
+- [VID Compatibility](/wiki/shared/migration/vid-compatibility/) - Migration mappings

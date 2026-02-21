@@ -147,6 +147,71 @@ button "Primary" .class:"btn-primary" [action]
 box .style:"border: 2px solid #999" [...]
 `
 
+### Facets/Feel Compatibility
+Vista now supports REBOL-like facet/feel dictionaries on faces for migration-friendly code:
+
+`
+button "OK"
+.facets:#[size:[120 36] color:"#dde7ff" enabled:true]
+.feel:#[click:[print "clicked"]]
+`
+
+`actor` dictionaries are also accepted and translated to `feel` handlers:
+
+`
+button "Run" .actor:#[action:[print "run"]]
+`
+
+Runtime updates can use the same model:
+
+`
+apply_facets "my-face" #[
+size:[160 40]
+offset:[8 4]
+alpha:0.9
+options:"debug"
+feel:#[click:[print "clicked"]]
+actor:#[engage:[print "fallback click"]]
+]
+`
+
+`engage`, `detect`, and `redraw` are preserved as dedicated feel hooks (not just click/move/change aliases) and run through `data-feel-*` runtime handlers.
+
+Phase maps are supported with pair blocks:
+
+`
+button "Run"
+.feel:#[
+engage:[down [status:"pressed"] click [status:"clicked"]]
+detect:[move [status:"tracking"]]
+redraw:[show [status:"ready"] tick [status:"refresh"]]
+]
+`
+
+### Event Payload Contract (View-like feel/actor compatibility)
+Feel and actor handlers now receive a normalized event object (`value`) with stable keys.
+
+Core keys:
+- `action`, `type`, `phase`, `requestedPhase`, `eventType`
+- `faceId`, `targetId`, `targetName`, `targetTag`
+- `timestamp`
+- Position: `x`, `y`, `pageX`, `pageY`, `screenX`, `screenY`
+- Delta: `dx`, `dy`
+- Keyboard: `key`, `code`, `keyCode`, `which`
+- Pointer/mouse: `button`, `buttons`, `pointerType`, `pointerId`, `pressure`, `tiltX`, `tiltY`, `twist`
+- Wheel: `wheelX`, `wheelY`, `wheelZ`, `deltaMode`
+- Modifiers: `alt`, `ctrl`, `shift`, `meta`, `modifiers`
+- Target state: `value`, `checked`, `selectedIndex`
+
+View-like action vocabulary now includes richer phases across channels:
+- Engage: `down`, `up`, `click`, `double-click`, `menu`, `over`, `away`, `focus`, `blur`, `key`, `key-up`, `change`, `input`, `submit`, `wheel`
+- Pointer/touch aliases: `pointer-down`, `pointer-up`, `pointer-cancel`, `enter`, `leave`, `touch-start`, `touch-end`, `touch-cancel`
+- Mouse button variants: `aux-down`, `aux-up`, `alt-down`, `alt-up`
+- Detect: `move`, `over`, `away`, `wheel`, `scroll`
+- Redraw: `show`, `hide`, `tick`, `change`, `input`, `scroll`, `resize`
+
+`actor` dictionaries are normalized into the same channels, including pointer/tap/long-press and drag/drop handlers.
+
 ### Style Sheets
 Define reusable styles:
 
@@ -196,4 +261,17 @@ view [across field name button "OK" [do something]]
 
 - [Common Issues](/wiki/shared/troubleshooting/common-issues/) - Migration troubleshooting
 
-</ul
+## Implemented Parity and Fixes (Current)
+
+The following migration-focused work is now implemented in Vista:
+
+- REBOL-like facet dictionaries (`.facets:#[]`) and actor dictionaries (`.actor:#[]`) are accepted in face specs.
+- Runtime facet updates are supported via `apply_facets` and related actor/facet helpers.
+- `engage`, `detect`, and `redraw` are treated as first-class channels and can use phase maps (`down`, `up`, `move`, `tick`, etc.).
+- Feel/actor handlers receive normalized event payloads with stable keys for position, keyboard, pointer, wheel, modifiers, and target state.
+- View-like action vocabulary includes richer pointer/touch/mouse variants and redraw/detect aliases for migration parity.
+- Auth/UI migration fixes include centered intro splash handling with automatic 5-second transition to login using `rate` + `on-tick`.
+
+For API-level auth flow details and required `auth_app` state keys, see:
+
+- [Authentication](/docs/authentication/)

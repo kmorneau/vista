@@ -20,7 +20,8 @@ profile_label: "Signed out"
 auth_token: ""
 auth_status: "Ready"
 mfa_challenge: ""
-show_splash: true
+show_splash: false
+show_intro_splash: true
 show_login: false
 show_signup: false
 show_account: false

@@ -7,98 +7,53 @@ tags: ["events", "handling", "core"]
 
 # Event System
 
-Vista's event system provides a declarative way to handle user interactions through event attributes.
+Vista's event system maps declarative face attributes to normalized runtime events and handler blocks.
 
 ## Event Attributes
-Events are attached to components using event attributes:
 
-- `on-click`: Button click
+Common attributes:
+- `on-click`, `on-dblclick`
+- `on-over`, `on-out`, `on-down`, `on-up`
+- `on-input`, `on-change`
+- `on-key`, `on-keydown`, `on-keyup`
+- `on-focus`, `on-blur`
+- `on-tick` (with `.rate` for timer-driven updates)
 
-- `on-over`: Mouse enter
+## REBOL-Style Feel Channels
 
-- `on-out`: Mouse leave
+Vista also supports compatibility channels:
+- `engage`
+- `detect`
+- `redraw`
 
-- `on-down`: Mouse down
+These channels can be declared with phase maps and are normalized into runtime handlers.
 
-- `on-up`: Mouse up
+## Normalized Event Payload
 
-- `on-change`: Value change
+Handler `value` includes stable keys such as:
+- action metadata: `action`, `phase`, `requestedPhase`, `eventType`
+- target identity: `faceId`, `targetId`, `targetName`, `targetTag`
+- pointer/position: `x`, `y`, `pageX`, `pageY`, `button`, `buttons`
+- keyboard/modifiers: `key`, `code`, `alt`, `ctrl`, `shift`, `meta`
+- state/value: `value`, `checked`, `selectedIndex`
 
-- `on-input`: Input event
-
-- `on-key`: Keyboard event
-
-- `on-focus`: Focus gained
-
-- `on-blur`: Focus lost
-
-## Click Events
+## Example
 `
-view .html [
-button "Click Me" [
-print "Button was clicked!"
-]
-]
-`
+button "Submit" .on-click:[print "submit"]
 
-## Mouse Events
-`
-view .html [
-box "Hover me"
-.on-over [
-print "Mouse entered"
-]
-.on-out [
-print "Mouse left"
-]
-]
+field msg
+.on-input:[print value\value]
 `
 
-## Input Events
+Timer example:
 `
-view .html [
-field "Type here"
-.on-change [
-print ["Value changed to:" fieldValue]
-]
-.on-input [
-print ["Input:" fieldValue]
-]
-]
-`
-
-## Keyboard Events
-`
-view .html [
-field .bind: 'searchText
-.on-key [
-if equal? searchText "escape" [
-print "User pressed escape"
-]
-]
-]
-`
-
-## Event Actions
-Event blocks can contain multiple actions:
-
-`
-view .html [
-button "Submit"
-on-click [
-print "Processing..."
-do-submit
-print "Done!"
-]
-]
+box "Splash"
+.rate:5000
+.on-tick:[show_intro_splash: false show_login: true]
 `
 
 ## See Also
 
-- [Click Events](/wiki/core/events/click-events/) - Click handling
-
-- [Mouse Events](/wiki/core/events/mouse-events/) - Mouse interaction
-
-- [Keyboard Events](/wiki/core/events/keyboard-events/) - Keyboard input
-
-</ul
+- [Event Overview](/wiki/core/events/event-overview/) - Event categories and actions
+- [VID Parity](/wiki/shared/migration/vid-parity/) - Parity status for event channels
+- [Migration from REBOL View](/wiki/shared/migration/from-rebol-view/) - Compatibility details

@@ -67,9 +67,11 @@ Hyphenated aliases exist for docs readability:
 import "vista.art"!
 
 view [
-    auth_splash "Welcome" "Sign in to continue"
+    auth_splash "Welcome"
 ]
 ```
+
+`auth_splash` renders the auth logo + title card.
 
 ### Login + Signup
 
@@ -116,7 +118,61 @@ view [
 ]
 ```
 
+### Full Auth Flow (`auth_app`)
+
+Use `auth_app` to wire splash/login/signup/account states in one component.
+
+Required state keys:
+
+- `api_base`
+- `email`
+- `password`
+- `mfa_code`
+- `new_email`
+- `old_password`
+- `new_password`
+- `profile_label`
+- `auth_token`
+- `auth_status`
+- `mfa_challenge`
+- `show_intro_splash`
+- `show_splash`
+- `show_login`
+- `show_signup`
+- `show_account`
+
+Recommended startup state:
+
+```arturo
+show_intro_splash: true
+show_splash: false
+show_login: false
+show_signup: false
+show_account: false
+```
+
+`auth_app` behavior:
+
+- Shows a centered intro splash overlay first.
+- Uses `.rate:5000` + `.on-tick` to auto-transition to login after 5 seconds.
+- Keeps splash/logo/title styling consistent with the app header color.
+
+Reference example:
+
+- `examples/70-authentication-demo.art`
+
 ## Notes
 
 - This scaffold uses URL params for credentials (not secure). For production, switch to JSON request bodies and HTTPS.
 - MFA delivery (email/SMS) is not implemented; the API currently returns the OTP for client delivery.
+
+## Verification
+
+Run these from repo root:
+
+```sh
+arturo tests/run_tests.art
+arturo tests/check_snapshots.art
+VISTA_NO_WEBVIEW=1 arturo examples/70-authentication-demo.art
+VISTA_NO_WEBVIEW=1 arturo examples/72-ai-chat-vista-graphics-only.art
+```

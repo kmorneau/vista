@@ -7,172 +7,43 @@ tags: ["migration", "vid", "parity", "comparison", "feature-matrix"]
 
 # VID Parity
 
-Feature comparison between VID (View It Desktop) and Vista.
+Current parity status between classic VID/REBOL/View patterns and Vista.
 
-## Feature Matrix
+## Core Feature Parity
 
-Feature
-VID
-Vista
-Notes
+Feature | VID | Vista | Notes
+---|---|---|---
+Button/Field/Text/Panel | ✅ | ✅ | Supported
+Tabs/Slider/Progress | ✅ | ✅ | Supported with extended behavior
+Layout words (`across`, `below`, `return`) | ✅ | ✅ | Supported
+Scoped layout | ⚠️ | ✅ | Vista adds `scope` and modern container mapping
 
-Button
-✅
-✅
-Enhanced in Vista
+## Facet/Feel/Actor Parity
 
-Field
-✅
-✅
-Enhanced input handling
+Feature | VID | Vista | Notes
+---|---|---|---
+`facets` dictionaries | ✅ | ✅ | `.facets:#[]` supported
+`feel` dictionaries | ✅ | ✅ | Channel + phase mapping supported
+`actor` dictionaries | ✅ | ✅ | Normalized into feel/action channels
+`apply_facets` runtime updates | ❌ | ✅ | Runtime facet updates for migration flows
 
-Area
-✅
-✅
-Multi-line support
+## Event/Action Parity
 
-Text
-✅
-✅
-Rich text in Vista
+Feature | VID | Vista | Notes
+---|---|---|---
+`engage` channel | ✅ | ✅ | Preserved, phase-aware
+`detect` channel | ✅ | ✅ | Preserved, phase-aware
+`redraw` channel | ✅ | ✅ | Preserved, supports `tick`/`show`/`hide`
+Normalized event object | ⚠️ | ✅ | Stable payload keys for handlers
+Richer pointer/touch action aliases | ❌ | ✅ | `pointer-down`, `touch-start`, `aux-down`, etc.
 
-Image
-✅
-✅
-SVG support in Vista
+## Auth/UI Flow Parity Additions
 
-Panel
-✅
-✅
-Enhanced styling
-
-Tabs
-✅
-✅
-Dynamic tabs in Vista
-
-Slider
-✅
-✅
-Range sliders in Vista
-
-Progress
-✅
-✅
-Animated in Vista
-
-Drop-down
-✅
-✅
-Searchable in Vista
-
-## Layout Features
-
-Feature
-VID
-Vista
-Notes
-
-across
-✅
-✅
-Same behavior
-
-below
-✅
-✅
-Same behavior
-
-pad
-✅
-✅
-Extended syntax
-
-space
-✅
-✅
-Same behavior
-
-indent
-✅
-❌
-Use margin/padding
-
-guide
-✅
-❌
-Use align attributes
-
-center
-✅
-✅
-Same behavior
-
-## Event Handling
-
-Feature
-VID
-Vista
-Notes
-
-on-click
-✅
-✅
-Same syntax
-
-on-change
-✅
-✅
-Same syntax
-
-on-focus
-✅
-✅
-Same syntax
-
-on-key
-✅
-✅
-Enhanced key codes
-
-on-drag
-✅
-✅
-Enhanced in Vista
-
-on-draw
-❌
-✅
-Canvas events
-
-## New Features in Vista
-
-- **Auto-sync**: Automatic state synchronization
-
-- **Data binding**: Declarative data flow
-
-- **Computed state**: Derived values
-
-- **Canvas API**: Direct drawing
-
-- **Animation**: Built-in animation system
-
-- **Theming**: CSS-based theming
-
-- **Responsive**: Responsive layout support
-
-## Deprecated in Vista
-
-- feel: object (use on: events)
-
-- actor: [...] (use on: handlers)
-
-- facets: [...] (use attribute: syntax)
-
-- vid: dialect (use view directly)
+- Intro splash is centered and timed with `.rate:5000` + `.on-tick`.
+- Login/signup is gated until splash completes.
+- Auth splash behavior is aligned across auth and AI chat examples.
 
 ## See Also
 
 - [VID Compatibility](/wiki/shared/migration/vid-compatibility/) - Compatibility guide
-
-- [From Rebol/View](/wiki/shared/migration/from-rebol-view/) - Migration from Rebol
+- [From Rebol/View](/wiki/shared/migration/from-rebol-view/) - Migration guide

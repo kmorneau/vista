@@ -13,11 +13,11 @@
       :integer, :floating, :complex, :rational, :quantity, :color, :object
 
   [0;90m┃ [1;90mFile: [0;90msrc/vista/modules/05-view-entry.art
-  [0;90m┃ [1;90mLine: [0;90m250
+  [0;90m┃ [1;90mLine: [0;90m395
   [0;90m┃ [0m
-  [0;90m┃  248 ║          t: type v[0m
-  [0;90m┃  249 ║          switch any? @[equal? t :block equal? t :dictionary] [[0m
-  [0;90m┃ [1;90m 250[0;90m ║[0;31m►[0;90m [1;90m            vv: v[0;90m[0m
-  [0;90m┃  251 ║              if equal? t :dictionary [[0m
-  [0;90m┃  252 ║                  vv: dict_to_block v[0m
+  [0;90m┃  393 ║              feelMap\redraw: actorVal\redraw[0m
+  [0;90m┃  394 ║          ][0m
+  [0;90m┃ [1;90m 395[0;90m ║[0;31m►[0;90m [1;90m        if key? actorVal "on-pointer-down" [ feelMap\["pointer-down"]: actorVal\["on-pointer-down"] ][0;90m[0m
+  [0;90m┃  396 ║          if key? actorVal "pointer-down" [ feelMap\["pointer-down"]: actorVal\["pointer-down"] ][0m
+  [0;90m┃  397 ║          if key? actorVal "pointer_down" [ feelMap\pointer_down: actorVal\pointer_down ][0m
 

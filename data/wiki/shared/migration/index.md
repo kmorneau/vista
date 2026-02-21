@@ -7,28 +7,30 @@ tags: ["migration", "rebol", "compatibility", "upgrade"]
 
 # Migration
 
-Guides for migrating from other frameworks and maintaining compatibility.
+Guides for migrating from REBOL/View and VID-style Vista apps.
 
 ## Migration Topics
 
-- [From Rebol View](/wiki/shared/migration/from-rebol-view/) - Migration from Rebol
+- [From Rebol View](/wiki/shared/migration/from-rebol-view/) - Mapping REBOL/View idioms to Vista
+- [VID Compatibility](/wiki/shared/migration/vid-compatibility/) - Compatibility mode and migration behavior
+- [VID Parity](/wiki/shared/migration/vid-parity/) - Current feature parity and runtime notes
 
-- [VID Compatibility](/wiki/shared/migration/vid-compatibility/) - VID compatibility guide
+## Current Status
 
-- [VID Parity](/wiki/shared/migration/vid-parity/) - VID parity status
+- Facet dictionaries (`.facets:#[]`) are supported.
+- Actor dictionaries (`.actor:#[]`) are supported and normalized into feel channels.
+- Feel channels (`engage`, `detect`, `redraw`) support phase maps.
+- Event payloads are normalized for View-like handlers.
+- Auth intro splash/login flow is standardized (`.rate` + `.on-tick`).
 
 ## Migration Process
 
-- Review the migration guide for your source framework
-
-- Identify components that need updating
-
-- Update event handlers and data binding
-
-- Test the converted application
+- Review the migration guide for your source framework.
+- Update legacy face/event declarations as needed.
+- Verify event payload assumptions in handlers.
+- Test migrated flows, including auth splash/login transitions.
 
 ## See Also
 
 - [Patterns](/wiki/shared/patterns/) - Design patterns
-
 - [Troubleshooting](/wiki/shared/troubleshooting/) - Common issues

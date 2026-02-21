@@ -1,0 +1,31 @@
+#[
+  "title": "Images"
+  "layout": "docpage"
+  "category": "Graphics"
+  "tags": ["images", "drawing", "sprites", "scaling"]
+  "body": {
+    <h1>Images</h1>
+
+    <p>Reference documentation for image handling and rendering in Vista Graphics.</p>
+
+    <h2>Image Topics</h2>
+    <ul>
+      <li><a href="/wiki/graphics/images/image-drawing/">Image Drawing</a> - Image command usage</li>
+      <li><a href="/wiki/graphics/images/image-scaling/">Image Scaling</a> - Size and scaling</li>
+      <li><a href="/wiki/graphics/images/sprite-sheets/">Sprite Sheets</a> - Sprite animation</li>
+      <li><a href="/wiki/graphics/images/pixel-art-mode/">Pixel Art Mode</a> - smooth off for pixel art</li>
+    </ul>
+
+    <h2>Image Example</h2>
+    <pre><code>draw canvas [
+    image "sprite.png" 100 100
+    image "sprite.png" 200 100 32 32
+]</code></pre>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/drawing/">Drawing</a> - Drawing reference</li>
+      <li><a href="/wiki/graphics/tutorials/">Tutorials</a> - Learning guides</li>
+    </ul>
+  }
+]

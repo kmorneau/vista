@@ -1,0 +1,45 @@
+#[
+  "title": "Graphics Functions"
+  "layout": "docpage"
+  "category": "API Reference"
+  "tags: ["graphics", "api", "reference", "functions"]
+  "body": {
+    <h1>Graphics Functions</h1>
+
+    <p>Complete reference for Vista Graphics helper functions.</p>
+
+    <h2>Drawing Functions</h2>
+    <ul>
+      <li><strong>draw</strong>: Execute drawing commands</li>
+      <li><strong>clear</strong>: Clear canvas</li>
+      <li><strong>refresh</strong>: Refresh canvas</li>
+    </ul>
+
+    <h2>Animation Functions</h2>
+    <ul>
+      <li><strong>animate</strong>: Start animation loop</li>
+      <li><strong>on-frame</strong>: Frame callback</li>
+      <li><strong>stop-animation</strong>: Stop animation</li>
+    </ul>
+
+    <h2>Utility Functions</h2>
+    <ul>
+      <li><strong>distance</strong>: Calculate distance between points</li>
+      <li><strong>angle</strong>: Calculate angle between points</li>
+      <li><strong>lerp</strong>: Linear interpolation</li>
+      <li><strong>clamp</strong>: Clamp value to range</li>
+    </ul>
+
+    <h2>Canvas Functions</h2>
+    <ul>
+      <li><strong>canvas-size</strong>: Get canvas dimensions</li>
+      <li><strong>resize-canvas</strong>: Resize canvas</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/api-reference/">API Reference</a> - All graphics APIs</li>
+      <li><a href="/wiki/graphics/concepts/graphics-overview/">Graphics Overview</a> - Introduction</li>
+    </ul>
+  }
+]

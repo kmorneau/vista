@@ -108,12 +108,17 @@ password: ""
 code: ""
 
 view [
-    auth_splash "Welcome" "Sign in to continue"
+    auth_splash "Welcome"
     auth_login email password code [
         print ["Login with" email password code]
     ]
 ]
 ```
+
+For the full managed flow (intro splash -> login/signup -> account), use:
+
+- `auth_app` in `src/vista/modules/06-auth-ui.art`
+- Example: `examples/70-authentication-demo.art`
 
 ## Draw (HTML5 Canvas)
 

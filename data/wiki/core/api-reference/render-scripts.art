@@ -6,139 +6,61 @@
   "body": {
     <h1>Render Scripts</h1>
 
-    <p>Render scripts generate the client-side JavaScript that powers data binding, state management, and UI updates in Vista applications.</p>
+    <p>Render scripts generate the client-side JavaScript for bindings, state updates, and runtime interaction handlers.</p>
 
     <h2>Overview</h2>
-    <p>The render script system automatically generates JavaScript code that:</p>
+    <p>Generated runtime code handles:</p>
     <ul>
-      <li>Initializes client-side state from server data</li>
-      <li>Binds input elements to state variables</li>
-      <li>Handles two-way data synchronization</li>
-      <li>Manages list and table interactions</li>
-      <li>Supports keyboard navigation and accessibility</li>
+      <li>state initialization and rendering</li>
+      <li>input/list/table binding behavior</li>
+      <li>key and accessibility behavior</li>
+      <li>dynamic face updates (<code>vistaShow</code>)</li>
+      <li>feel/actor channel dispatch through <code>data-feel-*</code> attributes</li>
     </ul>
 
-    <h2>render_script</h2>
-    <p>Generates the main client-side script for a view.</p>
-    <pre><code>
-    script: render_script bindings
-    </code></pre>
-    <h3>Parameters</h3>
-    <ul>
-      <li><code>bindings</code> - Dictionary of state variable names to initial values</li>
-    </ul>
-    <h3>Returns</h3>
-    <p>A <code><script></code> element containing the client-side code.</p>
+    <h2><code>render_script</code></h2>
+    <p>Generates the main script for a view.</p>
+    <pre><code class="language-arturo">script: render_script bindings</code></pre>
 
-    <h3>Generated Functions</h3>
+    <h2>Key Runtime Functions</h2>
     <ul>
-      <li><code>state</code> - Global state object</li>
-      <li><code>render()</code> - Updates all bound elements from state</li>
-      <li><code>bindInputs()</code> - Attaches event listeners to inputs</li>
-      <li><code>autoSize()</code> - Auto-sizes elements with data-auto-size</li>
-      <li><code>_vistaMeasureText()</code> - Text measurement utility</li>
-      <li><code>_vistaParsePx()</code> - Pixel value parser</li>
+      <li><code>state</code></li>
+      <li><code>render()</code></li>
+      <li><code>bindInputs()</code></li>
+      <li><code>autoSize()</code></li>
+      <li>helper utilities (<code>_vistaMeasureText</code>, <code>_vistaParsePx</code>)</li>
     </ul>
 
-    <h2>tabs_script</h2>
-    <p>Generates JavaScript for tab component functionality.</p>
-    <pre><code>
-    script: tabs_script
-    </code></pre>
-    <p>Features:</p>
+    <h2>Feel/Actor Runtime Attributes</h2>
+    <p>Important generated attributes include:</p>
     <ul>
-      <li>Click activation of tabs</li>
-      <li>Keyboard navigation (Arrow keys, Home, End)</li>
-      <li>Panel visibility management</li>
+      <li><code>data-feel-engage</code></li>
+      <li><code>data-feel-detect</code></li>
+      <li><code>data-feel-redraw</code></li>
+      <li>phase-specific <code>data-feel-*-*</code> handlers</li>
+      <li><code>data-rate</code> with optional <code>data-rate-on-tick</code></li>
     </ul>
 
-    <h2>menubar_script</h2>
-    <p>Generates JavaScript for menubar functionality.</p>
-    <pre><code>
-    script: menubar_script
-    </code></pre>
-    <p>Features:</p>
+    <h2>Other Script Generators</h2>
     <ul>
-      <li>Dropdown menu toggling</li>
-      <li>Hover activation when menu is open</li>
-      <li>Click-outside to close</li>
-      <li>Escape key to close</li>
+      <li><code>tabs_script</code></li>
+      <li><code>menubar_script</code></li>
+      <li><code>table_script</code></li>
+      <li><code>auto_reload_script</code></li>
     </ul>
-
-    <h2>table_script</h2>
-    <p>Generates JavaScript for table row selection.</p>
-    <pre><code>
-    script: table_script
-    </code></pre>
-    <p>Features:</p>
-    <ul>
-      <li>Row click selection</li>
-      <li>Visual highlighting of selected row</li>
-    </ul>
-
-    <h2>auto_reload_script</h2>
-    <p>Generates script for automatic page reloading (useful for development).</p>
-    <pre><code>
-    script: auto_reload_script
-    </code></pre>
-    <p>Controlled by <code>webview_auto_reload</code> and <code>webview_reload_ms</code> settings.</p>
 
     <h2>WebView State Sync</h2>
-    <p>When <code>webview_state_sync_from_ui</code> is enabled, the script includes:</p>
-    <pre><code>
-    window.vistaPushState = function() {
-        fetch('/vista-state', {
-            method: 'POST',
-            body: JSON.stringify(state)
-        });
-    };
-    </code></pre>
+    <p><code>webview_state_sync_from_ui</code> enables push updates from UI to Arturo.
+    <code>webview_state_push_ms</code> enables timed sync pushes.</p>
 
-    <p>When <code>webview_state_sync_ms</code> is set, periodic polling is enabled:</p>
-    <pre><code>
-    setInterval(() => {
-        fetch('/vista-sync')
-            .then(r => r.json())
-            .then(data => {
-                Object.assign(state, data);
-                render();
-            });
-    }, syncInterval);
-    </code></pre>
-
-    <h2>window.vistaShow</h2>
-    <p>Global function for updating a face's HTML dynamically:</p>
-    <pre><code>
-    window.vistaShow = function(id, html) {
-        const el = document.querySelector('[data-face-id="' + id + '"]');
-        if (el) {
-            el.outerHTML = html;
-            render();
-            bindInputs();
-            return true;
-        }
-        return false;
-    };
-    </code></pre>
-
-    <h2>Data Attributes</h2>
-    <ul>
-      <li><code>data-bind</code> - Binds element to state variable</li>
-      <li><code>data-show-bind</code> - Conditional visibility binding</li>
-      <li><code>data-show-value</code> - Value for conditional visibility</li>
-      <li><code>data-list-bind</code> - List selection binding</li>
-      <li><code>data-multi</code> - Enable multi-select for lists</li>
-      <li><code>data-key-bind</code> - Keyboard input binding</li>
-      <li><code>data-key-mode</code> - Key event mode (keydown/keyup)</li>
-      <li><code>data-key-filter</code> - Filter specific keys</li>
-      <li><code>data-key-modifiers</code> - Capture only modifiers</li>
-      <li><code>data-face-id</code> - Face identifier for updates</li>
-      <li><code>data-auto-size</code> - Enable auto-sizing</li>
-    </ul>
+    <h2><code>window.vistaShow</code></h2>
+    <p>Global helper for replacing a face by <code>data-face-id</code> and re-binding runtime handlers.</p>
 
     <h2>See Also</h2>
     <ul>
-      <li><a href="/wiki/core/data-binding/two-way-binding/">Two-Way Binding</a> - Data binding concepts</li>
+      <li><a href="/wiki/core/api-reference/face-functions/">Face Functions</a> - Face registration and metadata</li>
       <li><a href="/wiki/core/events/event-overview/">Event Overview</a> - Event handling</li>
+      <li><a href="/wiki/shared/migration/vid-parity/">VID Parity</a> - Compatibility channels</li>
     </ul>
+  }
 ]

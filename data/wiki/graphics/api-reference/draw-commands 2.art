@@ -1,0 +1,45 @@
+#[
+  "title": "Draw Commands"
+  "layout": "docpage"
+  "category": "API Reference"
+  "tags": ["graphics", "api", "reference", "draw", "commands"]
+  "body": {
+    <h1>Draw Commands</h1>
+
+    <p>Complete reference for Vista Graphics draw commands.</p>
+
+    <h2>Shape Commands</h2>
+    <ul>
+      <li><strong>line</strong>: Draw a line</li>
+      <li><strong>box</strong>: Draw a rectangle</li>
+      <li><strong>circle</strong>: Draw a circle</li>
+      <li><strong>ellipse</strong>: Draw an ellipse</li>
+      <li><strong>polygon</strong>: Draw a polygon</li>
+      <li><strong>arc</strong>: Draw an arc</li>
+      <li><strong>point</strong>: Draw a point</li>
+    </ul>
+
+    <h2>Path Commands</h2>
+    <ul>
+      <li><strong>path</strong>: Create a path</li>
+      <li><strong>move</strong>: Move to position</li>
+      <li><strong>line</strong>: Draw line to position</li>
+      <li><strong>curve</strong>: Draw curve</li>
+      <li><strong>close</strong>: Close path</li>
+    </ul>
+
+    <h2>State Commands</h2>
+    <ul>
+      <li><strong>pen</strong>: Set pen color/style</li>
+      <li><strong>fill</strong>: Set fill color/style</li>
+      <li><strong>push</strong>: Save state</li>
+      <li><strong>pop</strong>: Restore state</li>
+    </ul>
+
+    <h2>See Also</h2>
+    <ul>
+      <li><a href="/wiki/graphics/api-reference/">API Reference</a> - All graphics APIs</li>
+      <li><a href="/wiki/graphics/drawing/">Drawing</a> - Drawing reference</li>
+    </ul>
+  }
+]

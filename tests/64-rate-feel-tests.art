@@ -10,6 +10,29 @@ run_example: function [file] [
     true
 ]
 
+run_example_html: function [file] [
+    res: execute.code ("VISTA_NO_WEBVIEW=1 arturo " ++ file)
+    if not? equal? res\code 0 [
+        print ["FAIL" file "exit code" to :string res\code]
+        return ""
+    ]
+    to :string res\output
+]
+
+contains_all?: function [txt needles] [
+    i: 0
+    n: size needles
+    while [less? i n] [
+        needle: get needles i
+        if equal? (index txt needle) null [
+            print ["FAIL missing token" needle]
+            return false
+        ]
+        i: i + 1
+    ]
+    true
+]
+
 test_feel_demo: function [] [
     print "Test: feel facets demo runs"
     run_example "examples/64-feel-facets-demo.art"
@@ -20,6 +43,33 @@ test_rate_demo: function [] [
     run_example "examples/65-rate-facet-demo.art"
 ]
 
+test_rebol_like_payload_normalization: function [] [
+    print "Test: normalized REBOL-like payload contract is present"
+    html: run_example_html "tests/66-phase2-interaction-media.art"
+    if equal? html "" [ return false ]
+    contains_all? html [
+        "requestedPhase"
+        "modifiers:{alt:"
+        "selectedIndex:(target&&typeof target.selectedIndex==='number')"
+        "engage('aux-down'"
+        "normalized('engage','pointer-down'"
+    ]
+]
+
+test_actor_parity_channels: function [] [
+    print "Test: actor parity mappings are wired in runtime module"
+    src: to :string read "src/vista/modules/05-view-entry.art"
+    contains_all? src [
+        "if key? actorDef \"pointer_down\" [ feelDef\\pointer_down: actorDef\\pointer_down ]"
+        "if key? actorDef \"pointer_up\" [ feelDef\\pointer_up: actorDef\\pointer_up ]"
+        "if key? actorDef \"pointer_cancel\" [ feelDef\\pointer_cancel: actorDef\\pointer_cancel ]"
+        "if key? actorDef \"dragstart\" [ feelDef\\dragstart: actorDef\\dragstart ]"
+        "if key? actorDef \"drop\" [ feelDef\\drop: actorDef\\drop ]"
+        "if key? actorDef \"redraw\" [ feelDef\\redraw: actorDef\\redraw ]"
+        "remove_actor: function [faceId] ["
+    ]
+]
+
 run_rate_feel_tests: function [] [
     print "=== Rate Facet & Feel Facets Tests ==="
     passed: 0
@@ -27,6 +77,8 @@ run_rate_feel_tests: function [] [
 
     if test_feel_demo [passed: passed + 1] [failed: failed + 1]
     if test_rate_demo [passed: passed + 1] [failed: failed + 1]
+    if test_rebol_like_payload_normalization [passed: passed + 1] [failed: failed + 1]
+    if test_actor_parity_channels [passed: passed + 1] [failed: failed + 1]
 
     print ""
     print ["Results:" passed "passed," failed "failed"]

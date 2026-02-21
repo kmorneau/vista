@@ -6,105 +6,45 @@
   "body": {
     <h1>Face Functions</h1>
 
-    <p>Face functions manage the creation, registration, and manipulation of UI elements (faces) in Vista.</p>
+    <p>Face functions manage registration, lookup, metadata, and runtime facet updates.</p>
 
-    <h2>Overview</h2>
-    <p>Faces are the fundamental UI building blocks. Each face has an ID, type, attributes, HTML content, and optional children.</p>
-
-    <h2>next_face_id</h2>
-    <p>Generates a unique face identifier.</p>
-    <pre><code>
-    id: next_face_id
-    ; Returns "face-1", "face-2", etc.
-    </code></pre>
-
-    <h2>register_face</h2>
-    <p>Registers a new face in the faces dictionary.</p>
-    <pre><code>
-    register_face faces parentId "button" attrs html
-    </code></pre>
-    <h3>Parameters</h3>
+    <h2>Core Registration API</h2>
     <ul>
-      <li><code>faces</code> - The faces dictionary to register into</li>
-      <li><code>parentId</code> - Parent face ID (or null for root)</li>
-      <li><code>type</code> - Face type (e.g., "button", "panel")</li>
-      <li><code>attrs</code> - Attribute dictionary</li>
-      <li><code>html</code> - Generated HTML string</li>
+      <li><code>next_face_id</code></li>
+      <li><code>register_face</code></li>
+      <li><code>current_parent_id</code></li>
+      <li><code>register_face_name</code></li>
+      <li><code>set_face_attrs</code></li>
+      <li><code>set_face_attrs_and_name</code></li>
+      <li><code>set_face_html</code></li>
+      <li><code>set_face_meta</code></li>
+      <li><code>with_face_id</code></li>
+      <li><code>merge_faces</code></li>
+      <li><code>append_children_from_root</code></li>
     </ul>
-    <h3>Returns</h3>
-    <p>The new face's ID.</p>
 
-    <h2>current_parent_id</h2>
-    <p>Gets the current parent ID from a stack.</p>
-    <pre><code>
-    parentId: current_parent_id stack
-    </code></pre>
-
-    <h2>register_face_name</h2>
-    <p>Registers a face by its name for lookup.</p>
-    <pre><code>
-    register_face_name face
-    </code></pre>
-    <p>Uses the face's <code>id</code> attribute as its name.</p>
-
-    <h2>set_face_attrs</h2>
-    <p>Updates a face's attributes.</p>
-    <pre><code>
-    set_face_attrs faces "face-1" #[class: "new-class"]
-    </code></pre>
-
-    <h2>set_face_attrs_and_name</h2>
-    <p>Updates attributes and registers the name.</p>
-    <pre><code>
-    set_face_attrs_and_name faces "face-1" #[id: "myButton"]
-    </code></pre>
-
-    <h2>set_face_html</h2>
-    <p>Updates a face's HTML content.</p>
-    <pre><code>
-    set_face_html faces "face-1" "<button>New Text</button>"
-    </code></pre>
-
-    <h2>set_face_meta</h2>
-    <p>Sets metadata on a face.</p>
-    <pre><code>
-    set_face_meta faces "face-1" #[draw: [line 0 0 100 100]]
-    </code></pre>
-
-    <h2>with_face_id</h2>
-    <p>Adds a data-face-id attribute to an attributes dictionary.</p>
-    <pre><code>
-    attrs: with_face_id attrs "face-1"
-    </code></pre>
-
-    <h2>merge_faces</h2>
-    <p>Merges all faces from source into destination dictionary.</p>
-    <pre><code>
-    merge_faces destFaces srcFaces
-    </code></pre>
-
-    <h2>append_children_from_root</h2>
-    <p>Copies children from a root face to a parent face.</p>
-    <pre><code>
-    append_children_from_root faces parentId rootId
-    </code></pre>
+    <h2>REBOL-Style Facet/Actor Helpers</h2>
+    <p>Migration-focused helpers include:</p>
+    <ul>
+      <li><code>apply_facets</code></li>
+      <li>actor/facet helper mappings in the view entry layer</li>
+    </ul>
+    <p>These helpers support runtime updates for <code>facets</code>, <code>feel</code>, and <code>actor</code> dictionaries and emit the normalized runtime attributes used by event dispatch.</p>
 
     <h2>Vista State</h2>
-    <p>The global <code>vista_state</code> dictionary tracks:</p>
+    <p><code>vista_state</code> tracks face and layout runtime state, including:</p>
     <ul>
-      <li><code>face_counter</code> - Counter for generating unique IDs</li>
-      <li><code>last_faces</code> - Most recent faces dictionary</li>
-      <li><code>last_root</code> - Last root face ID</li>
-      <li><code>face_names</code> - Name to ID mapping</li>
-      <li><code>last_bindings</code> - Current data bindings</li>
-      <li><code>layout_pending_attrs</code> - Pending layout attributes</li>
-      <li><code>layout_scope_stack</code> - Stack for scoped layouts</li>
-      <li><code>tabs_id_counter</code> - Counter for tab components</li>
+      <li>counters and face registries</li>
+      <li>face-name mappings</li>
+      <li>last bindings/layout context</li>
+      <li>render-time metadata</li>
     </ul>
 
     <h2>See Also</h2>
     <ul>
-      <li><a href="/wiki/core/concepts/face-model/">Face Model</a> - Face architecture concepts</li>
-      <li><a href="/wiki/core/data-binding/state-model/">State Model</a> - State management</li>
+      <li><a href="/wiki/core/concepts/face-model/">Face Model</a> - Face architecture</li>
+      <li><a href="/wiki/core/api-reference/render-scripts/">Render Scripts</a> - Runtime JS generation</li>
+      <li><a href="/wiki/shared/migration/vid-compatibility/">VID Compatibility</a> - Migration mappings</li>
     </ul>
+  }
 ]
