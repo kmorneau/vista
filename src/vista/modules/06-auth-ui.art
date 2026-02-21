@@ -11,8 +11,8 @@ auth_icon_sign_out: "log-out"
 style "auth_splash" [
     box .class:"vista-auth-splash" [
         box .class:"vista-auth-splash-card" [
-            title .class:"vista-auth-title" .style:"color:var(--arturo-ink) !important;background:var(--arturo-primary) !important;" arg0
-            text .class:"vista-auth-subtitle" arg1
+            image vista_app_logo_path .class:"vista-auth-splash-logo"
+            text arg0 .as:"h2" .class:"vista-auth-title"
         ]
     ]
 ]
@@ -32,7 +32,7 @@ style "auth_login" [
                 label "MFA Code (if enabled)"
                 field arg2 .placeholder:"123456"
             ]
-            button "Sign in" .icon:auth_icon_sign_in arg3
+            button "Sign in" .icon:"log-in" arg3
         ]
     ]
 ]
@@ -48,7 +48,7 @@ style "auth_signup" [
                 label "Password"
                 field arg1 .type:"password" .placeholder:"At least 8 characters"
             ]
-            button "Create account" .icon:auth_icon_sign_up arg2
+            button "Create account" .icon:"user-plus" arg2
         ]
     ]
 ]
@@ -59,7 +59,7 @@ style "auth_account" [
         divider
         label "Change email"
         field arg1 .placeholder:"new@email.com"
-        button "Update email" .icon:auth_icon_email arg2
+        button "Update email" .icon:"mail" arg2
         divider
         label "Change password"
         col [
@@ -67,16 +67,16 @@ style "auth_account" [
             field arg4 .type:"password" .placeholder:"New password"
         ]
         row [
-            button "Update password" .icon:auth_icon_password arg5
+            button "Update password" .icon:"lock" arg5
         ]
         divider
         label "Multi-factor"
         row [
-            button "Enable MFA" .icon:auth_icon_mfa_on arg6
-            button "Disable MFA" .icon:auth_icon_mfa_off arg7
+            button "Enable MFA" .icon:"shield-check" arg6
+            button "Disable MFA" .icon:"shield-off" arg7
         ]
         divider
-        button "Sign out" .icon:auth_icon_sign_out arg8
+        button "Sign out" .icon:"log-out" arg8
     ]
 ]
 
@@ -86,15 +86,6 @@ style "auth_account" [
 ; profile_label, auth_token, auth_status, mfa_challenge,
 ; show_splash, show_login, show_signup, show_account
 style "auth_app" [
-    splashTitle: "Welcome to Vista Authentication"
-    splashSubtitle: "Sign in or create an account to continue."
-    if greater? size args 0 [
-        splashTitle: get args 0
-    ]
-    if greater? size args 1 [
-        splashSubtitle: get args 1
-    ]
-
     box .style:"display:none" [
         field show_splash .type:"hidden"
         field show_login .type:"hidden"
@@ -104,10 +95,13 @@ style "auth_app" [
 
     box .class:"vista-auth-card" .data-show-bind:"show_splash" .data-show-value:"true" [
         col [
-            auth_splash splashTitle splashSubtitle
-            row [
-                button "Continue to Sign In" .icon:auth_icon_sign_in .data-vista-action:"auth_show_login"
-                button "Go to Sign Up" .icon:auth_icon_sign_up .data-vista-action:"auth_show_signup"
+            auth_splash "Social Engineering Defense Training" "Create an account or sign in to begin."
+            row .style:"justify-content:center;gap:10px;" [
+                button "Continue to Sign In" .icon:"log-in" .data-vista-action:"auth_show_login"
+                button "Go to Sign Up" .icon:"user-plus" .data-vista-action:"auth_show_signup"
+                if greater? size args 2 [
+                    button "AI Settings" .icon:"sliders-horizontal" get args 2
+                ]
             ]
         ]
     ]
@@ -115,7 +109,7 @@ style "auth_app" [
     box .class:"vista-auth-card" .data-show-bind:"show_login" .data-show-value:"true" [
         col [
             auth_login email password mfa_code [auth_login]
-            button "Verify MFA Code" .icon:auth_icon_mfa_on [auth_mfa_verify]
+            button "Verify MFA Code" .icon:"shield-check" [auth_mfa_verify]
             text .class:"vista-auth-meta" auth_status
             text .class:"vista-auth-meta" mfa_challenge
         ]
@@ -131,8 +125,8 @@ style "auth_app" [
             col [
                 text .class:"vista-auth-meta" "Manage MFA without using the account form."
                 row [
-                    button "Enable MFA" .icon:auth_icon_mfa_on [auth_enable_mfa]
-                    button "Disable MFA" .icon:auth_icon_mfa_off [auth_disable_mfa]
+                    button "Enable MFA" .icon:"shield-check" [auth_enable_mfa]
+                    button "Disable MFA" .icon:"shield-off" [auth_disable_mfa]
                 ]
                 text .class:"vista-auth-meta" auth_status
             ]

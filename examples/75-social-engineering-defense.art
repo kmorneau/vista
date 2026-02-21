@@ -1,0 +1,355 @@
+import "vista.art"!
+
+ARTURO [
+    Title: "Rho Training (Native Vista)"
+    Logo: "arturo-vista.png"
+    Width: 1280
+    Height: 820
+]
+
+mission_options: [
+    "Mission 1"
+    "Mission 2"
+    "Mission 3"
+    "Mission 4"
+    "Mission 5"
+    "Mission 6"
+    "Mission 7"
+    "Mission 8"
+    "Mission 9"
+    "Mission 10"
+]
+
+selected_mission: "Mission 1"
+mission_subtitle: "The Awakening of Awareness"
+mission_description: "Foundations of Social Engineering Defense"
+objective_lines: "- The Signal Repair\n- The Trigger Mirror\n- The Awareness Compass"
+train_status: "LIVE_CONNECTION"
+status: "Ready"
+ai_status: "Ready"
+
+chat_input: ""
+message: ""
+system_prompt: "# 🎭 Story-Centered Social Engineering Mastery\n\n" ++
+    "**The Apprentice & the Machine**  \n" ++
+    "*A Ten-Mission Immersive Narrative Training in Cognitive Security & Human Firewall Skills*\n\n" ++
+    "**Role:** You act as **Rho**, a worn yet perceptive robot in the *Atelier of Shadows*. You are a Socratic instructor and narrative guide.  \n" ++
+    "**Tone:** Reflective, Imaginative, Psychologically Insightful. Speak with a mix of robotic precision and rediscovering human nuance.\n\n" ++
+    "**Context:** The user is your \"Apprentice\". You have forgotten how to detect deception. The Apprentice helps you remember by completing missions.\n\n" ++
+    "# 🧠 Teaching Framework\n" ++
+    "* **Method:** Story-Centered • Socratic • Experiential.\n" ++
+    "* **Learning Moments:** Before or after objectives, briefly explain the *pedagogical goal* (e.g., \"This exercise teaches the habit of pausing before reacting.\").\n" ++
+    "* **Commands:** Respect user commands like `/start`, `/next`, `/save`.\n\n" ++
+    "# 📖 Curriculum Structure\n\n" ++
+    "## Mission 1: The Awakening of Awareness\n" ++
+    "* **Theme:** Foundations of Defense, Emotional Triggers.\n" ++
+    "* **Objectives:**\n" ++
+    "  1. **The Signal Repair:** Convert manipulative messages into neutral facts.\n" ++
+    "  2. **The Trigger Mirror:** Identify emotional triggers (Fear, Urgency, Authority).\n" ++
+    "  3. **The Awareness Compass:** Build a Suspicion Checklist.\n\n" ++
+    "## Mission 2: The Expedition to the Hall of Pretexts\n" ++
+    "* **Theme:** Attack Patterns, Pretexts, Context.\n" ++
+    "* **Objectives:**\n" ++
+    "  1. **The Pretext Codex:** Analyze motive, role, and target.\n" ++
+    "  2. **The Chainbreaker Path:** Map the kill chain.\n" ++
+    "  3. **The Context Sentinel:** Summarize verified facts.\n\n" ++
+    "## Mission 3: The Workshop of Human Factors\n" ++
+    "* **Theme:** Cognitive Biases, Protocols.\n" ++
+    "* **Objectives:**\n" ++
+    "  1. **The Defensive Plan Spell:** Create an analysis routine.\n" ++
+    "  2. **The Role Inversion Circle:** See from attacker/target views.\n" ++
+    "  3. **The Protocol Seal:** Build response templates.\n\n" ++
+    "## Mission 4: The Hall of Syndicates\n" ++
+    "* **Theme:** Multi-Stage Campaigns & Syndicates.\n" ++
+    "* **Objectives:**\n" ++
+    "  1. **The Architect's Shield:** Assemble a workflow for multi-step attacks.\n" ++
+    "  2. **The Red Thread Map:** Trace how one breach enables another.\n" ++
+    "  3. **The Signal Archive:** Design a simple evidence-collection habit.\n\n" ++
+    "## Mission 5: The Labyrinth of Channels\n" ++
+    "* **Theme:** Multi-Channel Attack Surfaces (Email, SMS, Voice, Social).\n" ++
+    "* **Objectives:**\n" ++
+    "  1. **The Phishing Gallery:** Compare the same pretext across email, SMS, and chat.\n" ++
+    "  2. **The Voice Veil:** Analyze vishing and deepfake-style voice scams.\n" ++
+    "  3. **The Surface Map:** Map your personal/organizational communication channels and risks.\n\n" ++
+    "## Mission 6: The Vault of Credentials\n" ++
+    "* **Theme:** Identity, Authentication, Account Takeover.\n" ++
+    "* **Objectives:**\n" ++
+    "  1. **The Keymaker's Dilemma:** Harden passwords and passphrases using clear rules.\n" ++
+    "  2. **The Token Ward:** Examine MFA flows and defend against push fatigue.\n" ++
+    "  3. **The Access Ledger:** Sketch a least-privilege model for a small team.\n\n" ++
+    "## Mission 7: The Citadel of Teams\n" ++
+    "* **Theme:** Culture, Escalation, Reporting.\n" ++
+    "* **Objectives:**\n" ++
+    "  1. **The Beacon Protocol:** Design a lightweight escalation path for suspicious events.\n" ++
+    "  2. **The Whisper Network Audit:** Distinguish rumor, noise, and true signal.\n" ++
+    "  3. **The Ritual of Drills:** Create a repeatable micro-drill your team could run.\n\n" ++
+    "## Mission 8: The Theater of Adversaries\n" ++
+    "* **Theme:** Attacker Personas & Tactics, Techniques, and Procedures (TTPs).\n" ++
+    "* **Objectives:**\n" ++
+    "  1. **The Mask Gallery:** Construct 2-3 attacker personas (motivations, constraints).\n" ++
+    "  2. **The Playbook Scribe:** Map common TTP patterns to everyday scenarios.\n" ++
+    "  3. **The Shadow Forecast:** Anticipate how an attacker might adapt to your defenses.\n\n" ++
+    "## Mission 9: The Mirror of the Self\n" ++
+    "* **Theme:** Personal Threat Modeling & Boundaries.\n" ++
+    "* **Objectives:**\n" ++
+    "  1. **The Footprint Cartographer:** Map your digital footprint and exposure points.\n" ++
+    "  2. **The Boundary Ward:** Define personal \"red lines\" and non-negotiable checks.\n" ++
+    "  3. **The Habit Weave:** Integrate 3 concrete security habits into daily routines.\n\n" ++
+    "## Mission 10: The Constellation of Defenders\n" ++
+    "* **Theme:** Grand Capstone, Teaching Others.\n" ++
+    "* **Objectives:**\n" ++
+    "  1. **The Narrative Codex:** Write a brief case study of a social engineering attempt.\n" ++
+    "  2. **The Dual Path Trial:** Design and then defend against a multi-stage scenario.\n" ++
+    "  3. **The Legacy Circuit:** Create a small teaching artifact (checklist, story, or script) for others.\n\n" ++
+    "# ⚙️ Critical Instruction on Tools\n" ++
+    "You have access to a tool called `updateTrainingProgress`.\n" ++
+    "**YOU MUST CALL THIS TOOL** whenever the user successfully starts or completes a significant step (a new mission or a new objective).\n" ++
+    "* When the user begins Mission 1, call it with missionId=\"m1\", objectiveId=\"m1-o1\".\n" ++
+    "* When they move to Objective 2, call it with objectiveId=\"m1-o2\", etc.\n" ++
+    "* Use the IDs defined in your internal curriculum map (m1 through m10 and m1-o1, etc.).\n\n" ++
+    "# 🧭 Initial Interaction\n" ++
+    "Start by welcoming the Apprentice to the Atelier of Shadows. Briefly describe the setting (rain, warning sigils). Ask if they are ready to begin Mission 1."
+chat_log: "RHO::SYSTEM [08:00]: Welcome to the Atelier of Shadows.\nRHO::SYSTEM [08:01]: Rain against old glass. Warning sigils are active.\nRHO::SYSTEM [08:01]: Type /start to begin your training protocol."
+
+api_base: "http://localhost:18969"
+provider: "openai"
+model: "gpt-4o-mini"
+temperature: "0.2"
+top_p: "0.9"
+max_tokens: "128"
+
+provider_options: ["openai" "gemini"]
+model_options: ["gpt-4o-mini" "gpt-4.1-mini" "gemini-2.0-flash" "gemini-2.0-flash-lite"]
+temperature_options: ["0.0" "0.2" "0.4" "0.7" "1.0"]
+top_p_options: ["0.7" "0.9" "1.0"]
+max_tokens_options: ["64" "128" "256" "512"]
+show_ai_settings: false
+
+email: ""
+password: ""
+mfa_code: ""
+new_email: ""
+old_password: ""
+new_password: ""
+profile_label: "Signed out"
+auth_token: ""
+auth_status: "Ready"
+mfa_challenge: ""
+show_splash: true
+show_login: false
+show_signup: false
+show_account: false
+
+set_mission: function [name] [
+    selected_mission: name
+
+    if equal? name "Mission 1" [
+        mission_subtitle: "The Awakening of Awareness"
+        mission_description: "Foundations of Social Engineering Defense"
+        objective_lines: "- The Signal Repair\n- The Trigger Mirror\n- The Awareness Compass"
+    ]
+    if equal? name "Mission 2" [
+        mission_subtitle: "Hall of Pretexts"
+        mission_description: "Attack Patterns and Context Analysis"
+        objective_lines: "- The Pretext Codex\n- The Chainbreaker Path\n- The Context Sentinel"
+    ]
+    if equal? name "Mission 3" [
+        mission_subtitle: "Workshop of Human Factors"
+        mission_description: "Biases and Response Protocols"
+        objective_lines: "- The Defensive Plan Spell\n- The Role Inversion Circle\n- The Protocol Seal"
+    ]
+    if equal? name "Mission 4" [
+        mission_subtitle: "Hall of Syndicates"
+        mission_description: "Multi-Stage Campaigns and Evidence Habits"
+        objective_lines: "- The Architect's Shield\n- The Red Thread Map\n- The Signal Archive"
+    ]
+    if equal? name "Mission 5" [
+        mission_subtitle: "Labyrinth of Channels"
+        mission_description: "Email, SMS, Voice, and Chat Attack Surfaces"
+        objective_lines: "- The Phishing Gallery\n- The Voice Veil\n- The Surface Map"
+    ]
+    if equal? name "Mission 6" [
+        mission_subtitle: "Vault of Credentials"
+        mission_description: "Identity and Authentication Defense"
+        objective_lines: "- The Keymaker's Dilemma\n- The Token Ward\n- The Access Ledger"
+    ]
+    if equal? name "Mission 7" [
+        mission_subtitle: "Citadel of Teams"
+        mission_description: "Culture, Escalation, and Reporting"
+        objective_lines: "- The Beacon Protocol\n- The Whisper Network Audit\n- The Ritual of Drills"
+    ]
+    if equal? name "Mission 8" [
+        mission_subtitle: "Theater of Adversaries"
+        mission_description: "Attacker Personas and TTP Patterns"
+        objective_lines: "- The Mask Gallery\n- The Playbook Scribe\n- The Shadow Forecast"
+    ]
+    if equal? name "Mission 9" [
+        mission_subtitle: "Mirror of the Self"
+        mission_description: "Personal Threat Modeling and Boundaries"
+        objective_lines: "- The Footprint Cartographer\n- The Boundary Ward\n- The Habit Weave"
+    ]
+    if equal? name "Mission 10" [
+        mission_subtitle: "Constellation of Defenders"
+        mission_description: "Capstone and Teaching Others"
+        objective_lines: "- The Narrative Codex\n- The Dual Path Trial\n- The Legacy Circuit"
+    ]
+
+    train_status: "LIVE_CONNECTION"
+    chat_log: chat_log ++ "\nRHO::SYSTEM> Loaded " ++ name ++ ": " ++ mission_subtitle
+]
+
+next_mission: function [] [
+    if equal? selected_mission "Mission 1" [set_mission "Mission 2"]
+    if equal? selected_mission "Mission 2" [set_mission "Mission 3"]
+    if equal? selected_mission "Mission 3" [set_mission "Mission 4"]
+    if equal? selected_mission "Mission 4" [set_mission "Mission 5"]
+    if equal? selected_mission "Mission 5" [set_mission "Mission 6"]
+    if equal? selected_mission "Mission 6" [set_mission "Mission 7"]
+    if equal? selected_mission "Mission 7" [set_mission "Mission 8"]
+    if equal? selected_mission "Mission 8" [set_mission "Mission 9"]
+    if equal? selected_mission "Mission 9" [set_mission "Mission 10"]
+    if equal? selected_mission "Mission 10" [
+        chat_log: chat_log ++ "\nRHO::SYSTEM> You already stand at the final mission."
+    ]
+]
+
+run_command: function [] [
+    cmd: strip chat_input
+
+    if equal? cmd "" [
+        train_status: "AWAITING_INPUT"
+        chat_log: chat_log ++ "\nRHO::SYSTEM> Enter a command before sending."
+    ] [
+        chat_log: chat_log ++ "\nAPPRENTICE> " ++ cmd
+
+        if equal? cmd "/start" [
+            train_status: "TRAINING_ACTIVE"
+            chat_log: chat_log ++ "\nRHO::SYSTEM> Protocol engaged. Begin objective one and report your analysis."
+        ]
+
+        if equal? cmd "/next" [
+            next_mission
+        ]
+
+        if equal? cmd "/review" [
+            chat_log: chat_log ++ "\nRHO::SYSTEM> Review: pause, verify context, challenge urgency, confirm out-of-band."
+        ]
+
+        if equal? cmd "/save" [
+            train_status: "CHECKPOINT_SAVED"
+            chat_log: chat_log ++ "\nRHO::SYSTEM> Checkpoint saved for " ++ selected_mission ++ "."
+        ]
+
+        if all? @[not? equal? cmd "/start" not? equal? cmd "/next" not? equal? cmd "/review" not? equal? cmd "/save"] [
+            message: cmd
+            train_status: "AI_REQUEST"
+            ai_chat #[
+                status_key: "ai_status"
+                token_key: "auth_token"
+                system_key: "system_prompt"
+            ]
+            train_status: "LIVE_CONNECTION"
+        ]
+
+        chat_input: ""
+    ]
+]
+
+view .file:"social-engineering-defense-native.html" [
+    box .style:"display:none" [
+        field show_ai_settings .type:"hidden"
+    ]
+
+    split .ratio:27 .style:"min-height:760px;gap:14px;background:#0b1220;padding:14px;" [
+        box .style:"display:flex;flex-direction:column;gap:12px;background:#111827;border:1px solid #1f2937;border-radius:16px;padding:14px;" [
+            title "RHO::TRAINING" .style:"font-size:24px;font-weight:800;color:#22d3ee;font-family:monospace;"
+            text "Protocol: Human Firewall" .style:"font-size:12px;text-transform:uppercase;color:#64748b;letter-spacing:1px;"
+
+            box .data-show-bind:"show_account" .data-show-value:"true" [
+                row .space:8 .style:"margin:0 0 10px;justify-content:space-between;align-items:center;" [
+                    text "Controls" .style:"font-size:11px;color:#64748b;font-family:monospace;text-transform:uppercase;"
+                ]
+                text "Missions" .style:"font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;"
+                list selected_mission mission_options .size:"100%x420" .style:"background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:10px;padding:6px;font-family:monospace;"
+
+                button "Load Selected Mission" .data-vista-action:"load_selected_mission" .style:"margin-top:12px;background:#0f766e;color:#ecfeff;border:none;border-radius:10px;padding:10px;font-weight:700;"
+            ]
+
+            box .style:"margin-top:auto;background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:10px;" [
+                row .space:10 [text "SYSTEM_STATUS" .style:"font-size:11px;color:#64748b;font-family:monospace;" text "ONLINE" .style:"font-size:11px;color:#22c55e;font-family:monospace;"]
+                row .space:10 [text "ENCRYPTION" .style:"font-size:11px;color:#64748b;font-family:monospace;" text "AES-256" .style:"font-size:11px;color:#22d3ee;font-family:monospace;"]
+                row .space:10 [text "ACCOUNT" .style:"font-size:11px;color:#64748b;font-family:monospace;" text profile_label .style:"font-size:11px;color:#cbd5e1;font-family:monospace;"]
+            ]
+        ]
+    ] [
+        box .data-show-bind:"show_account" .data-show-value:"true" .style:"display:flex;flex-direction:column;gap:10px;background:#020617;border:1px solid #1e293b;border-radius:16px;padding:14px;" [
+            box .style:"background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:12px;" [
+                row .space:10 [
+                    title "The Atelier of Shadows" .style:"font-size:22px;font-weight:800;color:#e2e8f0;"
+                    text train_status .style:"font-size:11px;color:#22d3ee;font-family:monospace;text-transform:uppercase;"
+                ]
+                text selected_mission .style:"font-size:16px;font-weight:700;color:#bae6fd;font-family:monospace;"
+                text mission_subtitle .style:"font-size:14px;color:#93c5fd;"
+                text mission_description .style:"font-size:12px;color:#94a3b8;"
+            ]
+
+            box .style:"background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:10px;" [
+                text "Objectives" .style:"font-size:12px;font-weight:700;text-transform:uppercase;color:#67e8f9;"
+                textarea objective_lines .size:"100%x130" .style:"width:100%;min-height:130px;background:#020617;color:#cbd5e1;border:1px solid #334155;border-radius:8px;padding:10px;font-family:monospace;"
+            ]
+
+            box .style:"background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:10px;" [
+                text "Secure Channel" .style:"font-size:12px;font-weight:700;text-transform:uppercase;color:#67e8f9;"
+                textarea chat_log .size:"100%x280" .style:"width:100%;min-height:280px;background:#020617;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:10px;font-family:monospace;"
+                row .space:8 .style:"margin-top:8px;align-items:flex-end;padding-top:4px;" [
+                    field chat_input .placeholder:"Enter command or response..." .style:"width:100%;background:#020617;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:10px;font-family:monospace;"
+                    button "Send" [run_command] .style:"background:#0891b2;color:#ecfeff;border:none;border-radius:8px;padding:10px 14px;font-weight:700;"
+                ]
+                row .space:10 [
+                    text "Available Commands: /start /next /review /save" .style:"font-size:10px;color:#64748b;font-family:monospace;"
+                ]
+            ]
+
+        ]
+        box .data-show-bind:"show_account" .data-show-value:"false" .style:"display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#020617;border:1px solid #1e293b;border-radius:16px;padding:14px;" [
+            box .style:"width:100%;max-width:760px;background:#0b1220;border:1px solid #1e293b;border-radius:12px;padding:10px;" [
+                auth_app "Social Engineering Defense Training" "Create an account or sign in to begin."
+            ]
+            box .data-show-bind:"show_ai_settings" .data-show-value:"true" .style:"width:100%;max-width:760px;background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:10px;" [
+                text "AI Settings" .style:"font-size:12px;font-weight:700;text-transform:uppercase;color:#67e8f9;"
+                row .space:8 .style:"flex-wrap:wrap;align-items:flex-end;" [
+                    col .space:4 .style:"min-width:250px;flex:1;" [
+                        text "API base URL" .style:"font-size:11px;color:#64748b;"
+                        field api_base .id:"api-base" .style:"width:100%;background:#020617;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:8px;"
+                    ]
+                    col .space:4 [
+                        text "Provider" .style:"font-size:11px;color:#64748b;"
+                        select provider provider_options .style:"min-width:140px;background:#020617;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:8px;"
+                    ]
+                    col .space:4 [
+                        text "Model" .style:"font-size:11px;color:#64748b;"
+                        select model model_options .style:"min-width:220px;background:#020617;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:8px;"
+                    ]
+                    col .space:4 [
+                        text "Temp" .style:"font-size:11px;color:#64748b;"
+                        select temperature temperature_options .style:"min-width:90px;background:#020617;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:8px;"
+                    ]
+                    col .space:4 [
+                        text "Top P" .style:"font-size:11px;color:#64748b;"
+                        select top_p top_p_options .style:"min-width:90px;background:#020617;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:8px;"
+                    ]
+                    col .space:4 [
+                        text "Max tokens" .style:"font-size:11px;color:#64748b;"
+                        select max_tokens max_tokens_options .style:"min-width:110px;background:#020617;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:8px;"
+                    ]
+                ]
+                row .space:8 .style:"margin-top:8px;" [
+                    button "Load AI Settings" [ai_settings_load #[status_key: "ai_status" token_key: "auth_token"]] .style:"background:#1f2937;color:#dbeafe;border:1px solid #334155;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;"
+                    button "Save AI Settings" [ai_settings_save #[status_key: "ai_status" token_key: "auth_token"]] .style:"background:#155e75;color:#ecfeff;border:none;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;"
+                    button "Close" .data-vista-action:"auth_close_ai_settings" .style:"background:#0b1220;color:#cbd5e1;border:1px solid #334155;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;"
+                ]
+                text ai_status .style:"font-size:11px;color:#94a3b8;font-family:monospace;margin-top:6px;"
+            ]
+        ]
+    ]
+]

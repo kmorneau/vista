@@ -13,13 +13,24 @@ resolve_icon_src: function [src] [
             not? contains? srcStr ":"
         ] [
             iconPath: "dist/assets/icons/" ++ srcStr ++ ".svg"
+            iconCandidates: @[iconPath "../" ++ iconPath "../../" ++ iconPath]
             iconOut: iconPath
-            if not? error? err: <= try [
-                iconRaw: read iconPath
-                iconB64: encode.base64 to :string iconRaw
-                iconOut: "data:image/svg+xml;base64," ++ iconB64
-            ] [
-                null
+            ci: 0
+            clen: size iconCandidates
+            while [less? ci clen] [
+                cand: get iconCandidates ci
+                if not? error? err: <= try [
+                    iconRaw: read cand
+                    if all? @[equal? (type iconRaw) :string greater? (size iconRaw) 0 notEqual? iconRaw cand] [
+                        iconB64: encode.base64 to :string iconRaw
+                        iconOut: "data:image/svg+xml;base64," ++ iconB64
+                        ci: clen
+                        continue
+                    ]
+                ] [
+                    null
+                ]
+                ci: ci + 1
             ]
             return iconOut
         ]
@@ -33,12 +44,43 @@ icon_svg_source_path: function [src] [
             not? contains? srcStr "."
             not? contains? srcStr ":"
         ] [
-            return "dist/assets/icons/" ++ srcStr ++ ".svg"
+            iconPath: "dist/assets/icons/" ++ srcStr ++ ".svg"
+            iconCandidates: @[iconPath "../" ++ iconPath "../../" ++ iconPath]
+            ci: 0
+            clen: size iconCandidates
+            while [less? ci clen] [
+                cand: get iconCandidates ci
+                if not? error? err: <= try [
+                    raw: read cand
+                    if all? @[equal? (type raw) :string greater? (size raw) 0 notEqual? raw cand] [
+                        return cand
+                    ]
+                ] [
+                    null
+                ]
+                ci: ci + 1
+            ]
+            return iconPath
         ]
         if all? @[
             contains? srcStr ".svg"
             not? contains? srcStr "data:image/"
         ] [
+            iconCandidates: @[srcStr "../" ++ srcStr "../../" ++ srcStr]
+            ci: 0
+            clen: size iconCandidates
+            while [less? ci clen] [
+                cand: get iconCandidates ci
+                if not? error? err: <= try [
+                    raw: read cand
+                    if all? @[equal? (type raw) :string greater? (size raw) 0 notEqual? raw cand] [
+                        return cand
+                    ]
+                ] [
+                    null
+                ]
+                ci: ci + 1
+            ]
             return srcStr
         ]
         null
@@ -967,8 +1009,19 @@ vista_css: "*{box-sizing:border-box;}" ++
     ".vista-list{list-style:none;padding:0;margin:0;border:1px solid var(--arturo-border);border-radius:10px;background:var(--arturo-panel);max-height:220px;overflow:auto;}" ++
     ".vista-list li{padding:6px 8px;border-bottom:1px solid var(--arturo-border);cursor:pointer;}" ++
     ".vista-list li:last-child{border-bottom:none;}" ++
-    ".vista-list li.is-selected{background:#f7e199;}" ++
-    ".vista-list li.is-active{outline:2px solid var(--arturo-ink);}" ++
+    ".vista-list li.is-selected{background:#0b5fff;color:#ffffff;font-weight:700;box-shadow:inset 0 0 0 2px #0a2f9a;}" ++
+    ".vista-list li.is-active{outline:2px solid #8fb5ff;outline-offset:-2px;}" ++
+    "ul[data-list-bind='selected_mission'] li::after{display:block;font-size:11px;opacity:0.9;margin-top:2px;font-weight:500;}" ++
+    "ul[data-list-bind='selected_mission'] li[data-value='Mission 1']::after{content:'The Awakening of Awareness';}" ++
+    "ul[data-list-bind='selected_mission'] li[data-value='Mission 2']::after{content:'The Hall of Pretexts';}" ++
+    "ul[data-list-bind='selected_mission'] li[data-value='Mission 3']::after{content:'The Workshop of Human Factors';}" ++
+    "ul[data-list-bind='selected_mission'] li[data-value='Mission 4']::after{content:'The Hall of Syndicates';}" ++
+    "ul[data-list-bind='selected_mission'] li[data-value='Mission 5']::after{content:'The Labyrinth of Channels';}" ++
+    "ul[data-list-bind='selected_mission'] li[data-value='Mission 6']::after{content:'The Vault of Credentials';}" ++
+    "ul[data-list-bind='selected_mission'] li[data-value='Mission 7']::after{content:'The Citadel of Teams';}" ++
+    "ul[data-list-bind='selected_mission'] li[data-value='Mission 8']::after{content:'The Theater of Adversaries';}" ++
+    "ul[data-list-bind='selected_mission'] li[data-value='Mission 9']::after{content:'The Mirror of the Self';}" ++
+    "ul[data-list-bind='selected_mission'] li[data-value='Mission 10']::after{content:'The Constellation of Defenders';}" ++
     ".vista-tabs{display:flex;flex-direction:column;gap:6px;}" ++
     ".vista-tabs-header{display:flex;gap:6px;flex-wrap:wrap;}" ++
     ".vista-tab-btn{padding:6px 10px;border:1px solid var(--arturo-border);border-radius:8px;background:var(--arturo-panel);}" ++
@@ -979,8 +1032,9 @@ vista_css: "*{box-sizing:border-box;}" ++
     ".vista-radio-group{display:flex;flex-direction:column;gap:6px;}" ++
     ".vista-radio-item{display:flex;align-items:center;gap:6px;}" ++
     ".vista-auth-splash{min-height:60vh;display:flex;align-items:center;justify-content:center;padding:24px;}" ++
-    ".vista-auth-splash-card{max-width:520px;width:100%;text-align:center;padding:24px;border:1px solid var(--arturo-border);border-radius:14px;background:var(--arturo-panel);box-shadow:0 10px 30px rgba(0,0,0,0.08);}" ++
-    ".vista-auth-title{font-size:28px;font-weight:800;margin:0 0 8px;color:var(--arturo-ink) !important;background:var(--arturo-primary) !important;padding:4px 10px;border-radius:8px;display:inline-block;}" ++
+    ".vista-auth-splash-card{max-width:680px;width:100%;text-align:center;padding:28px;border:2px solid var(--arturo-ink);border-radius:16px;background:var(--arturo-primary);box-shadow:0 24px 60px rgba(2,6,23,0.35);}" ++
+    ".vista-auth-splash-logo{width:96px;height:96px;object-fit:contain;margin:0 auto 10px;display:block;}" ++
+    ".vista-auth-title{font-size:34px;font-weight:800;margin:0;color:var(--arturo-ink) !important;background:transparent !important;padding:0;display:block;}" ++
     ".vista-auth-subtitle{color:var(--arturo-muted);margin:0;}" ++
     ".vista-auth-card{max-width:520px;margin:0 auto;}" ++
     ".vista-auth-meta{display:block;color:var(--arturo-muted);margin-bottom:6px;}" ++
