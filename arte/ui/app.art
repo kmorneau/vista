@@ -10,6 +10,19 @@ ARTURO [
 api_base: "http://localhost:19010"
 health_status: "Not checked"
 health_detail: ""
+email: ""
+password: ""
+mfa_code: ""
+new_email: ""
+old_password: ""
+new_password: ""
+profile_label: "Signed out"
+mfa_challenge: ""
+show_splash: false
+show_intro_splash: true
+show_login: false
+show_signup: false
+show_account: false
 auth_email: ""
 auth_password: ""
 auth_status: "Not signed in"
@@ -44,6 +57,14 @@ selected_component_label: ""
 selected_component_placeholder: ""
 selected_component_size: ""
 selected_component_children: ""
+ai_provider: "openai"
+ai_model: "gpt-4o-mini"
+ai_temperature: "0.2"
+ai_top_p: "0.9"
+ai_max_tokens: "128"
+ai_prompt: ""
+ai_chat_log: "ai: Ready."
+ai_status: "AI idle"
 
 view_body: [
     raw {<div id="arte-toast" class="arte-toast"></div>}
@@ -58,15 +79,7 @@ view_body: [
 
     box .class:"arte-panel" [
         title "Auth" .class:"arte-panel-title"
-        row .space:10 [
-            field auth_email .placeholder:"Email" .class:"arte-input"
-            field auth_password .placeholder:"Password" .class:"arte-input"
-        ]
-        row .space:10 [
-            button "Sign Up" "arteSignup()" .class:"arte-btn"
-            button "Login" "arteLogin()" .class:"arte-btn"
-            button "Logout" "arteLogout()" .class:"arte-btn-danger"
-        ]
+        auth_app "Arte" "Sign in or create an account to continue."
         text auth_status .class:"arte-detail"
         text auth_user_label .class:"arte-detail"
     ]
@@ -104,6 +117,28 @@ view_body: [
         ]
         text invite_list_status .class:"arte-detail"
         raw {<div id="arte-invite-list" class="arte-list"></div>}
+    ]
+
+    box .class:"arte-panel" [
+        title "AI Chat" .class:"arte-panel-title"
+        row .space:10 [
+            field ai_provider .placeholder:"openai|gemini|echo" .class:"arte-input"
+            field ai_model .placeholder:"Model" .class:"arte-input"
+            field ai_temperature .placeholder:"0.2" .class:"arte-input"
+            field ai_top_p .placeholder:"0.9" .class:"arte-input"
+            field ai_max_tokens .placeholder:"128" .class:"arte-input"
+        ]
+        row .space:10 [
+            button "Load AI Settings" "arteAiLoadSettings()" .class:"arte-btn"
+            button "Save AI Settings" "arteAiSaveSettings()" .class:"arte-btn"
+        ]
+        textarea ai_chat_log .class:"arte-textarea" .readonly:true
+        textarea ai_prompt .class:"arte-textarea" .placeholder:"Type your AI prompt..."
+        row .space:10 [
+            button "Send Prompt" "arteAiSend()" .class:"arte-btn"
+            button "Clear Chat" "arteAiClear()" .class:"arte-btn"
+        ]
+        text ai_status .class:"arte-detail"
     ]
 
     divider
@@ -155,6 +190,19 @@ view_body: [
                 button "Input" "arteAddComponent('input')" .class:"arte-btn"
                 button "Row" "arteAddComponent('row')" .class:"arte-btn"
             ]
+            row .space:8 [
+                button "Box" "arteAddComponent('box')" .class:"arte-btn"
+                button "Col" "arteAddComponent('col')" .class:"arte-btn"
+                button "Canvas" "arteAddComponent('canvas')" .class:"arte-btn"
+                button "Image" "arteAddComponent('image')" .class:"arte-btn"
+                button "Divider" "arteAddComponent('divider')" .class:"arte-btn"
+                button "Raw Vista" "arteAddComponent('raw_vista')" .class:"arte-btn"
+            ]
+            row .space:8 [
+                button "Line Chart" "arteAddComponent('chart_line')" .class:"arte-btn"
+                button "Bar Chart" "arteAddComponent('chart_bar')" .class:"arte-btn"
+                button "Pie Chart" "arteAddComponent('chart_pie')" .class:"arte-btn"
+            ]
 
             text "Click a palette item to append it to the layout JSON." .class:"arte-detail"
 
@@ -169,7 +217,7 @@ view_body: [
                 button "Export .art" "arteExportPage()" .class:"arte-btn"
             ]
 
-            textarea layout_json .class:"arte-textarea" .placeholder:"[{\"type\":\"title\",\"props\":\"Hello\"}]"
+            textarea layout_json .class:"arte-textarea" .placeholder:"[{\"type\":\"canvas\",\"props\":\"{\\\"width\\\":180,\\\"height\\\":64,\\\"draw\\\":\\\"fill-pen \\\\\\\"#edf1ff\\\\\\\"\\\\nbox [0 0] [180 64]\\\"}\"}]"
             text layout_status .class:"arte-detail"
 
             divider
@@ -203,7 +251,7 @@ view_body: [
                 text "Props:" .class:"arte-detail"
                 field selected_component_props .class:"arte-input"
             ]
-            text "Children JSON (row only):" .class:"arte-detail"
+            text "Children JSON (row/box/col):" .class:"arte-detail"
             textarea selected_component_children .class:"arte-textarea" .placeholder:"[{\"type\":\"text\",\"props\":\"Hi\"}]"
             row .space:10 [
                 button "Apply" "arteApplyComponentEdits()" .class:"arte-btn"
@@ -588,9 +636,37 @@ view_body: [
     });
   };
 
+  const syncAuthInputsFromAuthApp = () => {
+    state.auth_email = String(state.email || '');
+    state.auth_password = String(state.password || '');
+  };
+
+  const syncAuthAppFromAuthState = () => {
+    state.email = String(state.auth_email || state.email || '');
+    state.password = String(state.auth_password || state.password || '');
+    state.profile_label = state.auth_user_label ? String(state.auth_user_label) : 'Signed out';
+  };
+
+  const setAuthFlowSignedIn = () => {
+    state.show_intro_splash = false;
+    state.show_splash = false;
+    state.show_login = false;
+    state.show_signup = false;
+    state.show_account = true;
+  };
+
+  const setAuthFlowSignedOut = () => {
+    state.show_account = false;
+    state.show_splash = false;
+    state.show_signup = false;
+    state.show_login = true;
+  };
+
   window.arteSignup = () => {
+    syncAuthInputsFromAuthApp();
     if(!state.auth_email || !state.auth_password){
       state.auth_status = 'Provide email and password';
+      setAuthFlowSignedOut();
       render();
       return;
     }
@@ -602,40 +678,62 @@ view_body: [
           state.auth_token = resp.data && resp.data.token ? String(resp.data.token) : '';
           state.auth_status = state.auth_token ? 'Signed in' : 'Signup ok';
           window.arteMe();
+          syncAuthAppFromAuthState();
+          if(state.auth_token){ setAuthFlowSignedIn(); }
         } else {
           state.auth_status = 'Signup failed';
+          setAuthFlowSignedOut();
         }
         render();
       })
-      .catch(() => { state.auth_status = 'Signup failed'; render(); });
+      .catch(() => { state.auth_status = 'Signup failed'; setAuthFlowSignedOut(); render(); });
   };
 
   window.arteLogin = () => {
+    syncAuthInputsFromAuthApp();
     if(!state.auth_email || !state.auth_password){
       state.auth_status = 'Provide email and password';
+      setAuthFlowSignedOut();
       render();
       return;
     }
     state.auth_status = 'Signing in...';
     render();
-    postJson(apiPath('api','auth','login'), { email: state.auth_email, password: state.auth_password })
+    postJson(apiPath('api','auth','login'), {
+      email: state.auth_email,
+      password: state.auth_password,
+      mfa_code: state.mfa_code || ''
+    })
       .then(resp => {
-        if(resp && resp.ok){
+        if(resp && resp.ok && resp.mfa_required){
+          state.mfa_challenge = resp.data && resp.data.challenge_id ? String(resp.data.challenge_id) : '';
+          state.auth_status = 'MFA required';
+          state.show_intro_splash = false;
+          state.show_splash = false;
+          state.show_login = true;
+          state.show_signup = false;
+          state.show_account = false;
+        } else if(resp && resp.ok){
           state.auth_token = resp.data && resp.data.token ? String(resp.data.token) : '';
           state.auth_status = state.auth_token ? 'Signed in' : 'Login ok';
           window.arteMe();
+          syncAuthAppFromAuthState();
+          if(state.auth_token){ setAuthFlowSignedIn(); }
         } else {
           state.auth_status = 'Login failed';
+          setAuthFlowSignedOut();
         }
         render();
       })
-      .catch(() => { state.auth_status = 'Login failed'; render(); });
+      .catch(() => { state.auth_status = 'Login failed'; setAuthFlowSignedOut(); render(); });
   };
 
   window.arteMe = () => {
     if(!state.auth_token){
       state.auth_user_label = '';
       state.auth_role = '';
+      state.profile_label = 'Signed out';
+      setAuthFlowSignedOut();
       render();
       return;
     }
@@ -646,18 +744,31 @@ view_body: [
           const ws = resp.data.workspace || {};
           state.auth_role = u.role ? String(u.role).toLowerCase() : '';
           state.auth_user_label = 'user=' + (u.email || '') + ' role=' + (u.role || '') + ' workspace=' + (ws.name || ws.id || '');
+          state.profile_label = 'Signed in as ' + (u.email || '') + ' (role: ' + (u.role || '') + ')';
+          setAuthFlowSignedIn();
+          setTimeout(() => { window.arteAiLoadSettings(); }, 0);
         } else {
           state.auth_user_label = '';
           state.auth_role = '';
+          state.profile_label = 'Signed out';
+          setAuthFlowSignedOut();
         }
         render();
       })
-      .catch(() => { state.auth_user_label = ''; state.auth_role = ''; render(); });
+      .catch(() => {
+        state.auth_user_label = '';
+        state.auth_role = '';
+        state.profile_label = 'Signed out';
+        setAuthFlowSignedOut();
+        render();
+      });
   };
 
 window.arteLogout = () => {
     if(!state.auth_token){
       state.auth_status = 'Signed out';
+      state.profile_label = 'Signed out';
+      setAuthFlowSignedOut();
       render();
       return;
     }
@@ -667,6 +778,8 @@ window.arteLogout = () => {
         state.auth_status = 'Signed out';
         state.auth_user_label = '';
         state.auth_role = '';
+        state.profile_label = 'Signed out';
+        setAuthFlowSignedOut();
         render();
       })
       .catch(() => {
@@ -674,9 +787,162 @@ window.arteLogout = () => {
         state.auth_status = 'Signed out';
         state.auth_user_label = '';
         state.auth_role = '';
+        state.profile_label = 'Signed out';
+        setAuthFlowSignedOut();
         render();
       });
   };
+
+  window.auth_show_login = () => {
+    state.show_intro_splash = false;
+    state.show_splash = false;
+    state.show_signup = false;
+    state.show_account = false;
+    state.show_login = true;
+    render();
+  };
+
+  window.auth_show_signup = () => {
+    state.show_intro_splash = false;
+    state.show_splash = false;
+    state.show_login = false;
+    state.show_account = false;
+    state.show_signup = true;
+    render();
+  };
+
+  window.auth_login = () => { syncAuthInputsFromAuthApp(); window.arteLogin(); };
+  window.auth_signup = () => { syncAuthInputsFromAuthApp(); window.arteSignup(); };
+  window.auth_mfa_verify = () => {
+    if(!state.mfa_challenge || !state.mfa_code){
+      state.auth_status = 'Provide MFA code';
+      render();
+      return;
+    }
+    state.auth_status = 'Verifying MFA...';
+    render();
+    postJson(apiPath('api','auth','mfa','verify'), {
+      challenge_id: state.mfa_challenge,
+      code: state.mfa_code
+    })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.auth_token = resp.data && resp.data.token ? String(resp.data.token) : '';
+          state.mfa_challenge = '';
+          state.mfa_code = '';
+          state.auth_status = 'Signed in';
+          window.arteMe();
+          syncAuthAppFromAuthState();
+          setAuthFlowSignedIn();
+        } else {
+          state.auth_status = 'MFA verify failed';
+        }
+        render();
+      })
+      .catch(() => { state.auth_status = 'MFA verify failed'; render(); });
+  };
+  window.auth_update_email = () => {
+    if(!state.auth_token){
+      state.auth_status = 'Sign in first';
+      render();
+      return;
+    }
+    if(!state.new_email){
+      state.auth_status = 'Provide new email';
+      render();
+      return;
+    }
+    state.auth_status = 'Updating email...';
+    render();
+    postJson(apiPath('api','auth','update-email'), {
+      token: state.auth_token,
+      email: state.new_email
+    })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.auth_status = 'Email updated';
+          state.auth_email = state.new_email;
+          state.email = state.new_email;
+          state.new_email = '';
+          window.arteMe();
+        } else {
+          state.auth_status = 'Email update failed';
+        }
+        render();
+      })
+      .catch(() => { state.auth_status = 'Email update failed'; render(); });
+  };
+  window.auth_update_password = () => {
+    if(!state.auth_token){
+      state.auth_status = 'Sign in first';
+      render();
+      return;
+    }
+    if(!state.old_password || !state.new_password){
+      state.auth_status = 'Provide current and new password';
+      render();
+      return;
+    }
+    state.auth_status = 'Updating password...';
+    render();
+    postJson(apiPath('api','auth','update-password'), {
+      token: state.auth_token,
+      old_password: state.old_password,
+      new_password: state.new_password
+    })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.auth_status = 'Password updated';
+          state.old_password = '';
+          state.new_password = '';
+        } else {
+          state.auth_status = 'Password update failed';
+        }
+        render();
+      })
+      .catch(() => { state.auth_status = 'Password update failed'; render(); });
+  };
+  window.auth_enable_mfa = () => {
+    if(!state.auth_token){
+      state.auth_status = 'Sign in first';
+      render();
+      return;
+    }
+    state.auth_status = 'Enabling MFA...';
+    render();
+    postJson(apiPath('api','auth','mfa','enable'), { token: state.auth_token })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.auth_status = 'MFA enabled. Verification code: ' + ((resp.data && resp.data.code) ? String(resp.data.code) : '123456');
+          window.arteMe();
+        } else {
+          state.auth_status = 'MFA enable failed';
+        }
+        render();
+      })
+      .catch(() => { state.auth_status = 'MFA enable failed'; render(); });
+  };
+  window.auth_disable_mfa = () => {
+    if(!state.auth_token){
+      state.auth_status = 'Sign in first';
+      render();
+      return;
+    }
+    state.auth_status = 'Disabling MFA...';
+    render();
+    postJson(apiPath('api','auth','mfa','disable'), { token: state.auth_token })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.auth_status = 'MFA disabled';
+          window.arteMe();
+        } else {
+          state.auth_status = 'MFA disable failed';
+        }
+        render();
+      })
+      .catch(() => { state.auth_status = 'MFA disable failed'; render(); });
+  };
+  window.auth_logout = () => { window.arteLogout(); };
 
   window.arteLoadMembers = () => {
     if(!state.auth_token){
@@ -1002,6 +1268,107 @@ window.arteAddMember = () => {
       });
   };
 
+  window.arteAiLoadSettings = () => {
+    if(!state.auth_token){
+      state.ai_status = "Sign in first";
+      render();
+      return;
+    }
+    state.ai_status = "Loading AI settings...";
+    render();
+    getJson(apiPath('api','ai','settings', state.auth_token))
+      .then(resp => {
+        if(resp && resp.ok && resp.data){
+          state.ai_provider = resp.data.provider ? String(resp.data.provider) : state.ai_provider;
+          state.ai_model = resp.data.model ? String(resp.data.model) : state.ai_model;
+          state.ai_temperature = resp.data.temperature != null ? String(resp.data.temperature) : state.ai_temperature;
+          state.ai_top_p = resp.data.top_p != null ? String(resp.data.top_p) : state.ai_top_p;
+          state.ai_max_tokens = resp.data.max_tokens != null ? String(resp.data.max_tokens) : state.ai_max_tokens;
+          state.ai_status = "AI settings loaded";
+        } else {
+          state.ai_status = "AI settings load failed";
+        }
+        render();
+      })
+      .catch(() => {
+        state.ai_status = "AI settings load failed";
+        render();
+      });
+  };
+
+  window.arteAiSaveSettings = () => {
+    if(!state.auth_token){
+      state.ai_status = "Sign in first";
+      render();
+      return;
+    }
+    state.ai_status = "Saving AI settings...";
+    render();
+    postJson(apiPath('api','ai','settings', state.auth_token), {
+      provider: state.ai_provider,
+      model: state.ai_model,
+      temperature: Number(state.ai_temperature || "0.2"),
+      top_p: Number(state.ai_top_p || "0.9"),
+      max_tokens: Number(state.ai_max_tokens || "128")
+    })
+      .then(resp => {
+        state.ai_status = (resp && resp.ok) ? "AI settings saved" : "AI settings save failed";
+        render();
+      })
+      .catch(() => {
+        state.ai_status = "AI settings save failed";
+        render();
+      });
+  };
+
+  window.arteAiSend = () => {
+    if(!state.auth_token){
+      state.ai_status = "Sign in first";
+      render();
+      return;
+    }
+    const prompt = String(state.ai_prompt || '').trim();
+    if(!prompt){
+      state.ai_status = "Type a prompt first";
+      render();
+      return;
+    }
+    state.ai_status = "Sending prompt...";
+    render();
+    postJson(apiPath('api','ai','chat', state.auth_token), {
+      provider: state.ai_provider,
+      model: state.ai_model,
+      temperature: Number(state.ai_temperature || "0.2"),
+      top_p: Number(state.ai_top_p || "0.9"),
+      max_tokens: Number(state.ai_max_tokens || "128"),
+      prompt: prompt
+    })
+      .then(resp => {
+        if(resp && resp.ok){
+          const text = resp.data && resp.data.text ? String(resp.data.text) : "[empty response]";
+          const block = "you: " + prompt + "\nai: " + text;
+          const prev = String(state.ai_chat_log || "");
+          state.ai_chat_log = prev ? (prev + "\n\n" + block) : block;
+          state.ai_prompt = "";
+          state.ai_status = "AI response received";
+        } else {
+          state.ai_status = "AI request failed";
+        }
+        render();
+      })
+      .catch(() => {
+        state.ai_status = "AI request failed";
+        render();
+      });
+  };
+
+  window.arteAiClear = () => {
+    state.ai_chat_log = "ai: Ready.";
+    state.ai_prompt = "";
+    state.ai_status = "AI cleared";
+    render();
+  };
+
   window.arteLoadApps = () => {
     state.apps_status = "Loading apps...";
     render();
@@ -1260,6 +1627,24 @@ window.arteAddMember = () => {
     let arr = parseLayoutArray();
     if(type === 'row'){
       arr.push({ type: 'row', children: [ { type: 'button', props: '{"label":"Action"}' }, { type: 'input', props: '{"placeholder":"Placeholder"}' } ] });
+    } else if(type === 'box'){
+      arr.push({ type: 'box', props: '{"style":"padding:10px;border:1px solid #ddd;"}', children: [ { type: 'text', props: '{"label":"Inside box"}' } ] });
+    } else if(type === 'col'){
+      arr.push({ type: 'col', props: '{"space":8}', children: [ { type: 'text', props: '{"label":"Column item"}' } ] });
+    } else if(type === 'canvas'){
+      arr.push({ type: 'canvas', props: '{"id":"badge","width":180,"height":64,"draw":"fill-pen \\"#edf1ff\\"\\nbox [0 0] [180 64]\\nfill-pen \\"#4a55ff\\"\\ncircle [20 22] 8\\nfill-pen \\"#141414\\"\\ntext [10 52] \\"Vista\\""}' });
+    } else if(type === 'image'){
+      arr.push({ type: 'image', props: '{"label":"arturo-vista.png","size":"96x96"}' });
+    } else if(type === 'divider'){
+      arr.push({ type: 'divider', props: '{}' });
+    } else if(type === 'raw_vista'){
+      arr.push({ type: 'raw_vista', props: '{"code":"text \\"Raw Vista snippet\\" .style:\\"font-weight:700;\\""}' });
+    } else if(type === 'chart_line'){
+      arr.push({ type: 'canvas', props: '{"id":"line-chart","width":320,"height":180,"draw":"fill-pen \\"#ffffff\\"\\nbox [0 0] [320 180]\\npen \\"#d1d5db\\"\\nline [28 24] [28 152]\\nline [28 152] [296 152]\\npen \\"#22d3ee\\"\\nline-width 3\\nline [38 132] [90 96] [150 112] [210 72] [280 52]\\nfill-pen \\"#22d3ee\\"\\ncircle [90 96] 4\\ncircle [150 112] 4\\ncircle [210 72] 4\\ncircle [280 52] 4\\npen \\"#0f172a\\"\\ntext [28 170] \\"Q1\\"\\ntext [104 170] \\"Q2\\"\\ntext [180 170] \\"Q3\\"\\ntext [256 170] \\"Q4\\""}' });
+    } else if(type === 'chart_bar'){
+      arr.push({ type: 'canvas', props: '{"id":"bar-chart","width":320,"height":180,"draw":"fill-pen \\"#ffffff\\"\\nbox [0 0] [320 180]\\npen \\"#d1d5db\\"\\nline [28 24] [28 152]\\nline [28 152] [296 152]\\nfill-pen \\"#6366f1\\"\\nbox [48 112] [84 152]\\nfill-pen \\"#22c55e\\"\\nbox [102 86] [138 152]\\nfill-pen \\"#f59e0b\\"\\nbox [156 64] [192 152]\\nfill-pen \\"#ef4444\\"\\nbox [210 98] [246 152]\\npen \\"#0f172a\\"\\ntext [50 170] \\"A\\"\\ntext [106 170] \\"B\\"\\ntext [160 170] \\"C\\"\\ntext [214 170] \\"D\\""}' });
+    } else if(type === 'chart_pie'){
+      arr.push({ type: 'canvas', props: '{"id":"pie-chart","width":320,"height":180,"draw":"fill-pen \\"#ffffff\\"\\nbox [0 0] [320 180]\\nfill-pen \\"#22d3ee\\"\\npolygon [96 90] [148 90] [118 44]\\nfill-pen \\"#6366f1\\"\\npolygon [96 90] [118 44] [54 54]\\nfill-pen \\"#f59e0b\\"\\npolygon [96 90] [54 54] [52 128] [148 90]\\npen \\"#0f172a\\"\\nline-width 1\\ncircle [96 90] 52\\nfill-pen \\"#22d3ee\\"\\nbox [184 44] [196 56]\\npen \\"#0f172a\\"\\ntext [202 54] \\"Security\\"\\nfill-pen \\"#6366f1\\"\\nbox [184 72] [196 84]\\npen \\"#0f172a\\"\\ntext [202 82] \\"Training\\"\\nfill-pen \\"#f59e0b\\"\\nbox [184 100] [196 112]\\npen \\"#0f172a\\"\\ntext [202 110] \\"Incidents\\""}' });
     } else if(type === 'title'){
       arr.push({ type: 'title', props: '{"label":"New Title"}' });
     } else if(type === 'text'){
@@ -1289,11 +1674,11 @@ window.arteAddMember = () => {
       return;
     }
     const item = arr[idx] || {};
-    if(item.type === 'row'){
+    if(item.type === 'row' || item.type === 'box' || item.type === 'col'){
       let parsed = [];
       try { parsed = JSON.parse(state.selected_component_children || '[]'); } catch (e) { parsed = null; }
       if(!Array.isArray(parsed)){
-        state.layout_status = "Row children must be a JSON list";
+        state.layout_status = "Children must be a JSON list";
         render();
         return;
       }
@@ -1343,29 +1728,75 @@ window.arteAddMember = () => {
     return String(text || '').replace(/\\/g,'\\\\').replace(/"/g,'\\"');
   };
 
+  const vistaAttrValue = (value) => {
+    if(typeof value === 'number'){ return String(value); }
+    if(typeof value === 'boolean'){ return value ? 'true' : 'false'; }
+    return '"' + vistaEscape(value == null ? '' : String(value)) + '"';
+  };
+
+  const vistaAttrsFromProps = (propsObj, skip) => {
+    const out = [];
+    const skipMap = new Set(skip || []);
+    Object.keys(propsObj || {}).forEach((k) => {
+      if(skipMap.has(k)){ return; }
+      out.push(' .' + String(k) + ':' + vistaAttrValue(propsObj[k]));
+    });
+    return out.join('');
+  };
+
   const vistaFromItem = (item, indent) => {
     const pad = ' '.repeat(indent);
     const type = item && item.type ? item.type : 'text';
     const propsObj = parsePropsObject(item && item.props ? item.props : '');
-    if(type === 'row' && Array.isArray(item.children)){
-      const inner = item.children.map(ch => vistaFromItem(ch, indent + 4)).join('\n');
-      return pad + "row [\n" + inner + "\n" + pad + "]";
+    const attrs = vistaAttrsFromProps(propsObj, ['label', 'placeholder', 'draw', 'code']);
+    if(type === 'row'){
+      const kids = Array.isArray(item.children) ? item.children : [];
+      const inner = kids.map(ch => vistaFromItem(ch, indent + 4)).join('\n');
+      return pad + "row" + attrs + " [\n" + inner + "\n" + pad + "]";
+    }
+    if(type === 'box'){
+      const kids = Array.isArray(item.children) ? item.children : [];
+      const inner = kids.map(ch => vistaFromItem(ch, indent + 4)).join('\n');
+      return pad + "box" + attrs + " [\n" + inner + "\n" + pad + "]";
+    }
+    if(type === 'col'){
+      const kids = Array.isArray(item.children) ? item.children : [];
+      const inner = kids.map(ch => vistaFromItem(ch, indent + 4)).join('\n');
+      return pad + "col" + attrs + " [\n" + inner + "\n" + pad + "]";
+    }
+    if(type === 'canvas'){
+      const draw = propsObj.draw ? String(propsObj.draw) : '';
+      if(draw){
+        return pad + "canvas" + attrs + " [\n" + draw + "\n" + pad + "]";
+      }
+      return pad + "canvas" + attrs;
+    }
+    if(type === 'image'){
+      const src = propsObj.label || item.props || '';
+      return pad + 'image "' + vistaEscape(src) + '"' + attrs;
+    }
+    if(type === 'divider'){
+      return pad + "divider" + attrs;
+    }
+    if(type === 'raw_vista'){
+      const code = propsObj.code || item.props || '';
+      return pad + String(code || '');
     }
     if(type === 'title'){
       const text = propsObj.label || item.props || '';
-      return pad + 'title "' + vistaEscape(text) + '"';
+      return pad + 'title "' + vistaEscape(text) + '"' + attrs;
     }
     if(type === 'text'){
       const text = propsObj.label || item.props || '';
-      return pad + 'text "' + vistaEscape(text) + '"';
+      return pad + 'text "' + vistaEscape(text) + '"' + attrs;
     }
     if(type === 'button'){
       const label = propsObj.label || item.props || 'Button';
-      return pad + 'button "' + vistaEscape(label) + '"';
+      return pad + 'button "' + vistaEscape(label) + '"' + attrs;
     }
     if(type === 'input'){
       const placeholder = propsObj.placeholder || item.props || '';
-      return pad + 'input .placeholder:"' + vistaEscape(placeholder) + '" name';
+      return pad + 'input .placeholder:"' + vistaEscape(placeholder) + '"' + attrs + ' name';
     }
     return pad + 'text "' + vistaEscape(type) + '"';
   };

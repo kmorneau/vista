@@ -6,13 +6,13 @@ import "arte/api/repositories/components_repo.art"!
 import "arte/api/repositories/auth_repo.art"!
 import "arte/api/repositories/workspaces_repo.art"!
 import "arte/api/services/auth_utils.art"!
+import "arte/api/services/ai_service.art"!
 
 api_port: 19010
 invite_ttl_seconds: 86400
 
 if key? env "ARTE_API_PORT" [
     api_port: to :integer env\ARTE_API_PORT
-]
 
 json_body: function [value] [
     write.json value ø
@@ -130,6 +130,17 @@ vista_escape: function [value] [
     textVal: replace textVal "\\" "\\\\"
     textVal: replace textVal "\"" "\\\""
     textVal
+]
+
+vista_attr_value: function [value] [
+    vtype: type value
+    if equal? vtype :integer [ return to :string value ]
+    if equal? vtype :floating [ return to :string value ]
+    if equal? vtype :logical [
+        if value [ return "true" ]
+        return "false"
+    ]
+    "\"" ++ vista_escape value ++ "\""
 ]
 
 repo_insert_invite: function [workspaceId email role code expiresAt] [
@@ -359,6 +370,14 @@ vista_from_item: function [item indent] [
     if key? propsDict "placeholder" [
         placeholderVal: to :string propsDict\placeholder
     ]
+    attrs: ""
+    if equal? (type propsDict) :dictionary [
+        propsKeys: keys propsDict
+        for key in propsKeys [
+            if in? key ["label" "placeholder" "draw" "code"] [ continue ]
+            attrs: attrs ++ " ." ++ to :string key ++ ":" ++ vista_attr_value (get propsDict key)
+        ]
+    ]
 
     if equal? ctype "row" [
         if all? @[key? item "children" equal? (type item\children) :block] [
@@ -369,33 +388,91 @@ vista_from_item: function [item indent] [
                 inner: inner ++ vista_from_item (get item\children i) (indent + 4) ++ "\n"
                 i: i + 1
             ]
-            return pad ++ "row [\n" ++ inner ++ pad ++ "]"
+            return pad ++ "row" ++ attrs ++ " [\n" ++ inner ++ pad ++ "]"
         ]
+        return pad ++ "row" ++ attrs ++ " []"
+    ]
+
+    if equal? ctype "box" [
+        if all? @[key? item "children" equal? (type item\children) :block] [
+            inner: ""
+            i: 0
+            blen: size item\children
+            while [less? i blen] [
+                inner: inner ++ vista_from_item (get item\children i) (indent + 4) ++ "\n"
+                i: i + 1
+            ]
+            return pad ++ "box" ++ attrs ++ " [\n" ++ inner ++ pad ++ "]"
+        ]
+        return pad ++ "box" ++ attrs ++ " []"
+    ]
+
+    if equal? ctype "col" [
+        if all? @[key? item "children" equal? (type item\children) :block] [
+            inner: ""
+            i: 0
+            blen: size item\children
+            while [less? i blen] [
+                inner: inner ++ vista_from_item (get item\children i) (indent + 4) ++ "\n"
+                i: i + 1
+            ]
+            return pad ++ "col" ++ attrs ++ " [\n" ++ inner ++ pad ++ "]"
+        ]
+        return pad ++ "col" ++ attrs ++ " []"
+    ]
+
+    if equal? ctype "canvas" [
+        drawScript: ""
+        if key? propsDict "draw" [ drawScript: to :string propsDict\draw ]
+        if all? @[key? item "children" equal? (type item\children) :block greater? (size item\children) 0] [
+            drawScript: to :string first item\children
+        ]
+        if equal? drawScript "" [
+            return pad ++ "canvas" ++ attrs
+        ]
+        return pad ++ "canvas" ++ attrs ++ " [\n" ++ drawScript ++ "\n" ++ pad ++ "]"
+    ]
+
+    if equal? ctype "image" [
+        srcVal: labelVal
+        if equal? srcVal "" [ srcVal: to :string propsVal ]
+        return pad ++ "image \"" ++ vista_escape srcVal ++ "\"" ++ attrs
+    ]
+
+    if equal? ctype "divider" [
+        return pad ++ "divider" ++ attrs
+    ]
+
+    if equal? ctype "raw_vista" [
+        codeVal: ""
+        if key? propsDict "code" [ codeVal: to :string propsDict\code ]
+        if equal? codeVal "" [ codeVal: to :string propsVal ]
+        return pad ++ codeVal
     ]
 
     if equal? ctype "title" [
         textVal: labelVal
         if equal? textVal "" [ textVal: to :string propsVal ]
-        return pad ++ "title \"" ++ vista_escape textVal ++ "\""
+        return pad ++ "title \"" ++ vista_escape textVal ++ "\"" ++ attrs
     ]
 
     if equal? ctype "text" [
         textVal: labelVal
         if equal? textVal "" [ textVal: to :string propsVal ]
-        return pad ++ "text \"" ++ vista_escape textVal ++ "\""
+        return pad ++ "text \"" ++ vista_escape textVal ++ "\"" ++ attrs
     ]
 
     if equal? ctype "button" [
         textVal: labelVal
         if equal? textVal "" [ textVal: to :string propsVal ]
         if equal? textVal "" [ textVal: "Button" ]
-        return pad ++ "button \"" ++ vista_escape textVal ++ "\""
+        return pad ++ "button \"" ++ vista_escape textVal ++ "\"" ++ attrs
     ]
 
     if equal? ctype "input" [
         phVal: placeholderVal
         if equal? phVal "" [ phVal: to :string propsVal ]
-        return pad ++ "input .placeholder:\"" ++ vista_escape phVal ++ "\" name"
+        return pad ++ "input .placeholder:\"" ++ vista_escape phVal ++ "\"" ++ attrs ++ " name"
     ]
 
     return pad ++ "text \"" ++ vista_escape ctype ++ "\""
@@ -492,12 +569,41 @@ clean_user_public: function [row] [
     if equal? row null [ return null ]
     if not? key? row "properties" [ return null ]
     props: row\properties
+    mfaEnabled: false
+    if key? props "mfa_enabled" [ mfaEnabled: props\mfa_enabled ]
     #[
         id: to :integer props\user_id
         email: to :string props\email
         role: to :string props\role
         workspace_id: to :string props\workspace_id
+        mfa_enabled: mfaEnabled
     ]
+]
+
+issue_session_for_user: function [row] [
+    if equal? row null [ return null ]
+    props: row\properties
+    token: auth_generate_token props\email
+    tokenHash: auth_hash_token token
+    repo_insert_session props\user_id tokenHash
+    token
+]
+
+repo_find_auth_user_by_mfa_challenge: function [challengeId] [
+    rows: with_arte_db [ fetch 'auth_user ø ]
+    i: 0
+    blen: size rows
+    while [less? i blen] [
+        row: get rows i
+        if all? @[equal? (type row) :dictionary key? row "properties"] [
+            props: row\properties
+            if all? @[key? props "mfa_challenge" equal? (to :string props\mfa_challenge) (to :string challengeId)] [
+                return row
+            ]
+        ]
+        i: i + 1
+    ]
+    null
 ]
 
 ensure_app_role: function [userRow appId action] [
@@ -543,7 +649,17 @@ serve.verbose .port:api_port [
                 "GET /api/health"
                 "POST /api/auth/signup"
                 "POST /api/auth/login"
+                "POST /api/auth/mfa/verify"
+                "POST /api/auth/mfa/enable"
+                "POST /api/auth/mfa/disable"
+                "POST /api/auth/update-email"
+                "POST /api/auth/update-password"
+                "POST /api/auth/logout"
                 "GET /api/auth/me/:token"
+                "GET /api/ai/providers"
+                "GET /api/ai/settings/:token"
+                "POST /api/ai/settings/:token"
+                "POST /api/ai/chat/:token"
                 "GET /api/apps/:token"
                 "POST /api/apps/:token"
                 "PUT /api/apps/:token/:id"
@@ -595,10 +711,8 @@ serve.verbose .port:api_port [
                     passHash: auth_hash_password passCheck\value salt auth_password_iterations
                     tempUser: repo_insert_auth_user emailCheck\value passHash salt auth_password_iterations "admin" ""
                     ws: repo_insert_workspace "Default" tempUser\properties\user_id
-                    userRow: repo_update_auth_user tempUser\properties\user_id #[workspace_id: ws\id]
-                    token: auth_generate_token emailCheck\value
-                    tokenHash: auth_hash_token token
-                    repo_insert_session userRow\properties\user_id tokenHash
+                    userRow: repo_update_auth_user tempUser\properties\user_id #[workspace_id: ws\id mfa_enabled: false]
+                    token: issue_session_for_user userRow
                     ok #[token: token user: clean_user_public userRow workspace: ws]
                 ]
             ]
@@ -624,10 +738,30 @@ serve.verbose .port:api_port [
                     if not? okPass [
                         unauthorized "invalid credentials" #[]
                     ] [
-                        token: auth_generate_token emailCheck\value
-                        tokenHash: auth_hash_token token
-                        repo_insert_session props\user_id tokenHash
-                        ok #[token: token user: clean_user_public row]
+                        mfaEnabled: false
+                        if key? props "mfa_enabled" [ mfaEnabled: props\mfa_enabled ]
+                        if mfaEnabled [
+                            codeVal: ""
+                            if key? payload\data "mfa_code" [ codeVal: to :string payload\data\mfa_code ]
+                            expectedCode: "123456"
+                            if key? props "mfa_secret" [ expectedCode: to :string props\mfa_secret ]
+                            if not? equal? codeVal expectedCode [
+                                challenge: auth_generate_token props\email
+                                repo_update_auth_user props\user_id #[mfa_challenge: challenge]
+                                json_body #[
+                                    ok: true
+                                    mfa_required: true
+                                    data: #[challenge_id: challenge]
+                                ]
+                            ] [
+                                userRow: repo_update_auth_user props\user_id #[mfa_challenge: ""]
+                                token: issue_session_for_user userRow
+                                ok #[token: token user: clean_user_public userRow]
+                            ]
+                        ] [
+                            token: issue_session_for_user row
+                            ok #[token: token user: clean_user_public row]
+                        ]
                     ]
                 ]
             ]
@@ -650,6 +784,133 @@ serve.verbose .port:api_port [
     ]
 ]
 
+    POST "/api/auth/mfa/verify" [
+        payload: parse_json_body
+        if not? payload\ok [
+            bad_request "invalid json" #[reason: payload\error]
+        ] [
+            challengeCheck: ensure_text payload\data\challenge_id "challenge_id"
+            codeCheck: ensure_text payload\data\code "code"
+            if any? @[not? challengeCheck\ok not? codeCheck\ok] [
+                bad_request "invalid input" #[challenge: challengeCheck code: codeCheck]
+            ] [
+                row: repo_find_auth_user_by_mfa_challenge challengeCheck\value
+                if equal? row null [
+                    unauthorized "invalid challenge" #[]
+                ] [
+                    props: row\properties
+                    expectedCode: "123456"
+                    if key? props "mfa_secret" [ expectedCode: to :string props\mfa_secret ]
+                    if not? equal? codeCheck\value expectedCode [
+                        unauthorized "invalid mfa code" #[]
+                    ] [
+                        userRow: repo_update_auth_user props\user_id #[mfa_challenge: ""]
+                        token: issue_session_for_user userRow
+                        ok #[token: token user: clean_user_public userRow]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+    POST "/api/auth/mfa/enable" [
+        payload: parse_json_body
+        if not? payload\ok [
+            bad_request "invalid json" #[reason: payload\error]
+        ] [
+            tokenCheck: ensure_text payload\data\token "token"
+            if not? tokenCheck\ok [
+                bad_request tokenCheck\message #[field: tokenCheck\field]
+            ] [
+                userRow: get_session_user tokenCheck\value
+                if equal? userRow null [
+                    unauthorized "invalid token" #[]
+                ] [
+                    secret: to :string auth_random_int 100000 999999
+                    updated: repo_update_auth_user userRow\properties\user_id #[mfa_enabled: true mfa_secret: secret mfa_challenge: ""]
+                    ok #[enabled: true code: secret user: clean_user_public updated]
+                ]
+            ]
+        ]
+    ]
+
+    POST "/api/auth/mfa/disable" [
+        payload: parse_json_body
+        if not? payload\ok [
+            bad_request "invalid json" #[reason: payload\error]
+        ] [
+            tokenCheck: ensure_text payload\data\token "token"
+            if not? tokenCheck\ok [
+                bad_request tokenCheck\message #[field: tokenCheck\field]
+            ] [
+                userRow: get_session_user tokenCheck\value
+                if equal? userRow null [
+                    unauthorized "invalid token" #[]
+                ] [
+                    updated: repo_update_auth_user userRow\properties\user_id #[mfa_enabled: false mfa_secret: "" mfa_challenge: ""]
+                    ok #[enabled: false user: clean_user_public updated]
+                ]
+            ]
+        ]
+    ]
+
+    POST "/api/auth/update-email" [
+        payload: parse_json_body
+        if not? payload\ok [
+            bad_request "invalid json" #[reason: payload\error]
+        ] [
+            tokenCheck: ensure_text payload\data\token "token"
+            emailCheck: ensure_text payload\data\email "email"
+            if any? @[not? tokenCheck\ok not? emailCheck\ok] [
+                bad_request "invalid input" #[token: tokenCheck email: emailCheck]
+            ] [
+                userRow: get_session_user tokenCheck\value
+                if equal? userRow null [
+                    unauthorized "invalid token" #[]
+                ] [
+                    existing: repo_find_auth_user_by_email emailCheck\value
+                    if all? @[notEqual? existing null notEqual? (to :integer existing\properties\user_id) (to :integer userRow\properties\user_id)] [
+                        bad_request "email already exists" #[]
+                    ] [
+                        updated: repo_update_auth_user userRow\properties\user_id #[email: emailCheck\value]
+                        repo_upsert_workspace_member updated\properties\workspace_id updated\properties\user_id updated\properties\role emailCheck\value
+                        ok #[user: clean_user_public updated]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+    POST "/api/auth/update-password" [
+        payload: parse_json_body
+        if not? payload\ok [
+            bad_request "invalid json" #[reason: payload\error]
+        ] [
+            tokenCheck: ensure_text payload\data\token "token"
+            oldCheck: ensure_text payload\data\old_password "old_password"
+            newCheck: ensure_text payload\data\new_password "new_password"
+            if any? @[not? tokenCheck\ok not? oldCheck\ok not? newCheck\ok] [
+                bad_request "invalid input" #[token: tokenCheck old_password: oldCheck new_password: newCheck]
+            ] [
+                userRow: get_session_user tokenCheck\value
+                if equal? userRow null [
+                    unauthorized "invalid token" #[]
+                ] [
+                    props: userRow\properties
+                    okPass: auth_verify_password oldCheck\value props\password_salt props\password_iters props\password_hash
+                    if not? okPass [
+                        unauthorized "invalid credentials" #[]
+                    ] [
+                        salt: auth_generate_salt
+                        passHash: auth_hash_password newCheck\value salt auth_password_iterations
+                        updated: repo_update_auth_user props\user_id #[password_hash: passHash password_salt: salt password_iters: auth_password_iterations]
+                        ok #[updated: true user: clean_user_public updated]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
 GET "/api/auth/me/(?<token>.+)" $[token][
         userRow: get_session_user token
         if equal? userRow null [
@@ -657,6 +918,96 @@ GET "/api/auth/me/(?<token>.+)" $[token][
         ] [
             wsName: get_workspace_name userRow\properties\workspace_id
             ok #[user: clean_user_public userRow workspace: #[id: userRow\properties\workspace_id name: wsName]]
+        ]
+    ]
+
+    GET "/api/ai/providers" [
+        ok ai_provider_catalog
+    ]
+
+    GET "/api/ai/settings/(?<token>[^/]+)" $[token][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "read" [
+                unauthorized "forbidden" #[]
+            ] [
+                ok ai_service_get_settings
+            ]
+        ]
+    ]
+
+    POST "/api/ai/settings/(?<token>[^/]+)" $[token][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "update" [
+                unauthorized "forbidden" #[]
+            ] [
+                payload: parse_json_body
+                if not? payload\ok [
+                    bad_request "invalid json" #[reason: payload\error]
+                ] [
+                    providerCheck: ensure_text payload\data\provider "provider"
+                    modelCheck: ensure_text payload\data\model "model"
+                    if any? @[not? providerCheck\ok not? modelCheck\ok] [
+                        bad_request "invalid input" #[provider: providerCheck model: modelCheck]
+                    ] [
+                        temperature: 0.2
+                        topP: 0.9
+                        maxTokens: 128
+                        if key? payload\data "temperature" [ temperature: to :floating payload\data\temperature ]
+                        if key? payload\data "top_p" [ topP: to :floating payload\data\top_p ]
+                        if key? payload\data "max_tokens" [ maxTokens: to :integer payload\data\max_tokens ]
+                        saved: ai_service_save_settings providerCheck\value modelCheck\value temperature topP maxTokens
+                        if saved\ok [
+                            ok saved\data
+                        ] [
+                            bad_request "save failed" #[reason: saved\error]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+    POST "/api/ai/chat/(?<token>[^/]+)" $[token][
+        userRow: get_session_user token
+        if equal? userRow null [
+            unauthorized "invalid token" #[]
+        ] [
+            if not? role_allows userRow "read" [
+                unauthorized "forbidden" #[]
+            ] [
+                payload: parse_json_body
+                if not? payload\ok [
+                    bad_request "invalid json" #[reason: payload\error]
+                ] [
+                    provider: "openai"
+                    model: "gpt-4o-mini"
+                    temperature: 0.2
+                    topP: 0.9
+                    maxTokens: 128
+                    promptCheck: ensure_text payload\data\prompt "prompt"
+                    if not? promptCheck\ok [
+                        bad_request "invalid input" #[prompt: promptCheck]
+                    ] [
+                        if key? payload\data "provider" [ provider: to :string payload\data\provider ]
+                        if key? payload\data "model" [ model: to :string payload\data\model ]
+                        if key? payload\data "temperature" [ temperature: to :floating payload\data\temperature ]
+                        if key? payload\data "top_p" [ topP: to :floating payload\data\top_p ]
+                        if key? payload\data "max_tokens" [ maxTokens: to :integer payload\data\max_tokens ]
+                        result: ai_service_chat provider model promptCheck\value temperature topP maxTokens
+                        if result\ok [
+                            ok result\data
+                        ] [
+                            bad_request "ai chat failed" #[reason: result\error]
+                        ]
+                    ]
+                ]
+            ]
         ]
     ]
 

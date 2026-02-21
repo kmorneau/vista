@@ -1,0 +1,254 @@
+; Arte AI service (providers + settings + chat)
+
+ai_settings_file: "arte/data/ai_settings.json"
+
+ai_provider_catalog: function [] [
+    #[
+        openai: #[
+            label: "OpenAI"
+            requiresKey: true
+            default_model: "gpt-4o-mini"
+            models: ["gpt-4o-mini" "gpt-4.1-mini" "gpt-4.1"]
+            temperature_options: ["0.0" "0.2" "0.4" "0.7" "1.0"]
+            top_p_options: ["0.7" "0.9" "1.0"]
+            max_tokens_options: ["64" "128" "256" "512" "1024"]
+        ]
+        gemini: #[
+            label: "Gemini"
+            requiresKey: true
+            default_model: "gemini-2.0-flash"
+            models: ["gemini-2.0-flash" "gemini-2.0-flash-lite"]
+            temperature_options: ["0.0" "0.2" "0.4" "0.7" "1.0"]
+            top_p_options: ["0.7" "0.9" "1.0"]
+            max_tokens_options: ["64" "128" "256" "512" "1024"]
+        ]
+        echo: #[
+            label: "Echo (test)"
+            requiresKey: false
+            default_model: "echo-v1"
+            models: ["echo-v1"]
+            temperature_options: ["0.0" "0.2" "0.4" "0.7" "1.0"]
+            top_p_options: ["0.7" "0.9" "1.0"]
+            max_tokens_options: ["64" "128" "256" "512"]
+        ]
+    ]
+]
+
+ai_provider_names: function [] [
+    ["openai" "gemini" "echo"]
+]
+
+ai_provider_supported?: function [provider] [
+    in? (lower to :string provider) ai_provider_names
+]
+
+ai_settings_default: function [] [
+    #[
+        provider: "openai"
+        model: "gpt-4o-mini"
+        temperature: 0.2
+        top_p: 0.9
+        max_tokens: 128
+    ]
+]
+
+ai_normalize_key_value: function [rawValue] [
+    keyValue: strip to :string rawValue
+    if equal? keyValue "" [ return "" ]
+    if all? @[greater? (size keyValue) 7 equal? (slice keyValue 0 7) "export "] [
+        keyValue: strip slice keyValue 7 (size keyValue)
+    ]
+    eqPos: index keyValue "="
+    if notEqual? eqPos null [
+        if less? eqPos (size keyValue) [
+            keyValue: strip slice keyValue (eqPos + 1) (size keyValue)
+        ]
+    ]
+    if greater? (size keyValue) 1 [
+        firstCh: slice keyValue 0 1
+        lastFrom: (size keyValue) - 1
+        lastCh: slice keyValue lastFrom (size keyValue)
+        if all? @[equal? firstCh "\"" equal? lastCh "\""] [
+            keyValue: slice keyValue 1 lastFrom
+        ]
+        if all? @[equal? firstCh "'" equal? lastCh "'"] [
+            keyValue: slice keyValue 1 lastFrom
+        ]
+    ]
+    keyValue
+]
+
+ai_load_key: function [envName fileName] [
+    keyValue: ""
+    if key? env envName [
+        keyValue: ai_normalize_key_value to :string env\[envName]
+    ]
+    if notEqual? keyValue "" [ return keyValue ]
+    if exists? fileName [
+        if error? err: <= try [
+            keyValue: ai_normalize_key_value read.string fileName
+        ] [
+            keyValue: ""
+        ]
+        if notEqual? keyValue "" [ return keyValue ]
+    ]
+    keyValue
+]
+
+ai_extract_openai_text: function [resp rawBody] [
+    out: ""
+    if all? @[equal? (type resp) :dictionary key? resp "choices" equal? (type resp\choices) :block greater? (size resp\choices) 0] [
+        c0: first resp\choices
+        if all? @[equal? (type c0) :dictionary key? c0 "message" equal? (type c0\message) :dictionary key? c0\message "content"] [
+            out: to :string c0\message\content
+        ]
+    ]
+    if notEqual? out "" [ return out ]
+    marker: "\"content\": \""
+    startIdx: index rawBody marker
+    if equal? startIdx null [ return "" ]
+    rest: slice rawBody (startIdx + size marker) (size rawBody)
+    endIdx: index rest "\""
+    if equal? endIdx null [ return "" ]
+    out: slice rest 0 (endIdx - 1)
+    out: replace out "\\n" "\n"
+    out: replace out "\\\"" "\""
+    out
+]
+
+ai_extract_gemini_text: function [resp rawBody] [
+    out: ""
+    if all? @[equal? (type resp) :dictionary key? resp "candidates" equal? (type resp\candidates) :block greater? (size resp\candidates) 0] [
+        c0: first resp\candidates
+        if all? @[equal? (type c0) :dictionary key? c0 "content" equal? (type c0\content) :dictionary key? c0\content "parts" equal? (type c0\content\parts) :block greater? (size c0\content\parts) 0] [
+            p0: first c0\content\parts
+            if all? @[equal? (type p0) :dictionary key? p0 "text"] [
+                out: to :string p0\text
+            ]
+        ]
+    ]
+    if notEqual? out "" [ return out ]
+    marker: "\"text\": \""
+    startIdx: index rawBody marker
+    if equal? startIdx null [ return "" ]
+    rest: slice rawBody (startIdx + size marker) (size rawBody)
+    endIdx: index rest "\""
+    if equal? endIdx null [ return "" ]
+    out: slice rest 0 (endIdx - 1)
+    out: replace out "\\n" "\n"
+    out: replace out "\\\"" "\""
+    out
+]
+
+ai_validate_settings: function [provider model temperature topP maxTokens] [
+    p: lower to :string provider
+    m: to :string model
+    t: to :floating temperature
+    tp: to :floating topP
+    mt: to :integer maxTokens
+    if not? ai_provider_supported? p [ return #[ok: false error: "unsupported provider"] ]
+    if equal? m "" [ return #[ok: false error: "model required"] ]
+    if any? @[less? t 0.0 greater? t 2.0] [ return #[ok: false error: "temperature must be 0..2"] ]
+    if any? @[less? tp 0.0 greater? tp 1.0] [ return #[ok: false error: "top_p must be 0..1"] ]
+    if less? mt 1 [ return #[ok: false error: "max_tokens must be >= 1"] ]
+    #[ok: true data: #[provider: p model: m temperature: t top_p: tp max_tokens: mt]]
+]
+
+ai_service_get_settings: function [] [
+    if not? exists? ai_settings_file [ return ai_settings_default ]
+    if error? parsed: <= try [ read.json ai_settings_file ] [
+        return ai_settings_default
+    ]
+    if notEqual? (type parsed) :dictionary [ return ai_settings_default ]
+    provider: "openai"
+    model: "gpt-4o-mini"
+    temperature: 0.2
+    topP: 0.9
+    maxTokens: 128
+    if key? parsed "provider" [ provider: to :string parsed\provider ]
+    if key? parsed "model" [ model: to :string parsed\model ]
+    if key? parsed "temperature" [ temperature: to :floating parsed\temperature ]
+    if key? parsed "top_p" [ topP: to :floating parsed\top_p ]
+    if key? parsed "max_tokens" [ maxTokens: to :integer parsed\max_tokens ]
+    check: ai_validate_settings provider model temperature topP maxTokens
+    if not? check\ok [ return ai_settings_default ]
+    check\data
+]
+
+ai_service_save_settings: function [provider model temperature topP maxTokens] [
+    check: ai_validate_settings provider model temperature topP maxTokens
+    if not? check\ok [
+        return #[ok: false error: check\error]
+    ]
+    if not? directory? "arte/data" [
+        write.directory "" "arte/data"
+    ]
+    if error? err: <= try [
+        write (write.json check\data ø) ai_settings_file
+    ] [
+        return #[ok: false error: "could not save settings" details: to :string err]
+    ]
+    #[ok: true data: check\data]
+]
+
+ai_service_chat: function [provider model prompt temperature topP maxTokens] [
+    p: lower to :string provider
+    m: to :string model
+    q: to :string prompt
+    t: to :floating temperature
+    tp: to :floating topP
+    mt: to :integer maxTokens
+
+    if not? ai_provider_supported? p [
+        return #[ok: false error: "unsupported provider"]
+    ]
+    if equal? q "" [
+        return #[ok: false error: "prompt is required"]
+    ]
+
+    if equal? p "echo" [
+        return #[ok: true data: #[provider: "echo" model: m text: ("Echo: " ++ q)]]
+    ]
+
+    if equal? p "openai" [
+        apiKey: ai_load_key "OPENAI_API_KEY" "OPENAI_API_KEY"
+        if equal? apiKey "" [ return #[ok: false error: "missing OPENAI_API_KEY"] ]
+        payload: #[
+            model: m
+            messages: @[#[role: "user" content: q]]
+            temperature: t
+            top_p: tp
+            max_tokens: mt
+        ]
+        raw: request.post.json "https://api.openai.com/v1/chat/completions" .headers:#[
+            "authorization": "Bearer " ++ apiKey
+        ] payload
+        resp: raw
+        if all? @[equal? (type raw) :dictionary key? raw "body" equal? (type raw\body) :string] [
+            if error? parsed: <= try [ read.json raw\body ] [ ] [ resp: parsed ]
+        ]
+        textOut: ai_extract_openai_text resp (to :string raw\body)
+        if equal? textOut "" [ textOut: "[empty response]" ]
+        return #[ok: true data: #[provider: "openai" model: m text: textOut raw: resp]]
+    ]
+
+    if equal? p "gemini" [
+        apiKey: ai_load_key "GEMINI_API_KEY" "GEMINI_API_KEY"
+        if equal? apiKey "" [ return #[ok: false error: "missing GEMINI_API_KEY"] ]
+        url: "https://generativelanguage.googleapis.com/v1beta/models/" ++ m ++ ":generateContent?key=" ++ apiKey
+        payload: #[
+            contents: @[#[parts: @[#[text: q]]]]
+            generationConfig: #[temperature: t topP: tp maxOutputTokens: mt]
+        ]
+        raw: request.post.json url payload
+        resp: raw
+        if all? @[equal? (type raw) :dictionary key? raw "body" equal? (type raw\body) :string] [
+            if error? parsed: <= try [ read.json raw\body ] [ ] [ resp: parsed ]
+        ]
+        textOut: ai_extract_gemini_text resp (to :string raw\body)
+        if equal? textOut "" [ textOut: "[empty response]" ]
+        return #[ok: true data: #[provider: "gemini" model: m text: textOut raw: resp]]
+    ]
+
+    #[ok: false error: "unsupported provider"]
+]
