@@ -7,7 +7,15 @@ auth_icon_password: "lock"
 auth_icon_mfa_on: "shield-check"
 auth_icon_mfa_off: "shield-off"
 auth_icon_sign_out: "log-out"
-auth_logo_data: logo_data_url vista_app_logo_path
+auth_logo_path: vista_app_logo_path
+if not? error? err: <= try [
+    if notEqual? vista_state\app_logo_path "" [
+        auth_logo_path: to :string vista_state\app_logo_path
+    ]
+] [
+    null
+]
+auth_logo_data: logo_data_url auth_logo_path
 
 style "auth_splash" [
     box .class:"vista-auth-splash" [

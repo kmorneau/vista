@@ -1,10 +1,27 @@
 import "vista.art"!
 
+arte_logo: "arte-logo.png"
+if not? exists? arte_logo [
+    if exists? "arte/ui/arte-logo.png" [
+        write arte_logo read "arte/ui/arte-logo.png"
+    ]
+]
+if all? @[not? exists? arte_logo exists? "../arte/ui/arte-logo.png"] [
+    write arte_logo read "../arte/ui/arte-logo.png"
+]
+if not? exists? arte_logo [
+    arte_logo: "arturo-vista.png"
+]
+vista_app_logo_path: arte_logo
+auth_logo_data: logo_data_url arte_logo
+
 ARTURO [
     Title: "Arte"
-    Logo: "arturo-vista.png"
+    Logo: "arte-logo.png"
     Width: 1180
     Height: 820
+    Author: "Arte Team"
+    Date: "2026"
 ]
 
 api_base: "http://localhost:19010"
@@ -1862,12 +1879,14 @@ window.arteAddMember = () => {
   }, 0);
 })();
 </script>}
+    raw {<script>(function(){var start=function(){setTimeout(function(){if(typeof state!=='object'){return;}if(state.show_account===true){return;}state.show_intro_splash=false;state.show_splash=false;state.show_login=true;state.show_signup=false;if(typeof render==='function'){render();}},3500);};if(document.readyState==='complete'){start();}else{window.addEventListener('load',start,{once:true});}})();</script>}
 ]
 
-if key? env "ARTE_NO_WEBVIEW" [
-    html: view .returnHtml view_body
-    write html "arte-ui.html"
-    print html
-] [
-    view .file:"arte-ui.html" view_body
-]
+html: view .returnHtml view_body
+cwd_path: strip execute "pwd"
+ui_path: cwd_path ++ "/arte-ui.html"
+write html ui_path
+
+safePath: replace ui_path "\"" "\\\""
+execute "open \"" ++ safePath ++ "\" >/dev/null 2>&1 &"
+print ("Opened in browser: " ++ ui_path)
