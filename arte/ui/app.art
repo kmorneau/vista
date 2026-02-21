@@ -57,7 +57,9 @@ invite_password: ""
 invite_status: ""
 invite_list_status: ""
 app_name: ""
+app_data_model: ""
 apps_status: "No apps loaded"
+app_folder_status: ""
 apps: []
 selected_app: ""
 page_name: ""
@@ -157,11 +159,13 @@ view_body: [
                             field app_name .placeholder:"New app name" .class:"arte-input"
                             button "Create" "arteCreateApp()" .class:"arte-btn"
                         ]
+                        textarea app_data_model .class:"arte-textarea" .placeholder:"Optional data model for scaffold (Markdown)"
                         row .space:10 [
                             button "Rename" "arteRenameSelectedApp()" .class:"arte-btn"
                             button "Delete" "arteDeleteSelectedApp()" .class:"arte-btn-danger"
                         ]
                         text apps_status .class:"arte-detail"
+                        text app_folder_status .class:"arte-detail"
                         list selected_app apps .class:"arte-list"
                     ]
                 ] [
@@ -1472,10 +1476,21 @@ window.arteAddMember = () => {
     }
     state.apps_status = "Creating app...";
     render();
-    postJson(withTokenPath("apps"), { name: state.app_name })
+    postJson(withTokenPath("apps"), {
+      name: state.app_name,
+      data_model: state.app_data_model || ""
+    })
       .then(resp => {
         if(resp && resp.ok){
+          const folder = resp.data && resp.data.app_folder ? String(resp.data.app_folder) : "";
+          const created = !!(resp.data && resp.data.app_folder_created);
+          if(folder){
+            state.app_folder_status = created ? ("App folder created: " + folder) : ("App folder exists: " + folder);
+          } else {
+            state.app_folder_status = "";
+          }
           state.app_name = "";
+          state.app_data_model = "";
           window.arteLoadApps();
         } else {
           state.apps_status = "Create failed";

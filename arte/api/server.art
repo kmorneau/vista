@@ -516,6 +516,54 @@ ensure_export_dir: function [] [
     dir
 ]
 
+copy_file_if_missing: function [src dst] [
+    if all? @[exists? src not? exists? dst] [
+        write read src dst
+    ]
+]
+
+ensure_app_scaffold_dir: function [appSlug] [
+    root: "arte/apps"
+    if not? directory? root [
+        write.directory "" root
+    ]
+    appDir: root ++ "/" ++ appSlug
+    appCreated: false
+    if not? directory? appDir [
+        write.directory "" appDir
+        appCreated: true
+    ]
+
+    uiDir: appDir ++ "/ui"
+    apiDir: appDir ++ "/api"
+    sharedDir: appDir ++ "/shared"
+    docsDir: appDir ++ "/docs"
+    dbDir: appDir ++ "/db"
+    if not? directory? uiDir [ write.directory "" uiDir ]
+    if not? directory? apiDir [ write.directory "" apiDir ]
+    if not? directory? sharedDir [ write.directory "" sharedDir ]
+    if not? directory? docsDir [ write.directory "" docsDir ]
+    if not? directory? dbDir [ write.directory "" dbDir ]
+
+    copy_file_if_missing "arte/apps/_template/README.md" appDir ++ "/README.md"
+    copy_file_if_missing "arte/apps/_template/ui/.gitkeep" uiDir ++ "/.gitkeep"
+    copy_file_if_missing "arte/apps/_template/ui/app.art" uiDir ++ "/app.art"
+    copy_file_if_missing "arte/apps/_template/ui/arte-logo.png" uiDir ++ "/arte-logo.png"
+    copy_file_if_missing "arte/apps/_template/api/.gitkeep" apiDir ++ "/.gitkeep"
+    copy_file_if_missing "arte/apps/_template/shared/.gitkeep" sharedDir ++ "/.gitkeep"
+    copy_file_if_missing "arte/apps/_template/docs/architecture.md" docsDir ++ "/architecture.md"
+    copy_file_if_missing "arte/apps/_template/docs/api-contract.md" docsDir ++ "/api-contract.md"
+    copy_file_if_missing "arte/apps/_template/docs/data-model.md" docsDir ++ "/data-model.md"
+    copy_file_if_missing "arte/apps/_template/db/.gitkeep" dbDir ++ "/.gitkeep"
+    copy_file_if_missing "arte/apps/_template/db/grafito.graf" dbDir ++ "/grafito.graf"
+
+    #[
+        path: appDir
+        db_path: dbDir ++ "/grafito.graf"
+        created: appCreated
+    ]
+]
+
 get_session_user: function [token] [
     tokenHash: auth_hash_token token
     srow: repo_find_session_by_token_hash tokenHash
@@ -1055,7 +1103,21 @@ GET "/api/auth/me/(?<token>.+)" $[token][
                     bad_request nameCheck\message #[field: nameCheck\field]
                 ] [
                     slugVal: slugify nameCheck\value
+                    dataModelInput: ""
+                    if key? payload\data "data_model" [
+                        dataModelInput: to :string payload\data\data_model
+                    ]
                     app: repo_insert_app_with_workspace userRow\properties\workspace_id nameCheck\value slugVal
+                    scaffold: ensure_app_scaffold_dir slugVal
+                    if notEqual? dataModelInput "" [
+                        write dataModelInput scaffold\path ++ "/docs/data-model.md"
+                        write dataModelInput scaffold\path ++ "/db/data-model.md"
+                    ]
+                    if equal? (type app) :dictionary [
+                        app\app_folder: scaffold\path
+                        app\db_file: scaffold\db_path
+                        app\app_folder_created: scaffold\created
+                    ]
                     created app
                 ]
             ]

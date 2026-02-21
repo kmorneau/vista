@@ -8,6 +8,7 @@ Arte is a full-stack app builder for Arturo + Vista.
 - `api/` - Arturo HTTP API, auth, orchestration
 - `shared/` - contracts and schemas shared by UI/API
 - `docs/` - architecture and protocol notes
+- `apps/` - per-app folders and app scaffolding docs/template
 
 ## Run
 
