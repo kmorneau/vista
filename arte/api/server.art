@@ -13,6 +13,7 @@ invite_ttl_seconds: 86400
 
 if key? env "ARTE_API_PORT" [
     api_port: to :integer env\ARTE_API_PORT
+]
 
 json_body: function [value] [
     write.json value ø
@@ -1617,5 +1618,4 @@ GET "/api/apps/(?<token>[^/]+)/(?<id>[^/]+)/pages" $[token id][
             ]
         ]
     ]
-]
 ]
