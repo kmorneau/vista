@@ -968,13 +968,13 @@ vista_css: "*{box-sizing:border-box;}" ++
     ".vista-app-footer-inner{max-width:1100px;margin:0 auto;text-align:center;}" ++
     ".vista-app-author{font-weight:600;}" ++
     ".vista-app-date{opacity:0.8;}" ++
-    ".vista-auth-header-controls{display:flex;align-items:center;gap:8px;margin-left:auto;}" ++
-    ".vista-auth-header-btn{background:transparent;border:1px solid var(--arturo-ink);color:var(--arturo-ink);padding:4px 12px;border-radius:4px;cursor:pointer;font-size:13px;transition:all 0.2s ease;}" ++
+    ".vista-auth-header-controls{display:flex;align-items:center;gap:10px;margin-left:auto;}" ++
+    ".vista-auth-header-btn{background:transparent;border:1px solid var(--arturo-ink);color:var(--arturo-ink);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:14px;transition:all 0.2s ease;}" ++
     ".vista-auth-header-btn:hover{background:var(--arturo-ink);color:var(--arturo-primary);}" ++
     ".vista-auth-header-btn-primary{background:transparent;border:1px solid var(--arturo-ink);color:var(--arturo-ink);}" ++
     ".vista-auth-header-btn-primary:hover{background:var(--arturo-ink);color:var(--arturo-primary);opacity:1;}" ++
     ".vista-auth-header-user{font-size:13px;opacity:0.9;}" ++
-    ".vista-auth-container{max-width:400px;margin:40px auto;}" ++
+    ".vista-auth-container{max-width:560px;margin:44px auto;}" ++
     ".vista-app-mark{font-weight:800;letter-spacing:0.2em;text-transform:uppercase;}" ++
     ".vista-app-title{font-size:18px;font-weight:700;}" ++
     ".vista-app-body{max-width:1100px;margin:0 auto;padding:16px;padding-bottom:60px;}" ++
@@ -1036,7 +1036,13 @@ vista_css: "*{box-sizing:border-box;}" ++
     ".vista-auth-splash-logo{width:96px;height:96px;object-fit:contain;margin:0 auto 10px;display:block;}" ++
     ".vista-auth-title{font-size:34px;font-weight:800;margin:0;color:var(--arturo-ink) !important;background:transparent !important;padding:0;display:block;}" ++
     ".vista-auth-subtitle{color:var(--arturo-muted);margin:0;}" ++
-    ".vista-auth-card{max-width:520px;margin:0 auto;}" ++
+    ".vista-auth-card{max-width:760px;margin:0 auto;}" ++
+    ".vista-auth-card .vista-panel-body{padding:18px;}" ++
+    ".vista-auth-card .vista-col{gap:12px;}" ++
+    ".vista-auth-card .vista-row{gap:14px;align-items:flex-end;margin-bottom:12px;}" ++
+    ".vista-auth-card label{min-width:140px;font-weight:600;}" ++
+    ".vista-auth-card input[type='text'],.vista-auth-card input[type='password'],.vista-auth-card input[type='email'],.vista-auth-card textarea,.vista-auth-card select{min-width:320px;width:100%;padding:10px 12px;}" ++
+    ".vista-auth-card button{margin-top:8px;}" ++
     ".vista-auth-meta{display:block;color:var(--arturo-muted);margin-bottom:6px;}" ++
     "html{-webkit-text-size-adjust:100%;}" ++
     "img,video,canvas{max-width:100%;height:auto;}" ++

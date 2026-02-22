@@ -68,9 +68,9 @@ view [
     ] [
         box .style:"background:linear-gradient(180deg,#faf9f7 0%,#f3f2ef 100%);border:1px solid #e6e3df;border-radius:16px;padding:16px 14px;min-height:700px;display:flex;flex-direction:column;gap:10px;" [
             title "AI Chat" .style:"font-size:26px;font-weight:800;margin:2px 0 8px;"
-            box .data-show-bind:"show_account" .data-show-value:"true" .style:"display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px;" [
+            box .data-show-bind:"show_account" .data-show-value:"true" .style:"display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:8px 0;" [
                 text profile_label .style:"font-size:12px;color:#6f6f6f;"
-                button "Sign out" .data-vista-action:"auth_logout" .style:"background:#fff;color:#1f1f1f;border:1px solid #e6e3df;border-radius:10px;padding:6px 12px;font-weight:700;"
+                button "Sign out" .data-vista-action:"auth_logout" .style:"background:#fff;color:#1f1f1f;border:1px solid #e6e3df;border-radius:10px;padding:8px 14px;font-weight:700;"
             ]
 
             box .data-show-bind:"show_account" .data-show-value:"true" [
@@ -87,35 +87,37 @@ view [
                 ]
                 box .data-show-bind:"selected_nav" .data-show-value:"Settings" .style:"display:flex;flex-direction:column;gap:10px;" [
                     text "AI Settings" .style:"font-size:20px;font-weight:800;"
-                    row .space:10 .style:"align-items:flex-end;flex-wrap:wrap;" [
-                        col .space:4 .style:"min-width:220px;flex:1;" [
+                    row .space:14 .style:"align-items:flex-end;flex-wrap:wrap;margin:6px 0 4px;" [
+                        col .space:6 .style:"min-width:260px;flex:1;" [
                             text "API base URL" .style:"font-size:12px;color:#6f6f6f;"
-                            field api_base .style:"width:100%;border:1px solid #e6e3df;border-radius:10px;padding:8px 10px;background:#fff;font-size:12px;"
+                            field api_base .style:"width:100%;border:1px solid #e6e3df;border-radius:10px;padding:10px 12px;background:#fff;font-size:13px;"
                         ]
-                        col .space:4 [
+                        col .space:6 [
                             text "Provider" .style:"font-size:12px;color:#6f6f6f;"
-                            select provider provider_options .style:"min-width:150px;border:1px solid #e6e3df;border-radius:10px;padding:8px 10px;background:#fff;font-size:12px;"
+                            select provider provider_options .style:"min-width:180px;border:1px solid #e6e3df;border-radius:10px;padding:10px 12px;background:#fff;font-size:13px;"
                         ]
-                        col .space:4 [
+                        col .space:6 [
                             text "Model" .style:"font-size:12px;color:#6f6f6f;"
-                            field model .style:"min-width:220px;border:1px solid #e6e3df;border-radius:10px;padding:8px 10px;background:#fff;font-size:12px;"
-                        ]
-                        col .space:4 [
-                            text "Temperature" .style:"font-size:12px;color:#6f6f6f;"
-                            select temperature temperature_options .style:"min-width:110px;border:1px solid #e6e3df;border-radius:10px;padding:8px 10px;background:#fff;font-size:12px;"
-                        ]
-                        col .space:4 [
-                            text "Top P" .style:"font-size:12px;color:#6f6f6f;"
-                            select top_p top_p_options .style:"min-width:110px;border:1px solid #e6e3df;border-radius:10px;padding:8px 10px;background:#fff;font-size:12px;"
-                        ]
-                        col .space:4 [
-                            text "Max tokens" .style:"font-size:12px;color:#6f6f6f;"
-                            select max_tokens max_tokens_options .style:"min-width:120px;border:1px solid #e6e3df;border-radius:10px;padding:8px 10px;background:#fff;font-size:12px;"
+                            field model .style:"min-width:280px;border:1px solid #e6e3df;border-radius:10px;padding:10px 12px;background:#fff;font-size:13px;"
                         ]
                     ]
-                    row .space:8 .style:"align-items:center;flex-wrap:wrap;margin-top:4px;" [
-                        button "Load settings" [ai_settings_load] .style:"background:#fff;color:#1f1f1f;border:1px solid #e6e3df;border-radius:10px;padding:8px 14px;font-weight:700;"
-                        button "Save settings" [ai_settings_save] .style:"background:#4a55ff;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-weight:700;"
+                    row .space:14 .style:"align-items:flex-end;flex-wrap:wrap;margin:0 0 6px;" [
+                        col .space:6 [
+                            text "Temperature" .style:"font-size:12px;color:#6f6f6f;"
+                            select temperature temperature_options .style:"min-width:150px;border:1px solid #e6e3df;border-radius:10px;padding:10px 12px;background:#fff;font-size:13px;"
+                        ]
+                        col .space:6 [
+                            text "Top P" .style:"font-size:12px;color:#6f6f6f;"
+                            select top_p top_p_options .style:"min-width:150px;border:1px solid #e6e3df;border-radius:10px;padding:10px 12px;background:#fff;font-size:13px;"
+                        ]
+                        col .space:6 [
+                            text "Max tokens" .style:"font-size:12px;color:#6f6f6f;"
+                            select max_tokens max_tokens_options .style:"min-width:170px;border:1px solid #e6e3df;border-radius:10px;padding:10px 12px;background:#fff;font-size:13px;"
+                        ]
+                    ]
+                    row .space:10 .style:"align-items:center;flex-wrap:wrap;margin-top:8px;" [
+                        button "Load settings" [ai_settings_load] .style:"background:#fff;color:#1f1f1f;border:1px solid #e6e3df;border-radius:10px;padding:9px 14px;font-weight:700;"
+                        button "Save settings" [ai_settings_save] .style:"background:#4a55ff;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;"
                         text status .style:"font-size:12px;color:#6f6f6f;"
                     ]
                 ]
