@@ -81,206 +81,175 @@ ai_model: "gpt-4o-mini"
 ai_temperature: "0.2"
 ai_top_p: "0.9"
 ai_max_tokens: "128"
+ai_provider_options: ["openai" "gemini" "echo"]
+ai_model_options: ["gpt-4o-mini" "gpt-4.1-mini" "gemini-2.0-flash" "gemini-2.0-flash-lite" "echo-v1"]
+ai_temperature_options: ["0.0" "0.2" "0.4" "0.7" "1.0"]
+ai_top_p_options: ["0.7" "0.9" "1.0"]
+ai_max_tokens_options: ["64" "128" "256" "512"]
 ai_prompt: ""
 ai_chat_log: "ai: Ready."
 ai_status: "AI idle"
-nav_items: ["AI Chat" "Workspace" "Apps" "Settings"]
-selected_nav: "AI Chat"
+studio_last_action: ""
+ai_suggested_layout: ""
+ai_suggested_vista: ""
+ai_suggested_status: ""
+studio_right_tab: "preview"
+studio_shortcuts_hint: "Shortcuts: Cmd/Ctrl+Enter send prompt, Cmd/Ctrl+S save layout"
 
 view_body: [
     raw {<div id="arte-toast" class="arte-toast"></div>}
 
-    split .ratio:22 .class:"arte-main" [
-        box .class:"arte-panel arte-nav" [
-            title "Welcome to Arturo/Arte" .class:"arte-panel-title"
-            list selected_nav nav_items .class:"arte-list arte-nav-list"
-            text auth_user_label .class:"arte-detail"
+    box .class:"arte-panel arte-section" .data-show-bind:"show_account" .data-show-value:"false" [
+        auth_app "Arturo/Arte" "Sign in or create an account to continue."
+        text auth_status .class:"arte-detail"
+    ]
+
+    box .class:"arte-panel arte-authbar" .data-show-bind:"show_account" .data-show-value:"true" [
+        row .space:10 [
+            text profile_label .class:"arte-detail"
+            button "Sign out" .data-vista-action:"auth_logout" .class:"arte-btn"
         ]
-    ] [
-        col .space:12 [
-            box .class:"arte-panel arte-authbar" .data-show-bind:"show_account" .data-show-value:"true" [
-                row .space:10 [
-                    text profile_label .class:"arte-detail"
-                    button "Sign out" .data-vista-action:"auth_logout" .class:"arte-btn"
-                ]
+    ]
+
+    split .ratio:36 .class:"studio-shell" .data-show-bind:"show_account" .data-show-value:"true" [
+        box .class:"arte-panel studio-assistant" [
+            title "AI Assistant" .class:"arte-panel-title"
+            text ai_status .class:"arte-detail"
+            text studio_shortcuts_hint .class:"arte-detail"
+            textarea ai_chat_log .class:"arte-textarea studio-chat-log" .readonly:true
+            textarea ai_prompt .class:"arte-textarea studio-chat-input" .placeholder:"Describe what to build..."
+            row .space:10 [
+                button "Send" "arteAiSend()" .class:"arte-btn"
+                button "Clear" "arteAiClear()" .class:"arte-btn"
+                button "Run Iteration" "studioRunIteration()" .class:"arte-btn-secondary"
             ]
-
-            col .space:12 .data-show-bind:"show_account" .data-show-value:"true" [
-                box .class:"arte-panel arte-section" .data-show-bind:"selected_nav" .data-show-value:"AI Chat" [
-                    title "AI Chat" .class:"arte-panel-title"
-                    textarea ai_chat_log .class:"arte-textarea" .readonly:true
-                    textarea ai_prompt .class:"arte-textarea" .placeholder:"Type your AI prompt..."
-                    row .space:10 [
-                        button "Send Prompt" "arteAiSend()" .class:"arte-btn"
-                        button "Clear Chat" "arteAiClear()" .class:"arte-btn"
-                    ]
-                    text ai_status .class:"arte-detail"
-                ]
-
-                box .class:"arte-panel arte-section" .data-show-bind:"selected_nav" .data-show-value:"Workspace" [
-                    title "Workspace" .class:"arte-panel-title"
-                    title "Workspace Members" .class:"arte-panel-title"
-                    row .space:10 [
-                        field members_email .placeholder:"user@example.com" .class:"arte-input"
-                        field members_role .placeholder:"admin|builder|viewer" .class:"arte-input"
-                        button "Add Member" "arteAddMember()" .class:"arte-btn"
-                        button "Refresh" "arteLoadMembers()" .class:"arte-btn"
-                    ]
-                    text members_status .class:"arte-detail"
-                    raw {<div id="arte-members-list" class="arte-list"></div>}
-                    divider
-                    title "Invites" .class:"arte-panel-title"
-                    row .space:10 [
-                        field invite_email .placeholder:"invitee@example.com" .class:"arte-input"
-                        field invite_role .placeholder:"admin|builder|viewer" .class:"arte-input"
-                        button "Create Invite" "arteCreateInvite()" .class:"arte-btn"
-                    ]
-                    row .space:10 [
-                        field invite_code .placeholder:"Invite code" .class:"arte-input"
-                        field invite_password .placeholder:"New password" .class:"arte-input"
-                        button "Accept Invite" "arteAcceptInvite()" .class:"arte-btn"
-                    ]
-                    text invite_status .class:"arte-detail"
-                    row .space:10 [
-                        button "Refresh Invites" "arteLoadInvites()" .class:"arte-btn"
-                        button "Revoke Expired" "arteRevokeExpiredInvites()" .class:"arte-btn-danger"
-                        button "Revoke All" "arteRevokeAllInvites()" .class:"arte-btn-danger"
-                    ]
-                    text invite_list_status .class:"arte-detail"
-                    raw {<div id="arte-invite-list" class="arte-list"></div>}
-                ]
-
-                box .class:"arte-panel arte-section" .data-show-bind:"selected_nav" .data-show-value:"Apps" [
-                    title "Apps" .class:"arte-panel-title"
-                    split .ratio:13 .class:"arte-shell" [
-                    box .class:"arte-panel" [
-                        title "Apps" .class:"arte-panel-title"
-                        row .space:10 [
-                            field app_name .placeholder:"New app name" .class:"arte-input"
-                            button "Create" "arteCreateApp()" .class:"arte-btn"
-                        ]
-                        textarea app_data_model .class:"arte-textarea" .placeholder:"Optional data model for scaffold (Markdown)"
-                        row .space:10 [
-                            button "Rename" "arteRenameSelectedApp()" .class:"arte-btn"
-                            button "Delete" "arteDeleteSelectedApp()" .class:"arte-btn-danger"
-                        ]
-                        text apps_status .class:"arte-detail"
-                        text app_folder_status .class:"arte-detail"
-                        list selected_app apps .class:"arte-list"
-                    ]
-                ] [
-                    box .class:"arte-panel" [
-                        title "Pages" .class:"arte-panel-title"
-                        row .space:10 [
-                            field page_name .placeholder:"New page name" .class:"arte-input"
-                            button "Create" "arteCreatePage()" .class:"arte-btn"
-                        ]
-                        row .space:10 [
-                            button "Rename" "arteRenameSelectedPage()" .class:"arte-btn"
-                            button "Delete" "arteDeleteSelectedPage()" .class:"arte-btn-danger"
-                        ]
-                        text pages_status .class:"arte-detail"
-                        list selected_page pages .class:"arte-list"
-                    ]
-                ] [
-                    box .class:"arte-panel" [
-                        title "Palette + Layout" .class:"arte-panel-title"
-                        row .space:8 [
-                            button "Title" "arteAddComponent('title')" .class:"arte-btn"
-                            button "Text" "arteAddComponent('text')" .class:"arte-btn"
-                            button "Button" "arteAddComponent('button')" .class:"arte-btn"
-                            button "Input" "arteAddComponent('input')" .class:"arte-btn"
-                            button "Row" "arteAddComponent('row')" .class:"arte-btn"
-                        ]
-                        row .space:8 [
-                            button "Box" "arteAddComponent('box')" .class:"arte-btn"
-                            button "Col" "arteAddComponent('col')" .class:"arte-btn"
-                            button "Canvas" "arteAddComponent('canvas')" .class:"arte-btn"
-                            button "Image" "arteAddComponent('image')" .class:"arte-btn"
-                            button "Divider" "arteAddComponent('divider')" .class:"arte-btn"
-                            button "Raw Vista" "arteAddComponent('raw_vista')" .class:"arte-btn"
-                        ]
-                        row .space:8 [
-                            button "Line Chart" "arteAddComponent('chart_line')" .class:"arte-btn"
-                            button "Bar Chart" "arteAddComponent('chart_bar')" .class:"arte-btn"
-                            button "Pie Chart" "arteAddComponent('chart_pie')" .class:"arte-btn"
-                        ]
-                        text "Click a palette item to append it to the layout JSON." .class:"arte-detail"
-                        divider
-                        row .space:10 [
-                            button "Load" "arteLoadLayout()" .class:"arte-btn"
-                            button "Save" "arteSaveLayout()" .class:"arte-btn"
-                            button "Generate Vista" "arteGenerateVista()" .class:"arte-btn"
-                            button "Export .art" "arteExportPage()" .class:"arte-btn"
-                        ]
-                        textarea layout_json .class:"arte-textarea" .placeholder:"[{\"type\":\"canvas\",\"props\":\"{\\\"width\\\":180,\\\"height\\\":64,\\\"draw\\\":\\\"fill-pen \\\\\\\"#edf1ff\\\\\\\"\\\\nbox [0 0] [180 64]\\\"}\"}]"
-                        text layout_status .class:"arte-detail"
-                        divider
-                        title "Layout Order" .class:"arte-panel-title"
-                        raw {<div id="arte-order-list" class="arte-order-list"></div>}
-                        divider
-                        title "Component Editor" .class:"arte-panel-title"
-                        text "Select a layout item to edit its props." .class:"arte-detail"
-                        row .space:10 [
-                            text "Label:" .class:"arte-detail"
-                            field selected_component_label .class:"arte-input"
-                        ]
-                        row .space:10 [
-                            text "Placeholder:" .class:"arte-detail"
-                            field selected_component_placeholder .class:"arte-input"
-                        ]
-                        row .space:10 [
-                            text "Size:" .class:"arte-detail"
-                            field selected_component_size .class:"arte-input"
-                        ]
-                        row .space:10 [
-                            text "Type:" .class:"arte-detail"
-                            field selected_component_type .readonly:true .class:"arte-input"
-                        ]
-                        row .space:10 [
-                            text "Props:" .class:"arte-detail"
-                            field selected_component_props .class:"arte-input"
-                        ]
-                        text "Children JSON (row/box/col):" .class:"arte-detail"
-                        textarea selected_component_children .class:"arte-textarea" .placeholder:"[{\"type\":\"text\",\"props\":\"Hi\"}]"
-                        row .space:10 [
-                            button "Apply" "arteApplyComponentEdits()" .class:"arte-btn"
-                            button "Delete" "arteDeleteComponent()" .class:"arte-btn-danger"
-                        ]
-                    ]
-                ]
-                box .class:"arte-preview" [
-                    title "Preview" .class:"arte-panel-title"
-                    raw {<iframe id="arte-preview-frame" class="arte-preview-frame"></iframe>}
-                    text "Click Load or Save to refresh the preview." .class:"arte-detail"
-                ]
-                box .class:"arte-preview" [
-                    title "Vista Output" .class:"arte-panel-title"
-                    textarea vista_code .class:"arte-textarea" .placeholder:"Generated Vista markup will appear here" .readonly:true
-                ]
+            row .space:8 [
+                button "Add auth page" "studioQuickPrompt('Create a sign-in and sign-up screen with clean spacing')" .class:"arte-btn-secondary"
+                button "Add dashboard" "studioQuickPrompt('Create a dashboard with cards and one chart')" .class:"arte-btn-secondary"
+                button "Improve spacing" "studioQuickPrompt('Improve spacing, alignment, and readability across the current page')" .class:"arte-btn-secondary"
             ]
-
-            box .class:"arte-panel arte-section" .data-show-bind:"selected_nav" .data-show-value:"Settings" [
-                title "Settings" .class:"arte-panel-title"
-                title "AI Chat Settings" .class:"arte-panel-title"
+            divider
+            details "Workspace" [
+                title "Workspace Members" .class:"arte-panel-title"
                 row .space:10 [
-                    field ai_provider .placeholder:"openai|gemini|echo" .class:"arte-input"
-                    field ai_model .placeholder:"Model" .class:"arte-input"
-                    field ai_temperature .placeholder:"0.2" .class:"arte-input"
-                    field ai_top_p .placeholder:"0.9" .class:"arte-input"
-                    field ai_max_tokens .placeholder:"128" .class:"arte-input"
+                    field members_email .placeholder:"user@example.com" .class:"arte-input"
+                    field members_role .placeholder:"admin|builder|viewer" .class:"arte-input"
+                    button "Add Member" "arteAddMember()" .class:"arte-btn"
+                    button "Refresh" "arteLoadMembers()" .class:"arte-btn"
+                ]
+                text members_status .class:"arte-detail"
+                raw {<div id="arte-members-list" class="arte-list"></div>}
+                divider
+                title "Invites" .class:"arte-panel-title"
+                row .space:10 [
+                    field invite_email .placeholder:"invitee@example.com" .class:"arte-input"
+                    field invite_role .placeholder:"admin|builder|viewer" .class:"arte-input"
+                    button "Create Invite" "arteCreateInvite()" .class:"arte-btn"
+                ]
+                row .space:10 [
+                    field invite_code .placeholder:"Invite code" .class:"arte-input"
+                    field invite_password .placeholder:"New password" .class:"arte-input"
+                    button "Accept Invite" "arteAcceptInvite()" .class:"arte-btn"
+                ]
+                text invite_status .class:"arte-detail"
+                row .space:10 [
+                    button "Refresh Invites" "arteLoadInvites()" .class:"arte-btn"
+                    button "Revoke Expired" "arteRevokeExpiredInvites()" .class:"arte-btn-danger"
+                    button "Revoke All" "arteRevokeAllInvites()" .class:"arte-btn-danger"
+                ]
+                text invite_list_status .class:"arte-detail"
+                raw {<div id="arte-invite-list" class="arte-list"></div>}
+            ]
+            details "App Setup" [
+                row .space:10 [
+                    field app_name .placeholder:"New app name" .class:"arte-input"
+                    button "Create" "arteCreateApp()" .class:"arte-btn"
+                ]
+                textarea app_data_model .class:"arte-textarea" .placeholder:"Optional data model for scaffold (Markdown)"
+                row .space:10 [
+                    button "Rename App" "arteRenameSelectedApp()" .class:"arte-btn"
+                    button "Delete App" "arteDeleteSelectedApp()" .class:"arte-btn-danger"
+                ]
+                text apps_status .class:"arte-detail"
+                text app_folder_status .class:"arte-detail"
+                list selected_app apps .class:"arte-list"
+                divider
+                row .space:10 [
+                    field page_name .placeholder:"New page name" .class:"arte-input"
+                    button "Create Page" "arteCreatePage()" .class:"arte-btn"
+                ]
+                row .space:10 [
+                    button "Rename Page" "arteRenameSelectedPage()" .class:"arte-btn"
+                    button "Delete Page" "arteDeleteSelectedPage()" .class:"arte-btn-danger"
+                ]
+                text pages_status .class:"arte-detail"
+                list selected_page pages .class:"arte-list"
+            ]
+            details "AI Settings" [
+                row .space:10 [
+                    select ai_provider ai_provider_options .class:"arte-input"
+                    select ai_model ai_model_options .class:"arte-input"
+                ]
+                row .space:10 [
+                    select ai_temperature ai_temperature_options .class:"arte-input"
+                    select ai_top_p ai_top_p_options .class:"arte-input"
+                    select ai_max_tokens ai_max_tokens_options .class:"arte-input"
                 ]
                 row .space:10 [
                     button "Load AI Settings" "arteAiLoadSettings()" .class:"arte-btn"
                     button "Save AI Settings" "arteAiSaveSettings()" .class:"arte-btn"
                 ]
-                text ai_status .class:"arte-detail"
             ]
+        ]
+    ] [
+        col .space:12 [
+            box .class:"arte-panel" [
+                row .space:8 [
+                    button "Preview" "studioSetRightTab('preview')" .class:"arte-btn-secondary"
+                    button "Code" "studioSetRightTab('code')" .class:"arte-btn-secondary"
+                    button "Reset Draft" "studioResetDraft()" .class:"arte-btn-danger"
+                ]
             ]
-
-            box .class:"arte-panel arte-section" .data-show-bind:"show_account" .data-show-value:"false" [
-                auth_app "Arturo/Arte" "Sign in or create an account to continue."
-                text auth_status .class:"arte-detail"
+            box .class:"arte-panel studio-preview" .data-show-bind:"studio_right_tab" .data-show-value:"preview" [
+                row .space:8 [
+                    title "Preview" .class:"arte-panel-title"
+                    button "Load Layout" "arteLoadLayout()" .class:"arte-btn-secondary"
+                    button "Save Layout" "arteSaveLayout()" .class:"arte-btn-secondary"
+                    button "Undo AI" "studioUndo()" .class:"arte-btn-secondary"
+                    button "Apply AI" "studioApplySuggestion()" .class:"arte-btn-secondary"
+                    button "Reject AI" "studioRejectSuggestion()" .class:"arte-btn-secondary"
+                ]
+                raw {<iframe id="arte-preview-frame" class="arte-preview-frame"></iframe>}
+                text studio_last_action .class:"arte-detail"
+                text ai_suggested_status .class:"arte-detail"
+            ]
+            box .class:"arte-panel studio-code" .data-show-bind:"studio_right_tab" .data-show-value:"code" [
+                row .space:8 [
+                    title "Vista Output" .class:"arte-panel-title"
+                    button "Generate Vista" "arteGenerateVista()" .class:"arte-btn-secondary"
+                    button "Export .art" "arteExportPage()" .class:"arte-btn-secondary"
+                ]
+                textarea vista_code .class:"arte-textarea studio-code-output" .placeholder:"Generated Vista markup will appear here" .readonly:true
+                divider
+                title "Palette + Layout JSON" .class:"arte-panel-title"
+                row .space:8 [
+                    button "Title" "arteAddComponent('title')" .class:"arte-btn"
+                    button "Text" "arteAddComponent('text')" .class:"arte-btn"
+                    button "Button" "arteAddComponent('button')" .class:"arte-btn"
+                    button "Input" "arteAddComponent('input')" .class:"arte-btn"
+                    button "Row" "arteAddComponent('row')" .class:"arte-btn"
+                    button "Box" "arteAddComponent('box')" .class:"arte-btn"
+                ]
+                row .space:8 [
+                    button "Col" "arteAddComponent('col')" .class:"arte-btn"
+                    button "Canvas" "arteAddComponent('canvas')" .class:"arte-btn"
+                    button "Image" "arteAddComponent('image')" .class:"arte-btn"
+                    button "Divider" "arteAddComponent('divider')" .class:"arte-btn"
+                    button "Raw Vista" "arteAddComponent('raw_vista')" .class:"arte-btn"
+                ]
+                textarea layout_json .class:"arte-textarea studio-layout-json"
+                text layout_status .class:"arte-detail"
+                raw {<div id="arte-order-list" class="arte-order-list"></div>}
             ]
         ]
     ]
@@ -351,6 +320,14 @@ view_body: [
             background:var(--arte-accent);
             color:#fff;
             border:none;
+            border-radius:10px;
+            padding:8px 12px;
+            font-weight:700;
+        }
+        .arte-btn-secondary{
+            background:#eef3ff;
+            color:#1f3f88;
+            border:1px solid #c8d6fb;
             border-radius:10px;
             padding:8px 12px;
             font-weight:700;
@@ -552,6 +529,31 @@ view_body: [
         .arte-panel .vista-auth-card .vista-panel-body button{
             margin-top:8px;
         }
+        .studio-shell{
+            gap:18px;
+            align-items:stretch;
+        }
+        .studio-assistant{
+            min-height:680px;
+        }
+        .studio-preview{
+            min-height:360px;
+        }
+        .studio-code{
+            min-height:420px;
+        }
+        .studio-chat-log{
+            min-height:220px;
+        }
+        .studio-chat-input{
+            min-height:110px;
+        }
+        .studio-code-output{
+            min-height:200px;
+        }
+        .studio-layout-json{
+            min-height:240px;
+        }
         @media (max-width: 980px){
             .arte-main{display:block;}
             .arte-nav{position:static;}
@@ -610,6 +612,51 @@ view_body: [
     try { arr = JSON.parse(state.layout_json || '[]'); } catch (e) { arr = []; }
     if(!Array.isArray(arr)) arr = [];
     return arr;
+  };
+
+  const layoutHistory = [];
+  const snapshotLayout = () => {
+    const current = String(state.layout_json || '[]');
+    if(layoutHistory.length && layoutHistory[layoutHistory.length - 1] === current){
+      return;
+    }
+    layoutHistory.push(current);
+    if(layoutHistory.length > 40){
+      layoutHistory.shift();
+    }
+  };
+
+  const parseAiStructuredPayload = (text) => {
+    const raw = String(text || '').trim();
+    if(!raw){ return null; }
+    const candidates = [raw];
+    const fencedBlocks = raw.match(/```(?:json)?[\s\S]*?```/ig) || [];
+    fencedBlocks.forEach(block => {
+      const clean = String(block)
+        .replace(/^```(?:json)?/i, '')
+        .replace(/```$/i, '')
+        .trim();
+      if(clean){ candidates.push(clean); }
+    });
+    for(let i = 0; i < candidates.length; i++){
+      const candidate = candidates[i];
+      try {
+        const parsed = JSON.parse(candidate);
+        if(Array.isArray(parsed)){
+          return { layout: parsed, vista: "" };
+        }
+        if(parsed && typeof parsed === 'object'){
+          const layout = Array.isArray(parsed.layout) ? parsed.layout : null;
+          if(layout){
+            return {
+              layout: layout,
+              vista: parsed.vista ? String(parsed.vista) : ""
+            };
+          }
+        }
+      } catch (_e) {}
+    }
+    return null;
   };
 
   const showToast = (message, kind) => {
@@ -1422,6 +1469,17 @@ window.arteAddMember = () => {
           const block = "you: " + prompt + "\nai: " + text;
           const prev = String(state.ai_chat_log || "");
           state.ai_chat_log = prev ? (prev + "\n\n" + block) : block;
+          const parsed = parseAiStructuredPayload(text);
+          if(parsed && Array.isArray(parsed.layout)){
+            state.ai_suggested_layout = JSON.stringify(parsed.layout, null, 2);
+            state.ai_suggested_vista = parsed.vista || "";
+            state.ai_suggested_status = "AI suggested a structured layout. Apply or reject.";
+            state.studio_last_action = "AI generated a staged suggestion";
+          } else {
+            state.ai_suggested_layout = "";
+            state.ai_suggested_vista = "";
+            state.ai_suggested_status = "No structured layout in this response.";
+          }
           state.ai_prompt = "";
           state.ai_status = "AI response received";
         } else {
@@ -1439,7 +1497,137 @@ window.arteAddMember = () => {
     state.ai_chat_log = "ai: Ready.";
     state.ai_prompt = "";
     state.ai_status = "AI cleared";
+    state.ai_suggested_layout = "";
+    state.ai_suggested_vista = "";
+    state.ai_suggested_status = "";
     render();
+  };
+
+  window.studioQuickPrompt = (text) => {
+    state.ai_prompt = String(text || '');
+    state.studio_last_action = "Applied quick prompt";
+    render();
+    window.arteAiSend();
+  };
+
+  window.studioSetRightTab = (tab) => {
+    const next = String(tab || 'preview').toLowerCase();
+    state.studio_right_tab = (next === 'code') ? 'code' : 'preview';
+    state.studio_last_action = 'Opened ' + state.studio_right_tab + ' tab';
+    render();
+    if(state.studio_right_tab === 'preview'){
+      setTimeout(() => { renderPreview(); }, 0);
+    }
+  };
+
+  window.studioUndo = () => {
+    if(!layoutHistory.length){
+      state.layout_status = "Nothing to undo";
+      state.studio_last_action = "Undo unavailable";
+      render();
+      return;
+    }
+    state.layout_json = layoutHistory.pop();
+    state.layout_status = "Undo applied";
+    state.studio_last_action = "Reverted last layout change";
+    render();
+    setTimeout(() => { renderPreview(); renderOrderList(); }, 0);
+  };
+
+  window.studioApplySuggestion = () => {
+    if(!state.ai_suggested_layout){
+      state.ai_suggested_status = "No AI suggestion to apply";
+      render();
+      return;
+    }
+    let parsed = null;
+    try { parsed = JSON.parse(String(state.ai_suggested_layout)); } catch (_e) { parsed = null; }
+    if(!Array.isArray(parsed)){
+      state.ai_suggested_status = "Suggested layout is invalid";
+      render();
+      return;
+    }
+    snapshotLayout();
+    state.layout_json = JSON.stringify(parsed, null, 2);
+    if(state.ai_suggested_vista){
+      state.vista_code = String(state.ai_suggested_vista);
+    }
+    state.layout_status = "Applied AI suggestion";
+    state.ai_suggested_status = "AI suggestion applied";
+    state.studio_last_action = "Applied AI suggestion";
+    render();
+    setTimeout(() => { renderPreview(); renderOrderList(); }, 0);
+  };
+
+  window.studioRejectSuggestion = () => {
+    state.ai_suggested_layout = "";
+    state.ai_suggested_vista = "";
+    state.ai_suggested_status = "AI suggestion rejected";
+    state.studio_last_action = "Rejected AI suggestion";
+    render();
+  };
+
+  window.studioResetDraft = () => {
+    if(!confirm('Reset current draft layout to an empty page?')){
+      return;
+    }
+    snapshotLayout();
+    state.layout_json = "[]";
+    state.vista_code = "";
+    state.layout_status = "Draft reset";
+    state.studio_last_action = "Reset draft layout";
+    render();
+    setTimeout(() => { renderPreview(); renderOrderList(); }, 0);
+  };
+
+  window.studioRunIteration = () => {
+    const pageId = parseId(state.selected_page);
+    if(!pageId){
+      state.layout_status = "Select a page to run iteration";
+      state.studio_last_action = "Run iteration blocked";
+      render();
+      return;
+    }
+    if(state.ai_suggested_layout){
+      let parsed = null;
+      try { parsed = JSON.parse(String(state.ai_suggested_layout)); } catch (_e) { parsed = null; }
+      if(Array.isArray(parsed)){
+        snapshotLayout();
+        state.layout_json = JSON.stringify(parsed, null, 2);
+        if(state.ai_suggested_vista){
+          state.vista_code = String(state.ai_suggested_vista);
+        }
+        state.ai_suggested_status = "AI suggestion applied during run iteration";
+      }
+    }
+    let components = null;
+    try { components = JSON.parse(String(state.layout_json || '[]')); } catch (_e) { components = null; }
+    if(!Array.isArray(components)){
+      state.layout_status = "Invalid layout JSON";
+      state.studio_last_action = "Run iteration failed";
+      render();
+      return;
+    }
+    state.layout_status = "Running iteration: save, preview, generate...";
+    render();
+    putJson(withTokenPath("pages", pageId, "components"), { components: components })
+      .then(resp => {
+        if(resp && resp.ok){
+          state.layout_status = "Iteration complete";
+          state.studio_last_action = "Saved layout and refreshed outputs";
+          window.arteGenerateVista();
+          setTimeout(() => { renderPreview(); renderOrderList(); }, 0);
+        } else {
+          state.layout_status = "Iteration save failed";
+          state.studio_last_action = "Run iteration failed";
+          render();
+        }
+      })
+      .catch(() => {
+        state.layout_status = "Iteration save failed";
+        state.studio_last_action = "Run iteration failed";
+        render();
+      });
   };
 
   window.arteLoadApps = () => {
@@ -1708,6 +1896,7 @@ window.arteAddMember = () => {
   };
 
   window.arteAddComponent = (type) => {
+    snapshotLayout();
     let arr = parseLayoutArray();
     if(type === 'row'){
       arr.push({ type: 'row', children: [ { type: 'button', props: '{"label":"Action"}' }, { type: 'input', props: '{"placeholder":"Placeholder"}' } ] });
@@ -1758,6 +1947,7 @@ window.arteAddMember = () => {
       return;
     }
     const item = arr[idx] || {};
+    snapshotLayout();
     if(item.type === 'row' || item.type === 'box' || item.type === 'col'){
       let parsed = [];
       try { parsed = JSON.parse(state.selected_component_children || '[]'); } catch (e) { parsed = null; }
@@ -1794,6 +1984,7 @@ window.arteAddMember = () => {
       render();
       return;
     }
+    snapshotLayout();
     arr.splice(idx, 1);
     writeLayoutArray(arr);
     state.selected_component_index = "";
@@ -1933,6 +2124,24 @@ window.arteAddMember = () => {
   };
 
   let lastApp = "";
+  if(!window.__arteStudioShortcutsBound){
+    window.__arteStudioShortcutsBound = true;
+    document.addEventListener('keydown', (e) => {
+      const key = String(e.key || '').toLowerCase();
+      const cmd = !!(e.metaKey || e.ctrlKey);
+      if(cmd && key === 'enter'){
+        e.preventDefault();
+        window.arteAiSend();
+      } else if(cmd && key === 's'){
+        e.preventDefault();
+        window.arteSaveLayout();
+      } else if(key === 'escape' && state.ai_suggested_layout){
+        e.preventDefault();
+        window.studioRejectSuggestion();
+      }
+    });
+  }
+
   setInterval(() => {
     if(state.selected_app !== lastApp){
       lastApp = state.selected_app;
